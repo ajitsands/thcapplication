@@ -1,6 +1,6 @@
 
 <?PHP 
-    include_once "../model/db_connection/connection.php" ;
+    include_once(__DIR__ . '/../model/db_connection/connection.php');
     $DBConn = new DBConnection();
     $varDBConnection = $DBConn->ConnectToMYSQL();
     $result_active_clients = mysqli_query($varDBConnection,"SELECT count(`customer_id`) as count_active_clients FROM `tbl_customers` WHERE  customer_status ='Active'");

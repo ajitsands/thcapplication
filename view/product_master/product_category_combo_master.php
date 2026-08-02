@@ -1,4 +1,4 @@
-<?PHP include "../model/db_connection/connection.php" ;
+<?PHP include(__DIR__ . '/../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result_prdt_cat_master = mysqli_query($varDBConnection,"Select product_category_id,product_category_name from tbl_product_category where product_category_status='Active'");

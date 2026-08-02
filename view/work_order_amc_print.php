@@ -1,5 +1,5 @@
 <?PHP
-include "../model/db_connection/connection.php" ;
+include(__DIR__ . '/../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  //	$result = mysqli_query($varDBConnection,"select *,DATE_FORMAT(created_date_time,'%d-%m-%Y') as work_request_date,TIME_FORMAT(created_date_time,'%h:%i %p') as work_request_time,DATE_FORMAT(closed_on,'%d-%m-%Y') as date_delivered from tbl_tickets where ticket_id=".$_GET["ticket_id"]);

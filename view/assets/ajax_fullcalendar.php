@@ -29,7 +29,7 @@
 // } catch (PDOException $e) {
 //     echo "Connection failed: " . $e->getMessage();
 // }
-include('../../model/db_connection/connection.php');
+include(__DIR__ . '/../../model/db_connection/connection.php');
 $connection = new DBConnection();
 $conn = $connection->ConnectToMYSQL();
 $data = array();

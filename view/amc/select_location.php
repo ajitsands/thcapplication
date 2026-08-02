@@ -1,4 +1,4 @@
-<?PHP include "../../model/db_connection/connection.php" ;
+<?PHP include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result_location_for_customer_location = mysqli_query($varDBConnection,"select location_id,location_name,location_code from  tbl_location where location_status = 'Active' "); 	

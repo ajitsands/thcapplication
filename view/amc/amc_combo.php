@@ -1,4 +1,4 @@
-<?PHP include "../model/db_connection/connection.php" ;
+<?PHP include(__DIR__ . '/../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result_amc = mysqli_query($varDBConnection,"Select amc_id,amc_ref_no from  tbl_amc_master where amc_status='Active'");

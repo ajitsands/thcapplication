@@ -1,4 +1,4 @@
-<?PHP //include "../model/db_connection/connection.php" ;
+<?PHP //include(__DIR__ . '/../model/db_connection/connection.php');
 //$DBConn = new DBConnection();
 //$varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"Select expertise_id,expertise_name from  tbl_expertise where expertise_status='Active'");

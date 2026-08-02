@@ -1,5 +1,5 @@
 <?PHP 
-                            include_once "../model/db_connection/connection.php" ;
+                            include_once(__DIR__ . '/../model/db_connection/connection.php');
                             $DBConn = new DBConnection();
                             $varDBConnection = $DBConn->ConnectToMYSQL();
                          	$result = mysqli_query($varDBConnection,"Select count(amc_visit_id) as visit_count from  tbl_visits where  (DATE_FORMAT(date_of_visits,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d')) and amc_visit_status !='Cancelled'");

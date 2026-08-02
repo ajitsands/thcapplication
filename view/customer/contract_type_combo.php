@@ -1,4 +1,4 @@
-<?PHP include "../model/db_connection/connection.php" ;
+<?PHP include(__DIR__ . '/../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"Select contract_type_id ,contract_type_name from tbl_contract_types where contract_type_status='Active' ");

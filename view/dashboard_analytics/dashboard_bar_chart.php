@@ -1,5 +1,5 @@
 
-<?php  include_once "../../model/db_connection/connection.php" ;
+<?php  include_once(__DIR__ . '/../../model/db_connection/connection.php');
             $DBConn = new DBConnection();
             $varDBConnection = $DBConn->ConnectToMYSQL();?>
             <?php 

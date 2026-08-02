@@ -9,7 +9,7 @@ if($_SESSION["LOGIN"] == '')
 }
 else
 {
-	include('../controller/connection.php');
+	include(__DIR__ . '/../controller/connection.php');
 	
 }
 ?>

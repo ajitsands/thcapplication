@@ -1,4 +1,4 @@
-<?PHP include "../model/db_connection/connection.php" ;
+<?PHP include(__DIR__ . '/../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"Select user_type_id,user_type_name from tbl_user_types where user_type_status='Active'");

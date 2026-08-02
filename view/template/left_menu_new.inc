@@ -1,7 +1,13 @@
+<?php
+// PHP 8.2 safe default: prevent undefined index warnings throughout this menu
+if (!isset($_GET['param'])) { $_GET['param'] = ''; }
+$params = [];
+?>
 
 <div class="card card-sidebar-mobile">
     <ul class="nav nav-sidebar" data-nav-type="accordion">
         <!-- Main -->
+
         <li class="nav-item-header">
             
             <div class="text-uppercase font-size-xs line-height-xs"></div>

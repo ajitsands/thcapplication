@@ -1,6 +1,6 @@
 <?PHP
 session_start();
-include "../../model/db_connection/connection.php" ;
+include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
     function getFormatDate($date){

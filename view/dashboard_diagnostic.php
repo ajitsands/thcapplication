@@ -63,7 +63,7 @@ try {
 
 echo "<hr><h3>Step 5: common_functions.php (DB)</h3>";
 try {
-    require_once('../model/common/common_functions.php');
+    require_once(__DIR__ . '/../model/common/common_functions.php');
     $model = new CommonModel();
     echo "<span style='color:green'>✅ DB Connected OK</span><br>";
 } catch (Throwable $e) {

@@ -355,7 +355,7 @@ $(document).ready(function(){
 
 var FullCalendarBasic = function() {
 
-    <?PHP include('../model/db_connection/connection.php');
+    <?PHP include(__DIR__ . '/../model/db_connection/connection.php');
     $DBConn = new DBConnection();
     $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"select amc_tkt_ref_no,amc_ticket,customer_code,customer_name,date_of_visits,time_of_visit,amc_visit_status from tbl_visits group by amc_tkt_ref_no,date_of_visits,time_of_visit");

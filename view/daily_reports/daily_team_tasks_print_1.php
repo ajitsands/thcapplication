@@ -1,5 +1,5 @@
 <?PHP
-include "../../model/db_connection/connection.php" ;
+include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
   $result_entries = mysqli_query($varDBConnection,"select ticket_id,amc_ticket,ticket_ref_no,visit_id from   tbl_ticket_teams where   visit_date = '".$_GET['start_date']."' and employee_id in (".$_GET['Emp_id'].") and ticket_team_status='Active' group by ticket_id");

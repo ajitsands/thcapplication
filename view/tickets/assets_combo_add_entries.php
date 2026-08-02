@@ -1,5 +1,5 @@
 <?PHP
-include "../../model/db_connection/connection.php" ;
+include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"select asset_id,asset_ref_no from   tbl_assets where asset_status='Active' and asset_category_id=".$_POST['category_id']." and asset_type_id=".$_POST['type_id']." and customer_id=".$_POST['customer_id']." and location_id=".$_POST['location_id']." and building_id=".$_POST['building_id']."");

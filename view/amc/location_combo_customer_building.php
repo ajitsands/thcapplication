@@ -1,4 +1,4 @@
-<?PHP //include "../model/db_connection/connection.php" ;
+<?PHP //include(__DIR__ . '/../model/db_connection/connection.php');
 //$DBConn = new DBConnection();
 //$varDBConnection = $DBConn->ConnectToMYSQL();
  	$result_customer_building = mysqli_query($varDBConnection,"Select distinct building_name,building_code from  tbl_customer_location ");

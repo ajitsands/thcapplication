@@ -2,7 +2,7 @@
  
  
  $v_prdt_item_id_master_req= $_POST['v_prdt_item_id_master_req'];
- include "../../model/db_connection/connection.php" ;
+ include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConnn1 = new DBConnection();
 $varDBConnectionn_brand = $DBConnn1->ConnectToMYSQL();
  	$result_prdt_brand = mysqli_query($varDBConnectionn_brand,"Select distinct product_master_id,product_brand_name from tbl_product_master where product_item_id ='".$v_prdt_item_id_master_req."'");

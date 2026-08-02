@@ -1,5 +1,5 @@
 <?PHP 
-require ('../../model/common/common_functions.php');
+require(__DIR__ . '/../../model/common/common_functions.php');
    
    // var	$invoice_number,$invoice_date,$company_name,$po_box,$telephone_no,$fax,$address,$attn,$quotation_reference,$LPO_no;
    

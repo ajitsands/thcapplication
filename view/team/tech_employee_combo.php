@@ -1,4 +1,4 @@
-<?PHP include "../model/db_connection/connection.php" ;
+<?PHP include(__DIR__ . '/../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"select employee_id,employee_type_id,employee_type_name,employee_code,employee_name from tbl_employees where employee_type_name='Team Leader' and employee_status='Active' and employee_id NOT IN ( select employee_id from tbl_team where team_status='Active')");

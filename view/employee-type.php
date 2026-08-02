@@ -1,6 +1,6 @@
 <?php
 $ids = $_GET['ids'];
-include "../model/db_connection/connection.php" ;
+include(__DIR__ . '/../model/db_connection/connection.php');
 $connection = new DBConnection();
 $conn = $connection->ConnectToMYSQL();
 ?>

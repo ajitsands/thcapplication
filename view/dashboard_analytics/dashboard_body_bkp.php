@@ -1,6 +1,6 @@
 
 <?PHP 
-    include_once "../model/db_connection/connection.php" ;
+    include_once(__DIR__ . '/../model/db_connection/connection.php');
     $DBConn = new DBConnection();
     $varDBConnection = $DBConn->ConnectToMYSQL();
    	$result = mysqli_query($varDBConnection,"Select customer_id,customer_name from tbl_customers ");

@@ -1,5 +1,5 @@
 <?PHP 
-include "../../model/db_connection/connection.php" ;
+include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConnn_item = new DBConnection();
 $varDBConnectionn_item = $DBConnn_item->ConnectToMYSQL();
 

@@ -423,7 +423,7 @@ $(document).ready(function(){
 
 var FullCalendarBasic = function() {
 
-    <?PHP include('../model/db_connection/connection.php');
+    <?PHP include(__DIR__ . '/../model/db_connection/connection.php');
     $DBConn = new DBConnection();
     $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"select amc_tkt_ref_no,amc_ticket,customer_code,customer_name,date_of_visits,time_of_visit,amc_visit_status,CASE WHEN amc_visit_status='Scheduled' THEN '#39C0ED' WHEN amc_visit_status='Assigned' THEN '#3F51B5'  WHEN amc_visit_status='Completed' THEN '#795548' WHEN amc_visit_status='Closed' THEN '#4CAF50' WHEN amc_visit_status='Cancelled' THEN '#B23CFD' WHEN amc_visit_status='Extended' THEN '#FFC107' ELSE '#39C0ED' END as amc_schedule_color from tbl_visits group by amc_tkt_ref_no,date_of_visits,time_of_visit");

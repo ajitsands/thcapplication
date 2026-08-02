@@ -1,6 +1,6 @@
 <?php
 
-   include "../../model/db_connection/connection.php" ;
+   include(__DIR__ . '/../../model/db_connection/connection.php');
    date_default_timezone_set('Asia/Bahrain');
    global $visit_id;
 
