@@ -24,6 +24,7 @@ $OBJ->URLEncode('head=dashboard');
 	<?PHP 
 		include_once('template/head.inc');
 	?>
+	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 	
 </head>
    
@@ -637,120 +638,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <body class="navbar-top">
 
-	<!-- Main navbar -->
-	<div class="navbar navbar-expand-md navbar-light navbar-static fixed-top">
-
-		<!-- Header with logos -->
-		<?PHP 
-				include_once('template/header_with_logo.inc');
-		?>
-	
-		<!-- /header with logos -->
-	
-
-		<!-- Mobile controls -->
-		<?PHP 
-				include_once('template/mobile_view.inc');
-		?>
-		<!-- /mobile controls -->
+	<!-- ===== THC Horizontal Top Navigation ===== -->
+	<?PHP include_once('template/top_menu_new.inc'); ?>
+	<!-- ===== /THC Horizontal Top Navigation ===== -->
 
 
-		<!-- Navbar content -->
-		<?PHP 
-				include_once('template/navigation.inc');
-		?>
-		
-		
-		<!-- /navbar content -->
-		
-	</div>
-	<!-- /main navbar -->
+	<!-- Main content (full width, no sidebar) -->
+	<div class="content-wrapper" style="margin-left:0;padding:20px 24px 0;">
 
+		<!-- Content area -->
+		<div class="content pt-0">
 
-	<!-- Page content -->
-	<div class="page-content">
-
-		<!-- Main sidebar -->
-		<div class="sidebar sidebar-dark sidebar-main sidebar-expand-md">
-
-			<!-- Sidebar mobile toggler -->
-			
-			<?PHP 
-				include_once('template/mobile_toggler.inc');
-			?>
-			
-			<!-- /sidebar mobile toggler -->
-
-
-			<!-- Sidebar content -->
-			<div class="sidebar-content">
-				
-				<!-- User menu -->
-				<?PHP 
-					include_once('template/user_menu.inc');
-				?>
-				
-				<!-- /user menu -->
-
-				
-				<!-- Main navigation -->
-				<?PHP 
-					//include_once('template/left_menu.inc');
-					include_once('template/left_menu_new.inc');
-				?>
-				
-				
-				<!-- /main navigation -->
-
-			</div>
-			<!-- /sidebar content -->
-			
-		</div>
-		<!-- /main sidebar -->
-
-
-		<!-- Main content -->
-		<div class="content-wrapper">
-
-			<!-- Page header -->
-			<?PHP 
-				//include_once('template/header_bellow_title.inc');
-			?>
-			
-			<!-- /page header -->
-
-
-			<!-- Content area -->
-			<div class="content pt-0">
-
-				<!-- Large navbar -->
-				
-				<?PHP 
-					include_once('dashboard/dashboard_body.php');
-				?>
-				
-				
-				<!-- /large navbar -->
-
-
-			</div>
-			<!-- /content area -->
-            <?PHP 
-				include_once('template/reset_password_modal.php');
-			?>
-          
-			<!-- Footer -->
-			
-			<?PHP 
-				include_once('template/footer.inc');
-			?>
-			<!-- /footer -->
+			<?PHP include_once('dashboard/dashboard_body.php'); ?>
 
 		</div>
-		<!-- /main content -->
+		<!-- /content area -->
+
+		<?PHP include_once('template/reset_password_modal.php'); ?>
+
+		<!-- Footer -->
+		<?PHP include_once('template/footer.inc'); ?>
+		<!-- /footer -->
 
 	</div>
-	<!-- /page content -->
+	<!-- /main content -->
 
 
 </body>

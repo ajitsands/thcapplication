@@ -1,0 +1,354 @@
+/* =============================================================
+   THC-FMS  —  Horizontal Top Navigation
+   Premium dark navbar with dropdown menus
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ---- CSS Variables ----------------------------------------- */
+:root {
+  --thc-navy:      #0d1b2a;
+  --thc-navy2:     #1a2d44;
+  --thc-accent:    #f0a500;
+  --thc-accent2:   #e09200;
+  --thc-text:      #c8d8e8;
+  --thc-text-dim:  #7a92a8;
+  --thc-white:     #ffffff;
+  --thc-border:    rgba(255,255,255,0.08);
+  --thc-nav-h:     58px;
+  --thc-drop-bg:   #142233;
+  --thc-drop-hover:#1e3250;
+  --thc-radius:    6px;
+  --thc-shadow:    0 8px 32px rgba(0,0,0,0.35);
+  --thc-font:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ---- Reset body for top-navbar layout ----------------------- */
+body {
+  font-family: var(--thc-font) !important;
+  padding-top: calc(var(--thc-nav-h) + 0px) !important;
+}
+
+/* Hide the original Limitless sidebar so we don't double-show */
+.sidebar.sidebar-dark.sidebar-main,
+.sidebar-mobile-toggler,
+.navbar.navbar-expand-md.navbar-light {
+  display: none !important;
+}
+
+.content-wrapper,
+.page-content {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* ---- Main Navbar Shell -------------------------------------- */
+.thc-topnav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1050;
+  height: var(--thc-nav-h);
+  background: linear-gradient(135deg, var(--thc-navy) 0%, var(--thc-navy2) 100%);
+  border-bottom: 1px solid var(--thc-border);
+  box-shadow: var(--thc-shadow);
+  font-family: var(--thc-font);
+}
+
+.thc-topnav-inner {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 16px;
+  max-width: 100%;
+  gap: 0;
+}
+
+/* ---- Brand -------------------------------------------------- */
+.thc-topnav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.thc-topnav-brand .brand-icon {
+  width: 34px; height: 34px;
+  background: var(--thc-accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--thc-navy);
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(240,165,0,0.4);
+}
+
+.thc-topnav-brand .brand-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--thc-white);
+  letter-spacing: 0.5px;
+}
+
+.thc-topnav-brand .brand-text span {
+  color: var(--thc-accent);
+}
+
+/* ---- Nav lists ---------------------------------------------- */
+.thc-nav {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0; padding: 0;
+  height: 100%;
+  flex: 1;
+}
+
+.thc-nav-right {
+  flex: 0;
+  margin-left: auto;
+}
+
+/* ---- Nav items ---------------------------------------------- */
+.thc-nav-item {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Nav links ---------------------------------------------- */
+.thc-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 13px;
+  height: 100%;
+  color: var(--thc-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.thc-nav-link i {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.thc-nav-link .thc-arrow {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-left: 2px;
+  transition: transform 0.2s;
+}
+
+.thc-nav-link:hover {
+  color: var(--thc-white);
+  background: rgba(255,255,255,0.06);
+  text-decoration: none;
+}
+
+.thc-nav-link.active {
+  color: var(--thc-accent);
+  border-bottom-color: var(--thc-accent);
+}
+
+.thc-has-dropdown.open > .thc-nav-link {
+  color: var(--thc-accent);
+  background: rgba(240,165,0,0.08);
+}
+
+.thc-has-dropdown.open > .thc-nav-link .thc-arrow {
+  transform: rotate(180deg);
+}
+
+/* ---- Dropdown menus ----------------------------------------- */
+.thc-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 0;
+  min-width: 220px;
+  background: var(--thc-drop-bg);
+  border: 1px solid var(--thc-border);
+  border-radius: var(--thc-radius);
+  box-shadow: var(--thc-shadow);
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  z-index: 1100;
+  animation: thcDropIn 0.18s ease;
+  max-height: calc(100vh - 70px);
+  overflow-y: auto;
+}
+
+.thc-dropdown-right {
+  left: auto;
+  right: 0;
+}
+
+@keyframes thcDropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.thc-has-dropdown.open > .thc-dropdown {
+  display: block;
+}
+
+/* Dropdown items */
+.thc-dropdown li a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 18px;
+  color: var(--thc-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 400;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.thc-dropdown li a i {
+  font-size: 13px;
+  opacity: 0.7;
+  width: 16px;
+  text-align: center;
+}
+
+.thc-dropdown li a:hover {
+  background: var(--thc-drop-hover);
+  color: var(--thc-white);
+}
+
+.thc-dropdown li a.active {
+  background: rgba(240,165,0,0.12);
+  color: var(--thc-accent);
+  font-weight: 500;
+}
+
+.thc-dropdown li a.active i {
+  opacity: 1;
+}
+
+/* Section headers in dropdown */
+.thc-dropdown-section-header {
+  padding: 8px 18px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--thc-text-dim);
+  border-top: 1px solid var(--thc-border);
+  margin-top: 4px;
+}
+
+.thc-dropdown-section-header:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
+/* Divider */
+.thc-divider {
+  height: 1px;
+  background: var(--thc-border);
+  margin: 4px 0;
+}
+
+/* ---- User button -------------------------------------------- */
+.thc-user-btn {
+  padding: 0 14px;
+}
+
+.thc-username {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* ---- Mobile hamburger --------------------------------------- */
+.thc-topnav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px; height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0;
+}
+
+.thc-topnav-toggle span {
+  display: block;
+  height: 2px;
+  background: var(--thc-text);
+  border-radius: 2px;
+  transition: 0.2s;
+}
+
+/* ---- Scrollbar in dropdown ---------------------------------- */
+.thc-dropdown::-webkit-scrollbar { width: 4px; }
+.thc-dropdown::-webkit-scrollbar-track { background: transparent; }
+.thc-dropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+/* ---- Responsive -------------------------------------------- */
+@media (max-width: 992px) {
+  .thc-topnav-toggle { display: flex; }
+
+  .thc-nav {
+    display: none;
+    position: fixed;
+    top: var(--thc-nav-h);
+    left: 0; right: 0;
+    background: var(--thc-navy);
+    flex-direction: column;
+    height: auto;
+    max-height: calc(100vh - var(--thc-nav-h));
+    overflow-y: auto;
+    border-bottom: 1px solid var(--thc-border);
+    padding: 8px 0;
+    z-index: 1049;
+  }
+
+  .thc-nav.open { display: flex; }
+  .thc-nav-right { display: none; }
+
+  .thc-nav-item { height: auto; width: 100%; flex-direction: column; align-items: flex-start; }
+
+  .thc-nav-link {
+    width: 100%;
+    height: auto;
+    padding: 10px 20px;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+
+  .thc-nav-link.active {
+    border-left-color: var(--thc-accent);
+    border-bottom: none;
+  }
+
+  .thc-dropdown {
+    position: static;
+    display: none;
+    width: 100%;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    background: rgba(0,0,0,0.2);
+    animation: none;
+    max-height: none;
+  }
+
+  .thc-has-dropdown.open > .thc-dropdown { display: block; }
+
+  .thc-dropdown li a { padding: 8px 36px; }
+}
