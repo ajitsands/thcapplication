@@ -1,7 +1,7 @@
 <?php
                 $servername = "localhost";
-				$username = "sianlab_thc_user";
-				$password = "s@nds1@b";
-				$database = "sianlab_db_thc";
+				$username = "root";
+				$password = "S@nds1@b";
+				$database = "db_thc";
 
 ?>
