@@ -18,8 +18,8 @@ $OBJ->URLEncode('head=dashboard');
 	<?PHP 
 		include_once('template/head.inc');
 	?>
+	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 
-	 
 	<style>
 	    	td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
@@ -39,10 +39,6 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
 
     <script src="global_assets/js/plugins/uploaders/dropzone.min.js"></script>
-	<!--<script src="global_assets/js/demo_pages/datatables_api.js"></script>-->
-	
-
-	
 	
 	<!-- Ladda -->
 	<script src="assets/js/ladda/spin.min.js" type="text/javascript"></script>
@@ -50,130 +46,37 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="assets/js/ladda/ladda.jquery.min.js" type="text/javascript"></script>
 	<!-- sweet alert -->
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-	<!--<script src="global_assets/js/moment.min.js"></script>-->
-   	 <script src="global_assets/js/fileupload_ns.js"></script>
+   	<script src="global_assets/js/fileupload_ns.js"></script>
 	<script src="../httpdocs/user_js/employees.js"></script>
-	<!--<script src="../httpdocs/user_js/login.js"></script>-->
 </head>
     <?PHP 
 		include_once('template/date_time.inc');
 	?>
 <body class="navbar-top">
 
-	<!-- Main navbar -->
-	<div class="navbar navbar-expand-md navbar-light navbar-static fixed-top">
+	<!-- ===== THC Horizontal Top Navigation ===== -->
+	<?PHP include_once('template/top_menu_new.inc'); ?>
+	<!-- ===== /THC Horizontal Top Navigation ===== -->
 
-		<!-- Header with logos -->
-		<?PHP 
-				include_once('template/header_with_logo.inc');
-		?>
-	
-		<!-- /header with logos -->
-	
+	<!-- Main content -->
+	<div class="content-wrapper" style="margin-left:0;padding:20px 24px 0;">
 
-		<!-- Mobile controls -->
-		<?PHP 
-				include_once('template/mobile_view.inc');
-		?>
-		<!-- /mobile controls -->
+		<!-- Content area -->
+		<div class="content pt-0">
 
-
-		<!-- Navbar content -->
-		<?PHP 
-				include_once('template/navigation.inc');
-		?>
-		
-		
-		<!-- /navbar content -->
-		
-	</div>
-	<!-- /main navbar -->
-
-
-	<!-- Page content -->
-	<div class="page-content">
-
-		<!-- Main sidebar -->
-		<div class="sidebar sidebar-dark sidebar-main sidebar-expand-md">
-
-			<!-- Sidebar mobile toggler -->
-			
-			<?PHP 
-				include_once('template/mobile_toggler.inc');
-			?>
-			
-			<!-- /sidebar mobile toggler -->
-
-
-			<!-- Sidebar content -->
-			<div class="sidebar-content">
-				
-				<!-- User menu -->
-				<?PHP 
-					include_once('template/user_menu.inc');
-				?>
-				
-				<!-- /user menu -->
-
-				
-				<!-- Main navigation -->
-				<?PHP 
-					//include_once('template/left_menu.inc');
-					include_once('template/left_menu_new.inc');  
-				?>
-				
-				
-				<!-- /main navigation -->
-
-			</div>
-			<!-- /sidebar content -->
-			
-		</div>
-		<!-- /main sidebar -->
-
-
-		<!-- Main content -->
-		<div class="content-wrapper">
-
-			<!-- Page header -->
-			<?PHP 
-				//include_once('template/header_bellow_title.inc');
-			?>
-			
-			<!-- /page header -->
-
-
-			<!-- Content area -->
-			<div class="content pt-0">
-
-				<!-- Large navbar -->
-				
-				<?PHP 
-					include_once('employees/employees_details.php');
-				?>
-				<!--<button class="classGivePermission">Test Button</button>-->
-				
-				<!-- /large navbar -->
-
-
-			</div>
-			<!-- /content area -->
-            <?PHP 
-				include_once('template/reset_password_modal.php');
-			?>
-
-			<!-- Footer -->
-			
-			<?PHP 
-					include_once('template/footer.inc');
-			?>
-			<!-- /footer -->
+			<?PHP include_once('employees/employees_details.php'); ?>
 
 		</div>
-		<!-- /main content -->
+		<!-- /content area -->
+
+		<?PHP include_once('template/reset_password_modal.php'); ?>
+
+		<!-- Footer -->
+		<?PHP include_once('template/footer.inc'); ?>
+		<!-- /footer -->
 
 	</div>
-	<!-- /page content -->
+	<!-- /main content -->
 
 </body>
 </html>

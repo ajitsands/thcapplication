@@ -343,127 +343,62 @@ $(document).ready(function(){
                                     
                                  },
                                  
-                                 { "data": null,className: "text-center",
-                                        "render": function(data, type, full, meta) {
-                                            return i++;
-                                          },
-                                    },
-                                 { "data": "employee_id","visible":false },
-                                 { "data": "employee_name" },
-                                 { "data": "employee_type_name"},
-                                  { "data": "employee_code",
-                                     render: function ( data, type, rows, meta ) {
-                                         
+                                  { 
+                                      "data": null,
+                                      "className": "text-center",
+                                      "render": function(data, type, full, meta) {
+                                          return meta.row + 1;
+                                      }
+                                  },
+                                  { "data": "employee_id", "visible": false },
+                                  { "data": "employee_name" },
+                                  { "data": "employee_type_name" },
+                                  { 
+                                      "data": "employee_code",
+                                      "render": function ( data, type, rows, meta ) {
                                           return '<a href="reports/employee_profile.php?employee_id='+rows['employee_id']+'" target="_BLANK">'+data+'</a>';
-             
-                                     }
-                                },
-                                
-                                 { "data": "employee_image",
-                                      render: function ( data, type, rows, meta ) {
-                                          if(data=='default.jpg')
-                                          {
-                                             return '<div align="center"><img src="../httpdocs/images/employee_image/'+data+'" class="rounded-circle" height="30px" width="30px"/></div>';
-             
-                                          } 
-                                          else
-                                          {
+                                      }
+                                  },
+                                  { 
+                                      "data": "employee_image",
+                                      "render": function ( data, type, rows, meta ) {
+                                          if(data == 'default.jpg') {
+                                              return '<div align="center"><img src="../httpdocs/images/employee_image/'+data+'" class="rounded-circle" height="30px" width="30px"/></div>';
+                                          } else {
                                               return '<div align="center"><img src="../httpdocs/images/employee_image/'+data+'" class="rounded-circle" height="50px" width="50px"/></div>';
-            
                                           }
-                                         
-            							 },
-                                 },
-                                
-                                 
-                                 { "data": "employee_status",
-                                      render: function ( data, type, rows, meta ) {
-                                          if(data=='Active')
-                                          {
-                                          str_active_status='<span class="badge badge-success">'+data+'</span>'
+                                      }
+                                  },
+                                  { 
+                                      "data": "employee_status",
+                                      "render": function ( data, type, rows, meta ) {
+                                          var str_active_status = '';
+                                          if(data == 'Active') {
+                                              str_active_status = '<span class="badge badge-success">'+data+'</span>';
+                                          } else {
+                                              str_active_status = '<span class="badge badge-danger">'+data+'</span>';
                                           }
-                                         
-                                          else
-                                          {
-                                          str_active_status='<span class="badge badge-danger">'+data+'</span>'   
+                                          return str_active_status;
+                                      }
+                                  },
+                                  {
+                                      "data": "employee_id",
+                                      "render": function (data, type, rows, meta) {
+                                          var hasPrivilege = true;
+                                          if (typeof permissions !== 'undefined' && Array.isArray(permissions)) {
+                                              hasPrivilege = permissions.length === 0 || permissions.includes("EmployeesModify") || permissions.includes("EmployeesView");
                                           }
-                                     	return str_active_status;
-            
-            							 },
-                                 },
-                                 
-                                //  { "data": "employee_id",
-                                //       render: function ( data, type, rows, meta ) {
-                                //           str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:info">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">	<a href="#" class="dropdown-item" name="Edit_Employee" style="color:orange"><i class="icon-database-edit2"></i> Edit</a><a href="#" class="dropdown-item" name="Active" style="color:green"><i class="icon-checkmark2"></i> Active</a><a href="#" class="dropdown-item" name="Deactive" style="color:red"><i class="icon-cross3"></i> Deactive</a></div></div></div>';
-                                //           return str_active_status_edit;
                                           
-                                //       }   
-                                //  }
-                                
-                                //  { "data": "employee_id",
-                                //       render: function ( data, type, rows, meta ) {
-                                //           var dropdownOptions = {
-                                //             "Edit": "Edit",
-                                //             "Activate": "Active",
-                                //             "Deactivate": "Deactive"
-                                //         };
-                                        
-                                //          var filteredOptions = Object.keys(dropdownOptions).filter(function (option) {  
-                                //             return permissions.includes(option);
-                                //         });
-                                        
-                                //         var dropdownHTML = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
-                                //             if (filteredOptions.length === 0) {
-                                //             dropdownHTML += '<label class="dropdown-item text-danger">You have no Privilege</label>';
-                                //         } else {
-                                //             filteredOptions.forEach(function (option) {
-                                //                 if (dropdownOptions[option] == "Edit") {
-                                //                     dropdownHTML += '<a href="#" class="dropdown-item" name="name_' + dropdownOptions[option] + '" style="color: orange;"><i class="icon-database-edit2"></i>' + dropdownOptions[option] + '</a>';
-                                //                 }
-                                //                 if (dropdownOptions[option] == "Active") {
-                                //                     dropdownHTML += '<a href="#" class="dropdown-item" name="name_' + dropdownOptions[option] + '" style="color: green;"><i class="icon-checkmark2"></i>' + dropdownOptions[option] + '</a>';
-                                //                 }
-                                //                 if (dropdownOptions[option] == "Deactive") {
-                                //                     dropdownHTML += '<a href="#" class="dropdown-item" name="name_' + dropdownOptions[option] + '" style="color: red;"><i class="icon-cross3"></i>' + dropdownOptions[option] + '</a>';
-                                //                 }
-                                //             });
-                                //         }
-                                
-                                //         dropdownHTML += '</div></div></div>';
-                                
-                                //         return dropdownHTML;  
-                                //       } 
-                                //  }
-                                 {
-                                    "data": "employee_id",
-                                    render: function (data, type, rows, meta) {
-                                        var dropdownOptions = {
-                                            "EmployeesModify": "Edit",
-                                            "EmployeesModify": "Active",
-                                            "EmployeesModify": "Deactive"
-                                        };
-                                
-                                        var filteredOptions = Object.keys(dropdownOptions).filter(function (option) {  
-                                            return permissions.includes(option);
-                                        });
-                                
-                                        var dropdownHTML = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
-                                       
-                                        if(filteredOptions=="EmployeesModify")
-                                        {
-                                             dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a><a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a>';
-                                        }
-                                        else
-                                        {
-                                             dropdownHTML += '<label class="dropdown-item text-danger">You have no privilege</label>';
-                                        }
-                                
-                                        dropdownHTML += '</div></div></div>';
-                                
-                                        return dropdownHTML;
-                                
-                                    }
-                                }
+                                          var dropdownHTML = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
+                                          if (hasPrivilege) {
+                                              dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a><a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a>';
+                                          } else {
+                                              dropdownHTML += '<label class="dropdown-item text-danger">You have no privilege</label>';
+                                          }
+                                          dropdownHTML += '</div></div></div>';
+                                          return dropdownHTML;
+                                      }
+                                  }
                                  
                        
                              ],

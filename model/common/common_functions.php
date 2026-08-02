@@ -54,13 +54,14 @@ class CommonModel extends FunctionDefinitions
 
 	public function ListFromTable($SQL)
 	{
-		//echo $SQL;
-		$temp = array();
-		$this->result = mysqli_query($this->varDBConnection,$SQL);
-		while($row=mysqli_fetch_assoc($this->result)) {
-			$temp['data'][] = $row;
+		$temp = array('data' => array());
+		$this->result = mysqli_query($this->varDBConnection, $SQL);
+		if ($this->result) {
+			while ($row = mysqli_fetch_assoc($this->result)) {
+				$temp['data'][] = $row;
+			}
 		}
-		$this->flag=1;
+		$this->flag = 1;
 		echo json_encode($temp);
 	}
 	public function DataWithQR($SQL,$dir,$data_col_name,$size=3,$border=2)
