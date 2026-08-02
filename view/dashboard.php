@@ -58,66 +58,80 @@ $OBJ->URLEncode('head=dashboard');
   
 
 <style>
-    .custom-box
-    {
-        height:75pt;
-        width:100%;
-        background-color:#ffcc00; 
-        color:#262626;
-        font-weight:bold;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-        padding:10px;
-        padding-top:20px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.10);
+    .custom-box, .custom-box-1, .custom-box-2, .custom-box-3 {
+        min-height: 105px;
+        width: 100%;
+        border-radius: 12px;
+        padding: 16px 20px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 20px;
     }
-    .custom-box-1
-    {
-        height:75pt;
-        width:100%;
-        background-color:#00001a; 
-        color:white;
-        font-weight:bold;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-        padding:10px;
-        padding-top:20px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.10);
+
+    /* Primary Navy Black Card (custom-box-1) */
+    .custom-box-1 {
+        background: linear-gradient(135deg, #0a192f 0%, #172a45 100%);
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-left: 5px solid #ffffff;
+        box-shadow: 0 10px 25px -5px rgba(10, 25, 47, 0.4), 0 8px 10px -6px rgba(10, 25, 47, 0.2);
     }
-    
-    .custom-box-2
-    {
-        height:75pt;
-        width:100%;
-        background-color:#ffdb4d; 
-        color:#262626;
-        font-weight:bold;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-        padding:10px;
-        padding-top:20px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.10);
+    .custom-box-1:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -10px rgba(10, 25, 47, 0.6);
+        border-color: rgba(255, 255, 255, 0.35);
     }
-    .custom-box-3
-    {
-        height:75pt;
-        width:100%;
-        background-color:#29293d; 
-        color:white;
-        font-weight:bold;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-        padding:10px;
-        padding-top:20px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.10);
+
+    /* Secondary Dark Card (custom-box-3) */
+    .custom-box-3 {
+        background: linear-gradient(135deg, #112240 0%, #0a192f 100%);
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-left: 5px solid #64ffda;
+        box-shadow: 0 10px 25px -5px rgba(10, 25, 47, 0.4);
+    }
+    .custom-box-3:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -10px rgba(10, 25, 47, 0.6);
+    }
+
+    /* Navy Blue Accent Card (custom-box) */
+    .custom-box {
+        background: linear-gradient(135deg, #0f233f 0%, #1e3a8a 100%);
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-left: 5px solid #93c5fd;
+        box-shadow: 0 10px 25px -5px rgba(15, 35, 63, 0.4);
+    }
+    .custom-box:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -10px rgba(15, 35, 63, 0.6);
+    }
+
+    /* Deep Navy Card (custom-box-2) */
+    .custom-box-2 {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-left: 5px solid #38bdf8;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4);
+    }
+    .custom-box-2:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.6);
+    }
+
+    /* Card Title & Value Typography */
+    .custom-box .row, .custom-box-1 .row, .custom-box-2 .row, .custom-box-3 .row {
+        color: #ffffff !important;
+    }
+    .custom-box div[class*="col-"], .custom-box-1 div[class*="col-"], .custom-box-2 div[class*="col-"], .custom-box-3 div[class*="col-"] {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        opacity: 0.9 !important;
     }
     
     .overlay {
