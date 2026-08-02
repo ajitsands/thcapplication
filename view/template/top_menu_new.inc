@@ -189,21 +189,45 @@ function menuActive($p, $key, $val) {
 
     </ul><!-- /.thc-nav -->
 
-    <!-- Right side: user info + logout -->
-    <ul class="thc-nav thc-nav-right">
-      <li class="thc-nav-item thc-has-dropdown">
-        <a href="#" class="thc-nav-link thc-user-btn">
-          <i class="icon-user-tie"></i>
-          <span class="thc-username"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
-          <i class="icon-arrow-down22 thc-arrow"></i>
-        </a>
-        <ul class="thc-dropdown thc-dropdown-right">
-          <li><a href="profile.php"><i class="icon-user"></i> My Profile</a></li>
-          <li class="thc-divider"></li>
-          <li><a href="../controller/login/login_controller.php?action=logout"><i class="icon-switch2"></i> Logout</a></li>
-        </ul>
-      </li>
-    </ul>
+    <!-- Right side: Date/Time + User info dropdown -->
+    <div class="d-flex align-items-center ml-auto">
+      <span class="badge badge-pill mr-3 d-none d-md-inline-block" id="div_date_time" style="background: rgba(255,255,255,0.15); color: #ffffff; padding: 6px 12px; font-weight: 500; font-size: 12px;"></span>
+
+      <ul class="thc-nav thc-nav-right">
+        <li class="thc-nav-item thc-has-dropdown">
+          <a href="#" class="thc-nav-link thc-dropdown-toggle thc-user-btn">
+            <?php if (!empty($_SESSION['user_image']) && file_exists(__DIR__ . '/../../httpdocs/images/employee_image/' . $_SESSION['user_image'])): ?>
+              <img src="../httpdocs/images/employee_image/<?php echo $_SESSION['user_image']; ?>" class="rounded-circle mr-1" height="28" width="28" alt="User" style="object-fit: cover; border: 1px solid rgba(255,255,255,0.4);" />
+            <?php else: ?>
+              <i class="icon-user-tie"></i>
+            <?php endif; ?>
+            <span class="thc-username"><?php echo htmlspecialchars($_SESSION['user_type'] ?? $_SESSION['username'] ?? 'User'); ?></span>
+            <i class="icon-arrow-down22 thc-arrow"></i>
+          </a>
+          <ul class="thc-dropdown thc-dropdown-right">
+            <li>
+              <a href="#" data-toggle="modal" data-target="#modal_form_vertical" id="reset_password">
+                <i class="icon-user-plus"></i> Reset Password
+              </a>
+            </li>
+            <li class="classGivePermission">
+              <a href="roll_and_permissions.php" class="classGivePermission">
+                <i class="icon-key"></i> Permission Settings
+              </a>
+            </li>
+            <li class="thc-divider"></li>
+            <li>
+              <form id="logout_form" style="margin: 0; padding: 0;">
+                <a href="#" id="log_out" class="dropdown-item" style="display: flex; align-items: center; gap: 10px;">
+                  <i class="icon-switch2"></i> Logout
+                </a>
+                <span id="user_type" style="display: none;"><?php echo $_SESSION['user_type'] ?? '';?></span>
+              </form>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
 
   </div><!-- /.thc-topnav-inner -->
 </nav>
@@ -214,18 +238,23 @@ document.getElementById('thcNavToggle').addEventListener('click', function() {
   document.getElementById('thcNavMenu').classList.toggle('open');
 });
 
-// Dropdown hover/click for desktop
+// Dropdown click handler for all dropdowns (including right-corner user menu)
 document.querySelectorAll('.thc-has-dropdown').forEach(function(item) {
   var link = item.querySelector('.thc-dropdown-toggle');
   if (link) {
     link.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       var isOpen = item.classList.contains('open');
       // Close all other dropdowns
       document.querySelectorAll('.thc-has-dropdown.open').forEach(function(el) {
-        el.classList.remove('open');
+        if (el !== item) el.classList.remove('open');
       });
-      if (!isOpen) item.classList.add('open');
+      if (!isOpen) {
+        item.classList.add('open');
+      } else {
+        item.classList.remove('open');
+      }
     });
   }
 });
