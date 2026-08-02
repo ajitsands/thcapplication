@@ -240,8 +240,8 @@ class CommonModel extends FunctionDefinitions
 	public function userAuthenticationforcustomer($SQL,$password)
 	{
 	
-        $user_username;
-		$user_password;
+        $user_username = '';
+		$user_password = '';
         $return_string="";
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
 		$row_count = mysqli_num_rows($this->result);
@@ -316,8 +316,8 @@ class CommonModel extends FunctionDefinitions
 	public function userAuthenticationforcheck($SQL,$password,$userName)
 	{
 	
-        $user_username;
-		$user_password;
+        $user_username = '';
+		$user_password = '';
         $return_string="";
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
 		$row_count = mysqli_num_rows($this->result);
@@ -399,8 +399,8 @@ class CommonModel extends FunctionDefinitions
 	public function userAuthenticationforcheckpms($SQL,$password)
 	{
 	
-        $user_username;
-		$user_password;
+        $user_username = '';
+		$user_password = '';
         $return_string="";
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
 		$row_count = mysqli_num_rows($this->result);
