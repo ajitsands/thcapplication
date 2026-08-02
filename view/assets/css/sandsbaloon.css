@@ -1,0 +1,124 @@
+#popupWindow
+{
+	padding: 1px;
+	/*background-color : red;*/
+	border-radius :5px;
+}
+
+.speechBubble {
+  position: relative;
+  display: inline-block; /* Adjust width as per content */
+  max-width: 100%; /* Ensure the speech bubble doesn't exceed its container's width */
+  padding: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  border-radius: 5px 0px 5px 5px;
+  opacity: 0; /* Initially
+  opacity: 0; /* Initially hide the speech bubble */
+  transition: opacity 0.3s ease, box-shadow 0.3s ease; /* Apply transition for opacity and box-shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow effect */
+}
+
+.speechIcon {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  width: 0;
+  height: 0;
+}
+
+.speechIcon:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -10px;
+  border-style: solid;
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #f0f0f0 transparent; /* Adjust color to match background */
+  /* border-top: 2px solid #000; Add border only to the top side */
+}
+
+.speechContent {
+  /* Add styles for content inside the speech bubble */
+}
+
+.closeButton {
+  position: absolute;
+  top: -17px;
+  right: -1px;
+  background-color: #f0f0f0;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-bottom: 0px solid #ccc;
+}
+
+
+.speechBubble:not(.hidden) {
+  opacity: 1; /* Show the speech bubble when it's not hidden */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Increase shadow when visible */
+}
+
+.textbox-container {
+  display: flex;
+  align-items: center;
+}
+
+.sandsTextBox {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px; /* Adjust border-radius to match button */
+}
+
+#myButton {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: 1px solid #007bff; /* Match border color with button background */
+  border-radius: 0 4px 4px 0; /* Adjust border-radius to match textbox */
+  cursor: pointer;
+}
+
+#myButton:hover {
+  background-color: #0056b3;
+}
+
+.textbox-container {
+  display: flex;
+  align-items: center;
+}
+
+.sandsTextBox {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px; /* Adjust border-radius to match button */
+}
+
+.sandsButton {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: 1px solid #007bff; /* Match border color with button background */
+  border-radius: 0 4px 4px 0; /* Adjust border-radius to match textbox */
+  cursor: pointer;
+}
+
+#myCloseButton {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: 1px solid #007bff; /* Match border color with button background */
+  border-radius: 0 4px 4px 0; /* Adjust border-radius to match textbox */
+  cursor: pointer;
+}
+
+.myButton:hover {
+  background-color: #0056b3;
+}
+
+form
+{
+	margin-block-end: 0px;
+}

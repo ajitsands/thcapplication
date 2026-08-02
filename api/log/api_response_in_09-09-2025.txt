@@ -1,0 +1,12 @@
+
+12:05 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=xpCHwglU6hk-WkVacejXlOxhjv39njDkYj1WkqqE6bR51Q5eKaYGMj_axRgawahD&emp_code=CG-THC-0228&asset_code=THC-C0098-HM-F0355-QVM
+12:08 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=xpCHwglU6hk-WkVacejXlOxhjv39njDkYj1WkqqE6bR51Q5eKaYGMj_axRgawahD&emp_code=CG-THC-0228&asset_code=THC-C0098-HM-F0355-QVM
+12:09 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=xpCHwglU6hk-WkVacejXlOxhjv39njDkYj1WkqqE6bR51Q5eKaYGMj_axRgawahD&emp_code=CG-THC-0228&asset_code=THC-C0081-BU-F0197-QT5
+12:11 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=BxObaZ2nbQ97odC1JH8lW3yrAYzdP0H2wbtYsFV-pOl9UvEmEBkgQpoLsQz8DD42&emp_code=CG-THC-0228&asset_code=THC-C0081-BU-F0197-QTS
+12:12 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=BxObaZ2nbQ97odC1JH8lW3yrAYzdP0H2wbtYsFV-pOl9UvEmEBkgQpoLsQz8DD42&emp_code=CG-THC-0228&asset_code=THC-C0081-BU-F0197-OTS
+12:12 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=xpCHwglU6hk-WkVacejXlOxhjv39njDkYj1WkqqE6bR51Q5eKaYGMj_axRgawahD&emp_code=CG-THC-0228&asset_code=THC-C0098-HM-F0355-QVM
+12:12 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=BxObaZ2nbQ97odC1JH8lW3yrAYzdP0H2wbtYsFV-pOl9UvEmEBkgQpoLsQz8DD42&emp_code=CG-THC-0228&asset_code=THC-COO81-BU-F0197-QT5
+12:14 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=BxObaZ2nbQ97odC1JH8lW3yrAYzdP0H2wbtYsFV-pOl9UvEmEBkgQpoLsQz8DD42&emp_code=CG-THC-0228&asset_code=THC-C0001-CY-1001-0YW
+12:14 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=xpCHwglU6hk-WkVacejXlOxhjv39njDkYj1WkqqE6bR51Q5eKaYGMj_axRgawahD&emp_code=CG-THC-0228&asset_code=THC-C0081-BU-F0197-QT5
+12:16 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=BxObaZ2nbQ97odC1JH8lW3yrAYzdP0H2wbtYsFV-pOl9UvEmEBkgQpoLsQz8DD42&emp_code=CG-THC-0228&asset_code=THC-C0081-BU-F0197-QT5
+12:16 pm/api/controller/schedule_details_react.php?action=get_asset_basic_details&APIKEY=xpCHwglU6hk-WkVacejXlOxhjv39njDkYj1WkqqE6bR51Q5eKaYGMj_axRgawahD&emp_code=CG-THC-0228&asset_code=THC-C0081-BU-F0197-QT5

@@ -1,0 +1,40 @@
+.loadingWrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index:999;
+        }
+
+        .loadingBackdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+        }
+
+        .loadingIndicator {
+			position: absolute; /* Position relative to its parent (.loadingWrapper) */
+			top: 50%; /* Position at vertical center */
+			left: 50%; /* Position at horizontal center */
+			transform: translate(-50%, -50%); /* Center the indicator */
+			width: 50px;
+			height: 50px;
+			border: 4px solid #fff; /* Light gray border */
+			border-top: 4px solid #3498db; /* Blue border for animation */
+			border-radius: 50%;
+			animation: spin 2s linear infinite; /* Apply rotation animation */
+		}
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        

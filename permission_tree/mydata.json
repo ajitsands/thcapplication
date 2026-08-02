@@ -1,0 +1,16 @@
+[
+	{"title": "Books","newids": "100", "folder": true, "children": [
+		{"title": "Art of War","selected": true, "subModuleID": "200", "author": "Sun Tzu", "year": -500, "qty": 21, "price": 5.95},
+		{"title": "The Hobbit", "subModuleID": "201", "author": "J.R.R. Tolkien", "year": 1937, "qty": 32, "price": 8.97},
+		{"title": "The Little Prince", "subModuleID": "202", "author": "Antoine de Saint-Exupery", "year": 1943, "qty": 21, "price": 5.95},
+		{"title": "Don Quixote", "subModuleID": "203", "author": "Miguel de Cervantes", "year": 1615, "qty": 21, "price": 5.95}
+	]},
+	{"title": "Music", "newids": "101","folder": true, "children": [
+		{"title": "Nevermind", "subModuleID": "301", "author": "Nirvana", "year": 1991, "qty": 21, "price": 5.95},
+		{"title": "Autobahn", "subModuleID": "302", "author": "Kraftwerk", "year": 1974, "qty": 21, "price": 5.95},
+		{"title": "Kind of Blue", "subModuleID": "303", "author": "Miles Davis", "year": 1959, "qty": 21, "price": 5.95},
+		{"title": "Back in Black", "subModuleID": "304", "author": "AC/DC", "year": 1980, "qty": 21, "price": 5.95},
+		{"title": "The Dark Side of the Moon", "subModuleID": "305", "author": "Pink Floyd", "year": 1973, "qty": 21, "price": 5.95},
+		{"title": "Sgt. Pepper's Lonely Hearts Club Band", "subModuleID": "306", "author": "The Beatles", "year": 1967, "qty": 21, "price": 5.95}
+	]}
+]

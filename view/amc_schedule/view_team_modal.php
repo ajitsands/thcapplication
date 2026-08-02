@@ -1,0 +1,40 @@
+<div id="modal_view_assigned_team" class="modal fade" data-backdrop="false" tabindex="-1" >
+					<div class="modal-dialog modal-lg" >
+						<div class="modal-content">
+							<div class="modal-header bg-info">
+							<h5 class="modal-title"><b>View Team </b> :<span id="span_ticket_ref_no_view_team"></span>
+    							  </h5>
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+
+							<div class="modal-body">
+							    
+								<div class="row">
+								  <div class="col-lg-12 col-md-12 col-sm-12" >
+                        			 <table class="table table-hover datatable-highlight" id="tbl_assigned_team" style="padding-right:10px;padding-left:10px;">
+                        						<thead>
+                        							<tr>
+                        							    <th>SL.No.</th>
+                        							    <th>Employee Details</th>
+                        							    <th>Contact No.</th>
+                        							    <th>Leader</th>
+                        							
+                        							</tr>
+                        						</thead>
+                        						
+                        				</table>
+							        </div>
+								</div>
+
+					       
+					            
+							</div>
+
+							<div class="modal-footer">
+								<!--<button type="button" class="btn btn-link" data-dismiss="modal">Close</button>-->
+								<button type="button" class="btn bg-danger" data-dismiss="modal">Close</button>
+								
+							</div>
+						</div>
+					</div>
+				</div>

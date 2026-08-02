@@ -1,0 +1,53 @@
+# ===========================
+# Vendor / Dependencies
+# ===========================
+# Do NOT commit vendor folders — run `composer install` to restore
+vendor/
+*/vendor/
+customer_feedback/vendor/
+
+# ===========================
+# SECRETS / API KEYS (NEVER COMMIT)
+# ===========================
+feedback/googlekeyjson/
+customer_feedback/googlekeyjson/
+*/googlekeyjson/
+*googlekey*
+*service-account*
+
+# Log files / directories
+controller/amc/amc_logs/
+controller/login/logs/
+*/logs/
+*.log
+*/vendor/
+customer_feedback/vendor/
+
+# ===========================
+# Sensitive / Server-Specific
+# ===========================
+.ftpquota
+.user.ini
+php.ini
+.htpasswd
+
+# cPanel / server paths (contain absolute server paths)
+.well-known/
+cgi-bin/
+sessions/
+
+# ===========================
+# OS / Editor files
+# ===========================
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo
+
+# ===========================
+# Logs / Cache
+# ===========================
+*.log
+*.cache
+error_log

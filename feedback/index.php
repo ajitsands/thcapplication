@@ -1,0 +1,54 @@
+<?php
+$host = 'localhost';
+$dbname = 'feedback';
+$user = 'root';
+$password = 's@nds1@b';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $password);
+    // Set the PDO error mode to exception
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Enable persistent connections
+    $pdo->setAttribute(PDO::ATTR_PERSISTENT, true);
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+    // You may want to handle the error more gracefully in a production environment
+    die();
+}
+?>
+
+<?php
+// Assuming you have a database connection established
+// For example, you can use PDO or MySQLi
+
+// Retrieve questions and options from the database
+$questions = $pdo->query("SELECT * FROM feedback_questions")->fetchAll(PDO::FETCH_ASSOC);
+$options = $pdo->query("SELECT * FROM feedback_options")->fetchAll(PDO::FETCH_ASSOC);
+
+// Display the feedback form
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+</head>
+<body>
+    <form action="submit_feedback.php" method="post">
+        <?php foreach ($questions as $question): ?>
+            <p><?= $question['question_text']; ?></p>
+            <?php foreach ($options as $option): ?>
+                <?php if ($option['question_id'] == $question['id']): ?>
+                    <label>
+                        <input type="radio" name="question_<?= $question['id']; ?>" value="<?= $option['id']; ?>">
+                        <?= $option['option_text']; ?>
+                    </label><br>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <hr>
+        <?php endforeach; ?>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

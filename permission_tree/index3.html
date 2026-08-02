@@ -1,0 +1,121 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.fancytree/2.27.0/skin-win8/ui.fancytree.css">
+
+  <style id="INLINE_PEN_STYLESHEET_ID">
+    .fancytree-container {
+  outline: none;
+}
+  </style>
+
+<p>
+  <a id="button" href="#">Toggle 'The Hobbit'</a>
+</p>
+<div id="tree"></div>
+<div id="statusLine">Fancytree Demo - Click any node!</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.fancytree/2.27.0/jquery.fancytree-all-deps.js"></script>
+
+
+<script>
+
+
+	function logEvent(event, data, msg){
+//        var args = Array.isArray(args) ? args.join(", ") :
+		msg = msg ? ": " + msg : "";
+		$.ui.fancytree.info("Event('" + event.type + "', node=" + data.node + ")" + msg);
+	}
+
+$("#tree").fancytree({
+  
+  checkbox: true,
+  selectMode: 3,
+  source: {
+    url:
+      "./mydata.json"
+  },
+	
+	  extensions: ["childcounter"],
+	  activate: function(event, data) {
+		$("#statusLine").text(event.type + ": " + data.node);
+	  },
+	  select: function(event, data) {
+		$("#statusLine").text(
+		  event.type + ": " + data.node.isSelected() + " " + data.node
+		);
+	  },
+	  loadChildren: function(event, data) {
+			// update node and parent counters after lazy loading
+			data.node.updateCounters();
+	  },
+			init: function(event, data, flag) {
+				logEvent(event, data, "flag=" + flag);
+			},
+			
+			click: function(event, data) {
+				logEvent(event, data, ", targetType=" + data.targetType);
+				// return false to prevent default behavior (i.e. activation, ...)
+				//return false;
+			},
+			
+			dblclick: function(event, data) {
+				logEvent(event, data);
+//				data.node.toggleSelect();
+			},
+			
+			select: function(event, data) {
+				logEvent(event, data, "current state=" + data.node.isSelected());
+				var s = data.tree.getSelectedNodes().join(", ");
+				$("#echoSelected").text(s);
+			}
+			
+	  
+	  
+}).on("fancytreeactivate", function(event, data){
+				// alternative way to bind to 'activate' event
+	//		    logEvent(event, data);
+			}).on("mouseenter mouseleave", ".fancytree-title", function(event){
+				// Add a hover handler to all node titles (using event delegation)
+				//var node = $.ui.fancytree.getNode(event);
+				//node.info(event.type);
+			});
+
+
+// Sample button
+// Define a function to get all checked child nodes with parent id and additional data
+function getAllCheckedChildNodesWithParentIdAndData() {
+    var tree = $("#tree").fancytree("getTree");
+    var checkedChildNodes = [];
+
+    tree.visit(function(node) {
+        // Check if the node is checked and is a child node
+        if (node.isSelected() && !node.isTopLevel()) {
+            var parentNode = node.getParent();
+            //var parentNodeId = parentNode.key; // Get the parent node's id
+            var parentNodeTitle = parentNode.title; // Get the parent node's title
+            //var childNodeId = node.key; // Get the child node's id
+            var qty = node.data.qty; // Get the quantity value
+            var price = node.data.price; // Get the price value
+
+            checkedChildNodes.push({
+                //parentId: parentNodeId,
+                parentTitle: parentNodeTitle, // Add parent title
+                //childId: childNodeId,
+                qty: qty,
+                price: price
+            });
+        }
+    });
+
+    return checkedChildNodes;
+}
+
+
+// Example usage:
+$("#button").click(function() {
+    var checkedChildNodes = getAllCheckedChildNodesWithParentIdAndData();
+    
+    // Print the parent id, child id, qty, and price of all checked child nodes
+    console.log("Checked child nodes with parent ids and data:", checkedChildNodes);
+});
+
+ 
+</script>

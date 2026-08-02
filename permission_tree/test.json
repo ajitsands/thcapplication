@@ -1,0 +1,26 @@
+[
+	{"title": "Dashboard","newids": "1", "folder": true, "children": [
+		{"title": "Dashboard","selected": true, "subModuleID": "1"}
+	]},
+	{"title": "Calendar", "newids": "2","folder": true, "children": [
+		{"title": "CalenderModify", "subModuleID": "3"},
+		{"title": "CalenderView", "subModuleID": "2"}
+	]},
+	{"title": "HR Module", "newids": "3","folder": true, "children": [
+		{"title": "CPRAndVisaExpiryView", "subModuleID": "8"},
+		{"title": "EmployeesModify", "subModuleID": "7"},
+		{"title": "EmployeesView", "subModuleID": "6"},
+		{"title": "ExpertiseModify", "subModuleID": "5"},
+		{"title": "ExpertiseView", "subModuleID": "4"}
+	]},
+	{"title": "Assets & Services Master", "newids": "3","folder": true, "children": [
+		{"title": "ServicesModify", "subModuleID": "16"},
+		{"title": "ServicesView", "subModuleID": "15"},
+		{"title": "AssetTypeModify", "subModuleID": "14"},
+		{"title": "AssetTypeView", "subModuleID": "13"},
+		{"title": "ContractTypeAndAssetCategoryModify", "subModuleID": "12"},
+		{"title": "ContractTypeAndAssetCategoryView", "subModuleID": "11"},
+		{"title": "LocationAndFacilitiesModify", "subModuleID": "10"},
+		{"title": "LocationAndFacilitiesView", "subModuleID": "9"}
+	]}
+]
