@@ -3,7 +3,7 @@
             $DBConn = new DBConnection();
             $varDBConnection = $DBConn->ConnectToMYSQL();?>
             <?php 
-            switch($_GET['wo']){
+            switch($_GET['wo'] ?? 'm'){
                 case 'y':
                                 $title='Yearly';
                                $yr=date("Y")-5;

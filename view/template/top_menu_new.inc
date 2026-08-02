@@ -21,10 +21,9 @@ function menuActive($p, $key, $val) {
 <nav class="thc-topnav">
   <div class="thc-topnav-inner">
 
-    <!-- Brand logo (compact) -->
+    <!-- Brand logo -->
     <a class="thc-topnav-brand" href="dashboard.php?wo=m&param=<?= $OBJ->URLEncode('title=dashboard') ?>">
-      <span class="brand-icon"><i class="icon-home4"></i></span>
-      <span class="brand-text">THC<span>-FMS</span></span>
+      <img src="../httpdocs/images/final_logo2.png" alt="THC Logo" class="brand-logo-img">
     </a>
 
     <!-- Hamburger for mobile -->
