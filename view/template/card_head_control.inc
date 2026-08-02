@@ -1,7 +1,8 @@
+<?php if (!isset($_GET['param'])) { $_GET['param'] = ''; } ?>
 <div class="card-header header-elements-inline">
 						<h5 class="card-title">
 						<?PHP
-						$params = $OBJ->URLDecode(trim($_GET['param']));
+						$params = (trim($_GET['param']) != '') ? $OBJ->URLDecode(trim($_GET['param'])) : [];
 						
 							switch($params['title'])
 							{

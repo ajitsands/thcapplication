@@ -1,3 +1,7 @@
+<?php
+if (!isset($_GET['param'])) { $_GET['param'] = ''; }
+$params = [];
+?>
 
 <div class="card card-sidebar-mobile">
     <ul class="nav nav-sidebar" data-nav-type="accordion">
