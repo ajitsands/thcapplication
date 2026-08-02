@@ -14,21 +14,21 @@ class loginController
         
         $this->varModelObj = new CommonModel();
         $this->varConnection =  $this->varModelObj->varDBConnection;
-        $this->actionevents = $_POST['action'];
-        $this->username = $_POST['v_username'];
-        $this->password = $_POST['v_password'];
-		$this->user_id = $_POST['v_user_id'];
+        $this->actionevents = $_POST['action'] ?? '';
+        $this->username = $_POST['v_username'] ?? '';
+        $this->password = $_POST['v_password'] ?? '';
+		$this->user_id = $_POST['v_user_id'] ?? '';
 
 		
-        $this->module = $_POST['module'];
-        $this->event = $_POST['event'];
-        $this->ip_addr = $_SERVER['REMOTE_ADDR'];
+        $this->module = $_POST['module'] ?? '';
+        $this->event = $_POST['event'] ?? '';
+        $this->ip_addr = $_SERVER['REMOTE_ADDR'] ?? '';
         $this->formData = json_encode($_POST);
 		
-		$this->start_date = $_POST['v_start_date'];
-		$this->end_date = $_POST['v_end_date'];
+		$this->start_date = $_POST['v_start_date'] ?? '';
+		$this->end_date = $_POST['v_end_date'] ?? '';
 		
-		$this->thisEmail = $_POST['thisEmail'];
+		$this->thisEmail = $_POST['thisEmail'] ?? '';
 		
 		unset($_POST['module']);
 		unset($_POST['event']);

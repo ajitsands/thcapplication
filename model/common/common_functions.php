@@ -239,8 +239,8 @@ class CommonModel extends FunctionDefinitions
 	public function userAuthenticationforcustomer($SQL,$password)
 	{
 	
-        $user_username;
-		$user_password;
+        $user_username = '';
+		$user_password = '';
         $return_string="";
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
 		$row_count = mysqli_num_rows($this->result);
@@ -315,8 +315,8 @@ class CommonModel extends FunctionDefinitions
 	public function userAuthenticationforcheck($SQL,$password,$userName)
 	{
 	
-        $user_username;
-		$user_password;
+        $user_username = '';
+		$user_password = '';
         $return_string="";
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
 		$row_count = mysqli_num_rows($this->result);
@@ -399,8 +399,8 @@ class CommonModel extends FunctionDefinitions
 	public function userAuthenticationforcheckpms($SQL,$password)
 	{
 	
-        $user_username;
-		$user_password;
+        $user_username = '';
+		$user_password = '';
         $return_string="";
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
 		$row_count = mysqli_num_rows($this->result);
@@ -598,11 +598,17 @@ class CommonModel extends FunctionDefinitions
 	function __destruct() {
 		if($this->flag==1)
 		{
-			mysqli_free_result($this->result);
+			if($this->result && !is_bool($this->result)) {
+				mysqli_free_result($this->result);
+			}
 		}
 		
-		mysqli_close($this->varDBConnection);
-		mysqli_close($this->varAcntConnection);
+		if($this->varDBConnection) {
+			mysqli_close($this->varDBConnection);
+		}
+		if($this->varAcntConnection) {
+			mysqli_close($this->varAcntConnection);
+		}
 		//print "Destroying " . __CLASS__ . "\n";
 		
     }
