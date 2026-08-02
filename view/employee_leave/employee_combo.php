@@ -1,4 +1,4 @@
- <?PHP include(__DIR__ . '/../model/db_connection/connection.php');
+ <?PHP include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
 $result_customer = mysqli_query($varDBConnection,"Select employee_id,employee_name,employee_code from tbl_employees where employee_status='Active'");

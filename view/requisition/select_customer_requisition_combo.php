@@ -1,4 +1,4 @@
-<?PHP include(__DIR__ . '/../model/db_connection/connection.php');
+<?PHP include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result_prdt_cat_master = mysqli_query($varDBConnection,"Select distinct customer_id,customer_name from tbl_mateial_requisition");

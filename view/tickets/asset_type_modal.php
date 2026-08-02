@@ -1,7 +1,7 @@
 	<!-- Disabled backdrop Change Status -->
 	 <?PHP 
                                  
-                                include(__DIR__ . '/../../../model/db_connection/connection.php') ;
+                                include(__DIR__ . '/../../model/db_connection/connection.php'); ;
                                  $DBConn = new DBConnection();
                                  $varDBConnection = $DBConn->ConnectToMYSQL();
                                 	$result = mysqli_query($varDBConnection,"select category_id,category_name from  tbl_category where category_status='Active'");
