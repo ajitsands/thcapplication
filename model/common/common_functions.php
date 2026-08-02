@@ -36,7 +36,8 @@ abstract class FunctionDefinitions
 
 class CommonModel extends FunctionDefinitions
 {
-	public $varDBConnection,$varAcntConnection;
+	public $varDBConnection, $varAcntConnection;
+	public $varEncode, $pmsvarEncode;
 	var $result;
 	var $flag=0;
 	

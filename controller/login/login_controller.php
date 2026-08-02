@@ -6,7 +6,9 @@ require ('../../model/common/common_functions.php');
 class loginController 
 {
     var $varModelObj, $varConnection;
-    public $actionevents,$username,$password,$login_result,$type;
+    public $actionevents, $username, $password, $login_result, $type;
+    public $user_id, $module, $event, $ip_addr, $formData;
+    public $start_date, $end_date, $thisEmail, $current_date;
 
   
     function __construct()
