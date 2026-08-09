@@ -60,7 +60,7 @@ class apartmentController
                 $from_date = isset($_POST['from_date']) ? $_POST['from_date'] : '';
                 $to_date = isset($_POST['to_date']) ? $_POST['to_date'] : '';
 
-                $query = "SELECT l.* FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code WHERE e.employee_status='Deactive'";
+                $query = "SELECT l.* FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code WHERE 1=1";
 
                 if ($emp_type !== 'all' && !empty($emp_type)) {
                     $emp_type_esc = $this->varDBConnection->real_escape_string($emp_type);
