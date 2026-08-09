@@ -947,4 +947,139 @@ $(document).ready(function(){
                      }
                  });
 
+    // ---- Employee Attachments & Documents Management -------------------
+    var v_tbl_employee_attachments;
+
+    function load_employee_attachments_grid() {
+        var emp_filter_id = $('#select_filter_attachment_emp').val() || 0;
+        if ($.fn.DataTable.isDataTable('#tbl_employee_attachments')) {
+            $('#tbl_employee_attachments').DataTable().destroy();
+        }
+
+        v_tbl_employee_attachments = $('#tbl_employee_attachments').DataTable({
+            "ajax": {
+                "type": "POST",
+                "url": "../controller/employees/employees_controller.php",
+                "data": {
+                    action: "list_employee_attachments",
+                    employee_id: emp_filter_id
+                }
+            },
+            "columns": [
+                { "data": null },
+                { "data": "employee_code" },
+                { "data": "employee_name" },
+                { 
+                    "data": "document_name",
+                    "render": function(data) {
+                        return '<span class="badge badge-primary font-weight-bold p-1">' + data + '</span>';
+                    }
+                },
+                { "data": "expiry_date_format" },
+                { "data": "remarks" },
+                { 
+                    "data": "file_path",
+                    "render": function(data, type, row) {
+                        if (data) {
+                            return '<a href="../view/' + data + '" target="_blank" class="btn btn-sm btn-outline-info"><i class="icon-file-download mr-1"></i> View / Download</a>';
+                        }
+                        return '<span class="text-muted">No File</span>';
+                    }
+                },
+                { "data": "created_at_format" },
+                { 
+                    "data": "attachment_id",
+                    "render": function(data) {
+                        return '<button type="button" class="btn btn-sm btn-outline-danger btn-delete-attachment" data-id="' + data + '"><i class="icon-trash"></i></button>';
+                    }
+                }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $("td:eq(0)", nRow).html(iDisplayIndex + 1);
+                return nRow;
+            },
+            "order": [[ 0, "desc" ]],
+            "pageLength": 10,
+            "responsive": true,
+            "autoWidth": false
+        });
+    }
+
+    // Load attachments list when switching tabs or filtering
+    $('a[href="#tab_employee_attachments"]').on('shown.bs.tab', function (e) {
+        load_employee_attachments_grid();
+    });
+
+    $('#select_filter_attachment_emp').change(function(){
+        load_employee_attachments_grid();
+    });
+
+    // Form Submit: Upload Attachment
+    $('#form_employee_attachment').on('submit', function(e){
+        e.preventDefault();
+        var formData = new FormData(this);
+        formData.append('action', 'save_employee_attachment');
+
+        var $btn = $('#btn_upload_attachment');
+        $btn.prop('disabled', true).html('<b><i class="icon-spinner2 spinner mr-2"></i></b> Uploading...');
+
+        $.ajax({
+            url: '../controller/employees/employees_controller.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                $btn.prop('disabled', false).html('<b><i class="icon-upload mr-2"></i></b> Upload Attachment');
+                try {
+                    var res = typeof response === 'string' ? JSON.parse(response) : response;
+                    if (res.status === 'success') {
+                        swal("Success", res.message, "success");
+                        $('#form_employee_attachment')[0].reset();
+                        load_employee_attachments_grid();
+                    } else {
+                        swal("Error", res.message || "Failed to upload document.", "error");
+                    }
+                } catch (err) {
+                    swal("Error", "Server error while saving attachment.", "error");
+                }
+            },
+            error: function() {
+                $btn.prop('disabled', false).html('<b><i class="icon-upload mr-2"></i></b> Upload Attachment');
+                swal("Error", "Network connection failed.", "error");
+            }
+        });
+    });
+
+    // Delete Attachment Handler
+    $('#tbl_employee_attachments tbody').on('click', '.btn-delete-attachment', function(){
+        var attId = $(this).data('id');
+        swal({
+            title: "Delete Attachment?",
+            text: "Are you sure you want to delete this document attachment?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.post('../controller/employees/employees_controller.php', {
+                    action: 'delete_employee_attachment',
+                    attachment_id: attId
+                }, function(res) {
+                    try {
+                        var resp = typeof res === 'string' ? JSON.parse(res) : res;
+                        if (resp.status === 'success') {
+                            swal("Deleted", resp.message, "success");
+                            load_employee_attachments_grid();
+                        } else {
+                            swal("Error", resp.message || "Failed to delete.", "error");
+                        }
+                    } catch (e) {
+                        load_employee_attachments_grid();
+                    }
+                });
+            }
+        });
+    });
+
 });

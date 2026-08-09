@@ -255,6 +255,83 @@ class apartmentController
             
                 $this->varModelObj->UpdateTable($var[10]);
             break;
+
+            case 'save_employee_attachment':
+                $emp_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
+                $doc_name = isset($_POST['document_type']) ? trim($_POST['document_type']) : '';
+                $exp_date = isset($_POST['expiry_date']) && !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : NULL;
+                $remarks = isset($_POST['remarks']) ? trim($_POST['remarks']) : '';
+
+                if ($emp_id <= 0 || empty($doc_name) || !isset($_FILES['doc_file']) || $_FILES['doc_file']['error'] != 0) {
+                    echo json_encode(['status' => 'error', 'message' => 'Please select employee, document type, and valid file attachment.']);
+                    exit;
+                }
+
+                $emp_code = '';
+                $res_emp = mysqli_query($this->varDBConnection, "SELECT employee_code FROM tbl_employees WHERE employee_id = '$emp_id'");
+                if ($res_emp && $row_e = mysqli_fetch_assoc($res_emp)) {
+                    $emp_code = $row_e['employee_code'];
+                }
+
+                $uploadDir = __DIR__ . '/../../view/uploads/employee_documents/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                $origName = $_FILES['doc_file']['name'];
+                $ext = pathinfo($origName, PATHINFO_EXTENSION);
+                $newFileName = 'emp_doc_' . $emp_id . '_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                $targetFile = $uploadDir . $newFileName;
+                $relFilePath = 'uploads/employee_documents/' . $newFileName;
+
+                if (move_uploaded_file($_FILES['doc_file']['tmp_name'], $targetFile)) {
+                    $emp_code_esc = $this->varDBConnection->real_escape_string($emp_code);
+                    $doc_name_esc = $this->varDBConnection->real_escape_string($doc_name);
+                    $remarks_esc = $this->varDBConnection->real_escape_string($remarks);
+                    $origName_esc = $this->varDBConnection->real_escape_string($origName);
+                    $exp_date_sql = $exp_date ? "'".$this->varDBConnection->real_escape_string($exp_date)."'" : "NULL";
+
+                    $insertSql = "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code_esc', '$doc_name_esc', $exp_date_sql, '$relFilePath', '$origName_esc', '$remarks_esc', 'Active', NOW())";
+
+                    if (mysqli_query($this->varDBConnection, $insertSql)) {
+                        echo json_encode(['status' => 'success', 'message' => 'Document attachment uploaded successfully!']);
+                    } else {
+                        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . mysqli_error($this->varDBConnection)]);
+                    }
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to save uploaded file.']);
+                }
+            break;
+
+            case 'list_employee_attachments':
+                $emp_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
+                $sql = "SELECT a.*, e.employee_name FROM tbl_employee_attachments a LEFT JOIN tbl_employees e ON a.employee_id = e.employee_id WHERE a.status = 'Active'";
+                if ($emp_id > 0) {
+                    $sql .= " AND a.employee_id = '$emp_id'";
+                }
+                $sql .= " ORDER BY a.attachment_id DESC";
+
+                $res = mysqli_query($this->varDBConnection, $sql);
+                $data = [];
+                if ($res) {
+                    while ($row = mysqli_fetch_assoc($res)) {
+                        $row['expiry_date_format'] = (!empty($row['expiry_date']) && $row['expiry_date'] != '0000-00-00') ? date('d-m-Y', strtotime($row['expiry_date'])) : 'N/A';
+                        $row['created_at_format'] = date('d-m-Y H:i', strtotime($row['created_at']));
+                        $data[] = $row;
+                    }
+                }
+                echo json_encode(['data' => $data]);
+            break;
+
+            case 'delete_employee_attachment':
+                $att_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
+                if ($att_id > 0) {
+                    mysqli_query($this->varDBConnection, "UPDATE tbl_employee_attachments SET status = 'Deleted' WHERE attachment_id = '$att_id'");
+                    echo json_encode(['status' => 'success', 'message' => 'Attachment deleted successfully!']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Invalid attachment ID.']);
+                }
+            break;
              
            
             default:
