@@ -18,13 +18,13 @@ class apartmentController
         $this->actionevents = $_POST['action'];
         //$this->ctrl_name = $_POST['v_ctrl_name'];
        
-        $this->employee_name = $_POST['v_employee_name'];
-        $this->employee_code = $_POST['v_employee_code'];
-        $this->start_date = $_POST['start_date'];
-        $this->end_date = $_POST['end_date'];
-        $this->type_of_leave = $_POST['type_of_leave'];
-        $this->reason_for_leave = $_POST['reason_for_leave'];
-        $this->reason_for_leave = $this->varDBConnection->real_escape_string(($this->reason_for_leave));
+        $this->employee_name = isset($_POST['v_employee_name']) ? $_POST['v_employee_name'] : '';
+        $this->employee_code = isset($_POST['v_employee_code']) ? $_POST['v_employee_code'] : '';
+        $this->start_date = isset($_POST['start_date']) ? $_POST['start_date'] : '';
+        $this->end_date = isset($_POST['end_date']) ? $_POST['end_date'] : '';
+        $this->type_of_leave = isset($_POST['type_of_leave']) ? $_POST['type_of_leave'] : '';
+        $this->reason_for_leave = isset($_POST['reason_for_leave']) ? $_POST['reason_for_leave'] : '';
+        $this->reason_for_leave = $this->varDBConnection->real_escape_string($this->reason_for_leave);
         date_default_timezone_set('Asia/Bahrain');
         $this->current_date = date("Y-m-d h:i:s");
        

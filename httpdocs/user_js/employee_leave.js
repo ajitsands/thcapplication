@@ -17,16 +17,25 @@ $(document).ready(function(){
             },
             editable: false,
             events: function(start, end, timezone, callback) {
+                var v_emp_type = $('#select_filter_emp_type').val() || 'all';
+                var v_leave_type = $('#select_filter_leave_type').val() || 'all';
+                var v_from_date = $('#txt_filter_from_date').val() || '';
+                var v_to_date = $('#txt_filter_to_date').val() || '';
+
                 $.ajax({
                     url: '../controller/employees/employees_controller.php',
                     type: 'POST',
                     data: {
-                        action: 'fetch_leave_calendar'
+                        action: 'fetch_leave_calendar',
+                        emp_type: v_emp_type,
+                        leave_type: v_leave_type,
+                        from_date: v_from_date,
+                        to_date: v_to_date
                     },
                     success: function(doc) {
                         var events = [];
                         try {
-                            var data = JSON.parse(doc);
+                            var data = typeof doc === 'string' ? JSON.parse(doc) : doc;
                             $.each(data, function(i, item) {
                                 events.push({
                                     title: item.title,
@@ -348,6 +357,9 @@ $(document).ready(function(){
     // Filter Leave Records Action
     $('#btn_apply_leave_filter').click(function(){
         load_data_to_grid_employees_on_leave_list();
+        if ($('#leave_calendar_inline').length) {
+            $('#leave_calendar_inline').fullCalendar('refetchEvents');
+        }
     });
 
     // Reset Leave Records Filter Action
@@ -357,6 +369,9 @@ $(document).ready(function(){
         $('#txt_filter_from_date').val('');
         $('#txt_filter_to_date').val('');
         load_data_to_grid_employees_on_leave_list();
+        if ($('#leave_calendar_inline').length) {
+            $('#leave_calendar_inline').fullCalendar('refetchEvents');
+        }
     });
         
 });
