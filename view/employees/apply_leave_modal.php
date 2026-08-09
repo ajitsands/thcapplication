@@ -27,6 +27,7 @@
                             <option value="Casual Leave">Casual Leave</option>
                             <option value="Annual Leave">Annual Leave</option>
                             <option value="Emergency Leave">Emergency Leave</option>
+                            <option value="Privilege Leave">Privilege Leave</option>
                         </select>
                     </div>
                 </div>

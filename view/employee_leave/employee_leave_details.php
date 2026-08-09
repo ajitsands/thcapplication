@@ -35,10 +35,12 @@
 						                   <span class="form-text text-muted font-weight-bold"><font color="black">Type of Leave</font></span> 
     										 <select data-placeholder="Select Type of Leave" id="select_type_of_leave" class="form-control form-control-select2" data-fouc>
     										    <option value="select">Select </option>
-    										    <option value="1">Privilege Leave </option>
-    										    <option value="2">Sick Leave</option>
-                								<option value="3">Casual Leave</option>
-                							 </select>    
+    										    <option value="Sick Leave">Sick Leave</option>
+    										    <option value="Casual Leave">Casual Leave</option>
+                								<option value="Annual Leave">Annual Leave</option>
+                								<option value="Emergency Leave">Emergency Leave</option>
+                								<option value="Privilege Leave">Privilege Leave</option>
+    										 </select>    
         										  
     									</div>
 								        <div class="col-lg-6 col-md-6 col-sm-12" id="div_reason_select">
