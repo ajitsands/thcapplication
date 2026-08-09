@@ -55,8 +55,31 @@ class apartmentController
                 $this->varModelObj->ExecuteProcedure($var[0]);
             break;
             case 'employee_on_leave_list':
-            //echo $var[1];
-                $this->varModelObj->ListFromTable($var[1]);
+                $emp_type = isset($_POST['emp_type']) ? $_POST['emp_type'] : 'all';
+                $leave_type = isset($_POST['leave_type']) ? $_POST['leave_type'] : 'all';
+                $from_date = isset($_POST['from_date']) ? $_POST['from_date'] : '';
+                $to_date = isset($_POST['to_date']) ? $_POST['to_date'] : '';
+
+                $query = "SELECT l.* FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code WHERE e.employee_status='Deactive'";
+
+                if ($emp_type !== 'all' && !empty($emp_type)) {
+                    $emp_type_esc = $this->varDBConnection->real_escape_string($emp_type);
+                    $query .= " AND e.user_type_id = '$emp_type_esc'";
+                }
+                if ($leave_type !== 'all' && !empty($leave_type)) {
+                    $leave_type_esc = $this->varDBConnection->real_escape_string($leave_type);
+                    $query .= " AND l.leave_reason LIKE '%$leave_type_esc%'";
+                }
+                if (!empty($from_date)) {
+                    $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
+                    $query .= " AND DATE(l.start_time) >= '$from_date_esc'";
+                }
+                if (!empty($to_date)) {
+                    $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
+                    $query .= " AND DATE(l.end_time) <= '$to_date_esc'";
+                }
+
+                $this->varModelObj->ListFromTable($query);
             break;
             case 'change_employee_leave_status':
             //echo $var[1];

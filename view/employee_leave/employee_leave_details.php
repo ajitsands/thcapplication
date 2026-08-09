@@ -71,6 +71,68 @@
                 <button type="button" id="btn_employee_new" class="btn btn-primary btn-block" style="display:none"><b><i class="icon-book mr-2"></i></b> New</button>
             </div>
         </div>
+
+        <!-- Filter Card below Add Employee Leave -->
+        <div class="card mt-3">
+            <div class="card-header header-elements-inline">
+                <h6 class="card-title font-weight-semibold"><i class="icon-filter3 mr-2"></i> Filter Leave Records</h6>
+            </div>
+
+            <div class="card-body">
+                <div class="form-group">
+                    <span class="form-text text-muted font-weight-bold"><font color="black">Employee Category / Type</font></span>
+                    <select id="select_filter_emp_type" class="form-control select">
+                        <option value="all">All Categories</option>
+                        <?PHP
+                        if (!isset($varDBConnection)) {
+                            include_once(__DIR__ . '/../../model/db_connection/connection.php');
+                            $DBConnFilter = new DBConnection();
+                            $varDBConnFilter = $DBConnFilter->ConnectToMYSQL();
+                        } else {
+                            $varDBConnFilter = $varDBConnection;
+                        }
+                        $res_types = mysqli_query($varDBConnFilter, "SELECT user_type_id, user_type_name FROM tbl_user_types WHERE user_type_status='Active'");
+                        if ($res_types) {
+                            while ($r_type = mysqli_fetch_assoc($res_types)) {
+                                echo '<option value="' . $r_type['user_type_id'] . '">' . htmlspecialchars($r_type['user_type_name']) . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <span class="form-text text-muted font-weight-bold"><font color="black">Leave Type</font></span>
+                    <select id="select_filter_leave_type" class="form-control select">
+                        <option value="all">All Leave Types</option>
+                        <option value="Sick Leave">Sick Leave</option>
+                        <option value="Casual Leave">Casual Leave</option>
+                        <option value="Annual Leave">Annual Leave</option>
+                        <option value="Emergency Leave">Emergency Leave</option>
+                        <option value="Privilege Leave">Privilege Leave</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <span class="form-text text-muted font-weight-bold"><font color="black">From Date</font></span>
+                    <input class="form-control" type="date" id="txt_filter_from_date">
+                </div>
+
+                <div class="form-group">
+                    <span class="form-text text-muted font-weight-bold"><font color="black">To Date</font></span>
+                    <input class="form-control" type="date" id="txt_filter_to_date">
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <button type="button" id="btn_apply_leave_filter" class="btn bg-teal-400 btn-block"><b><i class="icon-search4 mr-1"></i></b> Filter</button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" id="btn_reset_leave_filter" class="btn btn-light btn-block"><b><i class="icon-reload-alt mr-1"></i></b> Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 8 Columns: Calendar View -->

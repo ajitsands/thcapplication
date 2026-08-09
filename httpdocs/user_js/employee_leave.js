@@ -181,21 +181,28 @@ $(document).ready(function(){
                   
                 });
                 //load data to employeegrid
-                 function load_data_to_grid_employees_on_leave_list()
-                 {
-                     
-                    v_list_of_employees_on_leave_table.destroy();
-                         
-                     v_list_of_employees_on_leave_table = $('#list_of_employees_on_leave').DataTable( {
-                           
-                             "ajax": {
-                                 'type': 'POST',
-                                 'url': '../controller/employee_leave/employee_leave_controller.php',
-                                 'data': {
-                                    action: 'employee_on_leave_list'
-                                    
-                                 }
-                             },
+                  function load_data_to_grid_employees_on_leave_list()
+                  {
+                     var v_emp_type = $('#select_filter_emp_type').val() || 'all';
+                     var v_leave_type = $('#select_filter_leave_type').val() || 'all';
+                     var v_from_date = $('#txt_filter_from_date').val() || '';
+                     var v_to_date = $('#txt_filter_to_date').val() || '';
+                      
+                     v_list_of_employees_on_leave_table.destroy();
+                          
+                      v_list_of_employees_on_leave_table = $('#list_of_employees_on_leave').DataTable( {
+                            
+                              "ajax": {
+                                  'type': 'POST',
+                                  'url': '../controller/employee_leave/employee_leave_controller.php',
+                                  'data': {
+                                     action: 'employee_on_leave_list',
+                                     emp_type: v_emp_type,
+                                     leave_type: v_leave_type,
+                                     from_date: v_from_date,
+                                     to_date: v_to_date
+                                  }
+                              },
                              "language": {
                                  "zeroRecords": "No records available",
                                  "infoEmpty": "No records available",
@@ -329,7 +336,7 @@ $(document).ready(function(){
                 // //function clear text
                   function clear_text()
                      {
-                       
+                        
                         $("#txt_leave_from_date").val("");
                         $("#txt_leave_to_date").val("");
                         $("#select_employee_for_leave").val(null).trigger("change");
@@ -337,7 +344,19 @@ $(document).ready(function(){
                         $("#select_reason_for_leave").val(null).trigger("change");
                        
                      }
-                  
 
+    // Filter Leave Records Action
+    $('#btn_apply_leave_filter').click(function(){
+        load_data_to_grid_employees_on_leave_list();
+    });
+
+    // Reset Leave Records Filter Action
+    $('#btn_reset_leave_filter').click(function(){
+        $('#select_filter_emp_type').val('all').trigger('change');
+        $('#select_filter_leave_type').val('all').trigger('change');
+        $('#txt_filter_from_date').val('');
+        $('#txt_filter_to_date').val('');
+        load_data_to_grid_employees_on_leave_list();
+    });
         
 });
