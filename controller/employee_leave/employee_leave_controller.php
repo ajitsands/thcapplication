@@ -60,24 +60,38 @@ class apartmentController
                 $from_date = isset($_POST['from_date']) ? $_POST['from_date'] : '';
                 $to_date = isset($_POST['to_date']) ? $_POST['to_date'] : '';
 
-                $query = "SELECT l.* FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code WHERE e.employee_status='Deactive'";
+                $where1 = " WHERE 1=1";
+                $where2 = " WHERE 1=1";
 
                 if ($emp_type !== 'all' && !empty($emp_type)) {
                     $emp_type_esc = $this->varDBConnection->real_escape_string($emp_type);
-                    $query .= " AND e.employee_type_id = '$emp_type_esc'";
+                    $where1 .= " AND e.employee_type_id = '$emp_type_esc'";
+                    $where2 .= " AND e.employee_type_id = '$emp_type_esc'";
                 }
                 if ($leave_type !== 'all' && !empty($leave_type)) {
                     $leave_type_esc = $this->varDBConnection->real_escape_string($leave_type);
-                    $query .= " AND l.leave_reason LIKE '%$leave_type_esc%'";
+                    $where1 .= " AND (s.leave_type = '$leave_type_esc' OR s.leave_reason LIKE '%$leave_type_esc%')";
+                    $where2 .= " AND (l.leave_type = '$leave_type_esc' OR l.leave_reason LIKE '%$leave_type_esc%')";
                 }
-                if (!empty($from_date)) {
+                if (!empty($from_date) && !empty($to_date)) {
                     $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
-                    $query .= " AND DATE(l.start_time) >= '$from_date_esc'";
-                }
-                if (!empty($to_date)) {
                     $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
-                    $query .= " AND DATE(l.end_time) <= '$to_date_esc'";
+                    $where1 .= " AND s.leave_start_date <= '$to_date_esc' AND s.leave_end_date >= '$from_date_esc'";
+                    $where2 .= " AND DATE(l.start_time) <= '$to_date_esc' AND DATE(l.end_time) >= '$from_date_esc'";
+                } else {
+                    if (!empty($from_date)) {
+                        $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
+                        $where1 .= " AND s.leave_end_date >= '$from_date_esc'";
+                        $where2 .= " AND DATE(l.end_time) >= '$from_date_esc'";
+                    }
+                    if (!empty($to_date)) {
+                        $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
+                        $where1 .= " AND s.leave_start_date <= '$to_date_esc'";
+                        $where2 .= " AND DATE(l.start_time) <= '$to_date_esc'";
+                    }
                 }
+
+                $query = "SELECT s.employee_code, s.employee_name, COALESCE(s.leave_reason, s.leave_type) AS leave_reason, DATE_FORMAT(s.leave_start_date, '%d-%m-%Y') AS start_time, DATE_FORMAT(s.leave_end_date, '%d-%m-%Y') AS end_time FROM tbl_employee_short_leave s LEFT JOIN tbl_employees e ON s.employee_code = e.employee_code $where1 UNION ALL SELECT l.employee_code, l.employee_name, COALESCE(l.leave_reason, l.leave_type) AS leave_reason, DATE_FORMAT(l.start_time, '%d-%m-%Y') AS start_time, DATE_FORMAT(l.end_time, '%d-%m-%Y') AS end_time FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code $where2";
 
                 $this->varModelObj->ListFromTable($query);
             break;

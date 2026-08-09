@@ -166,15 +166,22 @@ class apartmentController
                     $where1 .= " AND s.leave_type = '$leave_type_esc'";
                     $where2 .= " AND l.leave_reason LIKE '%$leave_type_esc%'";
                 }
-                if (!empty($from_date)) {
+                if (!empty($from_date) && !empty($to_date)) {
                     $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
-                    $where1 .= " AND s.leave_start_date >= '$from_date_esc'";
-                    $where2 .= " AND DATE(l.start_time) >= '$from_date_esc'";
-                }
-                if (!empty($to_date)) {
                     $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
-                    $where1 .= " AND s.leave_end_date <= '$to_date_esc'";
-                    $where2 .= " AND DATE(l.end_time) <= '$to_date_esc'";
+                    $where1 .= " AND s.leave_start_date <= '$to_date_esc' AND s.leave_end_date >= '$from_date_esc'";
+                    $where2 .= " AND DATE(l.start_time) <= '$to_date_esc' AND DATE(l.end_time) >= '$from_date_esc'";
+                } else {
+                    if (!empty($from_date)) {
+                        $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
+                        $where1 .= " AND s.leave_end_date >= '$from_date_esc'";
+                        $where2 .= " AND DATE(l.end_time) >= '$from_date_esc'";
+                    }
+                    if (!empty($to_date)) {
+                        $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
+                        $where1 .= " AND s.leave_start_date <= '$to_date_esc'";
+                        $where2 .= " AND DATE(l.start_time) <= '$to_date_esc'";
+                    }
                 }
 
                 $sql = "SELECT CONCAT(s.employee_name, ' - ', s.leave_type) AS title, s.leave_start_date AS start, DATE_ADD(s.leave_end_date, INTERVAL 1 DAY) AS end, CASE s.leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_short_leave s LEFT JOIN tbl_employees e ON s.employee_code = e.employee_code $where1 UNION ALL SELECT CONCAT(l.employee_name, ' - ', l.leave_reason) AS title, DATE(l.start_time) AS start, DATE_ADD(DATE(l.end_time), INTERVAL 1 DAY) AS end, CASE WHEN l.leave_reason LIKE '%Sick%' THEN '#ef5350' WHEN l.leave_reason LIKE '%Casual%' THEN '#42a5f5' WHEN l.leave_reason LIKE '%Annual%' THEN '#66bb6a' WHEN l.leave_reason LIKE '%Emergency%' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code $where2";
