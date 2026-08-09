@@ -158,8 +158,8 @@ class apartmentController
 
                 if ($emp_type !== 'all' && !empty($emp_type)) {
                     $emp_type_esc = $this->varDBConnection->real_escape_string($emp_type);
-                    $where1 .= " AND e.user_type_id = '$emp_type_esc'";
-                    $where2 .= " AND e.user_type_id = '$emp_type_esc'";
+                    $where1 .= " AND e.employee_type_id = '$emp_type_esc'";
+                    $where2 .= " AND e.employee_type_id = '$emp_type_esc'";
                 }
                 if ($leave_type !== 'all' && !empty($leave_type)) {
                     $leave_type_esc = $this->varDBConnection->real_escape_string($leave_type);
