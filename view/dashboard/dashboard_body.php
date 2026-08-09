@@ -72,27 +72,14 @@
     }
 ?>
 
-<div class="content">
-    <div class="page-header page-header-light">
-        <div class="page-header-content header-elements-md-inline" style="position:realtive;">
-            <div id="divDashboardCalender"></div>
-            <div class="page-title d-flex">
-                <h4><span class="font-weight-semibold">Dashboard</span></h4>
-                <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-            </div>
-
-            <div class="header-elements d-none">
-                <div class="d-flex justify-content-center">
-                    <!--<a href="#" class="btn btn-link btn-float text-default"><i class="icon-bars-alt text-primary"></i><span>Statistics</span></a>-->
-                    <!--<a href="#" class="btn btn-link btn-float text-default"><i class="icon-calculator text-primary"></i> <span>Invoices</span></a>-->
-                    <a target="_blank" href="amc_shedule_calender.php?param=<?PHP echo $OBJ->URLEncode('title=amc_calendar');?>" class="btn btn-link btn-float text-default">
-                        <i class="icon-calendar5 text-primary"></i> <span>Calender</span>
-                    </a>
-                </div>
-            </div>
+<div class="content" style="padding-top:0;">
+    <div class="d-flex align-items-center justify-content-between mb-3" style="margin-top:-10px;">
+        <div class="page-title">
+            <h4 class="mb-0 font-weight-bold" style="color: var(--palette-deep-navy); font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 8px;">
+                <i class="icon-home4" style="color: var(--palette-primary-blue);"></i> Dashboard
+            </h4>
         </div>
     </div>
-    <br />
 
     <div class="row">
         <div class="col-sm-6 col-xl-3" style="position:realtive;">
@@ -260,12 +247,15 @@
 
         <div class="col-sm-12 col-xl-5 col-md-4" style="position:realtive;">
             <div id="divDashboardTHCEmps"></div>
+            <div id="divDashboardCalender"></div>
             <!-- Basic donut -->
             <div class="card">
                 <div class="card-header header-elements-inline">
                     <h5 class="card-title">THC Employees</h5>
                     <div class="header-elements">
-                        <div class="list-icons"></div>
+                        <a target="_blank" href="amc_shedule_calender.php?param=<?PHP echo $OBJ->URLEncode('title=amc_calendar');?>" class="btn btn-sm font-weight-bold ml-auto" style="border-radius:50px; padding:5px 16px; background:linear-gradient(135deg, #eef6fc 0%, #bdd8e9 100%); border:1.5px solid #7BBDE8; color:#001D39; font-size:0.8rem; box-shadow:0 3px 8px rgba(0,29,57,0.1); display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                            <i class="icon-calendar5" style="color:#0A4174; font-size:0.95rem;"></i> CALENDER
+                        </a>
                     </div>
                 </div>
 
