@@ -8,7 +8,7 @@
     <!-- 4 Columns: Add Employee Leave Form -->
     <div class="col-lg-4 col-md-4 col-sm-12">
         <div class="card">
-            <div class="card-header bg-teal-400 header-elements-inline">
+            <div class="card-header header-elements-inline">
                 <h6 class="card-title font-weight-semibold"><i class="icon-user-plus mr-2"></i> Add Employee Leave</h6>
             </div>
 
@@ -76,7 +76,7 @@
     <!-- 8 Columns: Calendar View -->
     <div class="col-lg-8 col-md-8 col-sm-12">
         <div class="card">
-            <div class="card-header bg-indigo-400 header-elements-inline">
+            <div class="card-header header-elements-inline">
                 <h6 class="card-title font-weight-semibold"><i class="icon-calendar3 mr-2"></i> Leave Calendar Schedule</h6>
             </div>
             <div class="card-body">
