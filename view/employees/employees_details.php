@@ -16,66 +16,66 @@
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group row">
-										<div class="col-lg-4 col-md-4 col-sm-12" >
+										<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" >
     										<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Employee Name &nbsp;<span style="color:red;">*</span></font></span>
     										<input type="text" class="form-control " id="txt_emp_name" placeholder="Employee Name" tabindex=1>
     											
     								        <input type="hidden" class="form-control text-uppercase" id="txt_emp_id">
     									</div>
     								
- 						               <div class="col-lg-4 col-md-4 col-sm-12">
+ 						               <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
     										<span class="form-text text-muted font-weight-bold"><font color="black">Employee Password&nbsp;<span style="color:red;">*</span></font></span>    
     										 <input type="text" class="form-control " id="txt_emp_password" placeholder="Employee Password" value="12345" tabindex=2>
     									     	
     									</div>
-								        <div class="col-lg-4 col-md-4 col-sm-12" >
+								        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" >
     									<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Contact Number&nbsp;<span style="color:red;">*</span></font></span>
     										<input type="text"  class="form-control " id="txt_emp_contact_no"    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxlength="10" placeholder="Contact Number" tabindex=3>
     											
     									</div>
-    										<div class="col-lg-4 col-md-4 col-sm-12" >
+    										<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" >
     									<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Email Id</font></span>
     										<input type="text" class="form-control" id="txt_emp_email_id" placeholder="Email Id" tabindex=4>
     											
     									</div>
-    									 <div class="col-lg-4 col-md-4 col-sm-12">
+    									 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
     									     <span class="form-text text-muted font-weight-bold"><font color="black">Address</font></span>  
     										<textarea rows="1" class="form-control " id="txt_emp_address" placeholder="Address" tabindex=5></textarea>
     											  
     							        </div>
-    									<div class="col-lg-4 col-md-4 col-sm-12">
+    									<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
     									    <span class="form-text text-muted font-weight-bold"><font color="black">Date of Join&nbsp;<span style="color:red;">*</span></font></span>
         										<input class="form-control" type="date" id="emp_joining_date"  tabindex=6>
         										
         									
         								</div>
         								
-    								<div class="col-lg-4 col-md-4 col-sm-12" >
+    								<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" >
     										<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">CPR Number&nbsp;<span style="color:red;">*</span></font></span>
     										<input type="text"  class="form-control " id="txt_cpr_no" onkeypress="return event.charCode >= 48 && event.charCode <= 57" placeholder="CPR Number" tabindex=7>
     											
     									</div>
-    									 <div class="col-lg-4 col-md-4 col-sm-12">
+    									 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
         										<span class="form-text text-muted font-weight-bold"><font color="black">CPR Expiry Date&nbsp;<span style="color:red;">*</span></font></span>
         										<input class="form-control" type="date" id="emp_cpr_expiry_date" tabindex=8>
         										
         									
         								</div>
-        									<div class="col-lg-4 col-md-4 col-sm-12">
+        									<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
     										    	<span class="form-text text-muted font-weight-bold"><font color="black">Passport Number&nbsp;<span style="color:red;">*</span></font></span>    
     										<input type="text"  class="form-control " id="txt_emp_passport_no"  placeholder="Passport Number" tabindex=9>
     										
     									</div>
     									
     									
-        								<div class="col-lg-4 col-md-4 col-sm-12">
+        								<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
         								
         								<span class="form-text text-muted font-weight-bold"><font color="black">Visa Validity Upto&nbsp;<span style="color:red;">*</span></font></span>
         										<input class="form-control" type="date" id="emp_visa_validity" tabindex=10>
         										
         									
         								</div>
-                                       <div class="col-lg-4 col-md-4 col-sm-12">	<span class="form-text text-muted font-weight-bold"><font color="black">Blood Group&nbsp;</font></span>
+                                       <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">	<span class="form-text text-muted font-weight-bold"><font color="black">Blood Group&nbsp;</font></span>
                                          <select data-placeholder="Select Blood Group" id="select_employee_blood_group" class="form-control form-control-select2" data-fouc tabindex=11>
                                              <option value="NA">Select</option>
                                                 <option value="A+">A+</option>
@@ -91,17 +91,17 @@
                                           </select>
                                          	
                                     </div>
-                                <div class="col-lg-4 col-md-4 col-sm-12">
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
                                     <span class="form-text text-muted font-weight-bold"><font color="black">Native Number&nbsp;</font></span> 
 									<input type="text"  class="form-control " id="txt_emp_native_no"  placeholder="Native Number" tabindex=12>
 										   
 								</div>
-								<div class="col-lg-4 col-md-4 col-sm-12">
+								<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
 								    <span class="form-text text-muted font-weight-bold"><font color="black">Native Address</font></span> 
 									<textarea rows="1" class="form-control " id="txt_emp_native_address" placeholder="Native Address" tabindex=13></textarea>
     									   
     							</div>
-								<div class="col-lg-4 col-md-4 col-sm-12">
+								<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
 								    <span class="form-text text-muted font-weight-bold"><font color="black">Visa Type&nbsp;</font></span>	
 									 <select data-placeholder="Select visa_type" id="select_employee_visa_type" class="form-control form-control-select2" tabindex=14 data-fouc>
 										 <option value="NA">Select</option>
@@ -112,7 +112,7 @@
 									  </select>
 										
 								</div>
-								<div class="col-lg-4 col-md-4 col-sm-12">
+								<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
 								    <span class="form-text text-muted font-weight-bold"><font color="black">Driving License&nbsp;</font></span>	
 							        	<div class="form-check  " style="padding-top:-10px">
 										<label class="form-check-label ">
@@ -124,7 +124,7 @@
 									</div>
 										
 								</div>
-								<div class="col-lg-4 col-md-4 col-sm-12"  style="display:none;" id="div_emp_code">
+								<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"  style="display:none;" id="div_emp_code">
     									    <span class="form-text text-muted font-weight-bold"><font color="black">Employee Code&nbsp;<span style="color:red;">*</span></font></span> 
     										 <input type="text" class="form-control " id="txt_emp_code" placeholder="Employee Code" readonly="readonly">
     									     	   
@@ -140,7 +140,7 @@
 						      
 						             <?PHP include("employee_type_combo.php"); ?>
 						      
-									  <div class="col-lg-4 col-md-4 col-sm-12" id="div_select_emp_tech_type">
+									  <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" id="div_select_emp_tech_type">
 									      	<span class="form-text text-muted font-weight-bold"><font color="black">Technician Type&nbsp;<span style="color:red;">*</span></font></span>	
                                          <select data-placeholder="Select Technician Type" id="select_emp_tech_type" class="form-control form-control-select2" data-fouc>
                                              <option value="select">Select</option>
@@ -151,7 +151,7 @@
                                          
                                     </div>
 						     	
-						     	    <div class="col-lg-4 col-md-4 col-sm-12">
+						     	    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
                     					<span class="form-text text-muted font-weight-bold"><font color="black">Employee Image&nbsp;</font></span>	
                     					<input type="file" class="form-input-styled"  id="session_image" accept="image/*" title="&nbsp;" tabindex=17 data-fouc=""/><p id="emp_img_name"></p>
                     					<div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>
