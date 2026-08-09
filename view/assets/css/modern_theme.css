@@ -1,0 +1,323 @@
+/* ==========================================================================
+   THC Modernized Design System: Navy Blue, Pure White & Crimson Red Gradient
+   Inspired by SaNDS Lab Modern Portals (tracksocialmedia.sandslab.com)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --navy-dark: #0b1329;
+    --navy-primary: #0f233f;
+    --navy-royal: #1e3a8a;
+    --navy-light: #162f52;
+    --navy-gradient: linear-gradient(135deg, #0b1329 0%, #1e3a8a 100%);
+    --navy-header-grad: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    
+    --crimson-red: #dc2626;
+    --crimson-light: #ef4444;
+    --crimson-gradient: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    
+    --white-bg: #f8fafc;
+    --surface: #ffffff;
+    
+    --shadow-soft: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+    --shadow-hover: 0 20px 40px -8px rgba(15, 23, 42, 0.14), 0 8px 20px -4px rgba(15, 23, 42, 0.08);
+    --radius-card: 16px;
+    --radius-btn: 10px;
+}
+
+body {
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background-color: var(--white-bg) !important;
+    color: #1e293b !important;
+}
+
+/* ---- Modernized Cards ------------------------------------------------ */
+.card {
+    background: #ffffff !important;
+    border-radius: var(--radius-card) !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: var(--shadow-soft) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden !important;
+    margin-bottom: 24px !important;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-hover) !important;
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: var(--navy-header-grad) !important;
+    color: #ffffff !important;
+    padding: 16px 24px !important;
+    border-bottom: 3px solid var(--crimson-red) !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-header .card-title,
+.card-title {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-header .list-icons-item {
+    color: rgba(255, 255, 255, 0.8) !important;
+    transition: color 0.2s;
+}
+
+.card-header .list-icons-item:hover {
+    color: #ffffff !important;
+}
+
+.card-body {
+    padding: 24px !important;
+}
+
+.card-footer {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding: 14px 24px !important;
+    border-radius: 0 0 var(--radius-card) var(--radius-card) !important;
+}
+
+/* ---- Modern Form Controls & Buttons ----------------------------------- */
+.form-control, 
+.form-control-sm,
+.form-select,
+.select2-container--default .select2-selection--single {
+    border-radius: 10px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    padding: 9px 14px !important;
+    font-size: 0.9rem !important;
+    font-family: 'Outfit', sans-serif !important;
+    transition: all 0.2s ease !important;
+    background-color: #ffffff !important;
+}
+
+.form-control:focus, 
+.form-select:focus,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: var(--navy-royal) !important;
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.12) !important;
+    outline: none !important;
+}
+
+.btn {
+    border-radius: var(--radius-btn) !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 600 !important;
+    padding: 9px 18px !important;
+    transition: all 0.25s ease !important;
+}
+
+.btn-primary,
+.bg-teal-400,
+.bg-indigo-400 {
+    background: var(--navy-header-grad) !important;
+    border: none !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25) !important;
+}
+
+.btn-primary:hover,
+.bg-teal-400:hover,
+.bg-indigo-400:hover {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+.btn-danger,
+.btn-warning,
+.bg-danger,
+.bg-warning-400 {
+    background: var(--crimson-gradient) !important;
+    border: none !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25) !important;
+}
+
+.btn-danger:hover,
+.btn-warning:hover,
+.bg-danger:hover,
+.bg-warning-400:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%) !important;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    border-radius: 50px !important;
+    padding: 7px 18px !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* ---- Compressed Modern DataTables ------------------------------------ */
+.dataTables_wrapper {
+    background: #ffffff !important;
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: var(--shadow-soft) !important;
+    padding: 16px !important;
+    margin-top: 12px !important;
+}
+
+.datatable-header {
+    padding-bottom: 14px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    margin-bottom: 14px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.datatable-footer {
+    padding-top: 14px !important;
+    border-top: 1px solid #f1f5f9 !important;
+    margin-top: 14px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.dataTables_filter input {
+    border-radius: 8px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    margin-left: 8px !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.dataTables_filter input:focus {
+    border-color: var(--navy-royal) !important;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12) !important;
+}
+
+.dataTables_length select {
+    border-radius: 8px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    padding: 5px 10px !important;
+    font-size: 0.85rem !important;
+    margin: 0 6px !important;
+}
+
+table.dataTable {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+table.dataTable thead th {
+    background: var(--navy-header-grad) !important;
+    color: #ffffff !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    padding: 11px 14px !important;
+    border-bottom: 2px solid var(--crimson-red) !important;
+    border-top: none !important;
+    white-space: nowrap !important;
+}
+
+table.dataTable tbody td {
+    padding: 10px 14px !important;
+    font-size: 0.88rem !important;
+    vertical-align: middle !important;
+    color: #1e293b !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+table.dataTable tbody tr:nth-child(even) {
+    background-color: #f8fafc !important;
+}
+
+table.dataTable tbody tr:hover {
+    background-color: #f1f5f9 !important;
+    transition: background 0.15s ease !important;
+}
+
+.paginate_button.current, 
+.paginate_button.current:hover {
+    background: var(--navy-header-grad) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 600 !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2) !important;
+}
+
+.paginate_button {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    margin: 0 2px !important;
+    padding: 5px 11px !important;
+    font-size: 0.85rem !important;
+}
+
+/* ---- FullCalendar Modernization -------------------------------------- */
+.fc-header-toolbar, .fc-toolbar {
+    margin-bottom: 16px !important;
+}
+
+.fc-toolbar h2 {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+
+.fc-button {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+}
+
+.fc-button-primary:not(:disabled).fc-button-active, 
+.fc-button-primary:not(:disabled):active,
+.fc-state-active {
+    background: var(--navy-header-grad) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2) !important;
+}
+
+.fc-event {
+    border-radius: 6px !important;
+    padding: 3px 6px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12) !important;
+    border: none !important;
+}

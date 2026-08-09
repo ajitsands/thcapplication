@@ -14,6 +14,7 @@
 	<link href="permission/css/dropdown.css" rel="stylesheet" type="text/css">
 	
 	<link href="assets/css/colors.min.css" rel="stylesheet" type="text/css">
+	<link href="assets/css/modern_theme.css" rel="stylesheet" type="text/css">
 	<!-- /global stylesheets -->
 
 	<!-- Core JS files-->
