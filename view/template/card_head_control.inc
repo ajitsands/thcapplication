@@ -123,6 +123,12 @@
 								case 'view_log':
 									echo 'Login & Logout Details';
 								break;
+								case 'employee_expiry':
+								case 'expiry':
+								case 'cpr_expiry':
+								case 'visa_expiry':
+									echo 'Expires';
+								break;
 								
 								default:
 								break;
