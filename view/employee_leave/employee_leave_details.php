@@ -16,22 +16,22 @@
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group row">
-										<div class="col-lg-6 col-md-6 col-sm-12" id="div_employee_select">
+										<div class="col-lg-4 col-md-4 col-sm-12" id="div_employee_select">
     										<?PHP include_once("employee_leave/employee_combo.php");?>
     									</div>
     									
-    								<div class="col-lg-6 col-md-6 col-sm-12">
+    								<div class="col-lg-4 col-md-4 col-sm-12">
     								    <span class="form-text text-muted font-weight-bold"><font color="black">Start Date</font></span> 
     										 	<input class="form-control" type="datetime-local" name="date" id="txt_leave_from_date">
         										   
     									</div>
     									
-						                <div class="col-lg-6 col-md-6 col-sm-12">
+						                <div class="col-lg-4 col-md-4 col-sm-12">
 						                    <span class="form-text text-muted font-weight-bold"><font color="black">End Date</font></span>
     										 <input class="form-control" type="datetime-local" name="number" id="txt_leave_to_date">
         										   
     									</div>
-						               <div class="col-lg-6 col-md-6 col-sm-12">
+						               <div class="col-lg-4 col-md-4 col-sm-12">
 						                   <span class="form-text text-muted font-weight-bold"><font color="black">Type of Leave</font></span> 
     										 <select data-placeholder="Select Type of Leave" id="select_type_of_leave" class="form-control form-control-select2" data-fouc>
     										    <option value="select">Select </option>
@@ -43,7 +43,7 @@
     										 </select>    
         										  
     									</div>
-								        <div class="col-lg-6 col-md-6 col-sm-12" id="div_reason_select">
+								        <div class="col-lg-4 col-md-4 col-sm-12" id="div_reason_select">
 								            <div style="border-bottom: 1px solid #ccc!important;">
 								                	<span class="form-text text-muted font-weight-bold"><font color="black"> Reason For Leave </font> </span>
         										<select  class="form-control select" data-fouc id="select_reason_for_leave" name="select_reason_for_leave">
@@ -64,7 +64,7 @@
             								
             									  
     									</div>
-    									 <div class="col-lg-6 col-md-6 col-sm-12" id="div_reason_for_leave">
+    									 <div class="col-lg-4 col-md-4 col-sm-12" id="div_reason_for_leave">
             									        <span class="form-text text-muted font-weight-bold"><font color="black"> If others,specify the reason for leave</font>  </span>
                 							            <input type="text" class="form-control form-control-sm" placeholder="" id="txt_reason_for_leave" >
                 							           
