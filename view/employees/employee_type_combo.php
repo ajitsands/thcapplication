@@ -8,7 +8,7 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
 ?>
 
 
-<div class="col-lg-6 col-md-6 col-sm-12" id="div_employee_select">
+<div class="col-lg-4 col-md-4 col-sm-12" id="div_employee_select">
     	<span class="form-text text-muted font-weight-bold"><font color="black">Employee Type&nbsp;<span style="color:red;">*</span></font></span>	
      <select data-placeholder="Select Employee Type" id="select_employee_type" class="form-control form-control-select2" data-fouc tabindex=16>
          <option value="select">Select</option>
