@@ -429,7 +429,7 @@
                 <div class="card-body">
                     <div class="media">
                         <div class="mr-3 align-self-center">
-                            <i class="icon-users4 icon-3x text-success-400"></i>
+                            <i class="icon-users4 icon-2x" style="color: #0A4174;"></i>
                         </div>
 
                         <div class="media-body text-right">
@@ -453,7 +453,7 @@
                 <div class="card-body">
                     <div class="media">
                         <div class="mr-3 align-self-center">
-                            <i class="icon-vcard icon-3x text-pink-400"></i>
+                            <i class="icon-vcard icon-2x" style="color: #4E8EA2;"></i>
                         </div>
 
                         <div class="media-body text-right">
@@ -478,7 +478,7 @@
                 <div class="card-body">
                     <div class="media">
                         <div class="mr-3 align-self-center">
-                            <i class="icon-stamp icon-3x text-danger-400"></i>
+                            <i class="icon-stamp icon-2x" style="color: #001D39;"></i>
                         </div>
 
                         <div class="media-body text-right">
