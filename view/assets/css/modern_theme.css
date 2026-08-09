@@ -36,6 +36,10 @@ body {
     color: #001D39 !important;
 }
 
+.page-title {
+    padding: 1rem 0 !important;
+}
+
 /* ---- Modernized Cards ------------------------------------------------ */
 .card {
     background: #ffffff !important;
