@@ -1,27 +1,31 @@
 /* ==========================================================================
-   THC Modernized Design System: Navy Blue, Pure White & Crimson Red Gradient
-   Inspired by SaNDS Lab Modern Portals (tracksocialmedia.sandslab.com)
+   THC Modernized Design System: Custom Palette
+   Palette:
+   #001D39 (Deep Navy - Main Navbar & Strong Titles)
+   #0A4174 (Primary Steel Blue - Active Buttons & Main Accents)
+   #49769F (Medium Steel Blue - Secondary Accents & Borders)
+   #4E8EA2 (Teal Slate Blue - Highlights)
+   #6EA2B3 (Soft Blue Cyan - Subtle Accents)
+   #7BBDE8 (Sky Blue - Active Focus & Glows)
+   #BDD8E9 (Light Ice Blue - Light Card Headers & Container Fills)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --navy-dark: #0b1329;
-    --navy-primary: #0f233f;
-    --navy-royal: #1e3a8a;
-    --navy-light: #162f52;
-    --navy-gradient: linear-gradient(135deg, #0b1329 0%, #1e3a8a 100%);
-    --navy-header-grad: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    --palette-deep-navy: #001D39;
+    --palette-primary-blue: #0A4174;
+    --palette-medium-blue: #49769F;
+    --palette-teal-slate: #4E8EA2;
+    --palette-soft-cyan: #6EA2B3;
+    --palette-sky-blue: #7BBDE8;
+    --palette-light-ice: #BDD8E9;
     
-    --crimson-red: #dc2626;
-    --crimson-light: #ef4444;
-    --crimson-gradient: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-    
-    --white-bg: #f8fafc;
+    --white-bg: #f4f8fb;
     --surface: #ffffff;
     
-    --shadow-soft: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
-    --shadow-hover: 0 20px 40px -8px rgba(15, 23, 42, 0.14), 0 8px 20px -4px rgba(15, 23, 42, 0.08);
+    --shadow-soft: 0 8px 26px -4px rgba(0, 29, 57, 0.08), 0 4px 10px -2px rgba(0, 29, 57, 0.04);
+    --shadow-hover: 0 16px 36px -6px rgba(0, 29, 57, 0.14), 0 6px 16px -3px rgba(0, 29, 57, 0.08);
     --radius-card: 16px;
     --radius-btn: 10px;
 }
@@ -29,14 +33,14 @@
 body {
     font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     background-color: var(--white-bg) !important;
-    color: #1e293b !important;
+    color: #001D39 !important;
 }
 
-/* ---- Modernized Cards ------------------------------------------------ */
+/* ---- Light Modernized Cards ------------------------------------------ */
 .card {
     background: #ffffff !important;
     border-radius: var(--radius-card) !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #d4e4f0 !important;
     box-shadow: var(--shadow-soft) !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     overflow: hidden !important;
@@ -48,11 +52,12 @@ body {
     transform: translateY(-2px);
 }
 
+/* Light Card Header with Light Ice Blue gradient */
 .card-header {
-    background: var(--navy-header-grad) !important;
-    color: #ffffff !important;
+    background: linear-gradient(135deg, #eef6fc 0%, #bdd8e9 100%) !important;
+    color: var(--palette-deep-navy) !important;
     padding: 16px 24px !important;
-    border-bottom: 3px solid var(--crimson-red) !important;
+    border-bottom: 3px solid var(--palette-medium-blue) !important;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -63,7 +68,7 @@ body {
     font-family: 'Outfit', sans-serif !important;
     font-size: 1.05rem !important;
     font-weight: 700 !important;
-    color: #ffffff !important;
+    color: var(--palette-deep-navy) !important;
     margin-bottom: 0 !important;
     display: flex;
     align-items: center;
@@ -71,21 +76,22 @@ body {
 }
 
 .card-header .list-icons-item {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--palette-primary-blue) !important;
     transition: color 0.2s;
 }
 
 .card-header .list-icons-item:hover {
-    color: #ffffff !important;
+    color: var(--palette-deep-navy) !important;
 }
 
 .card-body {
     padding: 24px !important;
+    background-color: #ffffff !important;
 }
 
 .card-footer {
-    background: #f8fafc !important;
-    border-top: 1px solid #e2e8f0 !important;
+    background: #f0f6fa !important;
+    border-top: 1px solid #d4e4f0 !important;
     padding: 14px 24px !important;
     border-radius: 0 0 var(--radius-card) var(--radius-card) !important;
 }
@@ -96,19 +102,20 @@ body {
 .form-select,
 .select2-container--default .select2-selection--single {
     border-radius: 10px !important;
-    border: 1.5px solid #cbd5e1 !important;
+    border: 1.5px solid #c2daeb !important;
     padding: 9px 14px !important;
     font-size: 0.9rem !important;
     font-family: 'Outfit', sans-serif !important;
     transition: all 0.2s ease !important;
     background-color: #ffffff !important;
+    color: var(--palette-deep-navy) !important;
 }
 
 .form-control:focus, 
 .form-select:focus,
 .select2-container--default.select2-container--open .select2-selection--single {
-    border-color: var(--navy-royal) !important;
-    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.12) !important;
+    border-color: var(--palette-primary-blue) !important;
+    box-shadow: 0 0 0 4px rgba(123, 189, 232, 0.3) !important;
     outline: none !important;
 }
 
@@ -123,25 +130,26 @@ body {
 .btn-primary,
 .bg-teal-400,
 .bg-indigo-400 {
-    background: var(--navy-header-grad) !important;
+    background: linear-gradient(135deg, #0A4174 0%, #49769F 100%) !important;
     border: none !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25) !important;
+    box-shadow: 0 4px 14px rgba(10, 65, 116, 0.25) !important;
 }
 
 .btn-primary:hover,
 .bg-teal-400:hover,
 .bg-indigo-400:hover {
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
-    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.35) !important;
+    background: linear-gradient(135deg, #49769F 0%, #4E8EA2 100%) !important;
+    box-shadow: 0 6px 20px rgba(10, 65, 116, 0.35) !important;
     transform: translateY(-1px);
+    color: #ffffff !important;
 }
 
 .btn-danger,
 .btn-warning,
 .bg-danger,
 .bg-warning-400 {
-    background: var(--crimson-gradient) !important;
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
     border: none !important;
     color: #ffffff !important;
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25) !important;
@@ -171,11 +179,11 @@ body {
     box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
 }
 
-/* ---- Compressed Modern DataTables ------------------------------------ */
+/* ---- Compressed DataTables with Light Palette ------------------------ */
 .dataTables_wrapper {
     background: #ffffff !important;
     border-radius: 14px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #d4e4f0 !important;
     box-shadow: var(--shadow-soft) !important;
     padding: 16px !important;
     margin-top: 12px !important;
@@ -183,7 +191,7 @@ body {
 
 .datatable-header {
     padding-bottom: 14px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
+    border-bottom: 1px solid #eef4f9 !important;
     margin-bottom: 14px !important;
     display: flex;
     align-items: center;
@@ -194,7 +202,7 @@ body {
 
 .datatable-footer {
     padding-top: 14px !important;
-    border-top: 1px solid #f1f5f9 !important;
+    border-top: 1px solid #eef4f9 !important;
     margin-top: 14px !important;
     display: flex;
     align-items: center;
@@ -204,7 +212,7 @@ body {
 
 .dataTables_filter input {
     border-radius: 8px !important;
-    border: 1.5px solid #cbd5e1 !important;
+    border: 1.5px solid #c2daeb !important;
     padding: 6px 12px !important;
     font-size: 0.85rem !important;
     margin-left: 8px !important;
@@ -213,13 +221,13 @@ body {
 }
 
 .dataTables_filter input:focus {
-    border-color: var(--navy-royal) !important;
-    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12) !important;
+    border-color: var(--palette-primary-blue) !important;
+    box-shadow: 0 0 0 3px rgba(123, 189, 232, 0.3) !important;
 }
 
 .dataTables_length select {
     border-radius: 8px !important;
-    border: 1.5px solid #cbd5e1 !important;
+    border: 1.5px solid #c2daeb !important;
     padding: 5px 10px !important;
     font-size: 0.85rem !important;
     margin: 0 6px !important;
@@ -231,18 +239,18 @@ table.dataTable {
     width: 100% !important;
     border-radius: 10px !important;
     overflow: hidden !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #d4e4f0 !important;
 }
 
 table.dataTable thead th {
-    background: var(--navy-header-grad) !important;
-    color: #ffffff !important;
+    background: linear-gradient(135deg, #eef6fc 0%, #bdd8e9 100%) !important;
+    color: var(--palette-deep-navy) !important;
     font-size: 0.82rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
     text-transform: uppercase !important;
     padding: 11px 14px !important;
-    border-bottom: 2px solid var(--crimson-red) !important;
+    border-bottom: 2.5px solid var(--palette-medium-blue) !important;
     border-top: none !important;
     white-space: nowrap !important;
 }
@@ -252,34 +260,35 @@ table.dataTable tbody td {
     font-size: 0.88rem !important;
     vertical-align: middle !important;
     color: #1e293b !important;
-    border-top: 1px solid #f1f5f9 !important;
+    border-top: 1px solid #edf4f9 !important;
 }
 
 table.dataTable tbody tr:nth-child(even) {
-    background-color: #f8fafc !important;
+    background-color: #f7fbfd !important;
 }
 
 table.dataTable tbody tr:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #eaf3fa !important;
     transition: background 0.15s ease !important;
 }
 
 .paginate_button.current, 
 .paginate_button.current:hover {
-    background: var(--navy-header-grad) !important;
+    background: linear-gradient(135deg, #0A4174 0%, #49769F 100%) !important;
     color: #ffffff !important;
     border-radius: 8px !important;
     border: none !important;
     font-weight: 600 !important;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(10, 65, 116, 0.2) !important;
 }
 
 .paginate_button {
     border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #d4e4f0 !important;
     margin: 0 2px !important;
     padding: 5px 11px !important;
     font-size: 0.85rem !important;
+    color: var(--palette-deep-navy) !important;
 }
 
 /* ---- FullCalendar Modernization -------------------------------------- */
@@ -291,13 +300,13 @@ table.dataTable tbody tr:hover {
     font-family: 'Outfit', sans-serif !important;
     font-size: 1.15rem !important;
     font-weight: 700 !important;
-    color: #0f172a !important;
+    color: var(--palette-deep-navy) !important;
 }
 
 .fc-button {
     background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
+    border: 1px solid #c2daeb !important;
+    color: var(--palette-deep-navy) !important;
     border-radius: 8px !important;
     padding: 6px 12px !important;
     font-weight: 600 !important;
@@ -307,10 +316,10 @@ table.dataTable tbody tr:hover {
 .fc-button-primary:not(:disabled).fc-button-active, 
 .fc-button-primary:not(:disabled):active,
 .fc-state-active {
-    background: var(--navy-header-grad) !important;
+    background: linear-gradient(135deg, #0A4174 0%, #49769F 100%) !important;
     color: #ffffff !important;
     border-color: transparent !important;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(10, 65, 116, 0.2) !important;
 }
 
 .fc-event {

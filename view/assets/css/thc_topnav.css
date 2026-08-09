@@ -8,20 +8,20 @@
 
 /* ---- Navy Blue & White Theme Variables ---------------------- */
 :root {
-  --thc-navy-dark:  #0a182c;
-  --thc-navy-main:  #0f233f;
-  --thc-navy-light: #162f52;
-  --thc-navy-hover: #1f3d68;
+  --thc-navy-dark:  #001D39;
+  --thc-navy-main:  #001D39;
+  --thc-navy-light: #0A4174;
+  --thc-navy-hover: #49769F;
   --thc-white:      #ffffff;
   --thc-white-muted:#d0dded;
-  --thc-white-dim:  #94abcb;
+  --thc-white-dim:  #7BBDE8;
   --thc-border:     rgba(255, 255, 255, 0.15);
-  --thc-border-strong: #ffffff;
+  --thc-border-strong: #7BBDE8;
   --thc-nav-h:      60px;
-  --thc-drop-bg:    #0c1b30;
-  --thc-radius:     6px;
-  --thc-shadow:     0 8px 24px rgba(0, 0, 0, 0.3);
-  --thc-font:       'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --thc-drop-bg:    #001D39;
+  --thc-radius:     8px;
+  --thc-shadow:     0 8px 24px rgba(0, 29, 57, 0.3);
+  --thc-font:       'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ---- Reset body for top-navbar layout ----------------------- */
