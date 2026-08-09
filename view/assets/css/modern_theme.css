@@ -402,3 +402,7 @@ table.dataTable tbody tr:hover {
     transform: translateY(-1px) !important;
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
 }
+
+.btn-export-excel.d-none {
+    display: none !important;
+}

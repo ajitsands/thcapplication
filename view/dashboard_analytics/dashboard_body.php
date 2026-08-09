@@ -147,10 +147,10 @@
                 <button class="btn btn-export-excel tab-export-btn" id="btnExportPPM">
                     <i class="icon-file-excel mr-1"></i> EXPORT TO EXCEL
                 </button>
-                <button class="btn btn-export-excel tab-export-btn d-none" id="btnExportReactive">
+                <button class="btn btn-export-excel tab-export-btn d-none" id="btnExportReactive" style="display: none !important;">
                     <i class="icon-file-excel mr-1"></i> EXPORT TO EXCEL
                 </button>
-                <button class="btn btn-export-excel tab-export-btn d-none" id="btnExportOther">
+                <button class="btn btn-export-excel tab-export-btn d-none" id="btnExportOther" style="display: none !important;">
                     <i class="icon-file-excel mr-1"></i> EXPORT TO EXCEL
                 </button>
             </div>
@@ -254,12 +254,24 @@
 
 <script>
 $(document).ready(function(){
+    function updateExportButtonVisibility() {
+        var activeTab = $('#workorderTabs a.active').attr("href");
+        $('.tab-export-btn').addClass('d-none').attr('style', 'display: none !important;');
+        if (activeTab === '#ppm') {
+            $('#btnExportPPM').removeClass('d-none').removeAttr('style');
+        } else if (activeTab === '#reactive') {
+            $('#btnExportReactive').removeClass('d-none').removeAttr('style');
+        } else if (activeTab === '#other') {
+            $('#btnExportOther').removeClass('d-none').removeAttr('style');
+        }
+    }
+    
+    // Initial check
+    updateExportButtonVisibility();
+
+    // On tab switch
     $('#workorderTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        var target = $(e.target).attr("href");
-        $('.tab-export-btn').addClass('d-none');
-        if (target === '#ppm') $('#btnExportPPM').removeClass('d-none');
-        else if (target === '#reactive') $('#btnExportReactive').removeClass('d-none');
-        else if (target === '#other') $('#btnExportOther').removeClass('d-none');
+        updateExportButtonVisibility();
     });
 });
 </script>
