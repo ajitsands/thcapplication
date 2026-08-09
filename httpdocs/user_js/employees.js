@@ -3,6 +3,36 @@ $(document).ready(function(){
             var v_item_img;         
                     $(":input:not(:hidden)").each(function (i) { $(this).attr('tabindex', i + 1); });
                     
+                    // Fetch active employees for leave dropdown
+                    $.ajax({
+                        url: '../controller/employees/employees_controller.php',
+                        type: 'POST',
+                        data: { action: 'fetch_active_employees' },
+                        success: function(response) {
+                            try {
+                                var employees = JSON.parse(response);
+                                var $select = $('#leave_emp_name');
+                                $select.empty().append('<option value=""></option>');
+                                $.each(employees, function(i, emp) {
+                                    $select.append($('<option>', {
+                                        value: emp.employee_name,
+                                        text: emp.employee_name,
+                                        'data-id': emp.employee_id,
+                                        'data-code': emp.employee_code
+                                    }));
+                                });
+                            } catch (e) {
+                                console.error("Error parsing employees JSON:", e);
+                            }
+                        }
+                    });
+                    
+                    $('#leave_emp_name').on('change', function() {
+                        var selectedOption = $(this).find('option:selected');
+                        $('#leave_emp_id').val(selectedOption.data('id'));
+                        $('#leave_emp_code').val(selectedOption.data('code'));
+                    });
+
                     $('#btn_employee_edit').hide();
                     $('#btn_employee_new').hide();
                     $('#error_email').hide();
@@ -391,7 +421,7 @@ $(document).ready(function(){
                                           
                                           var dropdownHTML = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
                                           if (hasPrivilege) {
-                                              dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a><a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a>';
+                                              dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a><a href="#" class="dropdown-item" name="name_ApplyLeave" style="color: blue;"><i class="icon-calendar"></i>Apply Leave</a><a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a>';
                                           } else {
                                               dropdownHTML += '<label class="dropdown-item text-danger">You have no privilege</label>';
                                           }
@@ -448,6 +478,31 @@ $(document).ready(function(){
                          {
                            window.open("reports/employee_details.php?employee_id="+v_employee_id,"_blank","width=850, height=550");
             			 }
+                         
+                         if($(this).attr("name")=='name_ApplyLeave')
+                         {
+                             $("#leave_emp_id").val(v_employee_id);
+                             $("#leave_emp_code").val(emp_data.employee_code);
+                             if ($("#leave_emp_name option[value='" + emp_data.employee_name + "']").length == 0) {
+                                 $("#leave_emp_name").append(new Option(emp_data.employee_name, emp_data.employee_name, true, true));
+                             }
+                             $("#leave_emp_name").val(emp_data.employee_name).trigger('change');
+                             $("#leave_emp_name").prop('disabled', true);
+                             
+                             // Reset form fields
+                             $("#leave_type").val('').trigger('change');
+                             $("#leave_start_date").val('');
+                             $("#leave_end_date").val('');
+                             $("#leave_duration").val('Full Day').trigger('change');
+                             $("#leave_reason").val('');
+                             
+                             // Initialize Select2 with tags if not already done
+                             if (!$('#leave_type').hasClass("select2-hidden-accessible")) {
+                                 $('#leave_type').select2({ tags: true });
+                             }
+                             
+                             $("#modal_apply_leave").modal('show');
+                         }
             			 
             			 
             			  function edit_employee_details(v_employee_id)
@@ -768,5 +823,128 @@ $(document).ready(function(){
 					$("#select_employee_visa_type").val(null).trigger("change");
                  }
                   
+                 $('#btn_submit_leave').click(function(){
+                     var btn = $('#btn_submit_leave').ladda();
+                     btn.ladda('start');
+                     
+                     var emp_id = $("#leave_emp_id").val();
+                     var emp_code = $("#leave_emp_code").val();
+                     var emp_name = $("#leave_emp_name").val();
+                     var leave_type = $("#leave_type").val();
+                     var leave_start_date = $("#leave_start_date").val();
+                     var leave_end_date = $("#leave_end_date").val();
+                     var leave_duration = $("#leave_duration").val();
+                     var leave_reason = $("#leave_reason").val();
+                     
+                     if(emp_name == '' || emp_name == null || leave_type == '' || leave_start_date == '' || leave_end_date == '' || leave_duration == '' || leave_reason == '') {
+                         swal("Warning", "Please fill all required fields including Employee Name.", "warning");
+                         btn.ladda('stop');
+                         return false;
+                     }
+                     
+                     if (leave_end_date < leave_start_date) {
+                         swal("Warning", "End Date cannot be before Start Date.", "warning");
+                         btn.ladda('stop');
+                         return false;
+                     }
+                     
+                     $.post("../controller/employees/employees_controller.php", {
+                         action: 'apply_leave',
+                         leave_emp_id: emp_id,
+                         leave_emp_code: emp_code,
+                         leave_emp_name: emp_name,
+                         leave_type: leave_type,
+                         leave_start_date: leave_start_date,
+                         leave_end_date: leave_end_date,
+                         leave_duration: leave_duration,
+                         leave_reason: leave_reason
+                     }, function(result, status) {
+                         btn.ladda('stop');
+                         result = $.trim(result);
+                         if(result == "Success") {
+                             swal("Success", "Leave applied successfully.", "success");
+                             $("#modal_apply_leave").modal('hide');
+                         } else {
+                             swal("Error", result, "error");
+                         }
+                     });
+                 });
+                 
+                 
+                 $('#btn_leave_calendar').click(function(){
+                     $("#modal_leave_calendar").modal('show');
+                 });
+                 
+                 $('#modal_leave_calendar').on('shown.bs.modal', function () {
+                     if ($('#leave_calendar_view').hasClass('fc')) {
+                         $('#leave_calendar_view').fullCalendar('refetchEvents');
+                         $('#leave_calendar_view').fullCalendar('render');
+                     } else {
+                         $('#leave_calendar_view').fullCalendar({
+                         header: {
+                             left: 'prev,next today',
+                             center: 'title',
+                             right: 'month,agendaWeek,agendaDay'
+                         },
+                         editable: false,
+                         events: function(start, end, timezone, callback) {
+                             $.ajax({
+                                 url: '../controller/employees/employees_controller.php',
+                                 type: 'POST',
+                                 data: {
+                                     action: 'fetch_leave_calendar'
+                                 },
+                                 success: function(doc) {
+                                     var events = [];
+                                     try {
+                                         var data = JSON.parse(doc);
+                                         $.each(data, function(i, item) {
+                                             events.push({
+                                                 title: item.title,
+                                                 start: item.start,
+                                                 end: item.end,
+                                                 color: item.color
+                                             });
+                                         });
+                                     } catch (e) {
+                                         console.error("Error parsing JSON:", e);
+                                     }
+                                     callback(events);
+                                 }
+                             });
+                         },
+                         dayClick: function(date, jsEvent, view) {
+                             var clickCount = $(this).data('clickCount') || 0;
+                             var clickTimer = $(this).data('clickTimer');
+                             
+                             clickCount++;
+                             $(this).data('clickCount', clickCount);
+                             
+                             if (clickCount === 1) {
+                                 var elem = this;
+                                 clickTimer = setTimeout(function() {
+                                     $(elem).data('clickCount', 0);
+                                 }, 300);
+                                 $(this).data('clickTimer', clickTimer);
+                             } else if (clickCount === 2) {
+                                 clearTimeout(clickTimer);
+                                 $(this).data('clickCount', 0);
+                                 
+                                 // Handle double click
+                                 $("#modal_leave_calendar").modal('hide');
+                                 
+                                 setTimeout(function() {
+                                     $("#modal_apply_leave").modal('show');
+                                     $("#leave_start_date").val(date.format());
+                                     $("#leave_end_date").val(date.format());
+                                     $('#leave_emp_name').val("").trigger('change');
+                                     $('#leave_emp_name').prop('disabled', false);
+                                 }, 500);
+                             }
+                         }
+                     });
+                     $('#leave_calendar_view').fullCalendar('render');
+                     }
+                 });
 
 });

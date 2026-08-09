@@ -1,12 +1,13 @@
 
   
   <?php
-  // Create connection
-  $permmison_conn = new mysqli("localhost", "sianlab_thc_user", "s@nds1@b", "sianlab_db_thc");
+  include_once(__DIR__ . '/../model/db_connection/connection.php');
+  $DBConn = new DBConnection();
+  $permmison_conn = $DBConn->ConnectToMYSQL();
 
   // Check connection
-  if ($permmison_conn->connect_error) {
-      die("Connection failed: " . $permmison_conn->connect_error);
+  if (!$permmison_conn || $permmison_conn->connect_error) {
+      die("Connection failed: " . ($permmison_conn ? $permmison_conn->connect_error : mysqli_connect_error()));
   }
 
   // Your SQL query

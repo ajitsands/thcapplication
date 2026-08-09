@@ -1,5 +1,5 @@
-<?php session_start();?>
-<?php 
+<?php session_start();
+error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
 
 include "../../model/db_connection/connection.php" ;
 include('../../view/template/includes/en_de_header.inc');
@@ -618,5 +618,3 @@ class CommonModel extends FunctionDefinitions
 	
 
 }
-
-?>

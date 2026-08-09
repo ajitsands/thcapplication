@@ -15,38 +15,49 @@ class apartmentController
 	  
         $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
-        $this->actionevents = $_POST['action'];
-        $this->ctrl_name = $_POST['v_ctrl_name'];
-        $this->employee_type_id = $_POST['v_employee_type_id'];
-        $this->employee_type_name = $_POST['v_employee_type_name'];
-        $this->employee_code = $_POST['v_employee_code'];
-        $this->employee_password = $_POST['v_employee_password'];
-        $this->employee_name = $_POST['v_employee_name'];
-        $this->employee_contact_no = $_POST['v_employee_contact_no'];
-        $this->employee_email_id = $_POST['v_employee_email_id'];
-        $this->employee_address = $_POST['v_employee_address'];
-        $this->employee_image = $_POST['v_employee_image'];
-        $this->employee_status = $_POST['v_employee_status'];
-        $this->employee_id = $_POST['v_employee_id'];
-        $this->expertise_id = $_POST['v_expertise_id'];
-        $this->expertise_name = $_POST['v_expertise_name'];
-        $this->expertise_length = count($this->expertise_id);
+        $this->actionevents = $_POST['action'] ?? '';
+        $this->ctrl_name = $_POST['v_ctrl_name'] ?? '';
+        $this->employee_type_id = $_POST['v_employee_type_id'] ?? '';
+        $this->employee_type_name = $_POST['v_employee_type_name'] ?? '';
+        $this->employee_code = $_POST['v_employee_code'] ?? '';
+        $this->employee_password = $_POST['v_employee_password'] ?? '';
+        $this->employee_name = $_POST['v_employee_name'] ?? '';
+        $this->employee_contact_no = $_POST['v_employee_contact_no'] ?? '';
+        $this->employee_email_id = $_POST['v_employee_email_id'] ?? '';
+        $this->employee_address = $_POST['v_employee_address'] ?? '';
+        $this->employee_image = $_POST['v_employee_image'] ?? '';
+        $this->employee_status = $_POST['v_employee_status'] ?? '';
+        $this->employee_id = $_POST['v_employee_id'] ?? '';
+        $this->expertise_id = $_POST['v_expertise_id'] ?? [];
+        $this->expertise_name = $_POST['v_expertise_name'] ?? [];
+        $this->expertise_length = is_array($this->expertise_id) ? count($this->expertise_id) : 0;
         
         
-        $this->employee_cpr_number = $_POST['v_emp_cpr_number'];
-        $this->employee_blood_group= $_POST['v_emp_blood_group'];
-        $this->employee_passport_number = $_POST['v_emp_passport_no'];
-        $this->employee_joining_date= $_POST['v_emp_joining_date'];
-        $this->employee_cpr_expiry_date = $_POST['v_emp_cpr_expiry_date'];
-        $this->employee_visa_validity = $_POST['v_emp_visa_validity'];
-        $this->employee_is_driving_licence = $_POST['v_checked_val'];
-        $this->employee_tech_type_name = $_POST['v_emp_tech_type_name'];
+        $this->employee_cpr_number = $_POST['v_emp_cpr_number'] ?? '';
+        $this->employee_blood_group= $_POST['v_emp_blood_group'] ?? '';
+        $this->employee_passport_number = $_POST['v_emp_passport_no'] ?? '';
+        $this->employee_joining_date= $_POST['v_emp_joining_date'] ?? '';
+        $this->employee_cpr_expiry_date = $_POST['v_emp_cpr_expiry_date'] ?? '';
+        $this->employee_visa_validity = $_POST['v_emp_visa_validity'] ?? '';
+        $this->employee_is_driving_licence = $_POST['v_checked_val'] ?? '';
+        $this->employee_tech_type_name = $_POST['v_emp_tech_type_name'] ?? '';
         
-        $this->employee_native_number = $_POST['v_emp_native_no'];
-		$this->employee_native_address = $_POST['v_emp_native_address'];
-		$this->employee_visa_type= $_POST['v_emp_visa_type'];
+        $this->employee_native_number = $_POST['v_emp_native_no'] ?? '';
+		$this->employee_native_address = $_POST['v_emp_native_address'] ?? '';
+		$this->employee_visa_type= $_POST['v_emp_visa_type'] ?? '';
         
-        $this->employee_action = $_POST['v_employee_action'];
+        $this->employee_action = $_POST['v_employee_action'] ?? '';
+        
+        // Leave variables
+        $this->leave_emp_id = $_POST['leave_emp_id'] ?? '';
+        $this->leave_emp_code = $_POST['leave_emp_code'] ?? '';
+        $this->leave_emp_name = $_POST['leave_emp_name'] ?? '';
+        $this->leave_type = $_POST['leave_type'] ?? '';
+        $this->leave_start_date = $_POST['leave_start_date'] ?? '';
+        $this->leave_end_date = $_POST['leave_end_date'] ?? '';
+        $this->leave_duration = $_POST['leave_duration'] ?? '';
+        $this->leave_reason = $_POST['leave_reason'] ?? '';
+        
         date_default_timezone_set('Asia/Bahrain');
         $this->current_date = date("Y-m-d h:i:s");
        
@@ -75,6 +86,8 @@ class apartmentController
         $array[8] ="Delete from tbl_technician_expertise where employee_id='".$this->employee_id."'";
         $array[9] ="Select employee_code from tbl_employees  where employee_code='".$this->employee_code."'";
         $array[10] ="update tbl_employees set `employee_code`='".$this->employee_code ."' where employee_id='".$this->employee_id."'";
+        $array[11] ="call proc_add_employee_short_leave('".$this->leave_emp_id."','".$this->leave_emp_code."','".$this->leave_emp_name."','".$this->leave_type."','".$this->leave_start_date."','".$this->leave_end_date."','".$this->leave_duration."','".$this->leave_reason."',@msg )";
+        $array[12] ="SELECT CONCAT(employee_name, ' - ', leave_type) AS title, leave_start_date AS start, DATE_ADD(leave_end_date, INTERVAL 1 DAY) AS end, CASE leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_short_leave UNION ALL SELECT CONCAT(employee_name, ' - ', leave_type) AS title, DATE(start_time) AS start, DATE_ADD(DATE(end_time), INTERVAL 1 DAY) AS end, CASE leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_leave";
         
         return $array;
     }
@@ -128,6 +141,32 @@ class apartmentController
             case 'employee_list_view':
            // echo $var[2];
                 $this->varModelObj->ListFromTable($var[2]);
+            break;
+            
+            case 'apply_leave':
+                $this->varModelObj->ExecuteProcedure($var[11]);
+            break;
+            
+            case 'fetch_leave_calendar':
+                $events = array();
+                $result = mysqli_query($this->varDBConnection, $var[12]);
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result)) {
+                        $events[] = $row;
+                    }
+                }
+                echo json_encode($events);
+            break;
+            
+            case 'fetch_active_employees':
+                $employees = array();
+                $result = mysqli_query($this->varDBConnection, "SELECT employee_id, employee_name, employee_code FROM tbl_employees WHERE employee_status = 'Active'");
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result)) {
+                        $employees[] = $row;
+                    }
+                }
+                echo json_encode($employees);
             break;
             
              case 'select_expertise_names':
@@ -191,4 +230,3 @@ class apartmentController
 
 $obj = new apartmentController();
 $obj->RequestAccept($obj->actionevents);
-?>

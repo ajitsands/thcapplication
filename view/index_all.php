@@ -7,84 +7,23 @@
 	<?PHP 
 		include_once('template/head.inc');
 	?>
+	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
-	<!-- Main navbar -->
-	<div class="navbar navbar-expand-md navbar-light navbar-static">
-
-		<!-- Header with logos -->
-		<?PHP 
-				include_once('template/header_with_logo.inc');
-		?>
-	
-		<!-- /header with logos -->
 	
 
-		<!-- Mobile controls -->
-		<?PHP 
-				include_once('template/mobile_view.inc');
-		?>
-		<!-- /mobile controls -->
+
+	
 
 
-		<!-- Navbar content -->
-		<?PHP 
-				include_once('template/navigation.inc');
-		?>
-		
-		
-		<!-- /navbar content -->
-		
-	</div>
-	<!-- /main navbar -->
+			<!-- ===== THC Horizontal Top Navigation ===== -->
+	<?PHP include_once('template/top_menu_new.inc'); ?>
+	<!-- ===== /THC Horizontal Top Navigation ===== -->
 
-
-	<!-- Page content -->
-	<div class="page-content">
-
-		<!-- Main sidebar -->
-		<div class="sidebar sidebar-dark sidebar-main sidebar-expand-md">
-
-			<!-- Sidebar mobile toggler -->
-			
-			<?PHP 
-				include_once('template/mobile_toggler.inc');
-			?>
-			
-			<!-- /sidebar mobile toggler -->
-
-
-			<!-- Sidebar content -->
-			<div class="sidebar-content">
-				
-				<!-- User menu -->
-				<?PHP 
-					include_once('template/user_menu.inc');
-				?>
-				
-				<!-- /user menu -->
-
-				
-				<!-- Main navigation -->
-				<?PHP 
-				   include_once('template/left_menu_new.inc');
-					//include_once('template/left_menu.inc');
-				?>
-				
-				
-				<!-- /main navigation -->
-
-			</div>
-			<!-- /sidebar content -->
-			
-		</div>
-		<!-- /main sidebar -->
-
-
-		<!-- Main content -->
-		<div class="content-wrapper">
+	<!-- Main content -->
+	<div class="content-wrapper" style="margin-left:0;padding:20px 24px 0;">
 
 			<!-- Page header -->
 			<?PHP 
@@ -160,8 +99,7 @@
 		</div>
 		<!-- /main content -->
 
-	</div>
-	<!-- /page content -->
+	
 
 </body>
 </html>

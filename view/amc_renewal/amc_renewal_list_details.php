@@ -1,4 +1,4 @@
-<input type="hidden" value="<?php echo $_GET['amcnumber']; ?>" id="txt_amcnumber" />
+<input type="hidden" value="<?php echo $_GET['amcnumber'] ?? ''; ?>" id="txt_amcnumber" />
 <div class="row">
     <div class="card col-md-12">
         <div class="card-header header-elements-inline">

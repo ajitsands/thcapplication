@@ -47,6 +47,8 @@ $OBJ->URLEncode('head=dashboard');
 	<!-- sweet alert -->
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
    	<script src="global_assets/js/fileupload_ns.js"></script>
+    <script src="../httpdocs/user_js/calender/moment.min.js"></script>
+    <script src="../httpdocs/user_js/calender/fullcalendar.min.js"></script>
 	<script src="../httpdocs/user_js/employees.js"></script>
 </head>
     <?PHP 
@@ -70,6 +72,8 @@ $OBJ->URLEncode('head=dashboard');
 		<!-- /content area -->
 
 		<?PHP include_once('template/reset_password_modal.php'); ?>
+		<?PHP include_once('employees/apply_leave_modal.php'); ?>
+		<?PHP include_once('employees/leave_calendar_modal.php'); ?>
 
 		<!-- Footer -->
 		<?PHP include_once('template/footer.inc'); ?>

@@ -36,6 +36,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/globalize/1.7.0/globalize/plural.js"></script>-->
 	 
 	<script src="../httpdocs/user_js/login.js"></script>
+	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>
         <script type="text/javascript">  
         // datetime make using jquery  
@@ -99,42 +100,15 @@
         </script> 
 <body>
 
-	<!-- Main navbar -->
-	<div class="navbar navbar-expand-md navbar-dark">
-		
-				<!-- Header with logos -->
-		<?PHP 
-				include_once('template/header_with_logo.inc');
-		?>
 	
-		<!-- /header with logos -->
-	
-
-		<!-- Mobile controls -->
-		<?PHP 
-				include_once('template/login_mobile_view.inc');
-		?>
-		<!-- /mobile controls -->
-
-
-		<!-- Navbar content -->
-		<?PHP 
-				include_once('template/login_top_items.inc');
-		?>
-		
-		
-		<!-- /navbar content -->
-		
-		
-	</div>
-	<!-- /main navbar -->
 
 
 	<!-- Page content -->
 	<div class="page-content">
 
-		<!-- Main content --> 
-		<div class="content-wrapper">
+
+	<!-- Main content -->
+	<div class="content-wrapper" style="margin-left:0;padding:20px 24px 0;">
 
 			<!-- Content area -->
 			<div class="content d-flex justify-content-center align-items-center">
@@ -221,8 +195,7 @@
 		</div>
 		<!-- /main content -->
 
-	</div>
-	<!-- /page content -->
+	
 
 <script>
 $(document).ready(function() {

@@ -6,11 +6,13 @@ $jsonData = $_POST['permission_data'];
 $dataArray = json_decode($jsonData, true);
 
 // Create connection
-$conn = new mysqli("localhost", "sianlab_thc_user", "s@nds1@b", "sianlab_db_thc");
+include_once(__DIR__ . '/../model/db_connection/connection.php');
+$DBConn = new DBConnection();
+$conn = $DBConn->ConnectToMYSQL();
 
 // Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!$conn || $conn->connect_error) {
+    die("Connection failed: " . ($conn ? $conn->connect_error : mysqli_connect_error()));
 }
 
 // Prepare and bind SQL DELETE statement

@@ -1,6 +1,6 @@
 <?php
 
-include('../model/db_connection/connection.php');
+include_once(__DIR__ . '/../model/db_connection/connection.php');
 
 class AddModules
 {
