@@ -104,7 +104,7 @@
 	 <!--Single row selection -->
 				<div class="card" style="overflow:auto;">
 					<div class="card-header header-elements-inline">
-						<h5 class="card-title">List of Employees On Leave</h5>
+						<h5 class="card-title">List of Employees On Leave <button type="button" class="btn bg-indigo-400 ml-3" id="btn_leave_calendar"><i class="icon-calendar3 mr-2"></i> View Leave Calendar</button></h5>
 						<div class="header-elements">
 							<div class="list-icons">
 		                		<a class="list-icons-item" data-action="collapse"></a>

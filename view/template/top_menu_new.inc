@@ -67,6 +67,7 @@ function menuActive($p, $key, $val) {
           <li class="classExpertiseView"><a href="expertise.php?param=<?= $OBJ->URLEncode('head=hr&open=2&title=expertise') ?>" class="<?= menuActive($params,'open','2') ? 'active' : '' ?>"><i class="icon-star-empty2"></i> Expertise</a></li>
           <li class="classEmployeesView"><a href="employees.php?param=<?= $OBJ->URLEncode('head=hr&open=1&title=employees') ?>" class="<?= menuActive($params,'open','1') ? 'active' : '' ?>"><i class="icon-user"></i> Employees</a></li>
           <li class="classEmployeesView"><a href="employee_report.php?param=<?= $OBJ->URLEncode('head=hr&open=3&title=employees') ?>" class="<?= menuActive($params,'open','3') ? 'active' : '' ?>"><i class="icon-list"></i> Employee List</a></li>
+          <li class="classEmployeesView"><a href="employee_leave.php?param=<?= $OBJ->URLEncode('head=hr&open=17&title=employee_leave') ?>" class="<?= menuActive($params,'open','17') ? 'active' : '' ?>"><i class="icon-calendar3"></i> Leave Schedule</a></li>
           <li class="classCPRAndVisaExpiryView"><a href="employee_expiry.php?param=<?= $OBJ->URLEncode('head=hr&open=18&title=employee_expiry') ?>" class="<?= menuActive($params,'open','18') ? 'active' : '' ?>"><i class="icon-alarm"></i> CPR/Visa Expiry</a></li>
         </ul>
       </li>
