@@ -2,10 +2,48 @@ $(document).ready(function(){
     var start_date,end_date;
                     
     var v_btn_employee_leave_add = $('#btn_employee_leave_add').ladda();
-     $("#div_reason_for_leave").hide();              
+    $("#div_reason_for_leave").hide();              
                  
-            var v_list_of_employees_on_leave_table = $('#list_of_employees_on_leave').DataTable({});
-                      load_data_to_grid_employees_on_leave_list();
+    var v_list_of_employees_on_leave_table = $('#list_of_employees_on_leave').DataTable({});
+    load_data_to_grid_employees_on_leave_list();
+
+    // Initialize inline calendar view (8-column panel)
+    if ($('#leave_calendar_inline').length) {
+        $('#leave_calendar_inline').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            editable: false,
+            events: function(start, end, timezone, callback) {
+                $.ajax({
+                    url: '../controller/employees/employees_controller.php',
+                    type: 'POST',
+                    data: {
+                        action: 'fetch_leave_calendar'
+                    },
+                    success: function(doc) {
+                        var events = [];
+                        try {
+                            var data = JSON.parse(doc);
+                            $.each(data, function(i, item) {
+                                events.push({
+                                    title: item.title,
+                                    start: item.start,
+                                    end: item.end,
+                                    color: item.color
+                                });
+                            });
+                        } catch (e) {
+                            console.error("Error parsing JSON:", e);
+                        }
+                        callback(events);
+                    }
+                });
+            }
+        });
+    }
                  
                  
                 $("#div_reason_select").change(function(){
@@ -124,19 +162,22 @@ $(document).ready(function(){
                                 }
                                 else 
                                 {
-                                     v_btn_employee_leave_add.ladda( 'stop' );
-                                     swal("Success", "Employee leave added successfully..", "success");
-                                     load_data_to_grid_employees_on_leave_list();
-                                     clear_text();
-                                }
-                                
+                                      v_btn_employee_leave_add.ladda( 'stop' );
+                                      swal("Success", "Employee leave added successfully..", "success");
+                                      load_data_to_grid_employees_on_leave_list();
+                                      if ($('#leave_calendar_inline').length) {
+                                          $('#leave_calendar_inline').fullCalendar('refetchEvents');
+                                      }
+                                      clear_text();
+                                 }
                                  
-                            
-                        });
+                                  
+                             
+                         });
+                         
                         
-                       
-                        
-                     }
+                         
+                      }
                   
                 });
                 //load data to employeegrid
@@ -160,11 +201,21 @@ $(document).ready(function(){
                                  "infoEmpty": "No records available",
                               },
                             "order": [[ 0, "desc" ]],
-                           
+                            "dom": '<"datatable-header"fBl><"datatable-scroll"t><"datatable-footer"ip>',
+                            "buttons": [
+                                {
+                                    extend: 'excelHtml5',
+                                    text: '<i class="icon-file-excel mr-2"></i> Export to Excel',
+                                    className: 'btn btn-success btn-sm mb-2',
+                                    exportOptions: {
+                                        columns: [0, 1, 2, 3, 4, 5]
+                                    }
+                                }
+                            ],
             				"Paginate": true,
-            				"bLengthChange": false,
-            				"bFilter": false,
-            				"bInfo": false,
+            				"bLengthChange": true,
+            				"bFilter": true,
+            				"bInfo": true,
             				"autoWidth": false,
             				
             			

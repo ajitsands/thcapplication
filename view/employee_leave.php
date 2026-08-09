@@ -35,6 +35,9 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="global_assets/js/demo_pages/form_layouts.js"></script>
 	<!-- Data Table -->
 	<script src="global_assets/js/plugins/tables/datatables/datatables.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.1.1/js/dataTables.buttons.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.1.1/js/buttons.html5.min.js"></script>
 	
 	<script src="global_assets/js/demo_pages/form_select2.js"></script>
 	
