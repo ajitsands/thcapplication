@@ -123,102 +123,54 @@
 
     <div class="card-body">
 
-        <!-- Tabs -->
-        <ul class="nav nav-pills nav-fill mb-4" id="workorderTabs">
+        <!-- Tabs Header Bar with Right-Aligned Export Button -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+            <ul class="nav nav-pills thc-nav-pills mb-0" id="workorderTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#ppm">
+                        <i class="icon-calendar3 mr-2"></i> PPM
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#reactive">
+                        <i class="icon-hammer-wrench mr-2"></i> Reactive
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#other">
+                        <i class="icon-stack2 mr-2"></i> Other
+                    </a>
+                </li>
+            </ul>
 
-            <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#ppm">
-                    <i class="icon-calendar3 mr-2"></i>
-                    PPM
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#reactive">
-                    <i class="icon-hammer-wrench mr-2"></i>
-                    Reactive
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#other">
-                    <i class="icon-stack2 mr-2"></i>
-                    Other
-                </a>
-            </li>
-
-        </ul>
+            <div class="tab-export-actions ml-auto">
+                <button class="btn btn-export-excel tab-export-btn" id="btnExportPPM">
+                    <i class="icon-file-excel mr-1"></i> EXPORT TO EXCEL
+                </button>
+                <button class="btn btn-export-excel tab-export-btn d-none" id="btnExportReactive">
+                    <i class="icon-file-excel mr-1"></i> EXPORT TO EXCEL
+                </button>
+                <button class="btn btn-export-excel tab-export-btn d-none" id="btnExportOther">
+                    <i class="icon-file-excel mr-1"></i> EXPORT TO EXCEL
+                </button>
+            </div>
+        </div>
 
         <div class="tab-content">
 
             <!-- PPM -->
             <div class="tab-pane fade show active" id="ppm">
-
                 <div class="table-responsive">
-                    <div class="d-flex justify-content-end ">
-
-                        <button class="btn btn-export-excel" id="btnExportPPM">
-                    
-                            <i class="icon-file-excel"></i>
-                    
-                            Export to Excel
-                    
-                        </button>
-                    
-                    </div>
                     <table id="tbl_ppm_list" 
                            class="table table-bordered table-striped table-hover">
         
                         <thead>
                             <tr>
                                 <th>S.No</th>
-                                 <th>Work Order No.</th>
-                                  <th>Date</th>
-                                   <th>Slot</th>
-                                <th>Customer & Facility </th>
-                                <th>Status</th>
-                                <th>Complaint Description</th>
-                                 <th>Request</th>
-                                <th>Category</th>
-                                <th>Priority</th>
-                                <th>Technician Remarks</th>
-                            </tr>
-                        </thead>
-        
-                        <tbody>
-                        </tbody>
-        
-                    </table>
-                   
-                </div>
-
-            </div>
-
-            <!-- Reactive -->
-            <div class="tab-pane fade" id="reactive">
-
-                <div class="table-responsive">
-                    <div class="d-flex justify-content-end ">
-
-                        <button class="btn btn-export-excel" id="btnExportReactive">
-                    
-                            <i class="icon-file-excel"></i>
-                    
-                            Export to Excel
-                    
-                        </button>
-                    
-                    </div>
-                    <table id="tbl_reactive_list" 
-                           class="table table-bordered table-striped table-hover">
-        
-                        <thead>
-                            <tr>
-                                <th>S.No</th>
-                                 <th>Work Order No.</th>
-                                  <th>Date</th>
-                                   <th>Slot</th>
-                                <th>Customer & Facility </th>
+                                <th>Work Order No.</th>
+                                <th>Date</th>
+                                <th>Slot</th>
+                                <th>Customer & Facility</th>
                                 <th>Status</th>
                                 <th>Complaint Description</th>
                                 <th>Request</th>
@@ -232,39 +184,25 @@
                         </tbody>
         
                     </table>
-                   
                 </div>
-
             </div>
 
-            <!-- Other -->
-            <div class="tab-pane fade" id="other">
-
+            <!-- Reactive -->
+            <div class="tab-pane fade" id="reactive">
                 <div class="table-responsive">
-                    <div class="d-flex justify-content-end ">
-
-                        <button class="btn btn-export-excel" id="btnExportOther">
-                    
-                            <i class="icon-file-excel"></i>
-                    
-                            Export to Excel
-                    
-                        </button>
-                    
-                    </div>
-                    <table id="tbl_other_list" 
+                    <table id="tbl_reactive_list" 
                            class="table table-bordered table-striped table-hover">
         
                         <thead>
                             <tr>
                                 <th>S.No</th>
-                                 <th>Work Order No.</th>
-                                  <th>Date</th>
-                                   <th>Slot</th>
-                                <th>Customer & Facility </th>
+                                <th>Work Order No.</th>
+                                <th>Date</th>
+                                <th>Slot</th>
+                                <th>Customer & Facility</th>
                                 <th>Status</th>
                                 <th>Complaint Description</th>
-                                 <th>Request</th>
+                                <th>Request</th>
                                 <th>Category</th>
                                 <th>Priority</th>
                                 <th>Technician Remarks</th>
@@ -275,9 +213,36 @@
                         </tbody>
         
                     </table>
-                   
                 </div>
+            </div>
 
+            <!-- Other -->
+            <div class="tab-pane fade" id="other">
+                <div class="table-responsive">
+                    <table id="tbl_other_list" 
+                           class="table table-bordered table-striped table-hover">
+        
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Work Order No.</th>
+                                <th>Date</th>
+                                <th>Slot</th>
+                                <th>Customer & Facility</th>
+                                <th>Status</th>
+                                <th>Complaint Description</th>
+                                <th>Request</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Technician Remarks</th>
+                            </tr>
+                        </thead>
+        
+                        <tbody>
+                        </tbody>
+        
+                    </table>
+                </div>
             </div>
 
         </div>
@@ -286,4 +251,16 @@
 </div>
 
 </div>
+
+<script>
+$(document).ready(function(){
+    $('#workorderTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var target = $(e.target).attr("href");
+        $('.tab-export-btn').addClass('d-none');
+        if (target === '#ppm') $('#btnExportPPM').removeClass('d-none');
+        else if (target === '#reactive') $('#btnExportReactive').removeClass('d-none');
+        else if (target === '#other') $('#btnExportOther').removeClass('d-none');
+    });
+});
+</script>
 
