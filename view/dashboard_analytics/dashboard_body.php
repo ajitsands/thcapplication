@@ -124,7 +124,7 @@
     <div class="card-body">
 
         <!-- Tabs Header Bar with Right-Aligned Export Button -->
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-0 border-bottom">
             <ul class="nav nav-pills thc-nav-pills mb-0" id="workorderTabs">
                 <li class="nav-item">
                     <a class="nav-link active" data-toggle="tab" href="#ppm">
