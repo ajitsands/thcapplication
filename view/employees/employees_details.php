@@ -152,41 +152,27 @@
                                     </div>
 						     	
 						     	    <div class="col-lg-4 col-md-4 col-sm-12">
-                    					     <span class="form-text text-muted font-weight-bold"><font color="black">Employee Image&nbsp;</font></span>	
-                    					    <input type="file" class="form-input-styled"  id="session_image" accept="image/*" title="&nbsp;" tabindex=17 data-fouc=""/><p id="emp_img_name"></p>
-                    					    <div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>
+                    					<span class="form-text text-muted font-weight-bold"><font color="black">Employee Image&nbsp;</font></span>	
+                    					<input type="file" class="form-input-styled"  id="session_image" accept="image/*" title="&nbsp;" tabindex=17 data-fouc=""/><p id="emp_img_name"></p>
+                    					<div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>
     							    </div>
 									
 						    </div>
 						    <div class="row mt-2">
 						        <?PHP include("tech_expertise_combo.php"); ?>
-						  </div>
-						
-						
-						  <br><br>
-					<div class="row"></div>
-							
-						
-						
-						
+						    </div>
+
+						    <!-- Action Buttons after Employee Image & Expertise controls -->
+						    <div class="row mt-3">
+						        <div class="col-12 text-right">
+						            <button type="button" id="btn_employee_add" class="btn bg-teal-400"><b><i class="icon-floppy-disk"></i></b>&nbsp;&nbsp;Save</button>
+						            <button type="button" id="btn_employee_edit" class="btn bg-warning-400"><b><i class="icon-database-edit2"></i></b>&nbsp;&nbsp;Update</button>
+						            <button type="button" id="btn_employee_new" class="btn btn-primary"><b><i class="icon-book"></i></b>&nbsp;&nbsp;New</button>
+						        </div>
+						    </div>
+
 					</div>
-					<div class="card-footer">
-								<div class="row">
-									
-									<div class="col-lg-6 col-md-6 col-sm-12">
-									    </div>
-    									<div class="col-lg-6 col-md-6 col-sm-12">
-    									    <!--<button type="button"  class="btn bg-teal-400 addAction">Test Button</button>-->    
-    										<button type="button" id="btn_employee_add" class="btn bg-teal-400 " ><b><i class="icon-floppy-disk"></i></b>&nbsp;&nbsp;&nbsp;Save</button>
-    										
-    										<button type="button" id="btn_employee_edit" class="btn bg-warning-400 "><b><i class="icon-database-edit2"></i></b>&nbsp;&nbsp;&nbsp; Update</button>
-    										<button type="button" id="btn_employee_new" class="btn btn-primary"><b><i class="icon-book"></i></b>&nbsp;&nbsp;&nbsp; New</button>
-    									</div>
-						              
-								   
-								
-								</div>
-					</div>
+					
 					
 					
 					
