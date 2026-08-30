@@ -1,9 +1,14 @@
-<?php session_start();
+<?php 
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
 
-include "../../model/db_connection/connection.php" ;
-include('../../view/template/includes/en_de_header.inc');
-include('../../qr/qrlib.php'); 
+include_once __DIR__ . "/../db_connection/connection.php" ;
+include_once __DIR__ . '/../../view/template/includes/en_de_header.inc';
+if (file_exists(__DIR__ . '/../../qr/qrlib.php')) {
+    include_once __DIR__ . '/../../qr/qrlib.php';
+} 
 
 
 abstract class FunctionDefinitions

@@ -56,7 +56,7 @@ var Buttons = function() {
     return {
         init: function() {
             _componentLadda();
-            _componentLoadingButton();
+            // _componentLoadingButton();
         }
     }
 }();

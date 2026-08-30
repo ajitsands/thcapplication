@@ -1,5 +1,5 @@
 <?PHP
-$v_requ_no = $_GET['RefNo']
+$v_requ_no = isset($_GET['RefNo']) ? $_GET['RefNo'] : '';
 ?>
 			
 		
@@ -107,7 +107,7 @@ $v_requ_no = $_GET['RefNo']
 				<!-- /single row selection -->
 	
 					</div>
-					           <input type="hidden" class="form-control " id="txt_requsition_no_hidden" value=<?PHP echo $v_requ_no ?> >
+					           <input type="hidden" class="form-control " id="txt_requsition_no_hidden" value="<?PHP echo htmlspecialchars($v_requ_no); ?>" >
 					           
 								<input type="hidden" class="form-control " id="txt_asset_code_amc" placeholder="ASSET CODE" >
 								<input type="hidden" class="form-control " id="txt_tickets_amc" placeholder="ASSET CODE" >

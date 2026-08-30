@@ -221,7 +221,7 @@ $(document).ready(function(){
             			 }
             			
             			  if($(this).attr("name")=='schedule_ticket_multiple')
-                         {
+                          {
                             $('#txt_hidden_ticket_ref_code_schedule_ticket_multiple').val(ticket_data.ticket_ref_code);
                              $('#span_ticket_ref_no_schedule_ticket_multiple').html(ticket_data.ticket_ref_code);
                              $('#span_customer_schedule_ticket_multiple').html('  ,Customer - '+ticket_data.customer_code+' - '+ticket_data.customer_name);
@@ -229,40 +229,6 @@ $(document).ready(function(){
                               $('#span_customer_schedule_building_multiple').html('  ,Building - '+ticket_data.building_code+' - '+ticket_data.building_name);
                             
                             load_data_to_grid_ticket_schedules_list_multiple_extended(ticket_data.ticket_ref_code);
-                          
-                           
-                        
-                            
-                            $("#txt_visit_added_slot_multiple").val($("#duration_multiple option:selected").val());
-                           
-                            $("#txt_vist_start_time_hidden_multiple").val($("#txt_time_multiple").val());
-                             var visit_date=$("#txt_date_multiple").val();
-                             var visit_slot=$("#select_slots_multiple_extended option:selected").val();
-                             var visit_duration=$("#duration_multiple option:selected").val();
-                             var i=visit_slot;
-                             var slot_sql_string="";
-                             var sch_slot_sql_string="";
-                             var t=parseInt(visit_slot)+parseInt(visit_duration);
-                             for(i=visit_slot;i<=t;i++)
-                                 {
-                                      slot_sql_string=slot_sql_string+' slot_'+i+' ="0" and';
-                                      sch_slot_sql_string=sch_slot_sql_string+' slot_'+i+' ="1" ,';
-                                 }
-                                  var new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
-                                   var new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
-                                 load_data_to_grid_available_technicians_multiple(visit_date,new_slot_sql_string);
-                             
-                                 $("#txt_visit_date_assign_hidden_multiple").val(visit_date);
-                                 $("#txt_visit_slot_assign_hidden_multiple").val(visit_slot);
-                            $("#txt_visit_slot_assign_hidden_for_sch_multiple").val(new_sch_slot_sql_string);
-                                                
-                            
-                            
-                            
-                             $("#txt_customer_id_assign_hidden_multiple").val(ticket_data.customer_id);
-                              $("#txt_customer_code_assign_hidden_multiple").val(ticket_data.customer_code);
-                               $("#txt_customer_name_assign_hidden_multiple").val(ticket_data.customer_name);
-                           
             			 }
             			 
             			  if($(this).attr("name")=='assign_ticket_multiple')

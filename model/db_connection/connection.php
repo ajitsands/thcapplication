@@ -16,20 +16,22 @@ if (!defined('APP_ROOT')) {
 // to include ../../model/... )
 set_include_path(get_include_path() . PATH_SEPARATOR . APP_ROOT);
 
-class DBConnection
-{
- 
-    function ConnectToMYSQL()
-    { 
-        
-      $con = mysqli_connect("localhost","root","S@nds1@b","db_thc");
+if (!class_exists('DBConnection')) {
+    class DBConnection
+    {
+     
+        function ConnectToMYSQL()
+        { 
+            
+          $con = mysqli_connect("localhost","root","S@nds1@b","db_thc");
 
-      if (mysqli_connect_errno())
-        {
-        echo "Failed to connect to MySQL: " . mysqli_connect_error();
+          if (mysqli_connect_errno())
+            {
+            echo "Failed to connect to MySQL: " . mysqli_connect_error();
+            }
+            return $con;
         }
-        return $con;
+
+
     }
-
-
 }

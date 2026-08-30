@@ -1,5 +1,5 @@
 <?php
-$mysqli = new mysqli("localhost","sianlab_thc_user","s@nds1@b","sianlab_db_thc");
+$mysqli = new mysqli("localhost","root","S@nds1@b","db_thc");
 
 // Check connection
 if ($mysqli -> connect_errno) {

@@ -3,7 +3,7 @@ include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
 
-$cus_id=$_POST['v_cust_id'];
+$cus_id = isset($_POST['v_cust_id']) ? $_POST['v_cust_id'] : (isset($_GET['v_cust_id']) ? $_GET['v_cust_id'] : '');
 $result_building_for_customer_location = mysqli_query($varDBConnection,"select building_id, building_name,building_code from   tbl_building where building_status='Active'");
 // if($cus_id!='')
 // {

@@ -7107,7 +7107,7 @@ class TCPDF {
 			if (($info === false) AND function_exists($gdfunction)) {
 				try {
 					// GD library
-					$img = $gdfunction($file);
+					$img = @$gdfunction($file);
 					if ($img !== false) {
 						if ($resize) {
 							$imgr = imagecreatetruecolor($neww, $newh);
@@ -7347,7 +7347,7 @@ class TCPDF {
 		if (($parsed === false) AND function_exists('imagecreatefrompng')) {
 			try {
 				// generate images
-				$img = imagecreatefrompng($file);
+				$img = @imagecreatefrompng($file);
 				$imgalpha = imagecreate($wpx, $hpx);
 				// generate gray scale palette (0 -> 255)
 				for ($c = 0; $c < 256; ++$c) {

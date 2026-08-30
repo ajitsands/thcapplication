@@ -46,8 +46,23 @@ Thumbs.db
 *.swo
 
 # ===========================
-# Logs / Cache
+# Logs / Cache / Generated Images
 # ===========================
 *.log
 *.cache
 error_log
+httpdocs/qr_lib/**/*.png
+view/uploads/*
+!view/uploads/.gitkeep
+!view/uploads/**/.gitkeep
+
+# ===========================
+# Temporary / Scratch scripts
+# ===========================
+desc_tbl.php
+get_excel_info.py
+get_tables.php
+import_spare_parts.php
+info.php
+output.json
+xls/

@@ -476,6 +476,14 @@ $params = [];
                         View Requisition
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a
+                        href="request_spare_parts.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=3&title=request_spare_parts');?>"
+                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='3'){ echo 'active legitRipple';} ?>"
+                    >
+                        Request Spare Parts
+                    </a>
+                </li>
             </ul>
         </li>
 <!--/Material Requisition-->         

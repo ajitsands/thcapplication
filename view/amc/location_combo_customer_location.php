@@ -4,7 +4,7 @@ $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
 
 
-$cus_id=$_POST['v_cust_id'];
+$cus_id = isset($_POST['v_cust_id']) ? $_POST['v_cust_id'] : (isset($_GET['v_cust_id']) ? $_GET['v_cust_id'] : '');
  $result_location_for_customer_location = mysqli_query($varDBConnection,"select location_id,location_name,location_code from   tbl_location where location_status='Active'");
 // if($cus_id!='')
 // {

@@ -58,14 +58,10 @@
 
 					<div class="card-body">
 					
-						<!-- Single row selection -->
-				<div class="card" style="overflow:auto;">
-					<div class="row" style="margin-top: 10px;margin-left:10px;">
-						<div class="col-lg-2 col-md-2 col-sm-2 ml-auto" >
-							<button type="button" id="closed_pdf" class="btn bg-warning classExportToPDF classWorkOrdersClosedPDF">PDF</button>
-						
-							<button type="button" id="closed_excel" class="btn bg-primary exportToExcelAction classWorkOrdersClosedExcel">Excel</button>
-						</div>
+				<div class="card" style="overflow:auto; position: relative;">
+					<div style="position: absolute; top: 20px; right: 20px; z-index: 10;">
+						<button type="button" id="closed_pdf" class="btn bg-warning classExportToPDF classWorkOrdersClosedPDF">PDF</button>
+						<button type="button" id="closed_excel" class="btn bg-primary exportToExcelAction classWorkOrdersClosedExcel">Excel</button>
 					</div>
 					<table class="table datatable-selection-single table-hover datatable-highlight" id="tbl_closed_tickets">
 						<thead>

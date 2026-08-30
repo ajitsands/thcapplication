@@ -24,9 +24,9 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
  
  ?>
  <div class="card">
-			<div class="card-header header-elements-inline bg-teal">
+			<div class="card-header header-elements-inline">
 				<h6 class="card-title">
-				<b></b>	<a data-toggle="collapse" class="text-white" href="#collapsible-item-nested-date-<?php echo $dsl;?>"><?PHP echo $row_date['visit_date_new']; ?></a></b>
+					<a data-toggle="collapse" href="#collapsible-item-nested-date-<?php echo $dsl;?>"><?PHP echo $row_date['visit_date_new']; ?></a>
 				</h6>
 					<div class="header-elements ">
 							<div class="list-icons">
@@ -52,16 +52,16 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
                          }
                          $eds='';
                          $i=rand(10,100);
-                 	$result1 = mysqli_query($varDBConnection,"SELECT GROUP_CONCAT(ticket_team_ids) as team_ids,GROUP_CONCAT(employee_id ORDER BY employee_id ASC) as e_ids FROM `tbl_ticket_teams` WHERE `visit_date`='".$row_date['visit_date']."' and ticket_team_status='Active' group by `ticket_ref_no` ");
-                 	while($row1=mysqli_fetch_assoc($result1)) {
-                 	 
-                             if ($row['Emp_id']== $row1['e_ids'])
-                             {
-                                 $eds=$eds.$row1['team_ids'].',';
-                                 
-                             }
-                             
-                         }
+                  	$result1 = mysqli_query($varDBConnection,"SELECT GROUP_CONCAT(ticket_team_ids) as team_ids,GROUP_CONCAT(employee_id ORDER BY employee_id ASC) as e_ids FROM `tbl_ticket_teams` WHERE `visit_date`='".$row_date['visit_date']."' and ticket_team_status='Active' group by `ticket_ref_no` ");
+                  	while($row1=mysqli_fetch_assoc($result1)) {
+                  	 
+                              if ($row['Emp_id']== $row1['e_ids'])
+                              {
+                                  $eds=$eds.$row1['team_ids'].',';
+                                  
+                              }
+                              
+                          }
                         
                           $eds=rtrim($eds, ",");
                           
@@ -69,9 +69,9 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
  ?>
  
  	<div class="card">
-			<div class="card-header header-elements-inline bg-dark">
+			<div class="card-header header-elements-inline">
 				<h6 class="card-title">
-				<b></b>	<a data-toggle="collapse" class="text-white" href="#collapsible-item-nested-<?php echo $dsl.'-'.$i;?>"><?PHP echo 'Team :  '.$emp_names; ?></a></b>
+					<a data-toggle="collapse" href="#collapsible-item-nested-<?php echo $dsl.'-'.$i;?>"><?PHP echo 'Team :  '.$emp_names; ?></a>
 				</h6>
 					<div class="header-elements ">
 										<div class="list-icons">
@@ -94,9 +94,9 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
                 ?>
 					<!-- Child level -->
 					<div class="card">
-						<div class="card-header header-elements-inline bg-dark">
+						<div class="card-header header-elements-inline">
 							<h6 class="card-title">
-								<a data-toggle="collapse" class="text-white" href="#collapsible-item-nested-child1_<?php echo $j.'-'.$i;?>">
+								<a data-toggle="collapse" href="#collapsible-item-nested-child1_<?php echo $j.'-'.$i;?>">
 								<?PHP if($row_entries['ticket_id']=='AMC')
 								{ echo 'WO-'.$row_entries['ticket_ref_no'].'-'.$row_entries['visit_id'];} else{ echo 'WO-'.$row_entries['ticket_ref_no'].'-'.$row_entries['ticket_id'];}
 							 ?></a>
@@ -133,20 +133,22 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
             							        <?php 
             							      
             	$result_entries_sub = mysqli_query($varDBConnection,"select ticket_id,amc_ticket,ticket_ref_no from   tbl_ticket_teams where   visit_date = '".$row_date['visit_date']."' and employee_id in (".$row['Emp_id'].")  and ticket_ref_no='".$row_entries['ticket_ref_no']."'  and ticket_id='".$row_entries['ticket_id']."' and ticket_team_status='Active' group by ticket_id,amc_ticket");
-                while($result_entries_sub=mysqli_fetch_assoc($result_entries_sub)) { 
-                      if($result_entries_sub['amc_ticket']=='TKT')
+                while($row_entries_sub=mysqli_fetch_assoc($result_entries_sub)) { 
+                      if($row_entries_sub['amc_ticket']=='TKT')
                       {
-                          	$result_details = mysqli_query($varDBConnection,"select ticket_id,ticket_ref_code,customer_code,customer_name,location_name,building_name,customer_id,asset_code,complaints_description,category_name,type_name,location_id,building_id,additional_info from   tbl_tickets where  ticket_id=".$result_entries_sub['ticket_id']);
+                          	$result_details = mysqli_query($varDBConnection,"select ticket_id,ticket_ref_code,customer_code,customer_name,location_name,building_name,customer_id,asset_code,complaints_description,category_name,type_name,location_id,building_id,additional_info from   tbl_tickets where  ticket_id=".$row_entries_sub['ticket_id']);
                           
                       }
                       else
                       {
-                          
-                          $result_assets = mysqli_query($varDBConnection,"select asset_id from    tbl_amc_child where  amc_child_id=".$result_entries_sub['ticket_id']);
-                            while($row_assets=mysqli_fetch_assoc($result_assets))   {
-                                        $asset_ids=$row_assets['asset_id'];
-                                    }
-                         $result_details = mysqli_query($varDBConnection,"select ".$result_entries_sub['ticket_id']." as ticket_id,'".$result_entries_sub['ticket_ref_no']."' as ticket_ref_code,customer_code,customer_name,asset_location as location_name,asset_building as building_name,customer_id,asset_ref_no as asset_code,'AMC-PPM' as complaints_description,asset_category_name as category_name,asset_type_name as type_name,location_id,building_id,'' as additional_info from   tbl_assets where  asset_id=".$asset_ids);
+                          $asset_ids = 0;
+                          $result_assets = mysqli_query($varDBConnection,"select asset_id from    tbl_amc_child where  amc_child_id=".$row_entries_sub['ticket_id']);
+                            if($result_assets) {
+                                while($row_assets=mysqli_fetch_assoc($result_assets))   {
+                                            $asset_ids=$row_assets['asset_id'];
+                                        }
+                            }
+                         $result_details = mysqli_query($varDBConnection,"select ".$row_entries_sub['ticket_id']." as ticket_id,'".$row_entries_sub['ticket_ref_no']."' as ticket_ref_code,customer_code,customer_name,asset_location as location_name,asset_building as building_name,customer_id,asset_ref_no as asset_code,'AMC-PPM' as complaints_description,asset_category_name as category_name,asset_type_name as type_name,location_id,building_id,'' as additional_info from   tbl_assets where  asset_id=".$asset_ids);
                          
                       }
                       
@@ -161,9 +163,9 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
                 			<td><?php echo $row_details['building_name'].', '.$row_details['location_name'];?></td>
                 		    <td><?php echo $row_building_details['building_address'];?></td>
                 				<td><?php echo $row_building_details['contact_person_name'].', '.$row_building_details['contact_person_no'];?></td>
-                									<td><?php if($result_entries_sub['amc_ticket']=='AMC'){echo 'WO-'.$row_details['ticket_ref_code'].'-'.$row_entries['visit_id'];} else {echo 'WO-'.$row_details['ticket_ref_code'].'-'.$row_details['ticket_id'];} ?></td>
+                									<td><?php if($row_entries_sub['amc_ticket']=='AMC'){echo 'WO-'.$row_details['ticket_ref_code'].'-'.$row_entries['visit_id'];} else {echo 'WO-'.$row_details['ticket_ref_code'].'-'.$row_details['ticket_id'];} ?></td>
                 										<td>
-                								<?php if($result_entries_sub['amc_ticket']=='AMC'){	 
+                								<?php if($row_entries_sub['amc_ticket']=='AMC'){	 
                 								    $result_slots = mysqli_query($varDBConnection,"select visit_date,visit_time,additional_slots from    tbl_ticket_teams where   ticket_id=".$row_details['ticket_id']." and amc_ticket='AMC' and ticket_team_status='Active' and visit_date = '".$row_date['visit_date']."' group by visit_id");
                 								}
                 								else
@@ -229,9 +231,9 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
                                             			$strslot1 = rtrim($strslot, ' -');
                                             		echo $strslot1; }?></td>
                                             	
-                									<td><?php echo $result_entries_sub['complaints_description'];?></td>
-                										<td><?php echo $result_entries_sub['asset_code'].' - '.$result_entries_sub['additional_info'];?></td>
-                								<td><?php echo $row_details['category_name'].' - '.$row_details['type_name'];?></td>
+                									<td><?php echo isset($row_details['complaints_description']) ? $row_details['complaints_description'] : '';?></td>
+                										<td><?php echo (isset($row_details['asset_code']) ? $row_details['asset_code'] : '') . ((isset($row_details['additional_info']) && $row_details['additional_info'] != '') ? ' - '.$row_details['additional_info'] : '');?></td>
+                								<td><?php echo (isset($row_details['category_name']) ? $row_details['category_name'] : '') . ' - ' . (isset($row_details['type_name']) ? $row_details['type_name'] : '');?></td>
                 								</tr>       			
                   
                                               <?php }// close of row_building_details
@@ -355,7 +357,6 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
                 									?>
                 									</td>
                 									<td><?php echo $row_services['tech_remarks'];?></td>
-                									<td>
                 									<td>
                 									<?php if($row_services['tech_audio_file']=="NA" || $row_services['tech_audio_file']===NULL){} else {?>
                 								<a href="../httpdocs/audios/<?php echo $row_services['tech_audio_file'];?>" target="_blank"><i class="icon-play3" ></i></a>	

@@ -5,9 +5,16 @@ include(__DIR__ . '/../../model/db_connection/connection.php');
  
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
- 	//$result = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from   tbl_asset_type where asset_type_status='Active'");
+$category_id = isset($_GET["category_id"]) ? $_GET["category_id"] : (isset($_POST["category_id"]) ? $_POST["category_id"] : '');
  	
- 	$result = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from   tbl_asset_type where asset_type_status='Active' and category_id=".$_GET["category_id"]);
+if(!empty($category_id) && is_numeric($category_id) && intval($category_id) > 0)
+{
+    $result = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from tbl_asset_type where asset_type_status='Active' and category_id=".intval($category_id));
+}
+else
+{
+    $result = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from tbl_asset_type where asset_type_status='Active'");
+}
 	
 ?>
 
@@ -18,10 +25,10 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
     
 	    <option value="Select Type">Select Asset Type</option>
 	    
-	    <?PHP 	while($row=mysqli_fetch_assoc($result)) { ?>
+	    <?PHP 	if($result) { while($row=mysqli_fetch_assoc($result)) { ?>
           <option value="<?PHP echo $row['asset_type_id']; ?>"><?PHP echo $row['asset_type_name']; ?></option>
         
-        <?PHP } ?>
+        <?PHP }} ?>
       </select>
      	
  <script>

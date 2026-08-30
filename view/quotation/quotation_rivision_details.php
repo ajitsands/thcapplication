@@ -5,7 +5,7 @@
  }
 </style>
 <?PHP 
-	$reference_no=$_GET['RefNo'];
+	$reference_no = isset($_GET['RefNo']) ? $_GET['RefNo'] : '';
 	//echo $reference_no;
 
 ?>

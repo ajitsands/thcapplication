@@ -126,17 +126,17 @@
 								<span class="d-block text-muted">Enter your credentials below</span>
 							</div>
 
-						<div class="form-group form-group-feedback form-group-feedback-left">
-								<input type="text" class="form-control" id="txt_login_username" placeholder="Username" name="" />
+						<div class="form-group form-group-feedback form-group-feedback-left" style="position: relative;">
+								<input type="text" class="form-control" id="txt_login_username" placeholder="Username" name="" style="padding-left: 45px !important;" />
 								<!--style="text-transform: uppercase"-->
-								<div class="form-control-feedback"> 
+								<div class="form-control-feedback" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); pointer-events: none; height: auto;"> 
 									<i class="icon-user text-muted"></i>
 								</div>
 							</div>
 
-							<div class="form-group form-group-feedback form-group-feedback-left">
-								<input type="password" id="txt_login_password" class="form-control" placeholder="Password" />
-								<div class="form-control-feedback">
+							<div class="form-group form-group-feedback form-group-feedback-left" style="position: relative;">
+								<input type="password" id="txt_login_password" class="form-control" placeholder="Password" style="padding-left: 45px !important;" />
+								<div class="form-control-feedback" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); pointer-events: none; height: auto;">
 									<i class="icon-lock2 text-muted"></i>
 								</div>
 							</div>

@@ -44,7 +44,7 @@
 <div class="container" style="padding-top:20px;">
     <div class="row mb-2">
         <div class="col-12" style="padding-top: 20px;">
-            <?php if($_GET['value']=="developer") { ?>
+            <?php if(isset($_GET['value']) && $_GET['value']=="developer") { ?>
             <a type="button" class="btn-sm btn-warning" data-toggle="modal" data-target="#modal_add_permissions" style="float: right;"><i class="icon-add"></i></a>
             <?php } ?>
         </div>

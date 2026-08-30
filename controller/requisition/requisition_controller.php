@@ -1,6 +1,8 @@
 <?php
-session_start();
-require ('../../model/common/common_functions.php');
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+require_once __DIR__ . '/../../model/common/common_functions.php';
 
 
 
@@ -15,74 +17,75 @@ class requisitionController
 		$update_requisition_id,$product_category_id_requisition_edit,$product_category_name_requisition_edit,
 		$product_type_id_requisition_edit,$requisition_view_id,$product_type_name_requisition_edit,$product_item_id_requisition_edit,
 		$product_item_name_requisition_edit,$product_unit_rate_requisition_edit,$product_quantity_requisition_edit,$requisition_child_id,
-		$product_total_requisition_edit,$requisition_id,$amc_child_idd,$v_start_date,$v_select_customer_id,$v_end_date,$product_unit_requisition;
+		$product_total_requisition_edit,$requisition_id,$amc_child_idd,$v_start_date,$v_select_customer_id,$v_end_date,$product_unit_requisition,
+		$product_master_requisition_id,$product_brand,$current_date,$requisition_id_modal;
          
     function __construct()
 	{
 	    $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
-        $this->actionevents = $_POST['action'];
+        $this->actionevents = isset($_POST['action']) ? $_POST['action'] : '';
 		date_default_timezone_set('Asia/Bahrain');
          $this->current_date = date("Y-m-d h:i:s");
-		 $this->hidden_amc_ref = $_POST['hidden_amc_ref'];
-		 $this->hidden_ticket_ref = $_POST['hidden_ticket_ref'];
-		 $this->amc_customer_name = $_POST['amc_customer_name'];
-		 $this->amc_building_name = $_POST['amc_building_name'];
-		 $this->amc_location_name = $_POST['amc_location_name'];
+		 $this->hidden_amc_ref = isset($_POST['hidden_amc_ref']) ? $_POST['hidden_amc_ref'] : '';
+		 $this->hidden_ticket_ref = isset($_POST['hidden_ticket_ref']) ? $_POST['hidden_ticket_ref'] : '';
+		 $this->amc_customer_name = isset($_POST['amc_customer_name']) ? $_POST['amc_customer_name'] : '';
+		 $this->amc_building_name = isset($_POST['amc_building_name']) ? $_POST['amc_building_name'] : '';
+		 $this->amc_location_name = isset($_POST['amc_location_name']) ? $_POST['amc_location_name'] : '';
 		 
-		 $this->amc_location_id = $_POST['amc_location_id'];
-		 $this->amc_building_id = $_POST['amc_building_id'];
-		 $this->amc_customer_id = $_POST['amc_customer_id'];
-		 $this->requisition_mode = $_POST['v_requisition_mode'];
+		 $this->amc_location_id = isset($_POST['amc_location_id']) ? $_POST['amc_location_id'] : '';
+		 $this->amc_building_id = isset($_POST['amc_building_id']) ? $_POST['amc_building_id'] : '';
+		 $this->amc_customer_id = isset($_POST['amc_customer_id']) ? $_POST['amc_customer_id'] : '';
+		 $this->requisition_mode = isset($_POST['v_requisition_mode']) ? $_POST['v_requisition_mode'] : '';
 		 
-		 $this->amc_ref_requisition = $_POST['v_amc_ref_requisition'];
-		 $this->tck_ref_requisition_edit = $_POST['v_tck_ref_requisition_edit'];
-		 $this->tck_ref_requisition = $_POST['v_tck_ref_requisition'];
-		 $this->amc_ref_requisition_edit = $_POST['v_amc_ref_requisition_edit'];
-		 $this->amc_ref_tckt_requisition_edit = $_POST['v_amc_ref_tckt_requisition_edit'];
-		 $this->amc_edit = $_POST['v_amc_edit'];
-		 $this->amc_child_idd = $_POST['v_amc_child_idd'];
-		 $this->requisition_id_modal = $_POST['requisition_id_modal'];
-		 $this->hidden_amc_ref_tckt = $_POST['hidden_amc_ref_tckt'];
+		 $this->amc_ref_requisition = isset($_POST['v_amc_ref_requisition']) ? $_POST['v_amc_ref_requisition'] : '';
+		 $this->tck_ref_requisition_edit = isset($_POST['v_tck_ref_requisition_edit']) ? $_POST['v_tck_ref_requisition_edit'] : '';
+		 $this->tck_ref_requisition = isset($_POST['v_tck_ref_requisition']) ? $_POST['v_tck_ref_requisition'] : '';
+		 $this->amc_ref_requisition_edit = isset($_POST['v_amc_ref_requisition_edit']) ? $_POST['v_amc_ref_requisition_edit'] : '';
+		 $this->amc_ref_tckt_requisition_edit = isset($_POST['v_amc_ref_tckt_requisition_edit']) ? $_POST['v_amc_ref_tckt_requisition_edit'] : '';
+		 $this->amc_edit = isset($_POST['v_amc_edit']) ? $_POST['v_amc_edit'] : '';
+		 $this->amc_child_idd = isset($_POST['v_amc_child_idd']) ? $_POST['v_amc_child_idd'] : '';
+		 $this->requisition_id_modal = isset($_POST['requisition_id_modal']) ? $_POST['requisition_id_modal'] : '';
+		 $this->hidden_amc_ref_tckt = isset($_POST['hidden_amc_ref_tckt']) ? $_POST['hidden_amc_ref_tckt'] : '';
 		 
-		 $this->v_requisition_serial_no = $_POST['v_requisition_serial_no'];
-		 $this->v_requisition_id = $_POST['v_requisition_id'];
-		 $this->amc_asset_code = $_POST['amc_asset_code'];
-		 $this->v_txt_requisition_serial_no = $_POST['v_txt_requisition_serial_no'];
-		 $this->v_requisition_status = $_POST['v_requisition_status'];
-		 $this->product_category_id_requisition = $_POST['v_product_category_id_requisition'];
-		 $this->product_category_name_requisition = $_POST['v_product_category_name_requisition'];
-		 $this->product_type_id_requisition = $_POST['v_product_type_id_requisition'];
-		 $this->product_type_name_requisition = $_POST['v_product_type_name_requisition'];
-		 $this->product_item_id_requisition = $_POST['v_product_item_id_requisition'];
-		 $this->product_item_name_requisition = $_POST['v_product_item_name_requisition'];
-		 $this->product_unit_rate_requisition = $_POST['v_product_unit_rate_requisition'];
-		 $this->product_quantity_requisition = $_POST['v_product_quantity_requisition'];
-		 $this->product_total_requisition = $_POST['v_product_total_requisition'];
-		 $this->requisition_child_id = $_POST['requisition_child_id'];
-		 $this->requisition_view_id = $_POST['requisition_view_id'];
-		 $this->update_requisition_id = $_POST['update_requisition_id'];
-		 $this->product_category_id_requisition_edit = $_POST['v_product_category_id_requisition_edit'];
-		 $this->product_unit_requisition = $_POST['v_product_unit_requisition'];
-		 $this->product_master_requisition_id = $_POST['v_product_master_requisition_id'];
-		 $this->product_brand = $_POST['v_product_brand'];
+		 $this->v_requisition_serial_no = isset($_POST['v_requisition_serial_no']) ? $_POST['v_requisition_serial_no'] : '';
+		 $this->v_requisition_id = isset($_POST['v_requisition_id']) ? $_POST['v_requisition_id'] : '';
+		 $this->amc_asset_code = isset($_POST['amc_asset_code']) ? $_POST['amc_asset_code'] : '';
+		 $this->v_txt_requisition_serial_no = isset($_POST['v_txt_requisition_serial_no']) ? $_POST['v_txt_requisition_serial_no'] : '';
+		 $this->v_requisition_status = isset($_POST['v_requisition_status']) ? $_POST['v_requisition_status'] : '';
+		 $this->product_category_id_requisition = isset($_POST['v_product_category_id_requisition']) ? $_POST['v_product_category_id_requisition'] : '';
+		 $this->product_category_name_requisition = isset($_POST['v_product_category_name_requisition']) ? $_POST['v_product_category_name_requisition'] : '';
+		 $this->product_type_id_requisition = isset($_POST['v_product_type_id_requisition']) ? $_POST['v_product_type_id_requisition'] : '';
+		 $this->product_type_name_requisition = isset($_POST['v_product_type_name_requisition']) ? $_POST['v_product_type_name_requisition'] : '';
+		 $this->product_item_id_requisition = isset($_POST['v_product_item_id_requisition']) ? $_POST['v_product_item_id_requisition'] : '';
+		 $this->product_item_name_requisition = isset($_POST['v_product_item_name_requisition']) ? $_POST['v_product_item_name_requisition'] : '';
+		 $this->product_unit_rate_requisition = isset($_POST['v_product_unit_rate_requisition']) ? $_POST['v_product_unit_rate_requisition'] : '';
+		 $this->product_quantity_requisition = isset($_POST['v_product_quantity_requisition']) ? $_POST['v_product_quantity_requisition'] : '';
+		 $this->product_total_requisition = isset($_POST['v_product_total_requisition']) ? $_POST['v_product_total_requisition'] : '';
+		 $this->requisition_child_id = isset($_POST['requisition_child_id']) ? $_POST['requisition_child_id'] : '';
+		 $this->requisition_view_id = isset($_POST['requisition_view_id']) ? $_POST['requisition_view_id'] : '';
+		 $this->update_requisition_id = isset($_POST['update_requisition_id']) ? $_POST['update_requisition_id'] : '';
+		 $this->product_category_id_requisition_edit = isset($_POST['v_product_category_id_requisition_edit']) ? $_POST['v_product_category_id_requisition_edit'] : '';
+		 $this->product_unit_requisition = isset($_POST['v_product_unit_requisition']) ? $_POST['v_product_unit_requisition'] : '';
+		 $this->product_master_requisition_id = isset($_POST['v_product_master_requisition_id']) ? $_POST['v_product_master_requisition_id'] : '';
+		 $this->product_brand = isset($_POST['v_product_brand']) ? $_POST['v_product_brand'] : '';
 		  
 		 
-		 $this->v_start_date = $_POST['v_start_date'];
-		 $this->v_end_date = $_POST['v_end_date'];
+		 $this->v_start_date = isset($_POST['v_start_date']) ? $_POST['v_start_date'] : '';
+		 $this->v_end_date = isset($_POST['v_end_date']) ? $_POST['v_end_date'] : '';
 		  
-		 $this->v_select_customer_id = $_POST['v_select_customer_id'];
+		 $this->v_select_customer_id = isset($_POST['v_select_customer_id']) ? $_POST['v_select_customer_id'] : '';
 		 
-		 $this->product_category_name_requisition_edit = $_POST['v_product_category_name_requisition_edit'];
-		 $this->product_type_id_requisition_edit = $_POST['v_product_type_id_requisition_edit'];
-		 $this->product_type_name_requisition_edit = $_POST['v_product_type_name_requisition_edit'];
-		 $this->product_item_id_requisition_edit = $_POST['v_product_item_id_requisition_edit'];
-		 $this->product_item_name_requisition_edit = $_POST['v_product_item_name_requisition_edit'];
-	     $this->product_unit_rate_requisition_edit = $_POST['v_product_unit_rate_requisition_edit'];
-		 $this->product_quantity_requisition_edit = $_POST['v_product_quantity_requisition_edit'];
-		 $this->product_total_requisition_edit = $_POST['v_product_total_requisition_edit'];
+		 $this->product_category_name_requisition_edit = isset($_POST['v_product_category_name_requisition_edit']) ? $_POST['v_product_category_name_requisition_edit'] : '';
+		 $this->product_type_id_requisition_edit = isset($_POST['v_product_type_id_requisition_edit']) ? $_POST['v_product_type_id_requisition_edit'] : '';
+		 $this->product_type_name_requisition_edit = isset($_POST['v_product_type_name_requisition_edit']) ? $_POST['v_product_type_name_requisition_edit'] : '';
+		 $this->product_item_id_requisition_edit = isset($_POST['v_product_item_id_requisition_edit']) ? $_POST['v_product_item_id_requisition_edit'] : '';
+		 $this->product_item_name_requisition_edit = isset($_POST['v_product_item_name_requisition_edit']) ? $_POST['v_product_item_name_requisition_edit'] : '';
+	     $this->product_unit_rate_requisition_edit = isset($_POST['v_product_unit_rate_requisition_edit']) ? $_POST['v_product_unit_rate_requisition_edit'] : '';
+		 $this->product_quantity_requisition_edit = isset($_POST['v_product_quantity_requisition_edit']) ? $_POST['v_product_quantity_requisition_edit'] : '';
+		 $this->product_total_requisition_edit = isset($_POST['v_product_total_requisition_edit']) ? $_POST['v_product_total_requisition_edit'] : '';
 		
-		 $this->requisition_id=$this->varDBConnection->real_escape_string($_POST['requisition_id']);
+		 $this->requisition_id = isset($_POST['requisition_id']) ? $this->varDBConnection->real_escape_string($_POST['requisition_id']) : '';
 		
     }
     
@@ -110,7 +113,7 @@ class requisitionController
 		
 		$array[9] =" update tbl_requision_child set product_category_name='".$this->product_category_name_requisition_edit."',product_category_id='".$this->product_category_id_requisition_edit."',product_type_name='".$this->product_type_name_requisition_edit."',product_type_id='".$this->product_type_id_requisition_edit."',product_item_name='".$this->product_item_name_requisition_edit."',product_item_id='".$this->product_item_id_requisition_edit."',product_unit_rate='".$this->product_unit_rate_requisition_edit."',product_quantity='".$this->product_quantity_requisition_edit."',grant_total='".$this->product_total_requisition_edit."' where requisition_id='".$this->update_requisition_id."'";
 		
-		$array[10]= " Update tbl_mateial_requisition set status='Cancelled' where where requisition_id='".$this->requisition_id."'";
+		$array[10]= " Update tbl_mateial_requisition set status='Cancelled' where requisition_id='".$this->requisition_id."'";
 		
 		$array[11] = "select * from tbl_mateial_requisition where amc_tkt_ref_no='".$this->amc_edit."'";
 		

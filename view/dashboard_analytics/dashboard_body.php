@@ -96,9 +96,8 @@
 
     <div class="col-lg-4 col-md-6 mb-3">
 
-        <button type="button" class="btn btn-search mr-2" id="btn_search">
-        <i class="icon-search4"></i>
-        Search
+        <button type="button" class="btn btn-search mr-2 btn-ladda btn-ladda-spinner" data-style="zoom-in" data-spinner-color="#fff" data-spinner-size="20" id="btn_search">
+        <span class="ladda-label"><i class="icon-search4"></i> Search</span>
     </button>
 
 

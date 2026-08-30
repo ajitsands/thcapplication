@@ -198,6 +198,25 @@ $('#select_customer').select2({
     allowClear: true
 });
 $('#btn_search').on('click', function(){
+    var btn = this;
+    var laddaBtn = Ladda.create(btn);
+    laddaBtn.start();
+
+    var tablesLoaded = 0;
+    function checkLoaded() {
+        tablesLoaded++;
+        if (tablesLoaded >= 3) {
+            laddaBtn.stop();
+            $(document).off('xhr.dt.ladda');
+        }
+    }
+
+    $(document).off('xhr.dt.ladda');
+    $(document).on('xhr.dt.ladda', function ( e, settings, json, xhr ) {
+        if (settings.nTable.id === 'tbl_ppm_list' || settings.nTable.id === 'tbl_reactive_list' || settings.nTable.id === 'tbl_other_list') {
+            checkLoaded();
+        }
+    });
 
     load_ppm_list();
      load_reactive_list();
@@ -854,13 +873,6 @@ function load_other_list()
             },
 
             {
-
-                targets:4,
-
-                width:"300px"
-
-            },
-             {
 
                 targets:4,
 

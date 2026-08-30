@@ -1,17 +1,11 @@
 <?php
-// Assuming you have a MySQLi connection, replace the placeholders below with your actual database connection details
-$servername = "localhost";
-$username = "sianlab_thc_user";
-$password = "s@nds1@b";
-$dbname = "sianlab_db_thc";
-
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+require_once __DIR__ . '/../model/db_connection/connection.php';
+$DBConn = new DBConnection();
+$conn = $DBConn->ConnectToMYSQL();
 
 // Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 
 // Fetch distinct values for amc_ref_no column

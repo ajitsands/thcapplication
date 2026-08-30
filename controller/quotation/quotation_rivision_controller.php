@@ -1,13 +1,13 @@
 <?php
 
-require ('../../model/common/common_functions.php');
+require_once __DIR__ . '/../../model/common/common_functions.php';
 
 
 
 class apartmentController
 {
         var $varModelObj,$varDBConnection;
-		public $quotation_rivision_ref_no;
+		public $quotation_rivision_ref_no,$quotation_rivision_no_length,$actionevents,$ctrl_name,$current_date;
 		public $expertise_id=array();
         
     function __construct()
@@ -15,12 +15,16 @@ class apartmentController
 	  
         $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
-        $this->actionevents = $_POST['action'];
-        $this->ctrl_name = $_POST['v_ctrl_name'];
+        $this->actionevents = isset($_POST['action']) ? $_POST['action'] : '';
+        $this->ctrl_name = isset($_POST['v_ctrl_name']) ? $_POST['v_ctrl_name'] : '';
 		
         //$this->customer_id = $_POST['v_customer_id'];
-		$this->quotation_rivision_ref_no = $_POST['v_quotation_ref_no'];
-		$this->quotation_rivision_no_length = count($this->quotation_rivision_ref_no);
+		$ref_no = isset($_POST['v_quotation_ref_no']) ? trim($_POST['v_quotation_ref_no']) : '';
+		if ($ref_no === 'undefined' || $ref_no === 'null') {
+			$ref_no = '';
+		}
+		$this->quotation_rivision_ref_no = $ref_no;
+		$this->quotation_rivision_no_length = strlen($this->quotation_rivision_ref_no);
 		
         date_default_timezone_set('Asia/Bahrain');
         $this->current_date = date("Y-m-d h:i:s");

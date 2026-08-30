@@ -1,20 +1,12 @@
 <?php
-$host = 'localhost';
-$dbname = 'sianlab_db_thc';
-$user = 'sianlab_thc_user';
-$password = 's@nds1@b';
-
-// Create connection
-$conn = mysqli_connect($host, $user, $password, $dbname);
+require_once __DIR__ . '/../model/db_connection/connection.php';
+$DBConn = new DBConnection();
+$conn = $DBConn->ConnectToMYSQL();
 
 // Check connection
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
-
-// Enable persistent connections
-mysqli_options($conn, MYSQLI_INIT_COMMAND, "SET AUTOCOMMIT = 0");
-mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
 
 // Retrieve questions
 $sql = "SELECT * FROM feedback_questions WHERE status='Active'";
@@ -22,7 +14,7 @@ $result = mysqli_query($conn, $sql);
 
 $counts = [];
 
-if (mysqli_num_rows($result) > 0) {
+if ($result && mysqli_num_rows($result) > 0) {
     while ($question = mysqli_fetch_assoc($result)) {
         $questionId = $question['id'];
         $options = [];
@@ -109,7 +101,7 @@ if (mysqli_num_rows($result) > 0) {
 </head>
 <body>
     
- <?php if (mysqli_num_rows($result) > 0)  { ?>    
+ <?php if ($result && mysqli_num_rows($result) > 0 && !empty($counts))  { ?>    
     
     <h2>Feedback Report</h2>
     <?php 

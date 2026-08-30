@@ -1,4 +1,5 @@
 <?php
+ob_start();
 //============================================================+
 // File name   : example_027.php
 // Begin       : 2008-03-04
@@ -25,7 +26,7 @@
  */
  ob_start(); // Start output buffering
 
-include("../../model/db_connection/connection.php");
+include(__DIR__ . "/../../model/db_connection/connection.php");
 $db_connection =  new DBConnection();
 $conn_obj = $db_connection->ConnectToMYSQL();
 
@@ -103,29 +104,15 @@ if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
 	$pdf->setLanguageArray($l);
 }
 
-// ---------------------------------------------------------
-// Set image file
-$imageFile = 'img.png';
-$img_file = K_PATH_IMAGES.$imageFile;
-// Set x, y, width, and height parameters for the image
-$x = 10;
-$y = 10;
-$width = 40;  // Width of the image in millimeters
-$height = 0;   // Height is automatically calculated to maintain the aspect ratio
-
-// Add image to the page
-$pdf->Image($img_file, $x, $y, $width);
-
 // set font
-$pdf->SetFont('helvetica', '', 11);
+$pdf->SetFont('helvetica', '', 6);
 
-//QR COde Style
+// QR Code Style
 $style = array(
-   
     'fgcolor' => array(0,0,0),
-    'bgcolor' => false, //array(255,255,255)
-    'module_width' => 2.2, // width of a single module in points
-    'module_height' => 2.2 // height of a single module in points
+    'bgcolor' => false,
+    'module_width' => 2.2,
+    'module_height' => 2.2
 );
 
 // set image scale factor
@@ -133,11 +120,8 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 // set JPEG quality
 $pdf->setJPEGQuality(300);
 
-// Tesxting With New Option 
-$pdf->SetFont('helvetica', '', 6);
-
-$k = count($asset_ref_no); // Use count() instead of $result->num_rows
-$ctr = 0; // Initialize $ctr to 0
+$k = count($asset_ref_no);
+$ctr = 0;
 
 for ($i = 1; $i <= $k; $i++) {
     $pdf->AddPage('L', array(50, 25));
@@ -150,15 +134,16 @@ for ($i = 1; $i <= $k; $i++) {
     $img_file = K_PATH_IMAGES.'logo_print.png';
     $pdf->Image($img_file, $x, $y, $width);
     
-    $pdf->write2DBarcode($asset_ref_no[$ctr], 'QRCODE,L', 4.5, 3.5,20,20,  $style, 'N');
-
-    $pdf->Text(12.5,20, $asset_ref_no[$ctr]);
+    $pdf->write2DBarcode($asset_ref_no[$ctr], 'QRCODE,L', 4.5, 3.5, 20, 20, $style, 'N');
+    $pdf->Text(12.5, 20, $asset_ref_no[$ctr]);
     
-
-    $ctr++; // Increment $ctr after using its value
+    $ctr++;
 }
 
-//Close and output PDF document
+if (ob_get_length()) {
+    ob_end_clean();
+}
+
 $pdf->Output('AssetQR.pdf', 'I');
 
 //============================================================+

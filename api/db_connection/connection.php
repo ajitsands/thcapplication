@@ -4,7 +4,7 @@ class DBConnection
 
     function ConnectToMYSQL()
     {
-      $con = mysqli_connect("localhost","sianlab_thc_user","s@nds1@b","sianlab_db_thc");
+      $con = mysqli_connect("localhost","root","S@nds1@b","db_thc");
 
       if (mysqli_connect_errno())
         {

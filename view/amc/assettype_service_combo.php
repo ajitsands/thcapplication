@@ -3,8 +3,12 @@
 include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
-$cus_id=$_POST['v_cust_id'];
- $result_assettype = mysqli_query($varDBConnection,"select DISTINCT asset_type_id,asset_type_name from  tbl_assets where customer_id='".$cus_id."'");
+$cus_id = isset($_POST['v_cust_id']) ? $_POST['v_cust_id'] : (isset($_GET['v_cust_id']) ? $_GET['v_cust_id'] : '');
+if(!empty($cus_id)) {
+    $result_assettype = mysqli_query($varDBConnection,"select DISTINCT asset_type_id,asset_type_name from  tbl_assets where customer_id='".mysqli_real_escape_string($varDBConnection, $cus_id)."'");
+} else {
+    $result_assettype = mysqli_query($varDBConnection,"select DISTINCT asset_type_id,asset_type_name from  tbl_assets");
+}
 	
 ?>
 

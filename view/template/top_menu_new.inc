@@ -159,6 +159,7 @@ function menuActive($p, $key, $val) {
         <ul class="thc-dropdown">
           <li class="classMaterialRequisitionModify"><a href="requisition.php?param=<?= $OBJ->URLEncode('head=requisition&open=1&title=add_requisition') ?>" class="<?= menuActive($params,'open','1') ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Requisition</a></li>
           <li class="classMaterialRequisitionView"><a href="requisition_list.php?param=<?= $OBJ->URLEncode('head=requisition&open=2&title=view_requisition') ?>" class="<?= menuActive($params,'open','2') ? 'active' : '' ?>"><i class="icon-list"></i> View Requisition</a></li>
+          <li><a href="request_spare_parts.php?param=<?= $OBJ->URLEncode('head=requisition&open=3&title=request_spare_parts') ?>" class="<?= menuActive($params,'open','3') ? 'active' : '' ?>"><i class="icon-wrench"></i> Request Spare Parts</a></li>
         </ul>
       </li>
 

@@ -138,9 +138,11 @@ $sql .= " ORDER BY v.date_of_visits ASC";
 
                 $data = array();
                 
-                while($row = mysqli_fetch_assoc($result))
-                {
-                    $data[] = $row;
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result))
+                    {
+                        $data[] = $row;
+                    }
                 }
                 
                 
@@ -242,9 +244,11 @@ $sql .= " ORDER BY v.date_of_visits ASC";
 
                 $data = array();
                 
-                while($row = mysqli_fetch_assoc($result))
-                {
-                    $data[] = $row;
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result))
+                    {
+                        $data[] = $row;
+                    }
                 }
                 
                 
@@ -346,9 +350,11 @@ $sql .= " ORDER BY v.date_of_visits ASC";
 
                 $data = array();
                 
-                while($row = mysqli_fetch_assoc($result))
-                {
-                    $data[] = $row;
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result))
+                    {
+                        $data[] = $row;
+                    }
                 }
                 
                 
