@@ -15,13 +15,16 @@ class UserPermisssion
 			}
             function DatabaseConnection()
             {
-                global  $servername ,$username ,$password ,	$database ;
-				$conn = new mysqli($servername, $username, $password, $database);
-				// Check connection
-				if ($conn->connect_error) {
-					die("Connection failed: " . $conn->connect_error);
-				}
-				return $conn;
+                global $servername, $username, $password, $database;
+                mysqli_report(MYSQLI_REPORT_OFF);
+                $conn = @new mysqli($servername, $username, $password, $database);
+                if ($conn->connect_error) {
+                    $conn = @new mysqli("127.0.0.1", $username, $password, $database);
+                }
+                if ($conn->connect_error) {
+                    die("Database Connection failed: " . $conn->connect_error);
+                }
+                return $conn;
             }
             
             function getUserPermissionsByUserID($userId) { // This function for V2 Application
