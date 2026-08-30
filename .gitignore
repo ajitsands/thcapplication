@@ -66,3 +66,4 @@ import_spare_parts.php
 info.php
 output.json
 xls/
+thcfm_database_export.sql
