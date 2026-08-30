@@ -22,12 +22,45 @@ if (!class_exists('DBConnection')) {
      
         function ConnectToMYSQL()
         { 
-            
-          $con = mysqli_connect("localhost","root","S@nds1@b","db_thc");
+            // Detect if running on localhost / development or production server (portal.thcfm.com)
+            $is_local = false;
+            if (php_sapi_name() === 'cli') {
+                $is_local = true;
+            } else {
+                $http_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+                $server_name = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '';
+                if (stripos($http_host, 'localhost') !== false || stripos($http_host, '127.0.0.1') !== false || stripos($server_name, 'localhost') !== false) {
+                    $is_local = true;
+                }
+            }
 
-          if (mysqli_connect_errno())
-            {
-            echo "Failed to connect to MySQL: " . mysqli_connect_error();
+            if ($is_local) {
+                // Local Development Environment
+                $host = "localhost";
+                $user = "root";
+                $pass = "S@nds1@b";
+                $db   = "db_thc";
+            } else {
+                // Production Server: portal.thcfm.com
+                $host = "localhost";
+                $user = "thcfm_application_user";
+                $pass = "S@nds1@b";
+                $db   = "thcfm_application_db";
+            }
+
+            $con = @mysqli_connect($host, $user, $pass, $db);
+
+            // Fallback between environments if initial attempt fails
+            if (!$con) {
+                if ($is_local) {
+                    $con = @mysqli_connect("localhost", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
+                } else {
+                    $con = @mysqli_connect("localhost", "root", "S@nds1@b", "db_thc");
+                }
+            }
+
+            if (!$con) {
+                echo "Failed to connect to MySQL: " . mysqli_connect_error();
             }
             return $con;
         }

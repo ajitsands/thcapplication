@@ -7,8 +7,12 @@ $customer_name = $_GET['customer_name'];
 $param = $amc_ref_no;
 //$param = 'amc_ref_no='.$amc_ref_no.'&amc_id='.$amc_id.'&contract_type='.$contract_type.'&customer_code='.$customer_code.'&customer_name='.$customer_name;
 $encryptedData = base64_encode($param);
-// Append the encrypted data to the URL
-$encryptedURL = 'http://'.$_SERVER['SERVER_NAME'].'/thc/customer_feedback/?param='. urlencode($encryptedData);
+// Dynamically build QR feedback URL based on server domain/protocol
+$is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+$protocol = $is_https ? 'https://' : 'http://';
+$server_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'portal.thcfm.com');
+$subfolder = (stripos($_SERVER['REQUEST_URI'], '/thc/') !== false) ? '/thc' : '';
+$encryptedURL = $protocol . $server_host . $subfolder . '/customer_feedback/?param=' . urlencode($encryptedData);
 
 //============================================================+
 // File name   : example_051.php 
