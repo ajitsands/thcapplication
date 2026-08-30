@@ -19,15 +19,16 @@
 					</ul>
 				</div>
 			</div>
-			<script  src="user_permission/js/settings.js?timestamp=<?php echo time(); ?>"></script>
-			<script src="user_permission/js/permission.js?timestamp=<?php echo time(); ?>"></script>
-            <script src="user_permission/js/validations.js?timestamp=<?php echo time(); ?>"></script>
-            <script type="text/javascript" src="permission/js/messagedropdown.js?timestamp=<?php echo time(); ?>"></script>
-            
             <?php
                 $currentPage = basename($_SERVER['PHP_SELF']);
                 if ($currentPage !== 'login.php') 
                 {
+            ?>
+			<script src="user_permission/js/settings.js?timestamp=<?php echo time(); ?>"></script>
+			<script src="user_permission/js/permission.js?timestamp=<?php echo time(); ?>"></script>
+            <script src="user_permission/js/validations.js?timestamp=<?php echo time(); ?>"></script>
+            <script type="text/javascript" src="user_permission/js/messagedropdown.js?timestamp=<?php echo time(); ?>"></script>
+            <?php
                    include_once('datatable_setting.php');
                 }
             ?>
