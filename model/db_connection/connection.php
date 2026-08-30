@@ -22,6 +22,9 @@ if (!class_exists('DBConnection')) {
      
         function ConnectToMYSQL()
         { 
+            // Turn off default fatal exception throwing in PHP 8.1+ so errors can be handled smoothly
+            mysqli_report(MYSQLI_REPORT_OFF);
+
             // Detect if running on localhost / development or production server (portal.thcfm.com)
             $is_local = false;
             if (php_sapi_name() === 'cli') {
@@ -50,18 +53,21 @@ if (!class_exists('DBConnection')) {
 
             $con = @mysqli_connect($host, $user, $pass, $db);
 
-            // Fallback between environments if initial attempt fails
+            // Fallback between localhost / 127.0.0.1 and environments if initial attempt fails
             if (!$con) {
                 if ($is_local) {
-                    $con = @mysqli_connect("localhost", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
+                    $con = @mysqli_connect("127.0.0.1", "root", "S@nds1@b", "db_thc");
+                    if (!$con) {
+                        $con = @mysqli_connect("localhost", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
+                    }
                 } else {
-                    $con = @mysqli_connect("localhost", "root", "S@nds1@b", "db_thc");
+                    $con = @mysqli_connect("127.0.0.1", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
+                    if (!$con) {
+                        $con = @mysqli_connect("localhost", "root", "S@nds1@b", "db_thc");
+                    }
                 }
             }
 
-            if (!$con) {
-                echo "Failed to connect to MySQL: " . mysqli_connect_error();
-            }
             return $con;
         }
 

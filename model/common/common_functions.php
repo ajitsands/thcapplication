@@ -325,7 +325,13 @@ class CommonModel extends FunctionDefinitions
         $user_username = '';
 		$user_password = '';
         $return_string="";
+        if (!$this->varDBConnection) {
+            return 'Database connection failed. Please check server database settings.';
+        }
 		$this->result = mysqli_query($this->varDBConnection,$SQL);
+		if (!$this->result) {
+			return 'Database query error: ' . mysqli_error($this->varDBConnection);
+		}
 		$row_count = mysqli_num_rows($this->result);
 		
 		if($row_count>=1)
@@ -351,14 +357,14 @@ class CommonModel extends FunctionDefinitions
 			   
 				if($password==$user_password)
 				{
-					session_start();
+					if (session_status() == PHP_SESSION_NONE) {
+						session_start();
+					}
 					
 					//$permissionSql = "SELECT id FROM users WHERE username='".$userName."' AND password='".$password."'";
 					$permissionSql = "SELECT id FROM users WHERE username='".$userName."' ";
-                    $permissonResult = $this->varDBConnection->query($permissionSql);
-                    $permissionRow = $permissonResult->fetch_assoc();
-                    if ($permissionRow) {
-
+                    $permissonResult = mysqli_query($this->varDBConnection, $permissionSql);
+                    if ($permissonResult && ($permissionRow = mysqli_fetch_assoc($permissonResult))) {
                         $_SESSION['USERROLLID'] = $permissionRow['id'];
                     }
 			  	  

@@ -1,8 +1,7 @@
 <?php
 		ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
-error_reporting(E_ALL);
-require ('../../model/common/common_functions.php');
+require_once __DIR__ . '/../../model/common/common_functions.php';
 class loginController 
 {
     var $varModelObj, $varConnection;
