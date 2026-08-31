@@ -198,14 +198,12 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
                     <th>Leave Reason</th>
                     <th>Start Date</th>
                     <th>End Date</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
             <tfoot>
                 <tr>
-                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>

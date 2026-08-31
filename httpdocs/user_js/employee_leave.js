@@ -378,29 +378,14 @@ $(document).ready(function(){
                                  { "data": "employee_name" },
                                  { "data": "leave_reason"},
                                  { "data": "start_time"},
-                                 { "data": "end_time" },
-                                 { "data": "employee_code",
-                                      render: function ( data, type, rows, meta ) {
-                                          
-                                         // str_active_status='<span class="badge badge-success">'+data+'</span>';
-                                         //str_active_status='<button type="button" id="btn_employee_status_change" class="btn btn-primary btn-sm"><b>Deactive</b></button>';
-                                         str_active_status='<a href="#" class="dropdown-item" name="btn_employee_status_change" id="btn_employee_status_change" style="color:orange"><i class="icon-database-remove mr-3 icon-2x"></i></a>';
-                                         	
-
-    								 
-                                     	return str_active_status;
-            
-            							 }
-                                 }
-                                 
-                                
+                                 { "data": "end_time" }
                              ],
                              pageLength: 10,
             				 searching: true,
                              responsive: true,
                              
                              "aoColumnDefs": [
-            					{ "bSortable": false, "aTargets": [ 0,1,2,3,4,5,6] }, 
+            					{ "bSortable": false, "aTargets": [ 0,1,2,3,4,5] }, 
             					
             				],
                             
