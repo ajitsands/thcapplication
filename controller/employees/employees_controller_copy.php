@@ -99,26 +99,39 @@ class apartmentController
                 
             break;
             case 'add_employee':
-                // Handle expertise and employee insertion
+                // Handle expertise and employee insertion (single insert)
                 if($this->expertise_length > 0) {
-                    for($this->x = 0; $this->x < $this->expertise_length; $this->x++) {
-                        $this->str[] = "('{$this->expertise_id[$this->x]}','{$this->expertise_name[$this->x]}')";
-                        $this->expertise_id1 = $this->expertise_id[$this->x];
-                        $this->expertise_name1 = $this->expertise_name[$this->x];
-                        $var = $this->SQLArray();
-                        $this->varModelObj->ExecuteProcedure($var[1]);
-                    }
+                    $this->expertise_id1 = $this->expertise_id[0];
+                    $this->expertise_name1 = $this->expertise_name[0];
                 } else {
                     $this->expertise_id1 = 0;
                     $this->expertise_name1 = 'NA';
-                    $this->varModelObj->ExecuteProcedure($var[1]);   
                 }
+                $var = $this->SQLArray();
+                $this->varModelObj->ExecuteProcedure($var[1]);
                 
                 // Fetch the last inserted employee_id
                 $employee_id_query = "SELECT @msg AS employee_id";
                 $result = $this->varDBConnection->query($employee_id_query);
                 $row = $result->fetch_assoc();
                 $employee_id = $row['employee_id'];
+                
+                // If technician with multiple expertise, insert remaining
+                if($this->employee_type_name == 'Technician' && $this->expertise_length > 1 && !empty($employee_id)) {
+                    $code_res = mysqli_query($this->varDBConnection, "SELECT employee_code FROM tbl_employees WHERE employee_id = '" . intval($employee_id) . "'");
+                    $emp_code = '';
+                    if($code_res && $crow = mysqli_fetch_assoc($code_res)) {
+                        $emp_code = $crow['employee_code'];
+                    }
+                    for($this->x = 1; $this->x < $this->expertise_length; $this->x++) {
+                        $exp_id = mysqli_real_escape_string($this->varDBConnection, $this->expertise_id[$this->x]);
+                        $exp_name = mysqli_real_escape_string($this->varDBConnection, $this->expertise_name[$this->x]);
+                        $emp_name_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_name);
+                        $emp_code_esc = mysqli_real_escape_string($this->varDBConnection, $emp_code);
+                        $emp_id_int = intval($employee_id);
+                        mysqli_query($this->varDBConnection, "INSERT INTO `tbl_technician_expertise` (`employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`) VALUES ('$emp_id_int', '$emp_code_esc', '$emp_name_esc', '$exp_id', '$exp_name')");
+                    }
+                }
                 
                 // Handle document uploads and insertion
                 $upload_dir = "../../httpdocs/employeeDoc/";
@@ -191,26 +204,25 @@ class apartmentController
              case 'update_employee':
                  
                   $this->varModelObj->DeleteRow($var[8]);
-                 if($this->expertise_length >0)
-                 {
-                  for($this->x = 0; $this->x < $this->expertise_length; $this->x++){
-                      
-                     $this->str[] = "('{$this->expertise_id[$this->x]}','{$this->expertise_name[$this->x]}')";
-                     $this->expertise_id1= $this->expertise_id[$this->x];
-                     $this->expertise_name1= $this->expertise_name[$this->x];
-                     $var =  $this->SQLArray();
-                     echo $this->expertise_name1;
-                     echo $var[3];
-                     $this->varModelObj->ExecuteProcedure($var[3]);
-                     }
+                  if($this->expertise_length > 0) {
+                      $this->expertise_id1 = $this->expertise_id[0];
+                      $this->expertise_name1 = $this->expertise_name[0];
+                  } else {
+                      $this->expertise_id1 = 0;
+                      $this->expertise_name1 = 'NA';
                   }
-                  else
-                  {
-                      //echo 'else';
-                  $this->expertise_id1=0;
-                  $this->expertise_name1='NA';
-                  //echo $var[3];
-                  $this->varModelObj->ExecuteProcedure($var[3]);   
+                  $var = $this->SQLArray();
+                  $this->varModelObj->ExecuteProcedure($var[3]);
+                  
+                  if($this->employee_type_name == 'Technician' && $this->expertise_length > 1) {
+                      for($this->x = 1; $this->x < $this->expertise_length; $this->x++) {
+                          $exp_id = mysqli_real_escape_string($this->varDBConnection, $this->expertise_id[$this->x]);
+                          $exp_name = mysqli_real_escape_string($this->varDBConnection, $this->expertise_name[$this->x]);
+                          $emp_name_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_name);
+                          $emp_code_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_code);
+                          $emp_id_int = intval($this->employee_id);
+                          mysqli_query($this->varDBConnection, "INSERT INTO `tbl_technician_expertise` (`employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`) VALUES ('$emp_id_int', '$emp_code_esc', '$emp_name_esc', '$exp_id', '$exp_name')");
+                      }
                   }
                
                   // Handle employee image update
