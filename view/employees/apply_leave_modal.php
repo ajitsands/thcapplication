@@ -1,6 +1,6 @@
 <!-- Apply Leave Modal -->
 <div id="modal_apply_leave" class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg" style="max-width: 750px;">
         <div class="modal-content">
             <div class="modal-header bg-teal-400">
                 <h6 class="modal-title">Apply Leave</h6>
@@ -9,7 +9,7 @@
 
             <div class="modal-body">
                 <div class="form-group row">
-                    <label class="col-form-label col-lg-3">Employee Name <span class="text-danger">*</span></label>
+                    <label class="col-form-label col-lg-3 font-weight-semibold">Employee Name <span class="text-danger">*</span></label>
                     <div class="col-lg-9">
                         <select id="leave_emp_name" class="form-control form-control-select2" data-placeholder="Select Employee">
                         </select>
@@ -19,7 +19,7 @@
                 </div>
 
                 <div class="form-group row">
-                    <label class="col-form-label col-lg-3">Leave Type <span class="text-danger">*</span></label>
+                    <label class="col-form-label col-lg-3 font-weight-semibold">Leave Type <span class="text-danger">*</span></label>
                     <div class="col-lg-9">
                         <select id="leave_type" class="form-control form-control-select2" data-placeholder="Select or Add Leave Type">
                             <option value=""></option>
@@ -33,18 +33,18 @@
                 </div>
 
                 <div class="form-group row">
-                    <label class="col-form-label col-lg-3">Start Date <span class="text-danger">*</span></label>
+                    <label class="col-form-label col-lg-3 font-weight-semibold">Start Date <span class="text-danger">*</span></label>
                     <div class="col-lg-3">
                         <input type="date" class="form-control" id="leave_start_date">
                     </div>
-                    <label class="col-form-label col-lg-3">End Date <span class="text-danger">*</span></label>
+                    <label class="col-form-label col-lg-3 font-weight-semibold">End Date <span class="text-danger">*</span></label>
                     <div class="col-lg-3">
                         <input type="date" class="form-control" id="leave_end_date">
                     </div>
                 </div>
 
                 <div class="form-group row">
-                    <label class="col-form-label col-lg-3">Duration <span class="text-danger">*</span></label>
+                    <label class="col-form-label col-lg-3 font-weight-semibold">Duration <span class="text-danger">*</span></label>
                     <div class="col-lg-9">
                         <select id="leave_duration" class="form-control form-control-select2" data-placeholder="Select Duration">
                             <option value="Full Day">Full Day</option>
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="form-group row">
-                    <label class="col-form-label col-lg-3">Reason <span class="text-danger">*</span></label>
+                    <label class="col-form-label col-lg-3 font-weight-semibold">Reason <span class="text-danger">*</span></label>
                     <div class="col-lg-9">
                         <textarea id="leave_reason" class="form-control" rows="3" placeholder="Enter reason for leave"></textarea>
                     </div>
