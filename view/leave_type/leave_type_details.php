@@ -1,7 +1,7 @@
 <div class="row">
     <div class="card col-md-12">
         <div class="card-header header-elements-inline">
-            <h5 class="card-title font-weight-semibold"><i class="icon-palette mr-2"></i> Leave Type Master</h5>
+            <h5 class="card-title font-weight-semibold"><i class="icon-color-sampler mr-2"></i> Leave Type Master</h5>
         </div>
 
         <div class="card-body">
