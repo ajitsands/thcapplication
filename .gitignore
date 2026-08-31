@@ -52,6 +52,8 @@ Thumbs.db
 *.cache
 error_log
 httpdocs/qr_lib/**/*.png
+httpdocs/images/employee_image/*
+httpdocs/images/building_image/*
 view/uploads/*
 !view/uploads/.gitkeep
 !view/uploads/**/.gitkeep
