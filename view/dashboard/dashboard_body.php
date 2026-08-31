@@ -173,7 +173,7 @@
                     <h5 class="card-title">Work Orders - Month Wise</h5>
                 </div>
                 <!-- Basic animated pie -->
-                <div class="card-body text-center" style="height: 480px;" id="pie_card">
+                <div class="card-body text-center" style="min-height: 480px;" id="pie_card">
                     <div class="svg-center" id="pie_basic"></div>
 
                     <span class="font-weight-semibold" id="graph_category_type"></span><br>  
@@ -182,63 +182,66 @@
                         <?php echo $graph_year;?>
                     </span>
                     <!--<div class="font-size-sm text-muted">120</div>-->
-                    <br />
-                    <br />
-                    <div class="row">
-                        <label><strong>Select Type</strong></label>
-                        <select id="category_select_type" class="form-control select category_select_type" data-fouc>
-                            <option value="" selected>Select</option>
-                            <option value="all">All</option>
-                            <?php   
-                            	$resultCategoriess = mysqli_query($varDBConnection,"SELECT category_id, category_name FROM tbl_category WHERE category_status='Active'");
-                                while($rowsCategories=mysqli_fetch_assoc($resultCategoriess)) { ?>
-                                <option value="<?php echo $rowsCategories['category_id']; ?>"><?php echo $rowsCategories['category_name']; ?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
-                    <div class="row" style="margin-top: 10px">
-                        <label><strong>Select Month</strong></label>
-                        <select id="select_month" class="form-control select select_month" data-fouc>
-                            <option value="0" disabled selected>Month</option>
-                            <option value="01">January</option>
-                            <option value="02">February</option>
-                            <option value="03">March</option>
-                            <option value="04">April</option>
-                            <option value="05">May</option>
-                            <option value="06">June</option>
-                            <option value="07">July</option>
-                            <option value="08">August</option>
-                            <option value="09">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
-                    </div>
-                    <p></p>
-                    <div class="row">
-                        <label><strong>Select Year</strong></label>
-                        <select id="select_year" class="form-control select select_year" data-fouc>
-                            <option value="0" disabled selected>Year</option>
-                            <option value="2022">2022</option>
-                            <option value="2023">2023</option>
-                            <option value="2024">2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                            <option value="2029">2029</option>
-                            <option value="2030">2030</option>
-                            <option value="2031">2031</option>
-                            <option value="2032">2032</option>
-                            <option value="2033">2033</option>
-                            <option value="2034">2034</option>
-                            <option value="2035">2035</option>
-                            <option value="2036">2036</option>
-                            <option value="2037">2037</option>
-                            <option value="2038">2038</option>
-                            <option value="2039">2039</option>
-                            <option value="2040">2040</option>
-                        </select>
+                    <div class="mt-2 text-left">
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <label class="mb-1 font-weight-semibold font-size-sm">Select Type</label>
+                                <select id="category_select_type" class="form-control select category_select_type" data-fouc>
+                                    <option value="" selected>Select</option>
+                                    <option value="all">All</option>
+                                    <?php   
+                                    	$resultCategoriess = mysqli_query($varDBConnection,"SELECT category_id, category_name FROM tbl_category WHERE category_status='Active'");
+                                        while($rowsCategories=mysqli_fetch_assoc($resultCategoriess)) { ?>
+                                        <option value="<?php echo $rowsCategories['category_id']; ?>"><?php echo $rowsCategories['category_name']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 pr-1">
+                                <label class="mb-1 font-weight-semibold font-size-sm">Select Month</label>
+                                <select id="select_month" class="form-control select select_month" data-fouc>
+                                    <option value="0" disabled selected>Month</option>
+                                    <option value="01">January</option>
+                                    <option value="02">February</option>
+                                    <option value="03">March</option>
+                                    <option value="04">April</option>
+                                    <option value="05">May</option>
+                                    <option value="06">June</option>
+                                    <option value="07">July</option>
+                                    <option value="08">August</option>
+                                    <option value="09">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div class="col-6 pl-1">
+                                <label class="mb-1 font-weight-semibold font-size-sm">Select Year</label>
+                                <select id="select_year" class="form-control select select_year" data-fouc>
+                                    <option value="0" disabled selected>Year</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                    <option value="2030">2030</option>
+                                    <option value="2031">2031</option>
+                                    <option value="2032">2032</option>
+                                    <option value="2033">2033</option>
+                                    <option value="2034">2034</option>
+                                    <option value="2035">2035</option>
+                                    <option value="2036">2036</option>
+                                    <option value="2037">2037</option>
+                                    <option value="2038">2038</option>
+                                    <option value="2039">2039</option>
+                                    <option value="2040">2040</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <!-- /basic animated pie -->
