@@ -58,18 +58,18 @@ $params = [];
                 </li>
                 <li class="nav-item classEmployeesView">
                     <a
-                        href="employees.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=1&title=employees');?>"
-                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active';} ?>"
-                    >
-                        Employees
-                    </a>
-                </li>
-                <li class="nav-item classEmployeesView">
-                    <a
                         href="leave_type.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=19&title=leave_type');?>"
                         class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='19' ){ echo 'active';} ?>"
                     >
                         Leave Types
+                    </a>
+                </li>
+                <li class="nav-item classEmployeesView">
+                    <a
+                        href="employees.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=1&title=employees');?>"
+                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active';} ?>"
+                    >
+                        Employees
                     </a>
                 </li>
                 <li class="nav-item classEmployeesView">
