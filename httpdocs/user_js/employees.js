@@ -151,46 +151,30 @@ $(document).ready(function(){
                          v_expertise_name = $('#select_expertise option:selected').toArray().map(item => item.text);
                          v_expertise_id = $('#select_expertise option:selected').toArray().map(item => item.value);
                       });
-                $('#session_image').change(function (e) {
-                    v_item_img = $("#session_image").val();
-                    var randomNum = Math.ceil(Math.random() * 999999);
-                    if(v_item_img == "") {
-                        v_item_img = "default.jpg";
-                        $("#img_preview").empty().hide();
-                    } else {
-                        var doc_file_obj = $("#session_image")[0].files[0];
-                        if (doc_file_obj) {
-                            var reader = new FileReader();
-                            reader.onload = function(evt) {
-                                $("#img_preview").show().html("<img style='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='" + evt.target.result + "'>");
-                            };
-                            reader.readAsDataURL(doc_file_obj);
+                 var v_session_image = "default.jpg";
+                 var v_session_image_new = "";
 
-                            var upload = new ns.Upload(doc_file_obj);
-                            var doc_file1 = doc_file_obj.name;
-                            v_item_img = $.trim(randomNum + '_' + doc_file1);
-                            var success = upload.doUpload("../httpdocs/user_upload/employee_image_upload.php?random_no=" + randomNum, v_item_img);
-                        }
-                    }  
-                });   
-               
-            //          $('#session_image').change(function (e) {
-                         
-            //                 v_session_image = $("#session_image").val();
-            //                 randomNum = Math.ceil(Math.random() * 999999);
-            //                 if(v_session_image=="")
-            //             {
-            //                 v_session_image="default.jpg";
-            //             }
-            //             else
-            //             {
-            //                 var doc_file_obj = $("#session_image")[0].files[0];
-            //                 var upload = new ns.Upload(doc_file_obj);
-            //                 doc_file1= doc_file_obj.name;
-            //                  v_session_image=$.trim(randomNum+'_'+doc_file1);
-            //                 var success = upload.doUpload("https://thc.sianlab.com/httpdocs/user_upload/employee_image_upload.php?random_no="+randomNum);
-            //             }  
-            //   });
+                 $('#session_image').change(function (e) {
+                     var fileInput = $("#session_image")[0];
+                     if (fileInput && fileInput.files && fileInput.files[0]) {
+                         var doc_file_obj = fileInput.files[0];
+                         var randomNum = Math.ceil(Math.random() * 999999);
+                         var clean_name = doc_file_obj.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                         v_session_image = $.trim(randomNum + '_' + clean_name);
+
+                         var reader = new FileReader();
+                         reader.onload = function(evt) {
+                             $("#img_preview").show().html("<img style='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='" + evt.target.result + "'>");
+                         };
+                         reader.readAsDataURL(doc_file_obj);
+
+                         var upload = new ns.Upload(doc_file_obj);
+                         upload.doUpload("../httpdocs/user_upload/employee_image_upload.php?random_no=" + randomNum, v_session_image);
+                     } else {
+                         v_session_image = "default.jpg";
+                         $("#img_preview").empty().hide();
+                     }
+                 });
               
                     
                     
@@ -266,22 +250,9 @@ $(document).ready(function(){
                             v_expertise_name='NA'
                          
                          }
-                        v_session_image = $("#session_image").val();
-                      
-                            randomNum = Math.ceil(Math.random() * 999999);
-                            if(v_session_image==="")
-                        {
-                            v_session_image="default.jpg";
-                        }
-                        else
-                        {
-                            var doc_file_obj = $("#session_image")[0].files[0];
-                            var upload = new ns.Upload(doc_file_obj);
-                            doc_file1= doc_file_obj.name;
-                            upload.doUpload("../httpdocs/user_upload/employee_image_upload.php?random_no="+randomNum);
-                            v_session_image=$.trim(randomNum+'_'+doc_file1);
-                        }  
-                    //alert(v_session_image);
+                     if(!v_session_image || v_session_image === "") {
+                         v_session_image = "default.jpg";
+                     }
                     if($.trim(v_emp_name)===""||$.trim(v_emp_pwd)===""||typeof v_user_type_id === "undefined"||$.trim(v_emp_contact_no)===""|| typeof v_expertise_id === "undefined"||v_emp_joining_date===""||v_emp_visa_validity===""||v_emp_cpr_expiry_date===""||v_emp_passport_no==="")
                     
                     {
@@ -309,7 +280,6 @@ $(document).ready(function(){
                                      v_btn_employee_add.ladda( 'stop' );
                                       swal("Success", "New employee added successfully..", "success");
                                       load_data_to_grid_employees_details_list();
-                                      clear_text();
                                       location.reload();
                                  }
                                 
@@ -334,9 +304,9 @@ $(document).ready(function(){
                                  'type': 'POST',
                                  'url': '../controller/employees/employees_controller.php',
                                  'data': {
-                                    action: 'employee_list_view'
-                                    
-                                 }
+                                     action: 'employee_list_view'
+                                 },
+                                
                              },
                              "language": {
                                  "zeroRecords": "No records available",
@@ -357,35 +327,30 @@ $(document).ready(function(){
                                     "orderable":  false,
                                     "data":        null,
                                     "defaultContent": '',
-                                    
                                  },
-                                 
-                                  { 
+                                 { 
                                       "data": null,
                                       "className": "text-center",
                                       "render": function(data, type, full, meta) {
                                           return meta.row + 1;
                                       }
-                                  },
-                                  { "data": "employee_id", "visible": false },
-                                  { "data": "employee_name" },
-                                  { "data": "employee_type_name" },
-                                  { 
+                                 },
+                                 { "data": "employee_id", "visible": false },
+                                 { "data": "employee_name" },
+                                 { "data": "employee_type_name" },
+                                 { 
                                       "data": "employee_code",
                                       "render": function ( data, type, rows, meta ) {
                                           return '<a href="reports/employee_profile.php?employee_id='+rows['employee_id']+'" target="_BLANK">'+data+'</a>';
                                       }
-                                  },
-                                  { 
+                                 },
+                                 { 
                                       "data": "employee_image",
                                       "render": function ( data, type, rows, meta ) {
-                                          if(data == 'default.jpg') {
-                                              return '<div align="center"><img src="../httpdocs/images/employee_image/'+data+'" class="rounded-circle" height="30px" width="30px"/></div>';
-                                          } else {
-                                              return '<div align="center"><img src="../httpdocs/images/employee_image/'+data+'" class="rounded-circle" height="50px" width="50px"/></div>';
-                                          }
+                                          var img_name = (data && $.trim(data) != '' && data != 'null' && data != 'undefined') ? $.trim(data) : 'default.jpg';
+                                          return '<div align="center"><img src="../httpdocs/images/employee_image/'+img_name+'" onerror="this.onerror=null;this.src=\'../httpdocs/images/employee_image/default.jpg\';" class="rounded-circle" style="object-fit:cover;border:1px solid #c2daeb;" height="36px" width="36px"/></div>';
                                       }
-                                  },
+                                 },
                                   { 
                                       "data": "employee_status",
                                       "render": function ( data, type, rows, meta ) {
@@ -520,10 +485,13 @@ $(document).ready(function(){
                                       
                                    }
 
-                                $("#select_emp_tech_type").val($.trim(emp_data.technician_type)).trigger('change');
-                                $("#img_preview").html("<img style='width:60px;height:60px;'src='../httpdocs/images/employee_image/"+$.trim(emp_data.employee_image)+"'>");
-                                $('#emp_img_name').text(emp_data.employee_image);
-                                $("#select_employee_type").val($.trim(emp_data.employee_type_id)).trigger('change');
+                                 $("#select_emp_tech_type").val($.trim(emp_data.technician_type)).trigger('change');
+                                 var cur_img = (emp_data.employee_image && $.trim(emp_data.employee_image) != '' && emp_data.employee_image != 'null') ? $.trim(emp_data.employee_image) : 'default.jpg';
+                                 v_session_image_new = cur_img;
+                                 v_session_image = cur_img;
+                                 $("#img_preview").show().html("<img style='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' onerror=\"this.onerror=null;this.src='../httpdocs/images/employee_image/default.jpg';\" src='../httpdocs/images/employee_image/"+cur_img+"'>");
+                                 $('#emp_img_name').text(cur_img);
+                                 $("#select_employee_type").val($.trim(emp_data.employee_type_id)).trigger('change');
                                 if(emp_data.employee_type_name=='Technician')
                                     {
                                             $.post("../controller/employees/employees_controller.php",{action:'select_expertise_names',v_employee_id:v_employee_id }
@@ -706,25 +674,13 @@ $(document).ready(function(){
                         v_expertise_name='NA'
                      
                      }
-                  // alert(v_session_image+'session val'+v_session_image_new+'new val');
-                     if(v_session_image=="" && v_session_image_new!="")
-                        {
-                            v_session_image=v_session_image_new;
-                           
-                            
-                        }
-                        else if(v_session_image=="")
-                        {
-                            v_session_image="default.jpg";
-                        }
-                        else
-                        {
-                            var doc_file_obj = $("#session_image")[0].files[0];
-                            var upload = new ns.Upload(doc_file_obj);
-                            doc_file1= doc_file_obj.name;
-                            upload.doUpload("../httpdocs/user_upload/employee_image_upload.php?random_no="+randomNum);
-                            v_session_image=randomNum+'_'+doc_file1;
-                        }  
+                     if(!v_session_image || v_session_image == "" || v_session_image == "default.jpg") {
+                         if(typeof v_session_image_new !== "undefined" && v_session_image_new != "") {
+                             v_session_image = v_session_image_new;
+                         } else {
+                             v_session_image = "default.jpg";
+                         }
+                     }  
                     if($.trim(v_emp_name)==""||v_emp_pwd==""||v_user_type_id=="select"||v_emp_contact_no=="")
                     
                     {
