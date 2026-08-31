@@ -20,6 +20,7 @@ $OBJ->URLEncode('head=dashboard');
 	?>
 
 	 
+    <link rel="stylesheet" href="assets/fullcalendar/fullcalendar.css">
 	<style>
 	    	td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
@@ -42,6 +43,30 @@ $OBJ->URLEncode('head=dashboard');
             transform: translateY(-1px) scale(1.02) !important;
             box-shadow: 0 3px 7px rgba(0,0,0,0.25) !important;
             filter: brightness(1.06) !important;
+        }
+        .fc-prev-button, .fc-next-button {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 32px !important;
+            height: 32px !important;
+            font-weight: bold !important;
+        }
+        .fc-prev-button .fc-icon:empty::after,
+        .fc-prev-button:empty::after {
+            content: "‹" !important;
+            font-size: 20px !important;
+            font-weight: 900 !important;
+            line-height: 1 !important;
+            color: #333 !important;
+        }
+        .fc-next-button .fc-icon:empty::after,
+        .fc-next-button:empty::after {
+            content: "›" !important;
+            font-size: 20px !important;
+            font-weight: 900 !important;
+            line-height: 1 !important;
+            color: #333 !important;
         }
 	</style>
 	<script src="global_assets/js/plugins/extensions/jquery_ui/interactions.min.js"></script>
