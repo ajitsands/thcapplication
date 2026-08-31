@@ -25,6 +25,79 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
     input[type='file'] {
         width: 95px;
     }
+    #list_of_employees_on_leave_wrapper .datatable-header {
+        padding: 12px 18px 8px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    #list_of_employees_on_leave_wrapper .datatable-header .dataTables_filter {
+        margin: 0;
+    }
+    #list_of_employees_on_leave_wrapper .datatable-header .dt-buttons {
+        margin: 0;
+    }
+    #list_of_employees_on_leave_wrapper .datatable-footer {
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-top: 1px solid #f0f0f0;
+    }
+    #list_of_employees_on_leave_wrapper .dataTables_info {
+        font-size: 13px;
+        color: #666;
+        font-weight: 500;
+        margin: 0;
+        padding: 0;
+    }
+    #list_of_employees_on_leave_wrapper .dataTables_paginate {
+        margin: 0 0 0 auto;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+    #list_of_employees_on_leave_wrapper .dataTables_paginate .paginate_button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        margin: 0 2px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #333 !important;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.15s ease;
+    }
+    #list_of_employees_on_leave_wrapper .dataTables_paginate .paginate_button:hover {
+        background: #f0f0f0 !important;
+        border-color: #ccc !important;
+        color: #333 !important;
+    }
+    #list_of_employees_on_leave_wrapper .dataTables_paginate .paginate_button.current,
+    #list_of_employees_on_leave_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background: #26a69a !important;
+        border-color: #26a69a !important;
+        color: #fff !important;
+        font-weight: bold;
+    }
+    #list_of_employees_on_leave_wrapper .dataTables_paginate .paginate_button.disabled,
+    #list_of_employees_on_leave_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+        color: #bbb !important;
+        background: #fbfbfb !important;
+        border-color: #eee !important;
+        cursor: not-allowed;
+    }
 </style>
 
 <div class="row">
@@ -177,7 +250,7 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
 </div>
 
 <!-- Bottom: DataTable List of Employees On Leave with Excel Export -->
-<div class="card mt-3" style="overflow:auto;">
+<div class="card mt-3">
     <div class="card-header header-elements-inline">
         <h5 class="card-title font-weight-semibold"><i class="icon-list mr-2"></i> List of Employees On Leave</h5>
         <div class="header-elements">

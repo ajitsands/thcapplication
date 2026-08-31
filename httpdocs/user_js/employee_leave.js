@@ -351,13 +351,21 @@ $(document).ready(function(){
                                      to_date: v_to_date
                                   }
                               },
-                             "language": {
-                                 "zeroRecords": "No records available",
-                                 "infoEmpty": "No records available",
+                              "language": {
+                                  "zeroRecords": "No leave records available",
+                                  "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                                  "infoEmpty": "Showing 0 to 0 of 0 entries",
+                                  "infoFiltered": "(filtered from _MAX_ total entries)",
+                                  "paginate": {
+                                      "first": "First",
+                                      "last": "Last",
+                                      "next": "Next &rarr;",
+                                      "previous": "&larr; Prev"
+                                  }
                               },
-                            "order": [[ 0, "desc" ]],
-                            "dom": '<"datatable-header"fBl><"datatable-scroll"t><"datatable-footer"ip>',
-                            "buttons": [
+                             "order": [[ 0, "desc" ]],
+                             "dom": '<"datatable-header"flB><"datatable-scroll"t><"datatable-footer"ip>',
+                             "buttons": [
                                 {
                                     extend: 'excelHtml5',
                                     text: '<i class="icon-file-excel mr-2"></i> Export to Excel',
