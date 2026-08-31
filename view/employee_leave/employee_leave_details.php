@@ -275,7 +275,7 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
 <!-- Bottom: DataTable List of Employees On Leave with Excel Export -->
 <div class="card mt-3">
     <div class="card-header header-elements-inline">
-        <h5 class="card-title font-weight-semibold"><i class="icon-list mr-2"></i> List of Employees Leave</h5>
+        <h5 class="card-title font-weight-semibold"><i class="icon-list mr-2"></i> List of Employee Leaves</h5>
         <div class="header-elements">
             <div class="list-icons">
                 <a class="list-icons-item" data-action="collapse"></a>
