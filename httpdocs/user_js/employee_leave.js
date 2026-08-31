@@ -371,29 +371,56 @@ $(document).ready(function(){
             				"bInfo": true,
             				"autoWidth": false,
             				
-            			
-                            "columns": [
+                                        "columns": [
                                  { "data": null},
-                                 { "data": "employee_code"},
-                                 { "data": "employee_name" },
-                                 { "data": "leave_reason"},
-                                 { "data": "start_time"},
-                                 { "data": "end_time" },
-                                 { "data": "employee_code",
-                                      render: function ( data, type, rows, meta ) {
-                                          
-                                         // str_active_status='<span class="badge badge-success">'+data+'</span>';
-                                         //str_active_status='<button type="button" id="btn_employee_status_change" class="btn btn-primary btn-sm"><b>Deactive</b></button>';
-                                         str_active_status='<a href="#" class="dropdown-item" name="btn_employee_status_change" id="btn_employee_status_change" style="color:orange"><i class="icon-database-remove mr-3 icon-2x"></i></a>';
-                                         	
-
-    								 
-                                     	return str_active_status;
-            
-            							 }
+                                 { 
+                                     "data": "employee_code",
+                                     render: function(data) {
+                                         return '<span class="font-weight-semibold text-primary">' + (data || '') + '</span>';
+                                     }
+                                 },
+                                 { 
+                                     "data": "employee_name",
+                                     render: function(data) {
+                                         return '<span class="font-weight-semibold text-dark">' + (data || '') + '</span>';
+                                     }
+                                 },
+                                 { 
+                                     "data": "leave_type",
+                                     render: function(data, type, row) {
+                                         var col = row.leave_type_color || '#26a69a';
+                                         var html = '<span class="badge badge-pill text-white px-2 py-1" style="background-color:' + col + '; font-size:11px; font-weight:500;"><i class="icon-primitive-dot mr-1"></i>' + (data || 'Leave') + '</span>';
+                                         if (row.leave_reason && row.leave_reason !== data && row.leave_reason !== 'Leave') {
+                                             html += '<div class="text-muted mt-1" style="font-size:11px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="' + row.leave_reason + '">' + row.leave_reason + '</div>';
+                                         }
+                                         return html;
+                                     }
+                                 },
+                                 { 
+                                     "data": "start_time",
+                                     render: function(data) {
+                                         return '<span class="badge badge-light border text-dark font-weight-semibold px-2 py-1"><i class="icon-calendar2 mr-1 text-teal" style="font-size:11px;"></i>' + (data || '') + '</span>';
+                                     }
+                                 },
+                                 { 
+                                     "data": "end_time",
+                                     render: function(data) {
+                                         return '<span class="badge badge-light border text-dark font-weight-semibold px-2 py-1"><i class="icon-calendar2 mr-1 text-danger" style="font-size:11px;"></i>' + (data || '') + '</span>';
+                                     }
+                                 },
+                                 { 
+                                     "data": "leave_id",
+                                     render: function(data, type, row) {
+                                         return '<div class="d-flex align-items-center" style="gap: 6px;">' +
+                                             '<button type="button" class="btn btn-sm btn-outline-warning p-0 btn_table_edit_leave" title="Edit Leave" style="width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border-width: 1.5px;">' +
+                                                 '<i class="icon-database-edit2" style="font-size: 13px;"></i>' +
+                                             '</button>' +
+                                             '<button type="button" class="btn btn-sm btn-outline-danger p-0 btn_table_delete_leave" title="Delete Leave" style="width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border-width: 1.5px;">' +
+                                                 '<i class="icon-trash" style="font-size: 13px;"></i>' +
+                                             '</button>' +
+                                         '</div>';
+                                     }
                                  }
-                                 
-                                
                              ],
                              pageLength: 10,
             				 searching: true,
@@ -422,53 +449,57 @@ $(document).ready(function(){
                 
                  }
                  
-                  $('#list_of_employees_on_leave tbody').on('click', 'td a', function(){
+                  // Table Row Edit Action
+                  $('#list_of_employees_on_leave tbody').on('click', '.btn_table_edit_leave', function(e){
+                        e.preventDefault();
                         var $row = $(this).closest('tr');
                         var emp_data = v_list_of_employees_on_leave_table.row($row).data();
-                        employee_code  = emp_data.employee_code;
+                        if (!emp_data) return;
                         
-                        
+                        openEditLeaveModal(emp_data);
+                  });
+
+                  // Table Row Delete Action
+                  $('#list_of_employees_on_leave tbody').on('click', '.btn_table_delete_leave', function(e){
+                        e.preventDefault();
+                        var $row = $(this).closest('tr');
+                        var emp_data = v_list_of_employees_on_leave_table.row($row).data();
+                        if (!emp_data) return;
+
                         swal({
-                                
-    							title: "Are you sure?",
-    							text: "Do you want to mark the employee back to work ?",
-    							icon: 'warning',
-    							dangerMode: true,
-    							allowOutsideClick: false,
-                                closeOnClickOutside: false,
-    							buttons: {
-    							  cancel: 'No Cancel !',
-    							  delete: 'Yes Proceed'
-    							}
-    							}).then(function (willDelete) {
-    							if (willDelete) {
-    						
-    						       $.post("../controller/employee_leave/employee_leave_controller.php",{action:'change_employee_leave_status',v_employee_code:employee_code}
-                                , function(result,status)
-                                {
-                                   
-                                  load_data_to_grid_employees_on_leave_list();
-                                
+                            title: "Delete Leave Record?",
+                            text: "Are you sure you want to delete the leave record for " + emp_data.employee_name + " (" + emp_data.leave_type + ")?",
+                            icon: "warning",
+                            buttons: {
+                                cancel: "No, Cancel",
+                                confirm: {
+                                    text: "Yes, Delete",
+                                    className: "btn-danger"
+                                }
+                            },
+                            dangerMode: true,
+                        }).then(function(willDelete) {
+                            if (willDelete) {
+                                $.post('../controller/employees/employees_controller.php', {
+                                    action: 'delete_leave_record',
+                                    leave_id: emp_data.leave_id,
+                                    table_source: emp_data.table_source || 'short',
+                                    employee_code: emp_data.employee_code
+                                }, function(response) {
+                                    var res = $.trim(response);
+                                    if (res === 'Success') {
+                                        swal("Deleted!", "Leave record has been deleted successfully.", "success");
+                                        if ($('#leave_calendar_inline').length) {
+                                            $('#leave_calendar_inline').fullCalendar('refetchEvents');
+                                        }
+                                        load_data_to_grid_employees_on_leave_list();
+                                    } else {
+                                        swal("Error", res, "error");
+                                    }
                                 });
-                 						 
-    							} else {
-    							    
-    							   
-    							 
-    							}
-    						 });
-                          
-                         //var v_employee_action=$(this).attr("name");
-                            //  $.post("../controller/employee_leave/employee_leave_controller.php",{action:'change_employee_leave_status',v_employee_code:employee_code}
-                            //     , function(result,status)
-                            //     {
-                                   
-                            //       load_data_to_grid_employees_on_leave_list();
-                                
-                            // });
-                        
-                          
-                        
+                            }
+                        });
+                  });    
         });
        
             
