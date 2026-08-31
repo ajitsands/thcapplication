@@ -24,12 +24,40 @@ if (!$row) {
 
 // Fetch all expertise for technician from tbl_technician_expertise
 $expertise_list = [];
-if ($row['employee_type_name'] == 'Technician') {
-    $exp_query = mysqli_query($varDBConnection, "SELECT expertise_name FROM tbl_technician_expertise WHERE employee_id = $employee_id AND status = 'Active' ORDER BY technician_expertise_id ASC");
-    if ($exp_query) {
+$is_technician = (isset($row['employee_type_name']) && strcasecmp(trim($row['employee_type_name']), 'Technician') === 0);
+
+if ($is_technician) {
+    $emp_code = mysqli_real_escape_string($varDBConnection, isset($row['employee_code']) ? trim($row['employee_code']) : '');
+    
+    // 1. Primary query on tbl_technician_expertise
+    $exp_sql = "SELECT te.expertise_name, te.expertise_id, x.expertise_name as exp_lookup 
+                FROM tbl_technician_expertise te 
+                LEFT JOIN tbl_expertise x ON te.expertise_id = x.expertise_id 
+                WHERE (te.employee_id = $employee_id" . ($emp_code != '' ? " OR (te.employee_code = '$emp_code' AND te.employee_code != 'NA')" : "") . ") 
+                  AND (te.status != 'Deleted' OR te.status IS NULL OR te.status = '')";
+                
+    $exp_query = mysqli_query($varDBConnection, $exp_sql);
+    if ($exp_query && mysqli_num_rows($exp_query) > 0) {
         while ($exp = mysqli_fetch_assoc($exp_query)) {
-            if (!empty($exp['expertise_name']) && $exp['expertise_name'] != 'NA') {
-                $expertise_list[] = htmlspecialchars($exp['expertise_name']);
+            $name = (!empty($exp['expertise_name']) && $exp['expertise_name'] != 'NA') ? trim($exp['expertise_name']) : (!empty($exp['exp_lookup']) ? trim($exp['exp_lookup']) : '');
+            if (!empty($name) && !in_array($name, $expertise_list)) {
+                $expertise_list[] = htmlspecialchars($name);
+            }
+        }
+    }
+    
+    // 2. If still empty, check view_employee_expertiser_list as fallback
+    if (empty($expertise_list)) {
+        $view_exp = mysqli_query($varDBConnection, "SELECT expertise_name FROM view_employee_expertiser_list WHERE employee_id = $employee_id LIMIT 1");
+        if ($view_exp && $v_row = mysqli_fetch_assoc($view_exp)) {
+            if (!empty($v_row['expertise_name']) && $v_row['expertise_name'] != 'NA') {
+                $names = explode(',', $v_row['expertise_name']);
+                foreach ($names as $n) {
+                    $n = trim($n);
+                    if (!empty($n) && !in_array($n, $expertise_list)) {
+                        $expertise_list[] = htmlspecialchars($n);
+                    }
+                }
             }
         }
     }
@@ -238,7 +266,7 @@ $emp_img = (!empty($row['employee_image']) && $row['employee_image'] != 'null' &
                                 <td colspan="2"><?php echo htmlspecialchars($row['native_number']); ?></td>
                             </tr>
 
-                            <?php if ($row['employee_type_name'] == 'Technician') { ?>
+                            <?php if ($is_technician) { ?>
                             <!-- SECTION 2.1: Technician Expertise (Only for Technicians) -->
                             <tr>
                                 <td style="text-align: right; background: #f0f3fa; vertical-align: middle;"><b>Technician Expertise:</b></td>
