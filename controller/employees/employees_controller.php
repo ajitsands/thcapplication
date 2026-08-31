@@ -103,6 +103,9 @@ class apartmentController
         $emp_email = mysqli_real_escape_string($conn, $this->employee_email_id);
         $emp_address = mysqli_real_escape_string($conn, $this->employee_address);
         $emp_image = !empty($this->employee_image) ? mysqli_real_escape_string($conn, $this->employee_image) : 'default.jpg';
+        if (strpos($emp_image, 'fakepath') !== false || empty(trim($emp_image))) {
+            $emp_image = 'default.jpg';
+        }
         $cpr_no = mysqli_real_escape_string($conn, $this->employee_cpr_number);
         $blood_group = mysqli_real_escape_string($conn, $this->employee_blood_group);
         $passport_no = mysqli_real_escape_string($conn, $this->employee_passport_number);
@@ -192,6 +195,9 @@ class apartmentController
         $emp_email = mysqli_real_escape_string($conn, $this->employee_email_id);
         $emp_address = mysqli_real_escape_string($conn, $this->employee_address);
         $emp_image = !empty($this->employee_image) ? mysqli_real_escape_string($conn, $this->employee_image) : 'default.jpg';
+        if (strpos($emp_image, 'fakepath') !== false || empty(trim($emp_image))) {
+            $emp_image = 'default.jpg';
+        }
         $cpr_no = mysqli_real_escape_string($conn, $this->employee_cpr_number);
         $blood_group = mysqli_real_escape_string($conn, $this->employee_blood_group);
         $passport_no = mysqli_real_escape_string($conn, $this->employee_passport_number);

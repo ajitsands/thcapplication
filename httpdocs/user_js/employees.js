@@ -200,8 +200,6 @@ $(document).ready(function(){
                     var v_emp_contact_no=$("#txt_emp_contact_no").val();
                     var v_emp_email_id=$("#txt_emp_email_id").val();
                     var v_emp_address=$("#txt_emp_address").val();
-                    v_session_image = $("#session_image").val();
-                    randomNum = Math.ceil(Math.random() * 999999);   
                     v_expertise_id=$('#select_expertise option:selected') .toArray().map(item => item.value);
                     v_expertise_name=$('#select_expertise option:selected') .toArray().map(item => item.text);
                     var v_emp_tech_type_id=$("#select_emp_tech_type option:selected").val();
@@ -250,9 +248,7 @@ $(document).ready(function(){
                             v_expertise_name='NA'
                          
                          }
-                     if(!v_session_image || v_session_image === "") {
-                         v_session_image = "default.jpg";
-                     }
+                     var v_emp_image_to_save = (v_session_image && v_session_image !== "" && v_session_image.indexOf("fakepath") === -1) ? v_session_image : "default.jpg";
                     if($.trim(v_emp_name)===""||$.trim(v_emp_pwd)===""||typeof v_user_type_id === "undefined"||$.trim(v_emp_contact_no)===""|| typeof v_expertise_id === "undefined"||v_emp_joining_date===""||v_emp_visa_validity===""||v_emp_cpr_expiry_date===""||v_emp_passport_no==="")
                     
                     {
@@ -264,7 +260,7 @@ $(document).ready(function(){
                     else
                     {     
                        
-                         $.post("../controller/employees/employees_controller.php",{action:'add_employee',v_employee_name:v_emp_name,v_employee_type_id:v_user_type_id,v_employee_type_name:v_user_type_name,v_employee_password:v_emp_pwd,v_employee_contact_no:v_emp_contact_no,v_employee_email_id:v_emp_email_id,v_employee_address:v_emp_address,v_employee_image:v_session_image,v_expertise_id:v_expertise_id,v_expertise_name:v_expertise_name,v_emp_cpr_number:v_emp_cpr_number,v_emp_blood_group:v_emp_blood_group,v_emp_passport_no:v_emp_passport_no,v_emp_joining_date:v_emp_joining_date,v_emp_cpr_expiry_date:v_emp_cpr_expiry_date,v_emp_visa_validity:v_emp_visa_validity,v_checked_val:checked_val,v_emp_tech_type_name:v_emp_tech_type_name,v_emp_native_no:v_emp_native_no,v_emp_native_address:v_emp_native_address,v_emp_visa_type:v_emp_visa_type}
+                         $.post("../controller/employees/employees_controller.php",{action:'add_employee',v_employee_name:v_emp_name,v_employee_type_id:v_user_type_id,v_employee_type_name:v_user_type_name,v_employee_password:v_emp_pwd,v_employee_contact_no:v_emp_contact_no,v_employee_email_id:v_emp_email_id,v_employee_address:v_emp_address,v_employee_image:v_emp_image_to_save,v_expertise_id:v_expertise_id,v_expertise_name:v_expertise_name,v_emp_cpr_number:v_emp_cpr_number,v_emp_blood_group:v_emp_blood_group,v_emp_passport_no:v_emp_passport_no,v_emp_joining_date:v_emp_joining_date,v_emp_cpr_expiry_date:v_emp_cpr_expiry_date,v_emp_visa_validity:v_emp_visa_validity,v_checked_val:checked_val,v_emp_tech_type_name:v_emp_tech_type_name,v_emp_native_no:v_emp_native_no,v_emp_native_address:v_emp_native_address,v_emp_visa_type:v_emp_visa_type}
                                 , function(result,status)
                                 {
                                    console.log(result);
@@ -639,9 +635,7 @@ $(document).ready(function(){
                     var v_emp_contact_no=$("#txt_emp_contact_no").val();
                     var v_emp_email_id=$("#txt_emp_email_id").val();
                     var v_emp_address=$("#txt_emp_address").val();
-                    v_session_image = $("#session_image").val();
                     var v_session_image_new = $("#emp_img_name").text();
-                    var randomNum = Math.ceil(Math.random() * 999999);   
                     v_expertise_id=$('#select_expertise option:selected') .toArray().map(item => item.value);
                     v_expertise_name=$('#select_expertise option:selected') .toArray().map(item => item.text);
                     
@@ -674,12 +668,11 @@ $(document).ready(function(){
                         v_expertise_name='NA'
                      
                      }
-                     if(!v_session_image || v_session_image == "" || v_session_image == "default.jpg") {
-                         if(typeof v_session_image_new !== "undefined" && v_session_image_new != "") {
-                             v_session_image = v_session_image_new;
-                         } else {
-                             v_session_image = "default.jpg";
-                         }
+                     var v_emp_image_to_save = "default.jpg";
+                     if(v_session_image && v_session_image !== "" && v_session_image !== "default.jpg" && v_session_image.indexOf("fakepath") === -1) {
+                         v_emp_image_to_save = v_session_image;
+                     } else if(v_session_image_new && v_session_image_new !== "" && v_session_image_new.indexOf("fakepath") === -1) {
+                         v_emp_image_to_save = v_session_image_new;
                      }  
                     if($.trim(v_emp_name)==""||v_emp_pwd==""||v_user_type_id=="select"||v_emp_contact_no=="")
                     
@@ -692,7 +685,7 @@ $(document).ready(function(){
                    
                     else
                     {         
-                         $.post("../controller/employees/employees_controller.php",{action:'update_employee',v_employee_name:v_emp_name,v_employee_type_id:v_user_type_id,v_employee_type_name:v_user_type_name,v_employee_password:v_emp_pwd,v_employee_contact_no:v_emp_contact_no,v_employee_email_id:v_emp_email_id,v_employee_address:v_emp_address,v_employee_image:v_session_image,v_expertise_id:v_expertise_id,v_expertise_name:v_expertise_name,v_employee_id:v_employee_id,v_emp_cpr_number:v_emp_cpr_number,v_emp_blood_group:v_emp_blood_group,v_emp_passport_no:v_emp_passport_no,v_emp_joining_date:v_emp_joining_date,v_emp_cpr_expiry_date:v_emp_cpr_expiry_date,v_emp_visa_validity:v_emp_visa_validity,v_checked_val:checked_val,v_emp_tech_type_name:v_emp_tech_type_name,v_emp_native_no:v_emp_native_no,v_emp_native_address:v_emp_native_address,v_emp_visa_type:v_emp_visa_type,v_employee_code:v_emp_code}
+                         $.post("../controller/employees/employees_controller.php",{action:'update_employee',v_employee_name:v_emp_name,v_employee_type_id:v_user_type_id,v_employee_type_name:v_user_type_name,v_employee_password:v_emp_pwd,v_employee_contact_no:v_emp_contact_no,v_employee_email_id:v_emp_email_id,v_employee_address:v_emp_address,v_employee_image:v_emp_image_to_save,v_expertise_id:v_expertise_id,v_expertise_name:v_expertise_name,v_employee_id:v_employee_id,v_emp_cpr_number:v_emp_cpr_number,v_emp_blood_group:v_emp_blood_group,v_emp_passport_no:v_emp_passport_no,v_emp_joining_date:v_emp_joining_date,v_emp_cpr_expiry_date:v_emp_cpr_expiry_date,v_emp_visa_validity:v_emp_visa_validity,v_checked_val:checked_val,v_emp_tech_type_name:v_emp_tech_type_name,v_emp_native_no:v_emp_native_no,v_emp_native_address:v_emp_native_address,v_emp_visa_type:v_emp_visa_type,v_employee_code:v_emp_code}
                                 , function(result,status)
                                 {
                                     console.log(result);
@@ -744,9 +737,11 @@ $(document).ready(function(){
                     $("#txt_emp_contact_no").val('');
                     $("#txt_emp_email_id").val('');
                     $("#txt_emp_address").val('');
+                    v_session_image = "default.jpg";
+                    v_session_image_new = "";
                     $("#session_image").val(null);
-                    $("#emp_img_name").empty()
-                    $("#img_preview").hide()
+                    $("#emp_img_name").empty();
+                    $("#img_preview").empty().hide();
                     $("#select_employee_blood_group").val(null).trigger("change");
                     $("#select_emp_tech_type").val(null).trigger("change");
                     $("#txt_cpr_no").val('');
