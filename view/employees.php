@@ -21,12 +21,29 @@ $OBJ->URLEncode('head=dashboard');
 	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 
 	<style>
-	    	td.details-control {
+	    td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
             cursor: pointer;
         }
         tr.shown td.details-control {
             background: url('../httpdocs/images/minus.png') no-repeat center center;
+        }
+        .card, .card-body, .dataTables_wrapper, .datatable-scroll, .datatable-scroll-wrap {
+            overflow: visible !important;
+        }
+        #list_of_employees {
+            position: relative;
+        }
+        #list_of_employees tbody tr td {
+            overflow: visible;
+        }
+        #list_of_employees .list-icons .dropdown {
+            position: relative;
+        }
+        #list_of_employees .list-icons .dropdown-menu {
+            z-index: 99999 !important;
+            position: absolute;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
         }
 	</style>
 
