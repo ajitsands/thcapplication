@@ -82,6 +82,25 @@ $OBJ->URLEncode('head=dashboard');
             align-items: center !important;
             justify-content: center !important;
         }
+
+        /* Select Expertise Multi-Select Border */
+        #div_expertise_select .select2-container--default .select2-selection--multiple,
+        #div_expertise_select .select2-selection--multiple,
+        #select_expertise + .select2-container .select2-selection--multiple,
+        #div_expertise_select .select2-selection {
+            border: 1px solid #ced4da !important;
+            border-radius: 4px !important;
+            min-height: 36px !important;
+            padding: 3px 6px !important;
+            background-color: #ffffff !important;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075) !important;
+        }
+
+        #div_expertise_select .select2-container--default.select2-container--focus .select2-selection--multiple,
+        #select_expertise + .select2-container.select2-container--focus .select2-selection--multiple {
+            border-color: #2196f3 !important;
+            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.15) !important;
+        }
 	</style>
 
 	<link rel="stylesheet" href="assets/fullcalendar/fullcalendar.css">

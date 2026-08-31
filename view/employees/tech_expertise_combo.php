@@ -8,6 +8,15 @@
 ?>
 
 
+<style>
+#div_expertise_select .select2-container .select2-selection--multiple,
+#div_expertise_select .select2-selection {
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    min-height: 36px !important;
+    background-color: #fff !important;
+}
+</style>
 <div class="col-lg-12 col-md-12 col-sm-12" id="div_expertise_select">	
      <span class="form-text text-muted font-weight-bold"><font color="black">Select Expertise&nbsp;<span style="color:red;">*</span></font></span>
      <select class="form-control form-control-select2" id="select_expertise" data-placeholder="Select Expertise" multiple="multiple" data-fouc>
