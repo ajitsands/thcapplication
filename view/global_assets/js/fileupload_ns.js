@@ -41,9 +41,10 @@
 			},
 			success: function (data) {
 				// your callback here
-				retval='success';
-		$("#img_preview").html("<img style='width:70px;height:50px;'src=../httpdocs/images/employee_image/"+$.trim(filename)+">");
-				 $("#building_img_preview").html("<img style='width:70px;height:50px;'src=../httpdocs/images/building_image/"+$.trim(filename)+">");
+				if ($("#img_preview").find("img").length === 0) {
+					$("#img_preview").show().html("<img style='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='../httpdocs/images/employee_image/" + $.trim(filename) + "'>");
+				}
+				$("#building_img_preview").show().html("<img style='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='../httpdocs/images/building_image/" + $.trim(filename) + "'>");
 				
 				return 'success';
 			},

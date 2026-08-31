@@ -152,25 +152,27 @@ $(document).ready(function(){
                          v_expertise_id = $('#select_expertise option:selected').toArray().map(item => item.value);
                       });
                 $('#session_image').change(function (e) {
-         
-                 
-                v_item_img = $("#session_image").val();
-                var  randomNum = Math.ceil(Math.random() * 999999);
-                    if(v_item_img=="")
-                {
-                    v_item_img="default.jpg";
-                }
-                else
-                {
-                    var doc_file_obj = $("#session_image")[0].files[0];
-                    var upload = new ns.Upload(doc_file_obj);
-                    var doc_file1= doc_file_obj.name;
-                    v_item_img=$.trim(randomNum+'_'+doc_file1);
-					//alert(v_item_img);
-                    var success = upload.doUpload("../../httpdocs/user_upload/employee_image_upload.php?random_no="+randomNum,v_item_img);
+                    v_item_img = $("#session_image").val();
+                    var randomNum = Math.ceil(Math.random() * 999999);
+                    if(v_item_img == "") {
+                        v_item_img = "default.jpg";
+                        $("#img_preview").empty().hide();
+                    } else {
+                        var doc_file_obj = $("#session_image")[0].files[0];
+                        if (doc_file_obj) {
+                            var reader = new FileReader();
+                            reader.onload = function(evt) {
+                                $("#img_preview").show().html("<img style='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='" + evt.target.result + "'>");
+                            };
+                            reader.readAsDataURL(doc_file_obj);
 
-                }  
-        });   
+                            var upload = new ns.Upload(doc_file_obj);
+                            var doc_file1 = doc_file_obj.name;
+                            v_item_img = $.trim(randomNum + '_' + doc_file1);
+                            var success = upload.doUpload("../httpdocs/user_upload/employee_image_upload.php?random_no=" + randomNum, v_item_img);
+                        }
+                    }  
+                });   
                
             //          $('#session_image').change(function (e) {
                          
