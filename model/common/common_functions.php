@@ -534,41 +534,46 @@ class CommonModel extends FunctionDefinitions
    public function ExecuteProcedure($SQL)
 	{
 			$retval = mysqli_query($this->varDBConnection, $SQL);
-			if (!($res = $this->varDBConnection->query("SELECT @msg as _p_out"))) {
-				echo "Fetch failed: (" . $this->varDBConnection->errno . ") " . $this->varDBConnection->error;
-			} 
-			$row = $res->fetch_assoc();
+			while (mysqli_more_results($this->varDBConnection) && mysqli_next_result($this->varDBConnection)) {
+				// flush stored procedure multi-result sets
+			}
+			$out = '';
+			if ($res = mysqli_query($this->varDBConnection, "SELECT @msg as _p_out")) {
+				$row = mysqli_fetch_assoc($res);
+				$out = $row['_p_out'] ?? '';
+				mysqli_free_result($res);
+			}
 			$this->flag=0;
 			
-			echo $row['_p_out'];
-			return $row['_p_out'];
-		
-			
+			echo $out;
+			return $out;
 	}
 		function ExecuteProcedureTwoValues($SQL)
 	{
-		
 			$retval = mysqli_query($this->varDBConnection, $SQL);
-			if (!($res = $this->varDBConnection->query("SELECT @msg as msg,@p_ids as p_ids"))) {
-				echo "Fetch failed: (" . $this->varDBConnection->errno . ") " . $this->varDBConnection->error;
+			while (mysqli_more_results($this->varDBConnection) && mysqli_next_result($this->varDBConnection)) {
 			}
-			$row = $res->fetch_assoc();
+			$row = [];
+			if ($res = mysqli_query($this->varDBConnection, "SELECT @msg as msg,@p_ids as p_ids")) {
+				$row = mysqli_fetch_assoc($res);
+				mysqli_free_result($res);
+			}
 			$this->flag=0;
 			return json_encode($row);
-
 	}
 	
 		function ExecuteProcedureReturnMultiplevalues($SQL)
 	{
-		
 			$retval = mysqli_query($this->varDBConnection, $SQL);
-			if (!($res = $this->varDBConnection->query("SELECT @msg as msg,@p_ids as p_ids,@v_ids as v_ids"))) {
-				echo "Fetch failed: (" . $this->varDBConnection->errno . ") " . $this->varDBConnection->error;
+			while (mysqli_more_results($this->varDBConnection) && mysqli_next_result($this->varDBConnection)) {
 			}
-			$row = $res->fetch_assoc();
+			$row = [];
+			if ($res = mysqli_query($this->varDBConnection, "SELECT @msg as msg,@p_ids as p_ids,@v_ids as v_ids")) {
+				$row = mysqli_fetch_assoc($res);
+				mysqli_free_result($res);
+			}
 			$this->flag=0;
 			return json_encode($row);
-
 	}
 	function ExecuteProcedureForReturnTableFormat($SQL) 
 	{	

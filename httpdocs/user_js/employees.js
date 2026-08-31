@@ -299,26 +299,19 @@ $(document).ready(function(){
                                    console.log(result);
                                 result = $.trim(result);
                                
-                                if(result=="")
-                                {
-                                    v_btn_employee_add.ladda( 'stop' );
-                                    swal("Error", result, "error");
-                                   
-                                    clear_text();
-                                   
-
-                                
-                                }
-                                else 
-                                {
-                                    
-                                   
-                                    v_btn_employee_add.ladda( 'stop' );
-                                     swal("Success", "New employee added successfully..", "success");
-                                     load_data_to_grid_employees_details_list();
-                                     clear_text();
-                                     location.reload();
-                                }
+                                 if(result=="" || result.toLowerCase().indexOf("error") !== -1)
+                                 {
+                                     v_btn_employee_add.ladda( 'stop' );
+                                     swal("Error", result || "Failed to add employee", "error");
+                                 }
+                                 else 
+                                 {
+                                     v_btn_employee_add.ladda( 'stop' );
+                                      swal("Success", "New employee added successfully..", "success");
+                                      load_data_to_grid_employees_details_list();
+                                      clear_text();
+                                      location.reload();
+                                 }
                                 
                                  
                             
@@ -750,23 +743,18 @@ $(document).ready(function(){
                                     
                                 result = $.trim(result);
                                
-                                if(result.charAt(0)=='U')
-                                {
-                                    v_btn_employee_edit.ladda( 'stop' );
-                                    swal("Error", result, "error");
-                                    clear_text();
-                                   
-
-                                
-                                }
-                                else 
-                                {
+                                 if(result=="" || result.toLowerCase().indexOf("error") !== -1)
+                                 {
                                      v_btn_employee_edit.ladda( 'stop' );
-                                     swal("Success", "Employee details updated successfully..", "success");
-                                     load_data_to_grid_employees_details_list();
-                                    clear_text();
-                                    
-                                }
+                                     swal("Error", result || "Failed to update employee", "error");
+                                 }
+                                 else 
+                                 {
+                                      v_btn_employee_edit.ladda( 'stop' );
+                                      swal("Success", "Employee details updated successfully..", "success");
+                                      load_data_to_grid_employees_details_list();
+                                      clear_text();
+                                 }
                                 
                                  
                             

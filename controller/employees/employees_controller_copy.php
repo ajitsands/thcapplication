@@ -1,6 +1,6 @@
 <?php
 
-require ('../../model/common/common_functions_copy.php');
+require ('../../model/common/common_functions.php');
 
 
 
@@ -15,37 +15,49 @@ class apartmentController
 	  
         $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
-        $this->actionevents = $_POST['action'];
-        $this->ctrl_name = $_POST['v_ctrl_name'];
-        $this->employee_type_id = $_POST['v_employee_type_id'];
-        $this->employee_type_name = $_POST['v_employee_type_name'];
-        $this->employee_code = $_POST['v_employee_code'];
-        $this->employee_password = $_POST['v_employee_password'];
-        $this->employee_name = $_POST['v_employee_name'];
-        $this->employee_contact_no = $_POST['v_employee_contact_no'];
-        $this->employee_email_id = $_POST['v_employee_email_id'];
-        $this->employee_address = $_POST['v_employee_address'];
-        $this->employee_image = $_POST['v_employee_image'];
-        $this->employee_status = $_POST['v_employee_status'];
-        $this->employee_id = $_POST['v_employee_id'];
-        $this->expertise_id = $_POST['v_expertise_id'];
-        $this->expertise_name = $_POST['v_expertise_name'];
-        $this->expertise_length = count($this->expertise_id);
+        $this->actionevents = $_POST['action'] ?? '';
+        $this->ctrl_name = $_POST['v_ctrl_name'] ?? '';
+        $this->employee_type_id = $_POST['v_employee_type_id'] ?? '';
+        $this->employee_type_name = $_POST['v_employee_type_name'] ?? '';
+        $this->employee_code = $_POST['v_employee_code'] ?? '';
+        $this->employee_password = $_POST['v_employee_password'] ?? '';
+        $this->employee_name = $_POST['v_employee_name'] ?? '';
+        $this->employee_contact_no = $_POST['v_employee_contact_no'] ?? '';
+        $this->employee_email_id = $_POST['v_employee_email_id'] ?? '';
+        $this->employee_address = $_POST['v_employee_address'] ?? '';
+        $this->employee_image = $_POST['v_employee_image'] ?? '';
+        $this->employee_status = $_POST['v_employee_status'] ?? '';
+        $this->employee_id = $_POST['v_employee_id'] ?? '';
+        $this->expertise_id = $_POST['v_expertise_id'] ?? [];
+        $this->expertise_name = $_POST['v_expertise_name'] ?? [];
+        $this->expertise_length = is_array($this->expertise_id) ? count($this->expertise_id) : 0;
         
-        $this->employee_cpr_number = $_POST['v_emp_cpr_number'];
-        $this->employee_blood_group = $_POST['v_emp_blood_group'];
-        $this->employee_passport_number = $_POST['v_emp_passport_no'];
-        $this->employee_joining_date = $_POST['v_emp_joining_date'];
-        $this->employee_cpr_expiry_date = $_POST['v_emp_cpr_expiry_date'];
-        $this->employee_visa_validity = $_POST['v_emp_visa_validity'];
-        $this->employee_is_driving_licence = $_POST['v_checked_val'];
-        $this->employee_tech_type_name = $_POST['v_emp_tech_type_name'];
         
-        $this->employee_native_number = $_POST['v_emp_native_no'];
-        $this->employee_native_address = $_POST['v_emp_native_address'];
-        $this->employee_visa_type = $_POST['v_emp_visa_type'];
+        $this->employee_cpr_number = $_POST['v_emp_cpr_number'] ?? '';
+        $this->employee_blood_group= $_POST['v_emp_blood_group'] ?? '';
+        $this->employee_passport_number = $_POST['v_emp_passport_no'] ?? '';
+        $this->employee_joining_date= $_POST['v_emp_joining_date'] ?? '';
+        $this->employee_cpr_expiry_date = $_POST['v_emp_cpr_expiry_date'] ?? '';
+        $this->employee_visa_validity = $_POST['v_emp_visa_validity'] ?? '';
+        $this->employee_is_driving_licence = $_POST['v_checked_val'] ?? '';
+        $this->employee_tech_type_name = $_POST['v_emp_tech_type_name'] ?? '';
         
-        $this->employee_action = $_POST['v_employee_action'];
+        $this->employee_native_number = $_POST['v_emp_native_no'] ?? '';
+		$this->employee_native_address = $_POST['v_emp_native_address'] ?? '';
+		$this->employee_visa_type= $_POST['v_emp_visa_type'] ?? '';
+        
+        $this->employee_action = $_POST['v_employee_action'] ?? '';
+        
+        // Leave variables
+        $this->leave_emp_id = $_POST['leave_emp_id'] ?? '';
+        $this->leave_emp_code = $_POST['leave_emp_code'] ?? '';
+        $this->leave_emp_name = $_POST['leave_emp_name'] ?? '';
+        $this->leave_type = $_POST['leave_type'] ?? '';
+        $this->leave_start_date = $_POST['leave_start_date'] ?? '';
+        $this->leave_end_date = $_POST['leave_end_date'] ?? '';
+        $this->leave_duration = $_POST['leave_duration'] ?? '';
+        $this->leave_reason = $_POST['leave_reason'] ?? '';
+        
         date_default_timezone_set('Asia/Bahrain');
         $this->current_date = date("Y-m-d h:i:s");
        
@@ -74,9 +86,175 @@ class apartmentController
         $array[8] ="Delete from tbl_technician_expertise where employee_id='".$this->employee_id."'";
         $array[9] ="Select employee_code from tbl_employees  where employee_code='".$this->employee_code."'";
         $array[10] ="update tbl_employees set `employee_code`='".$this->employee_code ."' where employee_id='".$this->employee_id."'";
+        $array[11] ="call proc_add_employee_short_leave('".$this->leave_emp_id."','".$this->leave_emp_code."','".$this->leave_emp_name."','".$this->leave_type."','".$this->leave_start_date."','".$this->leave_end_date."','".$this->leave_duration."','".$this->leave_reason."',@msg )";
+        $array[12] ="SELECT CONCAT(employee_name, ' - ', leave_type) AS title, leave_start_date AS start, DATE_ADD(leave_end_date, INTERVAL 1 DAY) AS end, CASE leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_short_leave UNION ALL SELECT CONCAT(employee_name, ' - ', leave_type) AS title, DATE(start_time) AS start, DATE_ADD(DATE(end_time), INTERVAL 1 DAY) AS end, CASE leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_leave";
         
         return $array;
     }
+    public function insertEmployee()
+    {
+        $conn = $this->varDBConnection;
+
+        $emp_type_id = intval($this->employee_type_id);
+        $emp_type_name = mysqli_real_escape_string($conn, $this->employee_type_name);
+        $emp_password = mysqli_real_escape_string($conn, $this->employee_password);
+        $emp_name = mysqli_real_escape_string($conn, $this->employee_name);
+        $emp_contact = mysqli_real_escape_string($conn, $this->employee_contact_no);
+        $emp_email = mysqli_real_escape_string($conn, $this->employee_email_id);
+        $emp_address = mysqli_real_escape_string($conn, $this->employee_address);
+        $emp_image = !empty($this->employee_image) ? mysqli_real_escape_string($conn, $this->employee_image) : 'default.jpg';
+        $cpr_no = mysqli_real_escape_string($conn, $this->employee_cpr_number);
+        $blood_group = mysqli_real_escape_string($conn, $this->employee_blood_group);
+        $passport_no = mysqli_real_escape_string($conn, $this->employee_passport_number);
+        $joining_date = (!empty($this->employee_joining_date) && $this->employee_joining_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_joining_date) : '1970-01-01';
+        $cpr_expiry = (!empty($this->employee_cpr_expiry_date) && $this->employee_cpr_expiry_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_cpr_expiry_date) : '1970-01-01';
+        $visa_validity = (!empty($this->employee_visa_validity) && $this->employee_visa_validity != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_visa_validity) : '1970-01-01';
+        $is_driving = !empty($this->employee_is_driving_licence) ? mysqli_real_escape_string($conn, $this->employee_is_driving_licence) : 'No';
+        $tech_type = mysqli_real_escape_string($conn, $this->employee_tech_type_name);
+        $native_no = mysqli_real_escape_string($conn, $this->employee_native_number);
+        $native_addr = mysqli_real_escape_string($conn, $this->employee_native_address);
+        $visa_type = mysqli_real_escape_string($conn, $this->employee_visa_type);
+
+        // 1. Insert into tbl_employees
+        $sql_emp = "INSERT INTO `tbl_employees` (
+            `employee_type_id`, `employee_type_name`, `employee_password`, `employee_name`,
+            `employee_contact_no`, `employee_email_id`, `employee_address`, `employee_image`,
+            `cpr_no`, `blood_group`, `passport_no`, `joining_date`, `cpr_expiry_date`,
+            `visa_validity_on`, `is_driving_license`, `technician_type`, `native_number`,
+            `native_address`, `visa_type`, `employee_status`
+        ) VALUES (
+            '$emp_type_id', '$emp_type_name', '$emp_password', '$emp_name',
+            '$emp_contact', '$emp_email', '$emp_address', '$emp_image',
+            '$cpr_no', '$blood_group', '$passport_no', '$joining_date', '$cpr_expiry',
+            '$visa_validity', '$is_driving', '$tech_type', '$native_no',
+            '$native_addr', '$visa_type', 'Active'
+        )";
+
+        $insert_res = mysqli_query($conn, $sql_emp);
+        if (!$insert_res) {
+            echo "Error: " . mysqli_error($conn);
+            return;
+        }
+
+        $last_id = mysqli_insert_id($conn);
+
+        // 2. Generate employee_code
+        if ($last_id >= 0 && $last_id <= 9) {
+            $v_employee_code = 'CG-THC-000' . $last_id;
+        } else if ($last_id >= 10 && $last_id <= 99) {
+            $v_employee_code = 'CG-THC-00' . $last_id;
+        } else if ($last_id >= 100 && $last_id <= 999) {
+            $v_employee_code = 'CG-THC-0' . $last_id;
+        } else {
+            $v_employee_code = 'CG-THC-' . $last_id;
+        }
+
+        // 3. Update employee_code in tbl_employees
+        mysqli_query($conn, "UPDATE `tbl_employees` SET `employee_code`='$v_employee_code' WHERE `employee_id`='$last_id'");
+
+        // 4. Insert into users table for login
+        mysqli_query($conn, "INSERT INTO `users` (`username`, `password`, `role_id`) VALUES ('$v_employee_code', '$emp_password', 1)");
+
+        // 5. Insert all selected expertise items into tbl_technician_expertise
+        if ($this->employee_type_name == 'Technician' && is_array($this->expertise_id) && count($this->expertise_id) > 0) {
+            for ($i = 0; $i < count($this->expertise_id); $i++) {
+                $exp_id = intval($this->expertise_id[$i]);
+                $exp_name = isset($this->expertise_name[$i]) ? mysqli_real_escape_string($conn, $this->expertise_name[$i]) : 'NA';
+                if ($exp_id > 0) {
+                    mysqli_query($conn, "INSERT INTO `tbl_technician_expertise` (
+                        `employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`, `status`
+                    ) VALUES (
+                        '$last_id', '$v_employee_code', '$emp_name', '$exp_id', '$exp_name', 'Active'
+                    )");
+                }
+            }
+        }
+
+        echo "success";
+    }
+
+    public function modifyEmployee()
+    {
+        $conn = $this->varDBConnection;
+
+        $emp_id = intval($this->employee_id);
+        if ($emp_id <= 0) {
+            echo "Error: Invalid Employee ID";
+            return;
+        }
+
+        $emp_type_id = intval($this->employee_type_id);
+        $emp_type_name = mysqli_real_escape_string($conn, $this->employee_type_name);
+        $emp_code = mysqli_real_escape_string($conn, $this->employee_code);
+        $emp_password = mysqli_real_escape_string($conn, $this->employee_password);
+        $emp_name = mysqli_real_escape_string($conn, $this->employee_name);
+        $emp_contact = mysqli_real_escape_string($conn, $this->employee_contact_no);
+        $emp_email = mysqli_real_escape_string($conn, $this->employee_email_id);
+        $emp_address = mysqli_real_escape_string($conn, $this->employee_address);
+        $emp_image = !empty($this->employee_image) ? mysqli_real_escape_string($conn, $this->employee_image) : 'default.jpg';
+        $cpr_no = mysqli_real_escape_string($conn, $this->employee_cpr_number);
+        $blood_group = mysqli_real_escape_string($conn, $this->employee_blood_group);
+        $passport_no = mysqli_real_escape_string($conn, $this->employee_passport_number);
+        $joining_date = (!empty($this->employee_joining_date) && $this->employee_joining_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_joining_date) : '1970-01-01';
+        $cpr_expiry = (!empty($this->employee_cpr_expiry_date) && $this->employee_cpr_expiry_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_cpr_expiry_date) : '1970-01-01';
+        $visa_validity = (!empty($this->employee_visa_validity) && $this->employee_visa_validity != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_visa_validity) : '1970-01-01';
+        $is_driving = !empty($this->employee_is_driving_licence) ? mysqli_real_escape_string($conn, $this->employee_is_driving_licence) : 'No';
+        $tech_type = mysqli_real_escape_string($conn, $this->employee_tech_type_name);
+        $native_no = mysqli_real_escape_string($conn, $this->employee_native_number);
+        $native_addr = mysqli_real_escape_string($conn, $this->employee_native_address);
+        $visa_type = mysqli_real_escape_string($conn, $this->employee_visa_type);
+
+        // 1. Update tbl_employees
+        $sql_upd = "UPDATE `tbl_employees` SET
+            `employee_type_id` = '$emp_type_id',
+            `employee_type_name` = '$emp_type_name',
+            `employee_code` = '$emp_code',
+            `employee_password` = '$emp_password',
+            `employee_name` = '$emp_name',
+            `employee_contact_no` = '$emp_contact',
+            `employee_email_id` = '$emp_email',
+            `employee_address` = '$emp_address',
+            `employee_image` = '$emp_image',
+            `cpr_no` = '$cpr_no',
+            `blood_group` = '$blood_group',
+            `passport_no` = '$passport_no',
+            `joining_date` = '$joining_date',
+            `cpr_expiry_date` = '$cpr_expiry',
+            `visa_validity_on` = '$visa_validity',
+            `is_driving_license` = '$is_driving',
+            `technician_type` = '$tech_type',
+            `native_number` = '$native_no',
+            `native_address` = '$native_addr',
+            `visa_type` = '$visa_type'
+        WHERE `employee_id` = '$emp_id'";
+
+        $upd_res = mysqli_query($conn, $sql_upd);
+        if (!$upd_res) {
+            echo "Error: " . mysqli_error($conn);
+            return;
+        }
+
+        // 2. Delete existing expertise for this employee
+        mysqli_query($conn, "DELETE FROM `tbl_technician_expertise` WHERE `employee_id` = '$emp_id'");
+
+        // 3. Re-insert all selected expertise items
+        if ($this->employee_type_name == 'Technician' && is_array($this->expertise_id) && count($this->expertise_id) > 0) {
+            for ($i = 0; $i < count($this->expertise_id); $i++) {
+                $exp_id = intval($this->expertise_id[$i]);
+                $exp_name = isset($this->expertise_name[$i]) ? mysqli_real_escape_string($conn, $this->expertise_name[$i]) : 'NA';
+                if ($exp_id > 0) {
+                    mysqli_query($conn, "INSERT INTO `tbl_technician_expertise` (
+                        `employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`, `status`
+                    ) VALUES (
+                        '$emp_id', '$emp_code', '$emp_name', '$exp_id', '$exp_name', 'Active'
+                    )");
+                }
+            }
+        }
+
+        echo "success";
+    }
+
     function RequestAccept($FunctionEvents)
     {
         $var =  $this->SQLArray();
@@ -85,226 +263,96 @@ class apartmentController
         {
         
             case 'employee_code_check':
-                //echo $var[9];
-              // $this->varModelObj->ReturnCountValue($var[9]);
-            if($this->varModelObj->ReturnCountValue($var[9])==0)
-              {
-                  echo "not exist";
-              }
-              else
-              {
-            echo 1;
-              }
-               
-                
+                if($this->varModelObj->ReturnCountValue($var[9])==0)
+                {
+                    echo "not exist";
+                }
+                else
+                {
+                    echo 1;
+                }
             break;
+
             case 'add_employee':
-                // Handle expertise and employee insertion (single insert)
-                if($this->expertise_length > 0) {
-                    $this->expertise_id1 = $this->expertise_id[0];
-                    $this->expertise_name1 = $this->expertise_name[0];
-                } else {
-                    $this->expertise_id1 = 0;
-                    $this->expertise_name1 = 'NA';
-                }
-                $var = $this->SQLArray();
-                $this->varModelObj->ExecuteProcedure($var[1]);
-                
-                // Fetch the last inserted employee_id
-                $employee_id_query = "SELECT @msg AS employee_id";
-                $result = $this->varDBConnection->query($employee_id_query);
-                $row = $result->fetch_assoc();
-                $employee_id = $row['employee_id'];
-                
-                // If technician with multiple expertise, insert remaining
-                if($this->employee_type_name == 'Technician' && $this->expertise_length > 1 && !empty($employee_id)) {
-                    $code_res = mysqli_query($this->varDBConnection, "SELECT employee_code FROM tbl_employees WHERE employee_id = '" . intval($employee_id) . "'");
-                    $emp_code = '';
-                    if($code_res && $crow = mysqli_fetch_assoc($code_res)) {
-                        $emp_code = $crow['employee_code'];
-                    }
-                    for($this->x = 1; $this->x < $this->expertise_length; $this->x++) {
-                        $exp_id = mysqli_real_escape_string($this->varDBConnection, $this->expertise_id[$this->x]);
-                        $exp_name = mysqli_real_escape_string($this->varDBConnection, $this->expertise_name[$this->x]);
-                        $emp_name_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_name);
-                        $emp_code_esc = mysqli_real_escape_string($this->varDBConnection, $emp_code);
-                        $emp_id_int = intval($employee_id);
-                        mysqli_query($this->varDBConnection, "INSERT INTO `tbl_technician_expertise` (`employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`) VALUES ('$emp_id_int', '$emp_code_esc', '$emp_name_esc', '$exp_id', '$exp_name')");
-                    }
-                }
-                
-                // Handle document uploads and insertion
-                $upload_dir = "../../httpdocs/employeeDoc/";
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
-                
-                $document_data = json_decode($_POST['v_document_data'], true);
-                if (!empty($document_data)) {
-                    foreach ($document_data as $index => $doc) {
-                        $doc_type = $doc['type'];
-                        $file_names = explode(',', $doc['files']); // Split comma-separated file names
-                        $expiry_date = $doc['expiry'] ?: '0000-00-00';
-                        $remark = $doc['remark'];
-                        
-                        // Process uploaded files for this document row
-                        $saved_file_names = [];
-                        foreach ($_FILES as $key => $file) {
-                            if (preg_match("/^document_files_{$index}_(\d+)$/", $key, $matches)) {
-                                $file_index = $matches[1];
-                                $file_name = $file['name'];
-                                $tmp_name = $file['tmp_name'];
-                                $destination = $upload_dir . basename($file_name);
-                                
-                                if (move_uploaded_file($tmp_name, $destination)) {
-                                    $saved_file_names[] = $file_name;
-                                } else {
-                                    error_log("Failed to upload file: " . $file_name);
-                                }
-                            }
-                        }
-                        
-                        // Insert into employee_doc table with comma-separated file names
-                        if (!empty($saved_file_names)) {
-                            $file_names_str = implode(',', $saved_file_names);
-                            $sql = "INSERT INTO employee_doc (employee_id, document_type, document_name, expiry_date, remark) 
-                                    VALUES (?, ?, ?, ?, ?)";
-                            $stmt = $this->varDBConnection->prepare($sql);
-                            $stmt->bind_param('issss', $employee_id, $doc_type, $file_names_str, $expiry_date, $remark);
-                            $stmt->execute();
-                        }
-                    }
-                }
-                
-                // Handle employee image upload
-                if (isset($_FILES['employee_image']) && $_FILES['employee_image']['error'] == 0) {
-                    $upload_dir1 = "../../httpdocs/images/";
-                    $image_name = $_FILES['employee_image']['name'];
-                    $image_tmp = $_FILES['employee_image']['tmp_name'];
-                    $image_destination = $upload_dir1 . basename($image_name);
-                    if (!move_uploaded_file($image_tmp, $image_destination)) {
-                        error_log("Failed to upload employee image: " . $image_name);
-                    }
-                }
-                
-                echo "Success";
-                break;
+                $this->insertEmployee();
+            break;
+
+            case 'update_employee':
+                $this->modifyEmployee();
+            break;
             
             case 'employee_list_view':
            // echo $var[2];
                 $this->varModelObj->ListFromTable($var[2]);
             break;
             
-             case 'select_expertise_names':
+            case 'apply_leave':
+                $this->varModelObj->ExecuteProcedure($var[11]);
+            break;
             
+            case 'fetch_leave_calendar':
+                $emp_type = isset($_POST['emp_type']) ? $_POST['emp_type'] : 'all';
+                $leave_type = isset($_POST['leave_type']) ? $_POST['leave_type'] : 'all';
+                $from_date = isset($_POST['from_date']) ? $_POST['from_date'] : '';
+                $to_date = isset($_POST['to_date']) ? $_POST['to_date'] : '';
+
+                $where1 = " WHERE 1=1";
+                $where2 = " WHERE 1=1";
+
+                if ($emp_type !== 'all' && !empty($emp_type)) {
+                    $emp_type_esc = $this->varDBConnection->real_escape_string($emp_type);
+                    $where1 .= " AND e.employee_type_id = '$emp_type_esc'";
+                    $where2 .= " AND e.employee_type_id = '$emp_type_esc'";
+                }
+                if ($leave_type !== 'all' && !empty($leave_type)) {
+                    $leave_type_esc = $this->varDBConnection->real_escape_string($leave_type);
+                    $where1 .= " AND s.leave_type = '$leave_type_esc'";
+                    $where2 .= " AND l.leave_reason LIKE '%$leave_type_esc%'";
+                }
+                if (!empty($from_date) && !empty($to_date)) {
+                    $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
+                    $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
+                    $where1 .= " AND s.leave_start_date <= '$to_date_esc' AND s.leave_end_date >= '$from_date_esc'";
+                    $where2 .= " AND DATE(l.start_time) <= '$to_date_esc' AND DATE(l.end_time) >= '$from_date_esc'";
+                } else {
+                    if (!empty($from_date)) {
+                        $from_date_esc = $this->varDBConnection->real_escape_string($from_date);
+                        $where1 .= " AND s.leave_end_date >= '$from_date_esc'";
+                        $where2 .= " AND DATE(l.end_time) >= '$from_date_esc'";
+                    }
+                    if (!empty($to_date)) {
+                        $to_date_esc = $this->varDBConnection->real_escape_string($to_date);
+                        $where1 .= " AND s.leave_start_date <= '$to_date_esc'";
+                        $where2 .= " AND DATE(l.start_time) <= '$to_date_esc'";
+                    }
+                }
+
+                $sql = "SELECT CONCAT(s.employee_name, ' - ', s.leave_type) AS title, s.leave_start_date AS start, DATE_ADD(s.leave_end_date, INTERVAL 1 DAY) AS end, CASE s.leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_short_leave s LEFT JOIN tbl_employees e ON s.employee_code = e.employee_code $where1 UNION ALL SELECT CONCAT(l.employee_name, ' - ', l.leave_reason) AS title, DATE(l.start_time) AS start, DATE_ADD(DATE(l.end_time), INTERVAL 1 DAY) AS end, CASE WHEN l.leave_reason LIKE '%Sick%' THEN '#ef5350' WHEN l.leave_reason LIKE '%Casual%' THEN '#42a5f5' WHEN l.leave_reason LIKE '%Annual%' THEN '#66bb6a' WHEN l.leave_reason LIKE '%Emergency%' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON l.employee_code = e.employee_code $where2";
+
+                $events = array();
+                $result = mysqli_query($this->varDBConnection, $sql);
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result)) {
+                        $events[] = $row;
+                    }
+                }
+                echo json_encode($events);
+            break;
+            
+            case 'fetch_active_employees':
+                $employees = array();
+                $result = mysqli_query($this->varDBConnection, "SELECT employee_id, employee_name, employee_code FROM tbl_employees WHERE employee_status = 'Active'");
+                if($result) {
+                    while($row = mysqli_fetch_assoc($result)) {
+                        $employees[] = $row;
+                    }
+                }
+                echo json_encode($employees);
+            break;
+            
+             case 'select_expertise_names':
                  $this->varModelObj->ListFromTable($var[7]);
              break;
-
-
-             case 'update_employee':
-                 
-                  $this->varModelObj->DeleteRow($var[8]);
-                  if($this->expertise_length > 0) {
-                      $this->expertise_id1 = $this->expertise_id[0];
-                      $this->expertise_name1 = $this->expertise_name[0];
-                  } else {
-                      $this->expertise_id1 = 0;
-                      $this->expertise_name1 = 'NA';
-                  }
-                  $var = $this->SQLArray();
-                  $this->varModelObj->ExecuteProcedure($var[3]);
-                  
-                  if($this->employee_type_name == 'Technician' && $this->expertise_length > 1) {
-                      for($this->x = 1; $this->x < $this->expertise_length; $this->x++) {
-                          $exp_id = mysqli_real_escape_string($this->varDBConnection, $this->expertise_id[$this->x]);
-                          $exp_name = mysqli_real_escape_string($this->varDBConnection, $this->expertise_name[$this->x]);
-                          $emp_name_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_name);
-                          $emp_code_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_code);
-                          $emp_id_int = intval($this->employee_id);
-                          mysqli_query($this->varDBConnection, "INSERT INTO `tbl_technician_expertise` (`employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`) VALUES ('$emp_id_int', '$emp_code_esc', '$emp_name_esc', '$exp_id', '$exp_name')");
-                      }
-                  }
-               
-                  // Handle employee image update
-                  $old_image = '';
-                  $result = $this->varDBConnection->query("SELECT employee_image FROM tbl_employees WHERE employee_id = '{$this->employee_id}'");
-                  if ($row = $result->fetch_assoc()) {
-                      $old_image = $row['employee_image'];
-                  }
-                  
-                  if (isset($_FILES['employee_image']) && $_FILES['employee_image']['error'] == 0) {
-                      $upload_dir1 = "../../httpdocs/images/";
-                      $image_tmp = $_FILES['employee_image']['tmp_name'];
-                      $image_destination = $upload_dir1 . $this->employee_image;
-                      if (move_uploaded_file($image_tmp, $image_destination)) {
-                          if ($old_image != $this->employee_image && $old_image != 'default.jpg') {
-                              $old_path = $upload_dir1 . $old_image;
-                              if (file_exists($old_path)) {
-                                  unlink($old_path);
-                              }
-                          }
-                      }
-                  }
-                  
-                  // Delete existing document rows
-                  $sql = "DELETE FROM employee_doc WHERE employee_id = ?";
-                  $stmt = $this->varDBConnection->prepare($sql);
-                  $stmt->bind_param('i', $this->employee_id);
-                  $stmt->execute();
-                  
-                  // Handle new/updated documents (same as add)
-                  $upload_dir = "../../httpdocs/employeeDoc/";
-                  if (!is_dir($upload_dir)) {
-                      mkdir($upload_dir, 0777, true);
-                  }
-                  
-                  $document_data = json_decode($_POST['v_document_data'], true);
-                  if (!empty($document_data)) {
-                      foreach ($document_data as $index => $doc) {
-                          $doc_type = $doc['type'];
-                          $file_names_str = $doc['files'];
-                          $expiry_date = $doc['expiry'] ?: '0000-00-00';
-                          $remark = $doc['remark'];
-                          
-                          // Process new uploaded files (existing files are already in file_names_str)
-                          foreach ($_FILES as $key => $file) {
-                              if (preg_match("/^document_files_{$index}_(\d+)$/", $key, $matches)) {
-                                  $file_index = $matches[1];
-                                  $file_name = $file['name'];
-                                  $tmp_name = $file['tmp_name'];
-                                  $destination = $upload_dir . basename($file_name);
-                                  if (move_uploaded_file($tmp_name, $destination)) {
-                                      // File uploaded successfully
-                                  } else {
-                                      error_log("Failed to upload file: " . $file_name);
-                                  }
-                              }
-                          }
-                          
-                          // Insert updated document row
-                          if (!empty($file_names_str)) {
-                              $sql = "INSERT INTO employee_doc (employee_id, document_type, document_name, expiry_date, remark) 
-                                      VALUES (?, ?, ?, ?, ?)";
-                              $stmt = $this->varDBConnection->prepare($sql);
-                              $stmt->bind_param('issss', $this->employee_id, $doc_type, $file_names_str, $expiry_date, $remark);
-                              $stmt->execute();
-                          }
-                      }
-                  }
-                  
-                  // Handle deleted files (remove from server)
-                  $deleted_files = json_decode($_POST['deleted_files'], true);
-                  if (!empty($deleted_files)) {
-                      foreach ($deleted_files as $file) {
-                          $file_path = $upload_dir . $file;
-                          if (file_exists($file_path)) {
-                              unlink($file_path);
-                          }
-                      }
-                  }
-               
-              // $this->varModelObj->UpdateTable($var[3]);
-            break;
             
             case 'change_employee_status':
                 if($this->employee_action=='Active')
@@ -321,17 +369,81 @@ class apartmentController
                 $this->varModelObj->UpdateTable($var[10]);
             break;
 
-            case 'get_employee_documents':
-                $sql = "SELECT * FROM employee_doc WHERE employee_id = ?";
-                $stmt = $this->varDBConnection->prepare($sql);
-                $stmt->bind_param('i', $this->employee_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $docs = [];
-                while ($row = $result->fetch_assoc()) {
-                    $docs[] = $row;
+            case 'save_employee_attachment':
+                $emp_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
+                $doc_name = isset($_POST['document_type']) ? trim($_POST['document_type']) : '';
+                $exp_date = isset($_POST['expiry_date']) && !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : NULL;
+                $remarks = isset($_POST['remarks']) ? trim($_POST['remarks']) : '';
+
+                if ($emp_id <= 0 || empty($doc_name) || !isset($_FILES['doc_file']) || $_FILES['doc_file']['error'] != 0) {
+                    echo json_encode(['status' => 'error', 'message' => 'Please select employee, document type, and valid file attachment.']);
+                    exit;
                 }
-                echo json_encode($docs);
+
+                $emp_code = '';
+                $res_emp = mysqli_query($this->varDBConnection, "SELECT employee_code FROM tbl_employees WHERE employee_id = '$emp_id'");
+                if ($res_emp && $row_e = mysqli_fetch_assoc($res_emp)) {
+                    $emp_code = $row_e['employee_code'];
+                }
+
+                $uploadDir = __DIR__ . '/../../view/uploads/employee_documents/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                $origName = $_FILES['doc_file']['name'];
+                $ext = pathinfo($origName, PATHINFO_EXTENSION);
+                $newFileName = 'emp_doc_' . $emp_id . '_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                $targetFile = $uploadDir . $newFileName;
+                $relFilePath = 'uploads/employee_documents/' . $newFileName;
+
+                if (move_uploaded_file($_FILES['doc_file']['tmp_name'], $targetFile)) {
+                    $emp_code_esc = $this->varDBConnection->real_escape_string($emp_code);
+                    $doc_name_esc = $this->varDBConnection->real_escape_string($doc_name);
+                    $remarks_esc = $this->varDBConnection->real_escape_string($remarks);
+                    $origName_esc = $this->varDBConnection->real_escape_string($origName);
+                    $exp_date_sql = $exp_date ? "'".$this->varDBConnection->real_escape_string($exp_date)."'" : "NULL";
+
+                    $insertSql = "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code_esc', '$doc_name_esc', $exp_date_sql, '$relFilePath', '$origName_esc', '$remarks_esc', 'Active', NOW())";
+
+                    if (mysqli_query($this->varDBConnection, $insertSql)) {
+                        echo json_encode(['status' => 'success', 'message' => 'Document attachment uploaded successfully!']);
+                    } else {
+                        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . mysqli_error($this->varDBConnection)]);
+                    }
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to save uploaded file.']);
+                }
+            break;
+
+            case 'list_employee_attachments':
+                $emp_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
+                $sql = "SELECT a.*, e.employee_name FROM tbl_employee_attachments a LEFT JOIN tbl_employees e ON a.employee_id = e.employee_id WHERE a.status = 'Active'";
+                if ($emp_id > 0) {
+                    $sql .= " AND a.employee_id = '$emp_id'";
+                }
+                $sql .= " ORDER BY a.attachment_id DESC";
+
+                $res = mysqli_query($this->varDBConnection, $sql);
+                $data = [];
+                if ($res) {
+                    while ($row = mysqli_fetch_assoc($res)) {
+                        $row['expiry_date_format'] = (!empty($row['expiry_date']) && $row['expiry_date'] != '0000-00-00') ? date('d-m-Y', strtotime($row['expiry_date'])) : 'N/A';
+                        $row['created_at_format'] = date('d-m-Y H:i', strtotime($row['created_at']));
+                        $data[] = $row;
+                    }
+                }
+                echo json_encode(['data' => $data]);
+            break;
+
+            case 'delete_employee_attachment':
+                $att_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
+                if ($att_id > 0) {
+                    mysqli_query($this->varDBConnection, "UPDATE tbl_employee_attachments SET status = 'Deleted' WHERE attachment_id = '$att_id'");
+                    echo json_encode(['status' => 'success', 'message' => 'Attachment deleted successfully!']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Invalid attachment ID.']);
+                }
             break;
              
            
@@ -346,4 +458,3 @@ class apartmentController
 
 $obj = new apartmentController();
 $obj->RequestAccept($obj->actionevents);
-?>

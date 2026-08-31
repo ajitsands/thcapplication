@@ -91,6 +91,170 @@ class apartmentController
         
         return $array;
     }
+    public function insertEmployee()
+    {
+        $conn = $this->varDBConnection;
+
+        $emp_type_id = intval($this->employee_type_id);
+        $emp_type_name = mysqli_real_escape_string($conn, $this->employee_type_name);
+        $emp_password = mysqli_real_escape_string($conn, $this->employee_password);
+        $emp_name = mysqli_real_escape_string($conn, $this->employee_name);
+        $emp_contact = mysqli_real_escape_string($conn, $this->employee_contact_no);
+        $emp_email = mysqli_real_escape_string($conn, $this->employee_email_id);
+        $emp_address = mysqli_real_escape_string($conn, $this->employee_address);
+        $emp_image = !empty($this->employee_image) ? mysqli_real_escape_string($conn, $this->employee_image) : 'default.jpg';
+        $cpr_no = mysqli_real_escape_string($conn, $this->employee_cpr_number);
+        $blood_group = mysqli_real_escape_string($conn, $this->employee_blood_group);
+        $passport_no = mysqli_real_escape_string($conn, $this->employee_passport_number);
+        $joining_date = (!empty($this->employee_joining_date) && $this->employee_joining_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_joining_date) : '1970-01-01';
+        $cpr_expiry = (!empty($this->employee_cpr_expiry_date) && $this->employee_cpr_expiry_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_cpr_expiry_date) : '1970-01-01';
+        $visa_validity = (!empty($this->employee_visa_validity) && $this->employee_visa_validity != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_visa_validity) : '1970-01-01';
+        $is_driving = !empty($this->employee_is_driving_licence) ? mysqli_real_escape_string($conn, $this->employee_is_driving_licence) : 'No';
+        $tech_type = mysqli_real_escape_string($conn, $this->employee_tech_type_name);
+        $native_no = mysqli_real_escape_string($conn, $this->employee_native_number);
+        $native_addr = mysqli_real_escape_string($conn, $this->employee_native_address);
+        $visa_type = mysqli_real_escape_string($conn, $this->employee_visa_type);
+
+        // 1. Insert into tbl_employees
+        $sql_emp = "INSERT INTO `tbl_employees` (
+            `employee_type_id`, `employee_type_name`, `employee_password`, `employee_name`,
+            `employee_contact_no`, `employee_email_id`, `employee_address`, `employee_image`,
+            `cpr_no`, `blood_group`, `passport_no`, `joining_date`, `cpr_expiry_date`,
+            `visa_validity_on`, `is_driving_license`, `technician_type`, `native_number`,
+            `native_address`, `visa_type`, `employee_status`
+        ) VALUES (
+            '$emp_type_id', '$emp_type_name', '$emp_password', '$emp_name',
+            '$emp_contact', '$emp_email', '$emp_address', '$emp_image',
+            '$cpr_no', '$blood_group', '$passport_no', '$joining_date', '$cpr_expiry',
+            '$visa_validity', '$is_driving', '$tech_type', '$native_no',
+            '$native_addr', '$visa_type', 'Active'
+        )";
+
+        $insert_res = mysqli_query($conn, $sql_emp);
+        if (!$insert_res) {
+            echo "Error: " . mysqli_error($conn);
+            return;
+        }
+
+        $last_id = mysqli_insert_id($conn);
+
+        // 2. Generate employee_code
+        if ($last_id >= 0 && $last_id <= 9) {
+            $v_employee_code = 'CG-THC-000' . $last_id;
+        } else if ($last_id >= 10 && $last_id <= 99) {
+            $v_employee_code = 'CG-THC-00' . $last_id;
+        } else if ($last_id >= 100 && $last_id <= 999) {
+            $v_employee_code = 'CG-THC-0' . $last_id;
+        } else {
+            $v_employee_code = 'CG-THC-' . $last_id;
+        }
+
+        // 3. Update employee_code in tbl_employees
+        mysqli_query($conn, "UPDATE `tbl_employees` SET `employee_code`='$v_employee_code' WHERE `employee_id`='$last_id'");
+
+        // 4. Insert into users table for login
+        mysqli_query($conn, "INSERT INTO `users` (`username`, `password`, `role_id`) VALUES ('$v_employee_code', '$emp_password', 1)");
+
+        // 5. Insert all selected expertise items into tbl_technician_expertise
+        if ($this->employee_type_name == 'Technician' && is_array($this->expertise_id) && count($this->expertise_id) > 0) {
+            for ($i = 0; $i < count($this->expertise_id); $i++) {
+                $exp_id = intval($this->expertise_id[$i]);
+                $exp_name = isset($this->expertise_name[$i]) ? mysqli_real_escape_string($conn, $this->expertise_name[$i]) : 'NA';
+                if ($exp_id > 0) {
+                    mysqli_query($conn, "INSERT INTO `tbl_technician_expertise` (
+                        `employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`, `status`
+                    ) VALUES (
+                        '$last_id', '$v_employee_code', '$emp_name', '$exp_id', '$exp_name', 'Active'
+                    )");
+                }
+            }
+        }
+
+        echo "success";
+    }
+
+    public function modifyEmployee()
+    {
+        $conn = $this->varDBConnection;
+
+        $emp_id = intval($this->employee_id);
+        if ($emp_id <= 0) {
+            echo "Error: Invalid Employee ID";
+            return;
+        }
+
+        $emp_type_id = intval($this->employee_type_id);
+        $emp_type_name = mysqli_real_escape_string($conn, $this->employee_type_name);
+        $emp_code = mysqli_real_escape_string($conn, $this->employee_code);
+        $emp_password = mysqli_real_escape_string($conn, $this->employee_password);
+        $emp_name = mysqli_real_escape_string($conn, $this->employee_name);
+        $emp_contact = mysqli_real_escape_string($conn, $this->employee_contact_no);
+        $emp_email = mysqli_real_escape_string($conn, $this->employee_email_id);
+        $emp_address = mysqli_real_escape_string($conn, $this->employee_address);
+        $emp_image = !empty($this->employee_image) ? mysqli_real_escape_string($conn, $this->employee_image) : 'default.jpg';
+        $cpr_no = mysqli_real_escape_string($conn, $this->employee_cpr_number);
+        $blood_group = mysqli_real_escape_string($conn, $this->employee_blood_group);
+        $passport_no = mysqli_real_escape_string($conn, $this->employee_passport_number);
+        $joining_date = (!empty($this->employee_joining_date) && $this->employee_joining_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_joining_date) : '1970-01-01';
+        $cpr_expiry = (!empty($this->employee_cpr_expiry_date) && $this->employee_cpr_expiry_date != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_cpr_expiry_date) : '1970-01-01';
+        $visa_validity = (!empty($this->employee_visa_validity) && $this->employee_visa_validity != '0000-00-00') ? mysqli_real_escape_string($conn, $this->employee_visa_validity) : '1970-01-01';
+        $is_driving = !empty($this->employee_is_driving_licence) ? mysqli_real_escape_string($conn, $this->employee_is_driving_licence) : 'No';
+        $tech_type = mysqli_real_escape_string($conn, $this->employee_tech_type_name);
+        $native_no = mysqli_real_escape_string($conn, $this->employee_native_number);
+        $native_addr = mysqli_real_escape_string($conn, $this->employee_native_address);
+        $visa_type = mysqli_real_escape_string($conn, $this->employee_visa_type);
+
+        // 1. Update tbl_employees
+        $sql_upd = "UPDATE `tbl_employees` SET
+            `employee_type_id` = '$emp_type_id',
+            `employee_type_name` = '$emp_type_name',
+            `employee_code` = '$emp_code',
+            `employee_password` = '$emp_password',
+            `employee_name` = '$emp_name',
+            `employee_contact_no` = '$emp_contact',
+            `employee_email_id` = '$emp_email',
+            `employee_address` = '$emp_address',
+            `employee_image` = '$emp_image',
+            `cpr_no` = '$cpr_no',
+            `blood_group` = '$blood_group',
+            `passport_no` = '$passport_no',
+            `joining_date` = '$joining_date',
+            `cpr_expiry_date` = '$cpr_expiry',
+            `visa_validity_on` = '$visa_validity',
+            `is_driving_license` = '$is_driving',
+            `technician_type` = '$tech_type',
+            `native_number` = '$native_no',
+            `native_address` = '$native_addr',
+            `visa_type` = '$visa_type'
+        WHERE `employee_id` = '$emp_id'";
+
+        $upd_res = mysqli_query($conn, $sql_upd);
+        if (!$upd_res) {
+            echo "Error: " . mysqli_error($conn);
+            return;
+        }
+
+        // 2. Delete existing expertise for this employee
+        mysqli_query($conn, "DELETE FROM `tbl_technician_expertise` WHERE `employee_id` = '$emp_id'");
+
+        // 3. Re-insert all selected expertise items
+        if ($this->employee_type_name == 'Technician' && is_array($this->expertise_id) && count($this->expertise_id) > 0) {
+            for ($i = 0; $i < count($this->expertise_id); $i++) {
+                $exp_id = intval($this->expertise_id[$i]);
+                $exp_name = isset($this->expertise_name[$i]) ? mysqli_real_escape_string($conn, $this->expertise_name[$i]) : 'NA';
+                if ($exp_id > 0) {
+                    mysqli_query($conn, "INSERT INTO `tbl_technician_expertise` (
+                        `employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`, `status`
+                    ) VALUES (
+                        '$emp_id', '$emp_code', '$emp_name', '$exp_id', '$exp_name', 'Active'
+                    )");
+                }
+            }
+        }
+
+        echo "success";
+    }
+
     function RequestAccept($FunctionEvents)
     {
         $var =  $this->SQLArray();
@@ -99,48 +263,22 @@ class apartmentController
         {
         
             case 'employee_code_check':
-                //echo $var[9];
-              // $this->varModelObj->ReturnCountValue($var[9]);
-            if($this->varModelObj->ReturnCountValue($var[9])==0)
-              {
-                  echo "not exist";
-              }
-              else
-              {
-            echo 1;
-              }
-               
-                
+                if($this->varModelObj->ReturnCountValue($var[9])==0)
+                {
+                    echo "not exist";
+                }
+                else
+                {
+                    echo 1;
+                }
             break;
+
             case 'add_employee':
-                if($this->expertise_length > 0) {
-                    $this->expertise_id1 = $this->expertise_id[0];
-                    $this->expertise_name1 = $this->expertise_name[0];
-                } else {
-                    $this->expertise_id1 = 0;
-                    $this->expertise_name1 = 'NA';
-                }
-                $var = $this->SQLArray();
-                $new_emp_id = $this->varModelObj->ExecuteProcedure($var[1]);
-                
-                // If this is a Technician and there are multiple expertise items, insert remaining into tbl_technician_expertise
-                if($this->employee_type_name == 'Technician' && $this->expertise_length > 1 && !empty($new_emp_id) && is_numeric($new_emp_id)) {
-                    $code_res = mysqli_query($this->varDBConnection, "SELECT employee_code FROM tbl_employees WHERE employee_id = '" . intval($new_emp_id) . "'");
-                    $emp_code = '';
-                    if($code_res && $row = mysqli_fetch_assoc($code_res)) {
-                        $emp_code = $row['employee_code'];
-                    }
-                    
-                    for($this->x = 1; $this->x < $this->expertise_length; $this->x++) {
-                        $exp_id = mysqli_real_escape_string($this->varDBConnection, $this->expertise_id[$this->x]);
-                        $exp_name = mysqli_real_escape_string($this->varDBConnection, $this->expertise_name[$this->x]);
-                        $emp_name_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_name);
-                        $emp_code_esc = mysqli_real_escape_string($this->varDBConnection, $emp_code);
-                        $emp_id_int = intval($new_emp_id);
-                        
-                        mysqli_query($this->varDBConnection, "INSERT INTO `tbl_technician_expertise` (`employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`) VALUES ('$emp_id_int', '$emp_code_esc', '$emp_name_esc', '$exp_id', '$exp_name')");
-                    }
-                }
+                $this->insertEmployee();
+            break;
+
+            case 'update_employee':
+                $this->modifyEmployee();
             break;
             
             case 'employee_list_view':
@@ -213,35 +351,8 @@ class apartmentController
             break;
             
              case 'select_expertise_names':
-            
                  $this->varModelObj->ListFromTable($var[7]);
              break;
-
-
-             case 'update_employee':
-                  $this->varModelObj->DeleteRow($var[8]);
-                  if($this->expertise_length > 0) {
-                      $this->expertise_id1 = $this->expertise_id[0];
-                      $this->expertise_name1 = $this->expertise_name[0];
-                  } else {
-                      $this->expertise_id1 = 0;
-                      $this->expertise_name1 = 'NA';
-                  }
-                  $var = $this->SQLArray();
-                  $this->varModelObj->ExecuteProcedure($var[3]);
-                  
-                  if($this->employee_type_name == 'Technician' && $this->expertise_length > 1) {
-                      for($this->x = 1; $this->x < $this->expertise_length; $this->x++) {
-                          $exp_id = mysqli_real_escape_string($this->varDBConnection, $this->expertise_id[$this->x]);
-                          $exp_name = mysqli_real_escape_string($this->varDBConnection, $this->expertise_name[$this->x]);
-                          $emp_name_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_name);
-                          $emp_code_esc = mysqli_real_escape_string($this->varDBConnection, $this->employee_code);
-                          $emp_id_int = intval($this->employee_id);
-                          
-                          mysqli_query($this->varDBConnection, "INSERT INTO `tbl_technician_expertise` (`employee_id`, `employee_code`, `employee_name`, `expertise_id`, `expertise_name`) VALUES ('$emp_id_int', '$emp_code_esc', '$emp_name_esc', '$exp_id', '$exp_name')");
-                      }
-                  }
-            break;
             
             case 'change_employee_status':
                 if($this->employee_action=='Active')
