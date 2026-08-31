@@ -367,7 +367,7 @@ $(document).ready(function(){
                                               hasPrivilege = permissions.length === 0 || permissions.includes("EmployeesModify") || permissions.includes("EmployeesView");
                                           }
                                           
-                                          var dropdownHTML = '<div class="list-icons"><div class="dropdown dropup"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
+                                          var dropdownHTML = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" data-boundary="window" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
                                           if (hasPrivilege) {
                                               dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a><a href="#" class="dropdown-item" name="name_ApplyLeave" style="color: blue;"><i class="icon-calendar"></i>Apply Leave</a><a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a>';
                                           } else {
@@ -522,9 +522,26 @@ $(document).ready(function(){
                                    load_data_to_grid_employees_details_list();
                                 
                             });
-                        }  
+                         }  
                           
                         
+        });
+
+        $(document).on('show.bs.dropdown', '#list_of_employees .dropdown', function () {
+            var $dropdown = $(this);
+            var $toggle = $dropdown.find('[data-toggle="dropdown"]');
+            if ($toggle.length) {
+                var offset = $toggle.offset();
+                var windowHeight = $(window).height();
+                var scrollTop = $(window).scrollTop();
+                var spaceBelow = windowHeight - (offset.top - scrollTop);
+
+                if (spaceBelow < 180) {
+                    $dropdown.addClass('dropup');
+                } else {
+                    $dropdown.removeClass('dropup');
+                }
+            }
         });
        
                  
