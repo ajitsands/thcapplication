@@ -4,7 +4,7 @@ $(document).ready(function(){
     var v_btn_employee_leave_add = $('#btn_employee_leave_add').ladda();
     $("#div_reason_for_leave").hide();              
                  
-    var v_list_of_employees_on_leave_table = $('#list_of_employees_on_leave').DataTable({});
+    var v_list_of_employees_on_leave_table;
     load_data_to_grid_employees_on_leave_list();
 
     // Initialize inline calendar view (8-column panel)
@@ -334,7 +334,9 @@ $(document).ready(function(){
                      var v_from_date = $('#txt_filter_from_date').val() || '';
                      var v_to_date = $('#txt_filter_to_date').val() || '';
                       
-                     v_list_of_employees_on_leave_table.destroy();
+                     if ($.fn.DataTable.isDataTable('#list_of_employees_on_leave')) {
+                         $('#list_of_employees_on_leave').DataTable().destroy();
+                     }
                           
                       v_list_of_employees_on_leave_table = $('#list_of_employees_on_leave').DataTable( {
                             
