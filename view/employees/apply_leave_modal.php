@@ -21,13 +21,29 @@
                 <div class="form-group row">
                     <label class="col-form-label col-lg-3 font-weight-semibold">Leave Type <span class="text-danger">*</span></label>
                     <div class="col-lg-9">
-                        <select id="leave_type" class="form-control form-control-select2" data-placeholder="Select or Add Leave Type">
+                        <select id="leave_type" class="form-control form-control-select2" data-placeholder="Select Leave Type">
                             <option value=""></option>
-                            <option value="Sick Leave">Sick Leave</option>
-                            <option value="Casual Leave">Casual Leave</option>
-                            <option value="Annual Leave">Annual Leave</option>
-                            <option value="Emergency Leave">Emergency Leave</option>
-                            <option value="Privilege Leave">Privilege Leave</option>
+                            <?PHP
+                            if (!isset($varDBConnection)) {
+                                include_once(__DIR__ . '/../../model/db_connection/connection.php');
+                                $DBConnM = new DBConnection();
+                                $varDBConnM = $DBConnM->ConnectToMYSQL();
+                            } else {
+                                $varDBConnM = $varDBConnection;
+                            }
+                            $lt_res = mysqli_query($varDBConnM, "SELECT leave_type_name FROM tbl_leave_types WHERE leave_type_status='Active' ORDER BY leave_type_id ASC");
+                            if ($lt_res && mysqli_num_rows($lt_res) > 0) {
+                                while ($ltr = mysqli_fetch_assoc($lt_res)) {
+                                    echo '<option value="' . htmlspecialchars($ltr['leave_type_name']) . '">' . htmlspecialchars($ltr['leave_type_name']) . '</option>';
+                                }
+                            } else {
+                                echo '<option value="Sick Leave">Sick Leave</option>';
+                                echo '<option value="Casual Leave">Casual Leave</option>';
+                                echo '<option value="Annual Leave">Annual Leave</option>';
+                                echo '<option value="Emergency Leave">Emergency Leave</option>';
+                                echo '<option value="Privilege Leave">Privilege Leave</option>';
+                            }
+                            ?>
                         </select>
                     </div>
                 </div>

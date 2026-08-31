@@ -1,3 +1,26 @@
+<?PHP
+if (!isset($varDBConnection)) {
+    include_once(__DIR__ . '/../../model/db_connection/connection.php');
+    $DBConnLT = new DBConnection();
+    $varDBConnection = $DBConnLT->ConnectToMYSQL();
+}
+$lt_query = mysqli_query($varDBConnection, "SELECT leave_type_id, leave_type_name, leave_type_color FROM tbl_leave_types WHERE leave_type_status='Active' ORDER BY leave_type_id ASC");
+$leave_types_list = array();
+if ($lt_query && mysqli_num_rows($lt_query) > 0) {
+    while ($lt_row = mysqli_fetch_assoc($lt_query)) {
+        $leave_types_list[] = $lt_row;
+    }
+} else {
+    // Fallback defaults if table is freshly migrating
+    $leave_types_list = array(
+        array('leave_type_name' => 'Sick Leave', 'leave_type_color' => '#ef5350'),
+        array('leave_type_name' => 'Casual Leave', 'leave_type_color' => '#42a5f5'),
+        array('leave_type_name' => 'Annual Leave', 'leave_type_color' => '#66bb6a'),
+        array('leave_type_name' => 'Emergency Leave', 'leave_type_color' => '#ffa726'),
+        array('leave_type_name' => 'Privilege Leave', 'leave_type_color' => '#ab47bc')
+    );
+}
+?>
 <style>
     input[type='file'] {
         width: 95px;
@@ -30,12 +53,10 @@
                 <div class="form-group">
                     <span class="form-text text-muted font-weight-bold"><font color="black">Type of Leave <span style="color:red;">*</span></font></span> 
                     <select data-placeholder="Select Type of Leave" id="select_type_of_leave" class="form-control form-control-select2" data-fouc>
-                        <option value="select">Select </option>
-                        <option value="Sick Leave">Sick Leave</option>
-                        <option value="Casual Leave">Casual Leave</option>
-                        <option value="Annual Leave">Annual Leave</option>
-                        <option value="Emergency Leave">Emergency Leave</option>
-                        <option value="Privilege Leave">Privilege Leave</option>
+                        <option value="select">Select Type of Leave</option>
+                        <?PHP foreach ($leave_types_list as $lt) { ?>
+                            <option value="<?PHP echo htmlspecialchars($lt['leave_type_name']); ?>"><?PHP echo htmlspecialchars($lt['leave_type_name']); ?></option>
+                        <?PHP } ?>
                     </select>    
                 </div>
 
@@ -105,11 +126,9 @@
                     <span class="form-text text-muted font-weight-bold"><font color="black">Leave Type</font></span>
                     <select id="select_filter_leave_type" class="form-control select">
                         <option value="all">All Leave Types</option>
-                        <option value="Sick Leave">Sick Leave</option>
-                        <option value="Casual Leave">Casual Leave</option>
-                        <option value="Annual Leave">Annual Leave</option>
-                        <option value="Emergency Leave">Emergency Leave</option>
-                        <option value="Privilege Leave">Privilege Leave</option>
+                        <?PHP foreach ($leave_types_list as $lt) { ?>
+                            <option value="<?PHP echo htmlspecialchars($lt['leave_type_name']); ?>"><?PHP echo htmlspecialchars($lt['leave_type_name']); ?></option>
+                        <?PHP } ?>
                     </select>
                 </div>
 
@@ -145,11 +164,11 @@
                 <!-- Color Code Legend -->
                 <div class="d-flex flex-wrap align-items-center mb-3 pb-2" style="gap: 8px; border-bottom: 1px solid #eee;">
                     <span class="font-weight-semibold text-muted mr-1" style="font-size: 12px;"><i class="icon-color-sampler mr-1"></i> Color Code:</span>
-                    <span class="badge badge-pill text-white px-2 py-1" style="background-color: #ef5350; font-size: 11px; font-weight: 500;"><i class="icon-primitive-dot mr-1"></i> Sick Leave</span>
-                    <span class="badge badge-pill text-white px-2 py-1" style="background-color: #42a5f5; font-size: 11px; font-weight: 500;"><i class="icon-primitive-dot mr-1"></i> Casual Leave</span>
-                    <span class="badge badge-pill text-white px-2 py-1" style="background-color: #66bb6a; font-size: 11px; font-weight: 500;"><i class="icon-primitive-dot mr-1"></i> Annual Leave</span>
-                    <span class="badge badge-pill text-white px-2 py-1" style="background-color: #ffa726; font-size: 11px; font-weight: 500;"><i class="icon-primitive-dot mr-1"></i> Emergency Leave</span>
-                    <span class="badge badge-pill text-white px-2 py-1" style="background-color: #ab47bc; font-size: 11px; font-weight: 500;"><i class="icon-primitive-dot mr-1"></i> Privilege Leave</span>
+                    <?PHP foreach ($leave_types_list as $lt) { 
+                        $col = !empty($lt['leave_type_color']) ? $lt['leave_type_color'] : '#26a69a';
+                    ?>
+                        <span class="badge badge-pill text-white px-2 py-1" style="background-color: <?PHP echo $col; ?>; font-size: 11px; font-weight: 500;"><i class="icon-primitive-dot mr-1"></i><?PHP echo htmlspecialchars($lt['leave_type_name']); ?></span>
+                    <?PHP } ?>
                 </div>
                 <div id="leave_calendar_inline"></div>
             </div>
