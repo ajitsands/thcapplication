@@ -836,6 +836,18 @@ $(document).ready(function(){
                              center: 'title',
                              right: 'month,agendaWeek,agendaDay'
                          },
+                         buttonIcons: {
+                             prev: 'left-single-arrow',
+                             next: 'right-single-arrow'
+                         },
+                         buttonText: {
+                             prev: '‹',
+                             next: '›',
+                             today: 'today',
+                             month: 'month',
+                             week: 'week',
+                             day: 'day'
+                         },
                          editable: false,
                          events: function(start, end, timezone, callback) {
                              $.ajax({

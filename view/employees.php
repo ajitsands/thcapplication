@@ -50,8 +50,41 @@ $OBJ->URLEncode('head=dashboard');
             position: relative !important;
             z-index: 1 !important;
         }
+
+        /* FullCalendar Navigation Buttons & Icons */
+        .fc-button .fc-icon {
+            font-size: 1.25rem !important;
+            line-height: 1 !important;
+            height: auto !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
+        .fc-icon-left-single-arrow:after {
+            content: "\2039" !important;
+            font-size: 1.5rem !important;
+            font-weight: bold !important;
+            line-height: 1 !important;
+            display: inline-block !important;
+        }
+        .fc-icon-right-single-arrow:after {
+            content: "\203A" !important;
+            font-size: 1.5rem !important;
+            font-weight: bold !important;
+            line-height: 1 !important;
+            display: inline-block !important;
+        }
+        .fc-prev-button,
+        .fc-next-button {
+            min-width: 36px !important;
+            height: 36px !important;
+            padding: 0 10px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
 	</style>
 
+	<link rel="stylesheet" href="assets/fullcalendar/fullcalendar.css">
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
 	<script src="global_assets/js/plugins/forms/styling/uniform.min.js"></script>
 	<script src="global_assets/js/demo_pages/form_layouts.js"></script>
