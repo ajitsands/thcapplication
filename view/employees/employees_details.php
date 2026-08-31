@@ -196,7 +196,7 @@
 									<div class="row align-items-end">
 										<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 form-group">
 											<span class="form-text text-muted font-weight-bold"><font color="black">Select Employee <span style="color:red;">*</span></font></span>
-											<select id="select_attach_employee" name="employee_id" class="form-control" required>
+											<select id="select_attach_employee" name="employee_id" class="form-control form-control-select2" data-placeholder="Select Employee" data-fouc required>
 												<option value="">Select Employee</option>
 												<?PHP
 												if (!isset($varDBConnection)) {
@@ -218,7 +218,7 @@
 
 										<div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 form-group">
 											<span class="form-text text-muted font-weight-bold"><font color="black">Document Type / Name <span style="color:red;">*</span></font></span>
-											<select id="select_attach_doc_name" name="document_type" class="form-control" required>
+											<select id="select_attach_doc_name" name="document_type" class="form-control form-control-select2" data-placeholder="Select Document Type" data-fouc required>
 												<option value="Passport">Passport</option>
 												<option value="Driving License">Driving License</option>
 												<option value="CPR Card">CPR Card</option>
@@ -259,15 +259,17 @@
 									<h6 class="font-weight-semibold mb-0"><i class="icon-files-empty mr-2"></i> Uploaded Employee Attachments & Documents</h6>
 									<div class="form-inline">
 										<label class="mr-2 font-weight-bold">Filter by Employee:</label>
-										<select id="select_filter_attachment_emp" class="form-control form-control-sm">
-											<option value="0">All Employees</option>
-											<?PHP
-											mysqli_data_seek($res_emp_att, 0);
-											while ($r_emp = mysqli_fetch_assoc($res_emp_att)) {
-												echo '<option value="' . $r_emp['employee_id'] . '">' . htmlspecialchars($r_emp['employee_code'] . ' - ' . $r_emp['employee_name']) . '</option>';
-											}
-											?>
-										</select>
+										<div style="min-width: 250px;">
+											<select id="select_filter_attachment_emp" class="form-control form-control-select2" data-placeholder="All Employees" data-fouc>
+												<option value="0">All Employees</option>
+												<?PHP
+												mysqli_data_seek($res_emp_att, 0);
+												while ($r_emp = mysqli_fetch_assoc($res_emp_att)) {
+													echo '<option value="' . $r_emp['employee_id'] . '">' . htmlspecialchars($r_emp['employee_code'] . ' - ' . $r_emp['employee_name']) . '</option>';
+												}
+												?>
+											</select>
+										</div>
 									</div>
 								</div>
 

@@ -938,8 +938,30 @@ $(document).ready(function(){
         });
     }
 
+    // Initialize select2 on attachment dropdowns
+    if ($.fn.select2) {
+        $('#select_attach_employee').select2({
+            placeholder: "Select Employee",
+            allowClear: true,
+            width: '100%'
+        });
+        $('#select_attach_doc_name').select2({
+            placeholder: "Select Document Type",
+            width: '100%'
+        });
+        $('#select_filter_attachment_emp').select2({
+            placeholder: "All Employees",
+            width: '100%'
+        });
+    }
+
     // Load attachments list when switching tabs or filtering
     $('a[href="#tab_employee_attachments"]').on('shown.bs.tab', function (e) {
+        if ($.fn.select2) {
+            $('#select_attach_employee').select2({ placeholder: "Select Employee", allowClear: true, width: '100%' });
+            $('#select_attach_doc_name').select2({ placeholder: "Select Document Type", width: '100%' });
+            $('#select_filter_attachment_emp').select2({ placeholder: "All Employees", width: '100%' });
+        }
         load_employee_attachments_grid();
     });
 
@@ -969,6 +991,8 @@ $(document).ready(function(){
                     if (res.status === 'success') {
                         swal("Success", res.message, "success");
                         $('#form_employee_attachment')[0].reset();
+                        $('#select_attach_employee').val('').trigger('change');
+                        $('#select_attach_doc_name').val('Passport').trigger('change');
                         load_employee_attachments_grid();
                     } else {
                         swal("Error", res.message || "Failed to upload document.", "error");
