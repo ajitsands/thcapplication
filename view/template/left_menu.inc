@@ -69,7 +69,7 @@ $params = [];
                         href="employee_leave.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=17&title=employee_leave');?>"
                         class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='17' ){ echo 'active';} ?>"
                     >
-                        Leave Schedule
+                        Leave Scheduler
                     </a>
                 </li>
                 <li class="nav-item classEmployeesView">
