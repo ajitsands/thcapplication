@@ -195,6 +195,8 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
                     <th>Sl. No.</th>
                     <th>Emp. Code</th>
                     <th>Emp. Name</th>
+                    <th>Emp. Type</th>
+                    <th>Leave Type</th>
                     <th>Leave Reason</th>
                     <th>Start Date</th>
                     <th>End Date</th>
@@ -204,6 +206,8 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
             </tbody>
             <tfoot>
                 <tr>
+                    <th></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>

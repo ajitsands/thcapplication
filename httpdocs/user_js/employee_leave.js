@@ -361,7 +361,7 @@ $(document).ready(function(){
                                     text: '<i class="icon-file-excel mr-2"></i> Export to Excel',
                                     className: 'btn btn-success btn-sm mb-2',
                                     exportOptions: {
-                                        columns: [0, 1, 2, 3, 4, 5]
+                                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
                                     }
                                 }
                             ],
@@ -376,6 +376,14 @@ $(document).ready(function(){
                                  { "data": null},
                                  { "data": "employee_code"},
                                  { "data": "employee_name" },
+                                 { "data": "employee_type_name" },
+                                 { 
+                                     "data": "leave_type",
+                                     render: function(data, type, row) {
+                                         var col = row.leave_type_color || '#26a69a';
+                                         return '<span class="badge badge-pill text-white px-2 py-1" style="background-color:' + col + '; font-size:11px; font-weight:500;"><i class="icon-primitive-dot mr-1"></i>' + (data || 'Leave') + '</span>';
+                                     }
+                                 },
                                  { "data": "leave_reason"},
                                  { "data": "start_time"},
                                  { "data": "end_time" }
@@ -385,7 +393,7 @@ $(document).ready(function(){
                              responsive: true,
                              
                              "aoColumnDefs": [
-            					{ "bSortable": false, "aTargets": [ 0,1,2,3,4,5] }, 
+            					{ "bSortable": false, "aTargets": [ 0,1,2,3,4,5,6,7] }, 
             					
             				],
                             
