@@ -28,22 +28,35 @@ $OBJ->URLEncode('head=dashboard');
         tr.shown td.details-control {
             background: url('../httpdocs/images/minus.png') no-repeat center center;
         }
-        .card, .card-body, .dataTables_wrapper, .datatable-scroll, .datatable-scroll-wrap {
+        .card, .card-body, .dataTables_wrapper, .datatable-scroll, .datatable-scroll-wrap, .datatable-scroll-lg, .dataTables_scroll, .dataTables_scrollBody, .table-responsive {
             overflow: visible !important;
         }
         #list_of_employees {
             position: relative;
         }
         #list_of_employees tbody tr td {
-            overflow: visible;
+            overflow: visible !important;
         }
-        #list_of_employees .list-icons .dropdown {
+        #list_of_employees .list-icons {
+            position: relative;
+        }
+        #list_of_employees .list-icons .dropdown,
+        #list_of_employees .list-icons .dropup {
             position: relative;
         }
         #list_of_employees .list-icons .dropdown-menu {
-            z-index: 99999 !important;
-            position: absolute;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+            z-index: 999999 !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+        }
+        #list_of_employees .dropup .dropdown-menu {
+            top: auto !important;
+            bottom: 100% !important;
+            margin-bottom: 5px !important;
+            margin-top: 0 !important;
+        }
+        .datatable-footer {
+            position: relative !important;
+            z-index: 1 !important;
         }
 	</style>
 
