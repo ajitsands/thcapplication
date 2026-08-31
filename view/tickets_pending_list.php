@@ -17,7 +17,6 @@ $OBJ->URLEncode('head=dashboard');
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<?PHP 
 		include_once('template/head.inc');
-		include_once('datatable_setting.php');
 	?>
 
 	 

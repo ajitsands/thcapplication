@@ -29,6 +29,5 @@
             <script src="user_permission/js/validations.js?timestamp=<?php echo time(); ?>"></script>
             <script type="text/javascript" src="user_permission/js/messagedropdown.js?timestamp=<?php echo time(); ?>"></script>
             <?php
-                   include_once('datatable_setting.php');
                 }
             ?>

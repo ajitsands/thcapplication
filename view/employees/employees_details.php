@@ -152,37 +152,39 @@
 								
 							</div>
 						</div>
-						  <div class="row align-items-end">
-						             <?PHP include("employee_type_combo.php"); ?>
+						<div class="row">
+						    <?PHP include("employee_type_combo.php"); ?>
 						      
-									  <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" id="div_select_emp_tech_type">
-									      	<span class="form-text text-muted font-weight-bold"><font color="black">Technician Type&nbsp;<span style="color:red;">*</span></font></span>	
-                                         <select data-placeholder="Select Technician Type" id="select_emp_tech_type" class="form-control form-control-select2" data-fouc>
-                                             <option value="select">Select</option>
-                                                <option value="Floating">Floating</option>
-                                                <option value="Resident/Stationed">Resident/Stationed</option>
-                                                
-                                          </select>
-                                         
-                                    </div>
+						    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" id="div_select_emp_tech_type">
+						        <span class="form-text text-muted font-weight-bold"><font color="black">Technician Type&nbsp;<span style="color:red;">*</span></font></span>	
+                                <select data-placeholder="Select Technician Type" id="select_emp_tech_type" class="form-control form-control-select2" data-fouc>
+                                    <option value="select">Select</option>
+                                    <option value="Floating">Floating</option>
+                                    <option value="Resident/Stationed">Resident/Stationed</option>
+                                </select>
+                            </div>
 						     	
-						     	    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                    					<span class="form-text text-muted font-weight-bold"><font color="black">Employee Image&nbsp;</font></span>	
-                    					<input type="file" class="form-input-styled"  id="session_image" accept="image/*" title="&nbsp;" tabindex=17 data-fouc=""/><p id="emp_img_name" class="mb-0"></p>
-                    					<div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>
-    							    </div>
+						    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12" id="div_employee_image">
+                    			<span class="form-text text-muted font-weight-bold"><font color="black">Employee Image&nbsp;</font></span>	
+                    			<div class="d-flex align-items-center">
+                    			    <div style="flex: 1;">
+                    			        <input type="file" class="form-input-styled" id="session_image" accept="image/*" title="&nbsp;" tabindex="17" data-fouc="" />
+                    			    </div>
+                    			    <div id="img_preview" style="width:36px;height:36px;margin-left:8px;display:flex;align-items:center;justify-content:center;"></div>
+                    			</div>
+                    			<p id="emp_img_name" class="mb-0 small text-muted"></p>
+    						</div>
 
-						            <!-- Action Buttons in 4th Column -->
-						            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-right align-self-end pb-1" id="div_action_buttons">
-						                <button type="button" id="btn_employee_add" class="btn bg-teal-400"><b><i class="icon-floppy-disk"></i></b>&nbsp;&nbsp;Save</button>
-						                <button type="button" id="btn_employee_edit" class="btn bg-warning-400"><b><i class="icon-database-edit2"></i></b>&nbsp;&nbsp;Update</button>
-						                <button type="button" id="btn_employee_new" class="btn btn-primary"><b><i class="icon-book"></i></b>&nbsp;&nbsp;New</button>
-						            </div>
-
+						    <!-- Action Buttons in 4th Column -->
+						    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 ml-auto text-right align-self-end pb-1" id="div_action_buttons">
+						        <button type="button" id="btn_employee_add" class="btn bg-teal-400"><b><i class="icon-floppy-disk"></i></b>&nbsp;&nbsp;Save</button>
+						        <button type="button" id="btn_employee_edit" class="btn bg-warning-400"><b><i class="icon-database-edit2"></i></b>&nbsp;&nbsp;Update</button>
+						        <button type="button" id="btn_employee_new" class="btn btn-primary"><b><i class="icon-book"></i></b>&nbsp;&nbsp;New</button>
 						    </div>
-						    <div class="row mt-2">
-						        <?PHP include("tech_expertise_combo.php"); ?>
-						    </div>
+						</div>
+						<div class="row mt-2">
+						    <?PHP include("tech_expertise_combo.php"); ?>
+						</div>
 
 							</div>
 						</div>

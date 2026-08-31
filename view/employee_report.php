@@ -56,7 +56,6 @@ $OBJ->URLEncode('head=dashboard');
 </head>
     <?PHP 
 		include_once('template/date_time.inc');
-		include_once('datatable_setting.php');
 	?>
 <body class="navbar-top">
 

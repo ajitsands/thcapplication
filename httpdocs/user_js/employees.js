@@ -147,18 +147,10 @@ $(document).ready(function(){
                  // var v_expertise_id=[];
                  // var v_expertise_name=[];
               
-                      $('#select_expertise').on('select2:select', function (e) {
-                        
-                         var data = e.params.data;
-                          
-                       
-                         expertise_id= data.id;
-                         v_expertise_name= $('#select_expertise option:selected') .toArray().map(item => item.text);
-                         v_expertise_id = $('#select_expertise option:selected') .toArray().map(item => item.value);
-                        
-                        
-                       
-                        });
+                      $('#select_expertise').on('change select2:select select2:unselect', function (e) {
+                         v_expertise_name = $('#select_expertise option:selected').toArray().map(item => item.text);
+                         v_expertise_id = $('#select_expertise option:selected').toArray().map(item => item.value);
+                      });
                 $('#session_image').change(function (e) {
          
                  
