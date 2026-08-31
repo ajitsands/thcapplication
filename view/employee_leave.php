@@ -28,6 +28,21 @@ $OBJ->URLEncode('head=dashboard');
         tr.shown td.details-control {
             background: url('../httpdocs/images/minus.png') no-repeat center center;
         }
+        .fc-event {
+            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+        }
+        .fc-event:hover {
+            transform: translateY(-1px) scale(1.02) !important;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.25) !important;
+            filter: brightness(1.06) !important;
+        }
 	</style>
 	<script src="global_assets/js/plugins/extensions/jquery_ui/interactions.min.js"></script>
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>

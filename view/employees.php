@@ -101,6 +101,22 @@ $OBJ->URLEncode('head=dashboard');
             border-color: #2196f3 !important;
             box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.15) !important;
         }
+
+        .fc-event {
+            border-radius: 4px !important;
+            padding: 2px 6px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+        }
+        .fc-event:hover {
+            transform: translateY(-1px) scale(1.02) !important;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.25) !important;
+            filter: brightness(1.06) !important;
+        }
 	</style>
 
 	<link rel="stylesheet" href="assets/fullcalendar/fullcalendar.css">
