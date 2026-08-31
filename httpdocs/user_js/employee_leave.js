@@ -74,47 +74,22 @@ $(document).ready(function(){
                     
                  
                  $('#txt_leave_from_date').change(function (e) {
-             
-                        start_date = $("#txt_leave_from_date").val();
-                       
-                        var today = new Date();
-                        //console.log(today);
-                        var dd = today.getDate();
-                        var mm = today.getMonth()+1; //As January is 0.
-                        var yyyy = today.getFullYear();
-                        if(dd<10) 
-                        {
-                            dd='0'+dd;
-                        }
-                        if(mm<10) 
-                        {
-                            mm='0'+mm;
-                        }
-                        var today_date=dd+'-'+mm+'-'+yyyy;
-                        var today_date_base_form=yyyy+'-'+mm+'-'+dd;
-                        if(start_date < today_date_base_form)
-                        {
-                            
-                             swal("Warning","Please select a date after today's date ....", "warning");
-                              $('#txt_leave_from_date').val("");
-                               
-                        }
+                     start_date = $("#txt_leave_from_date").val();
+                     end_date = $("#txt_leave_to_date").val();
+                     if (start_date && end_date && end_date < start_date) {
+                         swal("Warning", "End Date cannot be before Start Date.", "warning");
+                         $('#txt_leave_to_date').val("");
+                     }
                  });         
               
-                $('#txt_leave_to_date').change(function (e) {  
-                    
-                     
-                     end_date =$("#txt_leave_to_date").val();
-                    
-                    if(end_date < start_date)
-                            {
-                                
-                                 swal("Warning","Please select a date after start date ....", "warning");
-                                  $('#txt_leave_to_date').val("");
-                                   
-                            }
-                    
-                });       
+                 $('#txt_leave_to_date').change(function (e) {  
+                     start_date = $("#txt_leave_from_date").val();
+                     end_date = $("#txt_leave_to_date").val();
+                     if (start_date && end_date && end_date < start_date) {
+                         swal("Warning", "End Date cannot be before Start Date.", "warning");
+                         $('#txt_leave_to_date').val("");
+                     }
+                 });       
             // Insert employee details....
  
                 v_btn_employee_leave_add.click(function(){
@@ -139,10 +114,14 @@ $(document).ready(function(){
                             var reason_for_leave =$("#select_reason_for_leave option:selected").text();
                           }
                    
-                    if((typeof start_date === 'undefined')||(typeof end_date === 'undefined')|| reason_for_leave===""||v_emp_name==="")
-                    
+                    if((typeof start_date === 'undefined')||(typeof end_date === 'undefined')|| start_date===""|| end_date===""|| reason_for_leave===""||v_emp_name==="")
                     {
                         swal("Warning","Please provide all the details ....", "warning");
+                        v_btn_employee_leave_add.ladda( 'stop' );
+                        return false;
+                    }
+                    if (end_date < start_date) {
+                        swal("Warning", "End Date cannot be before Start Date.", "warning");
                         v_btn_employee_leave_add.ladda( 'stop' );
                         return false;
                     }
