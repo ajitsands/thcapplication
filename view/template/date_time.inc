@@ -1,60 +1,46 @@
   <script type="text/javascript">  
         // datetime make using jquery  
-        $(document)  
-            .ready(function ()  
-            {  
-                ShowTime();  
-            });  
+        $(document).ready(function () {  
+            ShowTime();  
+        });  
   
-        function ShowTime()  
-        {  
+        function ShowTime() {  
             var dt = new Date();  
-            document.getElementById("div_date_time")  
-                .innerHTML = dt.toLocaleTimeString();  
-            window.setTimeout("ShowTime()", 1000); // Here 1000(milliseconds) means one 1 Sec  
+            var el = document.getElementById("div_date_time");  
+            if (el) {  
+                var options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };  
+                var timeStr = dt.toLocaleTimeString('en-US', options);  
+                var dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });  
+                el.innerHTML = '<i class="icon-alarm mr-1" style="font-size: 13px; vertical-align: -1px;"></i> ' + dateStr + ' ' + timeStr;  
+            }  
+            window.setTimeout(ShowTime, 1000);  
         }  
         </script>  
         <script>  
         // date time make only javascript  
-        function startTime()  
-        {  
+        function startTime() {  
             var today = new Date();  
             var h = today.getHours();  
             var m = today.getMinutes();  
             var s = today.getSeconds();  
             var d = new Date();  
             var n = d.getDate();  
-            var month = new Array();  
-            month[0] = "January";  
-            month[1] = "February";  
-            month[2] = "March";  
-            month[3] = "April";  
-            month[4] = "May";  
-            month[5] = "June";  
-            month[6] = "July";  
-            month[7] = "August";  
-            month[8] = "September";  
-            month[9] = "October";  
-            month[10] = "November";  
-            month[11] = "December";  
+            var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];  
             var t = month[d.getMonth()];  
             var y = d.getFullYear();  
             m = checkTime(m);  
             s = checkTime(s);  
-            document.getElementById('div_date_time')  
-                .innerHTML = n + "-" + t + "-" + y + " " + h + ":" + m + ":" + s;  
-            var t = setTimeout(function ()  
-            {  
-                startTime()  
-            }, 500);  
+            var el = document.getElementById('div_date_time');  
+            if (el) {  
+                el.innerHTML = '<i class="icon-alarm mr-1" style="font-size: 13px; vertical-align: -1px;"></i> ' + n + '-' + t + '-' + y + ' ' + h + ':' + m + ':' + s;  
+            }  
+            window.setTimeout(startTime, 1000);  
         }  
   
-        function checkTime(i)  
-        {  
-            if(i < 10)  
-            {  
-                i = "0" + i  
-            }; // add zero in front of numbers < 10  
+        function checkTime(i) {  
+            if(i < 10) {  
+                i = "0" + i;  
+            }  
             return i;  
         }  
         </script> 
