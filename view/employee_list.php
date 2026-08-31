@@ -464,34 +464,49 @@ $result = mysqli_query($varDBConnection, $query_sql);
 <script>
 function fnExcelReport()
 {
-    var tab_text = "<table border='1px'><tr bgcolor='#2e2e79' style='color:#ffffff; font-weight:bold;'>";
     var tab = document.getElementById('main_table');
-
+    
+    var excelFile = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'>";
+    excelFile += "<head><meta charset='utf-8'><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>THC Employee Directory</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:Worksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>";
+    excelFile += "<body>";
+    excelFile += "<table border='1' style='border-collapse:collapse;'>";
+    
     for (var j = 0; j < tab.rows.length; j++) 
     {     
-        tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+        excelFile += "<tr>" + tab.rows[j].innerHTML + "</tr>";
     }
+    
+    excelFile += "</table></body></html>";
+    
+    excelFile = excelFile.replace(/<a[^>]*>(.*?)<\/a>/gi, "$1");
+    excelFile = excelFile.replace(/<img[^>]*>/gi, "");
+    excelFile = excelFile.replace(/<input[^>]*>|<\/input>/gi, "");
+    excelFile = excelFile.replace(/<button[^>]*>|<\/button>/gi, "");
 
-    tab_text = tab_text + "</table>";
-    tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); // remove links
-    tab_text = tab_text.replace(/<img[^>]*>/gi, "");    // remove images
-    tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // remove input params
-    tab_text = tab_text.replace(/<button[^>]*>|<\/button>/gi, ""); // remove buttons
+    // Format current date: DD-MM-YYYY
+    var d = new Date();
+    var day = String(d.getDate()).padStart(2, '0');
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var year = d.getFullYear();
+    var exportDate = day + "-" + month + "-" + year;
+    var filename = "THCEmployeeDirectory-" + exportDate + ".xlsx";
 
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf("MSIE "); 
-
-    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
-        txtArea1.document.open("txt/html", "replace");
-        txtArea1.document.write(tab_text);
-        txtArea1.document.close();
-        txtArea1.focus(); 
-        sa = txtArea1.document.execCommand("SaveAs", true, "employee_list.xls");
+    var blob = new Blob([excelFile], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8' });
+    
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename);
     } else {
-        sa = window.open('data:application/vnd.ms-excel,' + encodeURIComponent(tab_text));  
+        var link = document.createElement("a");
+        var url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(function() {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 200);
     }
-
-    return (sa);
 }
 </script>
 
