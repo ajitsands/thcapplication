@@ -137,7 +137,7 @@ $emp_img = (!empty($row['employee_image']) && $row['employee_image'] != 'null' &
         <tbody>
             <tr style="border: none;">
                 <td style="border: none;" width="400">
-                    <img src="../global_assets/images/logo_print.png" alt="THC Logo" style="max-height: 50px;" />
+                    <img src="../global_assets/images/logo_print.png" alt="THC Logo" style="max-height: 75px; height: auto;" />
                 </td>
                 <td style="border: none; text-align: right;" width="400">
                     <span style="font-size: 16px; font-weight: 700; color: #2e2e79;">EMPLOYEE PROFILE</span><br>
