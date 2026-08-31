@@ -38,6 +38,14 @@ $(document).ready(function(){
                             var data = typeof doc === 'string' ? JSON.parse(doc) : doc;
                             $.each(data, function(i, item) {
                                 events.push({
+                                    leave_id: item.leave_id,
+                                    table_source: item.table_source,
+                                    employee_code: item.employee_code,
+                                    employee_name: item.employee_name,
+                                    leave_type: item.leave_type,
+                                    leave_reason: item.leave_reason,
+                                    start_date_raw: item.start_date_raw,
+                                    end_date_raw: item.end_date_raw,
                                     title: item.title,
                                     start: item.start,
                                     end: item.end,
@@ -50,9 +58,135 @@ $(document).ready(function(){
                         callback(events);
                     }
                 });
+            },
+            eventClick: function(calEvent, jsEvent, view) {
+                openEditLeaveModal(calEvent);
             }
         });
     }
+
+    function openEditLeaveModal(calEvent) {
+        $('#edit_leave_id').val(calEvent.leave_id || '');
+        $('#edit_leave_table_source').val(calEvent.table_source || 'short');
+        $('#edit_leave_emp_code').val(calEvent.employee_code || '');
+        var empDisplay = (calEvent.employee_code ? '[' + calEvent.employee_code + '] ' : '') + (calEvent.employee_name || '');
+        $('#edit_leave_emp_name').val(empDisplay);
+
+        if (calEvent.leave_type) {
+            $('#edit_leave_type').val(calEvent.leave_type);
+        }
+
+        var sDate = calEvent.start_date_raw || (calEvent.start ? moment(calEvent.start).format('YYYY-MM-DD') : '');
+        var eDate = calEvent.end_date_raw || '';
+        if (!eDate && calEvent.end) {
+            eDate = moment(calEvent.end).subtract(1, 'days').format('YYYY-MM-DD');
+        } else if (!eDate) {
+            eDate = sDate;
+        }
+
+        $('#edit_leave_start_date').val(sDate);
+        $('#edit_leave_end_date').val(eDate);
+        $('#edit_leave_reason').val(calEvent.leave_reason || '');
+
+        $('#modal_edit_leave').modal('show');
+    }
+
+    $('#btn_update_leave').click(function() {
+        var leave_id = $('#edit_leave_id').val();
+        var table_source = $('#edit_leave_table_source').val();
+        var leave_type = $('#edit_leave_type').val();
+        var start_date = $('#edit_leave_start_date').val();
+        var end_date = $('#edit_leave_end_date').val();
+        var leave_reason = $('#edit_leave_reason').val();
+
+        if (!leave_id || !start_date || !end_date) {
+            swal("Warning", "Please provide Start Date and End Date.", "warning");
+            return;
+        }
+
+        if (end_date < start_date) {
+            swal("Warning", "End Date cannot be before Start Date.", "warning");
+            return;
+        }
+
+        $.post('../controller/employees/employees_controller.php', {
+            action: 'update_leave_record',
+            leave_id: leave_id,
+            table_source: table_source,
+            leave_type: leave_type,
+            start_date: start_date,
+            end_date: end_date,
+            leave_reason: leave_reason
+        }, function(res) {
+            res = $.trim(res);
+            if (res === 'Success') {
+                swal("Success", "Leave record updated successfully!", "success");
+                $('#modal_edit_leave').modal('hide');
+                if ($('#leave_calendar_inline').length) {
+                    $('#leave_calendar_inline').fullCalendar('refetchEvents');
+                }
+                if ($('#leave_calendar_view').length) {
+                    $('#leave_calendar_view').fullCalendar('refetchEvents');
+                }
+                if (typeof load_data_to_grid_employees_on_leave_list === 'function') {
+                    load_data_to_grid_employees_on_leave_list();
+                }
+            } else {
+                swal("Error", res, "error");
+            }
+        });
+    });
+
+    $('#btn_delete_leave').click(function() {
+        var leave_id = $('#edit_leave_id').val();
+        var table_source = $('#edit_leave_table_source').val();
+        var employee_code = $('#edit_leave_emp_code').val();
+
+        if (!leave_id) {
+            swal("Warning", "Invalid leave record.", "warning");
+            return;
+        }
+
+        swal({
+            title: "Delete Leave Record?",
+            text: "Are you sure you want to delete this leave entry? This action cannot be undone.",
+            icon: "warning",
+            buttons: {
+                cancel: "No, Cancel",
+                confirm: {
+                    text: "Yes, Delete",
+                    className: "btn-danger"
+                }
+            },
+            dangerMode: true,
+        }).then(function(willDelete) {
+            if (willDelete) {
+                $.post('../controller/employees/employees_controller.php', {
+                    action: 'delete_leave_record',
+                    leave_id: leave_id,
+                    table_source: table_source,
+                    employee_code: employee_code
+                }, function(res) {
+                    res = $.trim(res);
+                    if (res === 'Success') {
+                        swal("Deleted!", "Leave record deleted successfully.", "success");
+                        $('#modal_edit_leave').modal('hide');
+                        if ($('#leave_calendar_inline').length) {
+                            $('#leave_calendar_inline').fullCalendar('refetchEvents');
+                        }
+                        if ($('#leave_calendar_view').length) {
+                            $('#leave_calendar_view').fullCalendar('refetchEvents');
+                        }
+                        if (typeof load_data_to_grid_employees_on_leave_list === 'function') {
+                            load_data_to_grid_employees_on_leave_list();
+                        }
+                    } else {
+                        swal("Error", res, "error");
+                    }
+                });
+            }
+        });
+    });
                  
                  
                 $("#div_reason_select").change(function(){

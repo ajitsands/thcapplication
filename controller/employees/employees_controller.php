@@ -333,7 +333,7 @@ class apartmentController
                     }
                 }
 
-                $sql = "SELECT CONCAT(s.employee_name, ' - ', s.leave_type) AS title, s.leave_start_date AS start, DATE_ADD(s.leave_end_date, INTERVAL 1 DAY) AS end, CASE s.leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_short_leave s LEFT JOIN tbl_employees e ON (s.employee_code = e.employee_code OR s.employee_id = e.employee_id) $where1 UNION ALL SELECT CONCAT(COALESCE(e.employee_name, l.employee_name), ' - ', CASE WHEN l.leave_type IS NOT NULL AND l.leave_type != 'NA' AND l.leave_type != '' AND l.leave_type != 'select' THEN l.leave_type WHEN l.leave_reason LIKE '%Sick%' THEN 'Sick Leave' WHEN l.leave_reason LIKE '%Casual%' THEN 'Casual Leave' WHEN l.leave_reason LIKE '%Annual%' THEN 'Annual Leave' WHEN l.leave_reason LIKE '%Emergency%' THEN 'Emergency Leave' WHEN l.leave_reason LIKE '%Privilege%' THEN 'Privilege Leave' ELSE 'Leave' END) AS title, DATE(l.start_time) AS start, DATE_ADD(DATE(l.end_time), INTERVAL 1 DAY) AS end, CASE WHEN l.leave_type = 'Sick Leave' OR l.leave_reason LIKE '%Sick%' THEN '#ef5350' WHEN l.leave_type = 'Casual Leave' OR l.leave_reason LIKE '%Casual%' THEN '#42a5f5' WHEN l.leave_type = 'Annual Leave' OR l.leave_reason LIKE '%Annual%' THEN '#66bb6a' WHEN l.leave_type = 'Emergency Leave' OR l.leave_reason LIKE '%Emergency%' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON (l.employee_code = e.employee_code OR l.employee_name = e.employee_name) $where2";
+                $sql = "SELECT s.leave_id, 'short' AS table_source, s.employee_code, s.employee_name, s.leave_type, s.leave_reason, s.leave_start_date AS start_date_raw, s.leave_end_date AS end_date_raw, CONCAT(s.employee_name, ' - ', s.leave_type) AS title, s.leave_start_date AS start, DATE_ADD(s.leave_end_date, INTERVAL 1 DAY) AS end, CASE s.leave_type WHEN 'Sick Leave' THEN '#ef5350' WHEN 'Casual Leave' THEN '#42a5f5' WHEN 'Annual Leave' THEN '#66bb6a' WHEN 'Emergency Leave' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_short_leave s LEFT JOIN tbl_employees e ON (s.employee_code = e.employee_code OR s.employee_id = e.employee_id) $where1 UNION ALL SELECT l.leave_id, 'leave' AS table_source, COALESCE(e.employee_code, l.employee_code) AS employee_code, COALESCE(e.employee_name, l.employee_name) AS employee_name, CASE WHEN l.leave_type IS NOT NULL AND l.leave_type != 'NA' AND l.leave_type != '' AND l.leave_type != 'select' THEN l.leave_type WHEN l.leave_reason LIKE '%Sick%' THEN 'Sick Leave' WHEN l.leave_reason LIKE '%Casual%' THEN 'Casual Leave' WHEN l.leave_reason LIKE '%Annual%' THEN 'Annual Leave' WHEN l.leave_reason LIKE '%Emergency%' THEN 'Emergency Leave' WHEN l.leave_reason LIKE '%Privilege%' THEN 'Privilege Leave' ELSE 'Leave' END AS leave_type, l.leave_reason, DATE_FORMAT(l.start_time, '%Y-%m-%d') AS start_date_raw, DATE_FORMAT(l.end_time, '%Y-%m-%d') AS end_date_raw, CONCAT(COALESCE(e.employee_name, l.employee_name), ' - ', CASE WHEN l.leave_type IS NOT NULL AND l.leave_type != 'NA' AND l.leave_type != '' AND l.leave_type != 'select' THEN l.leave_type WHEN l.leave_reason LIKE '%Sick%' THEN 'Sick Leave' WHEN l.leave_reason LIKE '%Casual%' THEN 'Casual Leave' WHEN l.leave_reason LIKE '%Annual%' THEN 'Annual Leave' WHEN l.leave_reason LIKE '%Emergency%' THEN 'Emergency Leave' WHEN l.leave_reason LIKE '%Privilege%' THEN 'Privilege Leave' ELSE 'Leave' END) AS title, DATE(l.start_time) AS start, DATE_ADD(DATE(l.end_time), INTERVAL 1 DAY) AS end, CASE WHEN l.leave_type = 'Sick Leave' OR l.leave_reason LIKE '%Sick%' THEN '#ef5350' WHEN l.leave_type = 'Casual Leave' OR l.leave_reason LIKE '%Casual%' THEN '#42a5f5' WHEN l.leave_type = 'Annual Leave' OR l.leave_reason LIKE '%Annual%' THEN '#66bb6a' WHEN l.leave_type = 'Emergency Leave' OR l.leave_reason LIKE '%Emergency%' THEN '#ffa726' ELSE '#ab47bc' END AS color FROM tbl_employee_leave l LEFT JOIN tbl_employees e ON (l.employee_code = e.employee_code OR l.employee_name = e.employee_name) $where2";
 
                 $events = array();
                 $result = mysqli_query($this->varDBConnection, $sql);
@@ -343,6 +343,70 @@ class apartmentController
                     }
                 }
                 echo json_encode($events);
+            break;
+
+            case 'update_leave_record':
+                $leave_id = intval($_POST['leave_id']);
+                $table_source = isset($_POST['table_source']) ? trim($_POST['table_source']) : 'short';
+                $leave_type = isset($_POST['leave_type']) ? $this->varDBConnection->real_escape_string($_POST['leave_type']) : 'Casual Leave';
+                $start_date = isset($_POST['start_date']) ? $this->varDBConnection->real_escape_string($_POST['start_date']) : '';
+                $end_date = isset($_POST['end_date']) ? $this->varDBConnection->real_escape_string($_POST['end_date']) : '';
+                $leave_reason = isset($_POST['leave_reason']) ? $this->varDBConnection->real_escape_string($_POST['leave_reason']) : '';
+
+                if ($leave_id <= 0 || empty($start_date) || empty($end_date)) {
+                    echo "Invalid leave record parameters.";
+                    break;
+                }
+
+                if ($table_source == 'short') {
+                    $up_sql = "UPDATE tbl_employee_short_leave SET 
+                        leave_type = '$leave_type',
+                        leave_start_date = '$start_date',
+                        leave_end_date = '$end_date',
+                        leave_reason = '$leave_reason'
+                    WHERE leave_id = $leave_id";
+                } else {
+                    $up_sql = "UPDATE tbl_employee_leave SET 
+                        leave_type = '$leave_type',
+                        leave_reason = '$leave_reason',
+                        start_time = '$start_date 00:00:00',
+                        end_time = '$end_date 23:59:59'
+                    WHERE leave_id = $leave_id";
+                }
+
+                $res = mysqli_query($this->varDBConnection, $up_sql);
+                if ($res) {
+                    echo "Success";
+                } else {
+                    echo "Failed to update leave record: " . mysqli_error($this->varDBConnection);
+                }
+            break;
+
+            case 'delete_leave_record':
+                $leave_id = intval($_POST['leave_id']);
+                $table_source = isset($_POST['table_source']) ? trim($_POST['table_source']) : 'short';
+                $employee_code = isset($_POST['employee_code']) ? $this->varDBConnection->real_escape_string($_POST['employee_code']) : '';
+
+                if ($leave_id <= 0) {
+                    echo "Invalid leave ID.";
+                    break;
+                }
+
+                if ($table_source == 'short') {
+                    $del_sql = "DELETE FROM tbl_employee_short_leave WHERE leave_id = $leave_id";
+                } else {
+                    $del_sql = "DELETE FROM tbl_employee_leave WHERE leave_id = $leave_id";
+                }
+
+                $res = mysqli_query($this->varDBConnection, $del_sql);
+                if ($res) {
+                    if (!empty($employee_code)) {
+                        mysqli_query($this->varDBConnection, "UPDATE tbl_employees SET employee_status = 'Active' WHERE employee_code = '$employee_code'");
+                    }
+                    echo "Success";
+                } else {
+                    echo "Failed to delete leave record: " . mysqli_error($this->varDBConnection);
+                }
             break;
             
             case 'fetch_active_employees':

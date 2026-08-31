@@ -148,6 +148,7 @@ $OBJ->URLEncode('head=dashboard');
 		<?PHP include_once('template/reset_password_modal.php'); ?>
 		<?PHP include_once('employees/apply_leave_modal.php'); ?>
 		<?PHP include_once('employees/leave_calendar_modal.php'); ?>
+		<?PHP include_once('employees/edit_leave_modal.php'); ?>
 
 		<!-- Footer -->
 		<?PHP include_once('template/footer.inc'); ?>
