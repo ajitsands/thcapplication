@@ -364,17 +364,28 @@ $(document).ready(function(){
                                   }
                               },
                              "order": [[ 0, "desc" ]],
-                             "dom": '<"datatable-header"flB><"datatable-scroll"t><"datatable-footer"ip>',
+                             "dom": '<"datatable-header"fBl><"datatable-scroll"t><"datatable-footer"ip>',
                              "buttons": [
-                                {
-                                    extend: 'excelHtml5',
-                                    text: '<i class="icon-file-excel mr-2"></i> Export to Excel',
-                                    className: 'btn btn-success btn-sm mb-2',
-                                    exportOptions: {
-                                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
-                                    }
-                                }
-                            ],
+                                 {
+                                     extend: 'excelHtml5',
+                                     text: '<i class="icon-file-excel mr-2"></i> Export to Excel',
+                                     className: 'btn btn-success btn-sm mb-2',
+                                     title: '',
+                                     filename: function() {
+                                         if (typeof moment !== 'undefined') {
+                                             return 'EmployeeLeaves-' + moment().format('DD-MM-YYYY');
+                                         }
+                                         var d = new Date();
+                                         var dd = String(d.getDate()).padStart(2, '0');
+                                         var mm = String(d.getMonth() + 1).padStart(2, '0');
+                                         var yyyy = d.getFullYear();
+                                         return 'EmployeeLeaves-' + dd + '-' + mm + '-' + yyyy;
+                                     },
+                                     exportOptions: {
+                                         columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                                     }
+                                 }
+                             ],
             				"Paginate": true,
             				"bLengthChange": true,
             				"bFilter": true,

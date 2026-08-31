@@ -39,6 +39,29 @@ if ($lt_query && mysqli_num_rows($lt_query) > 0) {
     #list_of_employees_on_leave_wrapper .datatable-header .dt-buttons {
         margin: 0;
     }
+    #list_of_employees_on_leave_wrapper .datatable-header .dataTables_length {
+        margin: 0 0 0 auto !important;
+        float: right !important;
+        display: flex;
+        align-items: center;
+    }
+    #list_of_employees_on_leave_wrapper .datatable-header .dataTables_length label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-weight: 500;
+        color: #555;
+    }
+    #list_of_employees_on_leave_wrapper .datatable-header .dataTables_length select {
+        width: auto !important;
+        min-width: 60px;
+        display: inline-block;
+        padding: 4px 8px;
+        margin: 0 4px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
     #list_of_employees_on_leave_wrapper .datatable-footer {
         padding: 12px 18px;
         display: flex;
