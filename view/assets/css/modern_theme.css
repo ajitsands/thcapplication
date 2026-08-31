@@ -238,27 +238,102 @@ body {
     flex-wrap: wrap;
 }
 
-.dataTables_filter input {
+/* --- Modern DataTables Filter (Search Box & Icon) --- */
+.dataTables_filter {
+    position: relative !important;
+    display: inline-block !important;
+    margin: 0 !important;
+    float: none !important;
+}
+
+.dataTables_filter > label {
+    margin-bottom: 0 !important;
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.dataTables_filter > label > span {
+    float: none !important;
+    margin: 0 !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    white-space: nowrap !important;
+}
+
+.dataTables_filter input,
+.dataTables_wrapper .dataTables_filter input[type="search"] {
+    width: 220px !important;
+    height: 36px !important;
     border-radius: 8px !important;
     border: 1.5px solid #c2daeb !important;
-    padding: 6px 12px !important;
+    padding: 6px 34px 6px 12px !important;
     font-size: 0.85rem !important;
-    margin-left: 8px !important;
+    margin: 0 !important;
     outline: none !important;
+    background-color: #ffffff !important;
+    box-sizing: border-box !important;
     transition: all 0.2s ease !important;
 }
 
-.dataTables_filter input:focus {
+.dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_filter input[type="search"]:focus {
     border-color: var(--palette-primary-blue) !important;
     box-shadow: 0 0 0 3px rgba(123, 189, 232, 0.3) !important;
+}
+
+.dataTables_filter > label:after {
+    content: "\e98e" !important;
+    font-family: "icomoon" !important;
+    font-size: 0.85rem !important;
+    display: block !important;
+    position: absolute !important;
+    top: 50% !important;
+    right: 11px !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    opacity: 0.55 !important;
+    pointer-events: none !important;
+    color: #64748b !important;
+}
+
+/* --- Modern DataTables Length (Entries per page) --- */
+.dataTables_length {
+    position: relative !important;
+    display: inline-block !important;
+    margin: 0 !important;
+    float: none !important;
+}
+
+.dataTables_length > label {
+    margin-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.dataTables_length > label > span {
+    float: none !important;
+    margin: 0 !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    white-space: nowrap !important;
 }
 
 .dataTables_length select {
     border-radius: 8px !important;
     border: 1.5px solid #c2daeb !important;
     padding: 5px 10px !important;
+    height: 36px !important;
     font-size: 0.85rem !important;
-    margin: 0 6px !important;
+    margin: 0 !important;
+    background-color: #ffffff !important;
+    outline: none !important;
+    box-sizing: border-box !important;
 }
 
 table.dataTable {
