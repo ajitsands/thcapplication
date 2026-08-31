@@ -95,39 +95,51 @@ $(document).ready(function(){
                 v_btn_employee_leave_add.click(function(){
                     v_btn_employee_leave_add.ladda( 'start' );
                    // v_emp_id=$("#select_employee_for_leave option:selected").val();
-                    var v_emp_details=$("#select_employee_for_leave option:selected").text();
-                    v_emp_details=v_emp_details.split("-");
-                    var v_emp_code=$.trim(v_emp_details[0]);
-                    var v_emp_name=v_emp_details[1];
-                    start_date = $("#txt_leave_from_date").val();
-                    end_date =$("#txt_leave_to_date").val();
-                    var type_of_leave =$("#select_type_of_leave option:selected").text();
-                    var v_reason_id=$("#select_reason_for_leave option:selected").val();
-                    if(v_reason_id=='add_reason')
-                          {
-                              
-                             var reason_for_leave =$("#txt_reason_for_leave").val(); 
-                             
-                          }
-                          else
-                          {
-                            var reason_for_leave =$("#select_reason_for_leave option:selected").text();
-                          }
-                   
-                    if((typeof start_date === 'undefined')||(typeof end_date === 'undefined')|| start_date===""|| end_date===""|| reason_for_leave===""||v_emp_name==="")
-                    {
-                        swal("Warning","Please provide all the details ....", "warning");
-                        v_btn_employee_leave_add.ladda( 'stop' );
-                        return false;
-                    }
-                    if (end_date < start_date) {
-                        swal("Warning", "End Date cannot be before Start Date.", "warning");
-                        v_btn_employee_leave_add.ladda( 'stop' );
-                        return false;
-                    }
-                   
-                    else
-                    {        
+                     v_btn_employee_leave_add.ladda( 'start' );
+                     var selectedOpt = $("#select_employee_for_leave option:selected");
+                     var v_emp_id = selectedOpt.val();
+                     var v_emp_code = selectedOpt.data('code') || '';
+                     var v_emp_name = selectedOpt.data('name') || '';
+
+                     if (!v_emp_code || !v_emp_name) {
+                         var fullText = selectedOpt.text();
+                         var dashIndex = fullText.lastIndexOf(' - ');
+                         if (dashIndex !== -1) {
+                             v_emp_code = $.trim(fullText.substring(0, dashIndex));
+                             v_emp_name = $.trim(fullText.substring(dashIndex + 3));
+                         } else {
+                             v_emp_code = $.trim(fullText);
+                             v_emp_name = $.trim(fullText);
+                         }
+                     }
+
+                     start_date = $("#txt_leave_from_date").val();
+                     end_date = $("#txt_leave_to_date").val();
+                     var type_of_leave = $("#select_type_of_leave option:selected").val();
+                     if (type_of_leave === "select" || !type_of_leave) {
+                         type_of_leave = $("#select_type_of_leave option:selected").text();
+                     }
+                     var v_reason_id = $("#select_reason_for_leave option:selected").val();
+                     var reason_for_leave = "";
+                     if(v_reason_id == 'add_reason') {
+                         reason_for_leave = $("#txt_reason_for_leave").val(); 
+                     } else {
+                         reason_for_leave = $("#select_reason_for_leave option:selected").text();
+                     }
+
+                     if (v_emp_id === "select" || !v_emp_name || !start_date || !end_date || type_of_leave === "select" || !type_of_leave || reason_for_leave === "Select ") {
+                         swal("Warning", "Please provide all the details ....", "warning");
+                         v_btn_employee_leave_add.ladda('stop');
+                         return false;
+                     }
+                     if (end_date < start_date) {
+                         swal("Warning", "End Date cannot be before Start Date.", "warning");
+                         v_btn_employee_leave_add.ladda('stop');
+                         return false;
+                     }
+                    
+                     else
+                     {        
                         
                         
                         

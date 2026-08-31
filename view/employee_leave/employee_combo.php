@@ -11,7 +11,7 @@ $result_customer = mysqli_query($varDBConnection,"Select employee_id,employee_na
      <select data-placeholder="Select Employee" id="select_employee_for_leave" class="form-control form-control-select2" data-fouc>
          <option value="select">Select Employee</option>
         <?PHP 	while($row_employee=mysqli_fetch_assoc($result_customer)) { ?>
-          <option value="<?PHP echo $row_employee['employee_id']; ?>"><?PHP echo $row_employee['employee_code'].' - '. $row_employee['employee_name']; ?></option>
+          <option value="<?PHP echo $row_employee['employee_id']; ?>" data-code="<?PHP echo htmlspecialchars($row_employee['employee_code']); ?>" data-name="<?PHP echo htmlspecialchars($row_employee['employee_name']); ?>"><?PHP echo htmlspecialchars($row_employee['employee_code']).' - '. htmlspecialchars($row_employee['employee_name']); ?></option>
         
         <?PHP } ?>
       </select>
