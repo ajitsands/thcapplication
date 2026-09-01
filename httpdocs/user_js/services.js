@@ -28,30 +28,35 @@ $(document).ready(function(){
                         
                     });
                          
-                         function load_div_for_asset_bind()
-                         {
-                             
+                          function load_div_for_asset_bind()
+                          {
                               v_category_type_id=$("#select_category_type_for_service option:selected").val();
-                             $.ajax({
-                    		type: "POST",
-                    		url: "services/category_asset_type.php",
-                    		data: { v_category_type_id : v_category_type_id } 
-                    		 }).done(function(data){
-                    		     
-                    			 $('#div_list_asset_type').show();
-                    			$("#div_list_asset_type").html(data);
-                    			$("#select_asset_type_for_service").select2();
-                    		    if(v_service_id!=='')
-                            	{
-                            		      //alert(asset_type_name);
-                            		$("#select_asset_type_for_service option:selected").val(asset_type_name);
-                                    $('#select_asset_type_for_service option').map(function () {
-                                    if ($(this).val() == asset_type_name) return this;
-                                    }).attr('selected', 'selected') ;
-                                    $("#select_asset_type_for_service").select2().trigger('change');
-                            	}
-                    		 });
-                         }
+                              if(v_category_type_id && v_category_type_id !== 'select' && v_category_type_id !== '') {
+                                  $.ajax({
+                         		      type: "POST",
+                         		      url: "services/category_asset_type.php",
+                         		      data: { v_category_type_id : v_category_type_id } 
+                         		  }).done(function(data){
+                         		      $('#div_employee_select').removeClass('col-lg-6 col-md-6').addClass('col-lg-4 col-md-4');
+                         		      $('#div_list_asset_type').removeClass('col-lg-6 col-md-6').addClass('col-lg-4 col-md-4').show();
+                         		      $('#div_service_input').removeClass('col-lg-6 col-md-6').addClass('col-lg-4 col-md-4');
+                         		      $("#div_list_asset_type").html(data);
+                         		      $("#select_asset_type_for_service").select2();
+                         		      if(v_service_id!=='')
+                                      {
+                                          $("#select_asset_type_for_service option:selected").val(asset_type_name);
+                                          $('#select_asset_type_for_service option').map(function () {
+                                              if ($(this).val() == asset_type_name) return this;
+                                          }).attr('selected', 'selected');
+                                          $("#select_asset_type_for_service").select2().trigger('change');
+                                      }
+                         		  });
+                              } else {
+                                  $('#div_employee_select').removeClass('col-lg-4 col-md-4').addClass('col-lg-6 col-md-6');
+                                  $('#div_list_asset_type').hide().html('');
+                                  $('#div_service_input').removeClass('col-lg-4 col-md-4').addClass('col-lg-6 col-md-6');
+                              }
+                          }
                          //service insert details
                     v_btn_services_add.click(function(){
                                 v_btn_services_add.ladda( 'start' );
@@ -183,61 +188,12 @@ $(document).ready(function(){
                                 
                                     }
                                 }
-                                //  { "data": "service_id",
-                                //       render: function ( data, type, rows, meta ) {
-                                //          var dropdownOptions = {
-                                //             "Edit": "Edit",
-                                //             "Activate": "Active",
-                                //             "Deactivate": "Deactive"
-                                //         };
-                                
-                                //         var filteredOptions = Object.keys(dropdownOptions).filter(function (option) {  
-                                //             return permissions.includes(option);
-                                //         });
-                                
-                                //         var dropdownHTML = '<div class="list-icons divDropdownForExpertise"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color: info;"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right">';
-                                       
-                                //         if (filteredOptions.length === 0) {
-                                //             dropdownHTML += '<label class="dropdown-item text-danger">You have no Privilege</label>';
-                                //         } else {
-                                //             filteredOptions.forEach(function (option) {
-                                //                 if (dropdownOptions[option] == "Edit") {
-                                //                     dropdownHTML += '<a href="#" class="dropdown-item" name="name_' + dropdownOptions[option] + '" style="color: orange;"><i class="icon-database-edit2"></i>' + dropdownOptions[option] + '</a>';
-                                //                 }
-                                //                 if (dropdownOptions[option] == "Active") {
-                                //                     dropdownHTML += '<a href="#" class="dropdown-item" name="name_' + dropdownOptions[option] + '" style="color: green;"><i class="icon-checkmark2"></i>' + dropdownOptions[option] + '</a>';
-                                //                 }
-                                //                 if (dropdownOptions[option] == "Deactive") {
-                                //                     dropdownHTML += '<a href="#" class="dropdown-item" name="name_' + dropdownOptions[option] + '" style="color: red;"><i class="icon-cross3"></i>' + dropdownOptions[option] + '</a>';
-                                //                 }
-                                //             });
-                                //         }
-                                
-                                //         dropdownHTML += '</div></div></div>';
-                                
-                                //         return dropdownHTML;
-                                          
-                                //       }   
-                                //  }
-                                //  { "data": "service_id",
-                                //       render: function ( data, type, rows, meta ) {
-                                //           str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:info">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">	<a href="#" class="dropdown-item" name="Edit_service" style="color:orange"><i class="icon-database-edit2"></i> Edit</a><a href="#" class="dropdown-item" name="Active" style="color:green"><i class="icon-database-edit2"></i> Active</a><a href="#" class="dropdown-item" name="Deactive" style="color:red"><i class="icon-database-edit2"></i> Deactive</a></div></div></div>';
-                                //           return str_active_status_edit;
-                                          
-                                //       }   
-                                //  }
-                                 
                                 
                              ],
                              pageLength: 20,
             				 searching: true,
                              responsive: true,
                              
-                //              "aoColumnDefs": [
-            				// 	{ "bSortable": false, "aTargets": [ 1,2,3,4,5,6,7,8] }, 
-            					
-            				// ],
-
                              "initComplete": function( settings, json ) {
              
                               },
@@ -349,14 +305,16 @@ $(document).ready(function(){
                     })
                     
                     //function clear text
-                   function clear_text()
-                 {
-                    $("#select_category_type_for_service").val(null).trigger("change");
-                    $("#select_asset_type_for_service").val(null).trigger("change");
-                    $("#txt_service_desc").val('');
-                    $("#txt_service_id").val('');
-                    
-                 }
+                    function clear_text()
+                    {
+                        $("#select_category_type_for_service").val(null).trigger("change");
+                        $("#select_asset_type_for_service").val(null).trigger("change");
+                        $("#txt_service_desc").val('');
+                        $("#txt_service_id").val('');
+                        $('#div_employee_select').removeClass('col-lg-4 col-md-4').addClass('col-lg-6 col-md-6');
+                        $('#div_list_asset_type').hide().html('');
+                        $('#div_service_input').removeClass('col-lg-4 col-md-4').addClass('col-lg-6 col-md-6');
+                    }
                   
 
 });

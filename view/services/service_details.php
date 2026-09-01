@@ -14,14 +14,14 @@
 							<div class="row">
 							    
 						     	<?PHP include_once("category_combo.php"); ?>
-						     	<div  class="col-lg-6 col-md-6 col-sm-12"  id="div_list_asset_type">
+						     	<div class="col-lg-6 col-md-6 col-sm-12" id="div_list_asset_type" style="display:none;">
 						     	
 						     	       
 						        </div>
-								<div class="col-lg-6 col-md-6 col-sm-12">
+								<div class="col-lg-6 col-md-6 col-sm-12" id="div_service_input">
                 				
                 					 	<span class="form-text text-muted font-weight-bold"><font color="black">Service &nbsp;<span style="color:red;">*</span></font></span>      
-                					   <textarea rows="1" class="form-control" id="txt_service_desc" placeholder="Service " tabindex=2></textarea>
+                					   <textarea rows="1" class="form-control" id="txt_service_desc" placeholder="Service " tabindex=2 style="height:38px; resize:none;"></textarea>
     										
                 				
                 					<input type="hidden" id="txt_service_id"/>
