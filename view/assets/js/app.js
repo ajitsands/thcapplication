@@ -480,49 +480,6 @@ var App = function () {
         });
     };
 
-    // Global DataTable Dropdown Overflow & Stacking Fix
-    var _initDataTableDropdowns = function() {
-        // Ensure data-boundary="window" is set on all table dropdown toggles
-        $(document).on('click', '.table [data-toggle="dropdown"], .dataTables_wrapper [data-toggle="dropdown"], .list-icons [data-toggle="dropdown"]', function() {
-            var $toggle = $(this);
-            if (!$toggle.attr('data-boundary')) {
-                $toggle.attr('data-boundary', 'window');
-            }
-        });
-
-        // When dropdown opens, raise the entire table hierarchy and push footer behind
-        $(document).on('show.bs.dropdown', function(e) {
-            var $dropdown = $(e.target).closest('.dropdown');
-            var $menu = $dropdown.find('.dropdown-menu');
-            var $tr = $dropdown.closest('tr');
-            var $table = $dropdown.closest('table');
-            var $scroll = $dropdown.closest('.datatable-scroll, .datatable-scroll-wrap, .datatable-scroll-lg, .dataTables_scroll, .dataTables_scrollBody, .table-responsive');
-            var $wrapper = $dropdown.closest('.dataTables_wrapper, .card');
-            var $footer = $wrapper.find('.datatable-footer');
-
-            $menu.css({ 'z-index': '99999999', 'position': 'absolute' });
-            $dropdown.removeClass('position-static').css({ 'position': 'relative', 'z-index': '999999' });
-            $tr.addClass('dropdown-open').css({ 'position': 'relative', 'z-index': '99999' });
-            $table.css({ 'position': 'relative', 'z-index': '9999' });
-            $scroll.css({ 'position': 'relative', 'z-index': '1000', 'overflow': 'visible' });
-            $footer.css({ 'position': 'relative', 'z-index': '1' });
-        });
-
-        $(document).on('hidden.bs.dropdown', function(e) {
-            var $dropdown = $(e.target).closest('.dropdown');
-            var $tr = $dropdown.closest('tr');
-            var $table = $dropdown.closest('table');
-            var $scroll = $dropdown.closest('.datatable-scroll, .datatable-scroll-wrap, .datatable-scroll-lg, .dataTables_scroll, .dataTables_scrollBody, .table-responsive');
-            var $wrapper = $dropdown.closest('.dataTables_wrapper, .card');
-            var $footer = $wrapper.find('.datatable-footer');
-
-            $tr.removeClass('dropdown-open').css({ 'position': '', 'z-index': '' });
-            $table.css({ 'z-index': '' });
-            $scroll.css({ 'z-index': '' });
-            $footer.css({ 'z-index': '' });
-        });
-    };
-
 
     //
     // Return objects assigned to module
@@ -598,7 +555,6 @@ var App = function () {
             App.initCardActions();
             App.initDropdownSubmenu();
             App.initHeaderElementsToggle();
-            _initDataTableDropdowns();
         }
     }
 }();

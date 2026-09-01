@@ -1285,8 +1285,8 @@ $(document).ready(function(){
                     render: function(data, type, row) {
                         var count = parseInt(row.assigned_count) || 0;
                         var dropdownHTML = '<div class="list-icons"><div class="dropdown">' +
-                            '<a href="#" class="list-icons-item" data-toggle="dropdown" data-boundary="window" style="color: #2196f3;"><i class="icon-menu9"></i></a>' +
-                            '<div class="dropdown-menu dropdown-menu-right" style="z-index: 999999 !important;">' +
+                            '<a href="#" class="list-icons-item" data-toggle="dropdown" style="color: #2196f3;"><i class="icon-menu9"></i></a>' +
+                            '<div class="dropdown-menu dropdown-menu-right">' +
                             '<a href="#" class="dropdown-item name_Type_Edit" style="color: #ff9800;"><i class="icon-database-edit2 mr-2"></i>Edit</a>';
                         
                         if (row.user_type_status === 'Active') {

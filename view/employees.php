@@ -39,73 +39,15 @@ $OBJ->URLEncode('head=dashboard');
         .table-responsive {
             overflow: visible !important;
         }
-        #list_of_employees tbody tr td,
-        #tbl_employee_types tbody tr td,
-        #tbl_employee_attachments tbody tr td {
-            overflow: visible !important;
-            position: relative;
-        }
-        .dataTables_wrapper {
-            position: relative !important;
-            z-index: 1 !important;
+        #list_of_employees tbody tr td {
             overflow: visible !important;
         }
-        .table-responsive,
-        .datatable-scroll-wrap,
-        .datatable-scroll {
-            position: relative !important;
-            z-index: 999 !important;
-            overflow: visible !important;
-        }
-        #list_of_employees,
-        #tbl_employee_types,
-        #tbl_employee_attachments,
-        .table {
-            position: relative !important;
-            z-index: 1000 !important;
-        }
-        .table tbody tr {
-            position: static;
-        }
-        .table tbody tr.dropdown-open,
-        .table tbody tr:has(.dropdown.show) {
-            position: relative !important;
+        #list_of_employees .dropdown-menu {
             z-index: 999999 !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
         }
-        .table .dropdown,
-        table.dataTable .dropdown,
-        .list-icons .dropdown,
-        .list-icons .dropdown.position-static {
+        .datatable-footer {
             position: relative !important;
-        }
-        .table .dropdown.show,
-        .list-icons .dropdown.show {
-            position: relative !important;
-            z-index: 9999999 !important;
-        }
-        #list_of_employees .dropdown-menu,
-        #tbl_employee_types .dropdown-menu,
-        #tbl_employee_attachments .dropdown-menu,
-        .table .dropdown-menu {
-            position: absolute !important;
-            z-index: 99999999 !important;
-            box-shadow: 0 10px 30px rgba(0,29,57,0.28) !important;
-            border: 1px solid #c2daeb !important;
-        }
-        .datatable-footer,
-        .dataTables_wrapper > .datatable-footer,
-        .dataTables_wrapper .datatable-footer,
-        .card-footer {
-            position: relative !important;
-            z-index: 1 !important;
-            clear: both !important;
-        }
-        .datatable-footer .dataTables_paginate,
-        .datatable-footer .dataTables_info,
-        .datatable-footer .pagination,
-        .datatable-footer .paginate_button,
-        .datatable-footer .page-item,
-        .datatable-footer .page-link {
             z-index: 1 !important;
         }
 
@@ -197,7 +139,7 @@ $OBJ->URLEncode('head=dashboard');
    	<script src="global_assets/js/fileupload_ns.js"></script>
     <script src="../httpdocs/user_js/calender/moment.min.js"></script>
     <script src="../httpdocs/user_js/calender/fullcalendar.min.js"></script>
-	<script src="../httpdocs/user_js/employees.js?v=2.3"></script>
+	<script src="../httpdocs/user_js/employees.js"></script>
 </head>
     <?PHP 
 		include_once('template/date_time.inc');
