@@ -173,7 +173,7 @@ $(document).ready(function(){
                            
             				"Paginate": true,
             				"bLengthChange": true,
-            				"bFilter": false,
+            				"bFilter": true,
             				"bInfo": true,
             				"autoWidth": false,
                             "columns": [

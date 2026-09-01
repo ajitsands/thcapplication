@@ -241,9 +241,17 @@ body {
 /* --- Modern DataTables Filter (Search Box & Icon) --- */
 .dataTables_filter {
     position: relative !important;
-    display: inline-block !important;
-    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 0 12px 0 !important;
+    float: right !important;
+    text-align: right !important;
+}
+
+.datatable-header .dataTables_filter {
     float: none !important;
+    margin-left: auto !important;
+    margin-bottom: 0 !important;
 }
 
 .dataTables_filter > label {
@@ -303,9 +311,15 @@ body {
 /* --- Modern DataTables Length (Entries per page) --- */
 .dataTables_length {
     position: relative !important;
-    display: inline-block !important;
-    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 0 12px 0 !important;
+    float: left !important;
+}
+
+.datatable-header .dataTables_length {
     float: none !important;
+    margin-bottom: 0 !important;
 }
 
 .dataTables_length > label {
@@ -322,6 +336,12 @@ body {
     font-weight: 500 !important;
     color: #475569 !important;
     white-space: nowrap !important;
+}
+
+.dataTables_wrapper:after {
+    content: "" !important;
+    display: table !important;
+    clear: both !important;
 }
 
 .dataTables_length select {

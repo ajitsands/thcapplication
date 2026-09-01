@@ -21,12 +21,40 @@ $OBJ->URLEncode('head=dashboard');
 
 	 
 	<style>
-	    	td.details-control {
+	    td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
             cursor: pointer;
         }
         tr.shown td.details-control {
             background: url('../httpdocs/images/minus.png') no-repeat center center;
+        }
+        #list_of_location_wrapper .dataTables_length,
+        #list_of_building_wrapper .dataTables_length {
+            float: left !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            margin-bottom: 12px !important;
+        }
+        #list_of_location_wrapper .dataTables_filter,
+        #list_of_building_wrapper .dataTables_filter {
+            float: right !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            text-align: right !important;
+            margin-bottom: 12px !important;
+        }
+        #list_of_location_wrapper .dataTables_filter label,
+        #list_of_building_wrapper .dataTables_filter label {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            margin-bottom: 0 !important;
+        }
+        #list_of_location_wrapper:after,
+        #list_of_building_wrapper:after {
+            content: "" !important;
+            display: table !important;
+            clear: both !important;
         }
 	</style>
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
