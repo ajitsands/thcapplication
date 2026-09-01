@@ -1084,8 +1084,9 @@ $(document).ready(function(){
                     "render": function(data, type, row) {
                         var html = '';
                         if (!row.file_path || row.file_path === '' || row.file_path === 'null') {
-                            html += '<button type="button" class="btn btn-sm btn-outline-primary btn-quick-upload-att mr-1" data-emp-id="' + row.employee_id + '" data-doc="' + row.document_name + '" title="Upload Document File"><i class="icon-upload"></i></button>';
+                            html += '<button type="button" class="btn btn-sm btn-outline-success btn-quick-upload-att mr-1" data-emp-id="' + row.employee_id + '" data-doc="' + (row.document_name || '') + '" title="Upload Document File"><i class="icon-upload"></i></button>';
                         }
+                        html += '<button type="button" class="btn btn-sm btn-outline-primary btn-edit-attachment mr-1" title="Edit Document & Expiry"><i class="icon-pencil7"></i></button>';
                         html += '<button type="button" class="btn btn-sm btn-outline-danger btn-delete-attachment" data-id="' + row.attachment_id + '" title="Delete"><i class="icon-trash"></i></button>';
                         return html;
                     }
@@ -1158,6 +1159,9 @@ $(document).ready(function(){
                         $('#select_attach_employee').val('').trigger('change');
                         $('#select_attach_doc_name').val('Passport').trigger('change');
                         load_employee_attachments_grid();
+                        if (typeof load_data_to_grid_employees_details_list === 'function') {
+                            load_data_to_grid_employees_details_list();
+                        }
                     } else {
                         swal("Error", res.message || "Failed to upload document.", "error");
                     }
@@ -1184,6 +1188,88 @@ $(document).ready(function(){
         }
         $('#file_attach_doc').focus();
         $('html, body').animate({ scrollTop: $('#form_employee_attachment').offset().top - 80 }, 'fast');
+    });
+
+    // Open Edit Attachment Modal Handler
+    $('#tbl_employee_attachments tbody').on('click', '.btn-edit-attachment', function(){
+        var tr = $(this).closest('tr');
+        var rowData = v_tbl_employee_attachments.row(tr).data();
+        if (!rowData) {
+            return;
+        }
+
+        $('#edit_attach_id').val(rowData.attachment_id);
+        $('#edit_attach_emp_id').val(rowData.employee_id);
+        $('#edit_attach_emp_display').text((rowData.employee_code || '') + ' - ' + (rowData.employee_name || ''));
+
+        // Populate Document Type
+        var docName = rowData.document_name || '';
+        if ($('#edit_attach_doc_name option[value="' + docName + '"]').length === 0 && docName !== '') {
+            $('#edit_attach_doc_name').append(new Option(docName, docName, true, true));
+        }
+        $('#edit_attach_doc_name').val(docName);
+
+        // Populate Expiry Date
+        var expDate = rowData.expiry_date || '';
+        if (expDate === '0000-00-00' || expDate === '1970-01-01' || expDate === 'null' || !expDate) {
+            expDate = '';
+        }
+        $('#edit_attach_expiry_date').val(expDate);
+
+        // Populate Remarks
+        $('#edit_attach_remarks').val(rowData.remarks || '');
+
+        // Reset File Input
+        $('#edit_attach_doc_file').val('');
+
+        // Current File Preview
+        if (rowData.file_path && rowData.file_path !== '' && rowData.file_path !== 'null') {
+            $('#edit_attach_current_file_preview').html('<a href="../view/' + rowData.file_path + '" target="_blank" class="badge badge-info p-1"><i class="icon-file-download mr-1"></i> View Current File</a>');
+        } else {
+            $('#edit_attach_current_file_preview').html('<span class="badge badge-warning p-1">No File Attached</span>');
+        }
+
+        $('#modal_edit_employee_attachment').modal('show');
+    });
+
+    // Save Edit Attachment Form Handler
+    $('#form_edit_employee_attachment').on('submit', function(e){
+        e.preventDefault();
+        var formData = new FormData(this);
+        formData.append('action', 'update_employee_attachment');
+
+        var $btn = $('#btn_save_edit_attachment');
+        $btn.prop('disabled', true).html('<b><i class="icon-spinner2 spinner mr-1"></i></b> Updating...');
+
+        $.ajax({
+            url: '../controller/employees/employees_controller.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                $btn.prop('disabled', false).html('<b><i class="icon-checkmark3 mr-1"></i></b> Update Document');
+                try {
+                    var res = typeof response === 'string' ? JSON.parse(response) : response;
+                    if (res.status === 'success') {
+                        swal("Updated!", res.message, "success");
+                        $('#modal_edit_employee_attachment').modal('hide');
+                        load_employee_attachments_grid();
+                        if (typeof load_data_to_grid_employees_details_list === 'function') {
+                            load_data_to_grid_employees_details_list();
+                        }
+                    } else {
+                        swal("Error", res.message || "Failed to update document.", "error");
+                    }
+                } catch (err) {
+                    swal("Error", "Server error while updating attachment.", "error");
+                }
+            },
+            error: function() {
+                $btn.prop('disabled', false).html('<b><i class="icon-checkmark3 mr-1"></i></b> Update Document');
+                swal("Error", "Network connection failed.", "error");
+            }
+        });
     });
 
     // Delete Attachment Handler

@@ -572,12 +572,91 @@ class apartmentController
                     }
 
                     if (mysqli_query($this->varDBConnection, $sql_query)) {
+                        // Sync with tbl_employees for CPR Card or Visa / Work Permit
+                        if ($exp_date && $exp_date != '1970-01-01' && $exp_date != '0000-00-00') {
+                            $exp_date_emp = $this->varDBConnection->real_escape_string($exp_date);
+                            if ($doc_name == 'CPR Card' || stripos($doc_name, 'CPR') !== false) {
+                                mysqli_query($this->varDBConnection, "UPDATE `tbl_employees` SET `cpr_expiry_date` = '$exp_date_emp' WHERE `employee_id` = '$emp_id'");
+                            } else if ($doc_name == 'Visa / Work Permit' || stripos($doc_name, 'Visa') !== false) {
+                                mysqli_query($this->varDBConnection, "UPDATE `tbl_employees` SET `visa_validity_on` = '$exp_date_emp' WHERE `employee_id` = '$emp_id'");
+                            }
+                        }
                         echo json_encode(['status' => 'success', 'message' => 'Document attachment uploaded successfully!']);
                     } else {
                         echo json_encode(['status' => 'error', 'message' => 'Database error: ' . mysqli_error($this->varDBConnection)]);
                     }
                 } else {
                     echo json_encode(['status' => 'error', 'message' => 'Failed to save uploaded file.']);
+                }
+            break;
+
+            case 'update_employee_attachment':
+                $att_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
+                $doc_name = isset($_POST['document_type']) ? trim($_POST['document_type']) : '';
+                $exp_date = isset($_POST['expiry_date']) && !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : NULL;
+                $remarks = isset($_POST['remarks']) ? trim($_POST['remarks']) : '';
+
+                if ($att_id <= 0 || empty($doc_name)) {
+                    echo json_encode(['status' => 'error', 'message' => 'Invalid attachment ID or missing document type.']);
+                    exit;
+                }
+
+                // Fetch existing attachment record
+                $res_cur = mysqli_query($this->varDBConnection, "SELECT * FROM tbl_employee_attachments WHERE attachment_id = '$att_id' AND status = 'Active'");
+                if (!$res_cur || mysqli_num_rows($res_cur) == 0) {
+                    echo json_encode(['status' => 'error', 'message' => 'Attachment record not found.']);
+                    exit;
+                }
+                $cur_row = mysqli_fetch_assoc($res_cur);
+                $emp_id = intval($cur_row['employee_id']);
+                $old_doc_name = $cur_row['document_name'];
+
+                $doc_name_esc = $this->varDBConnection->real_escape_string($doc_name);
+                $remarks_esc = $this->varDBConnection->real_escape_string($remarks);
+                $exp_date_sql = $exp_date ? "'".$this->varDBConnection->real_escape_string($exp_date)."'" : "NULL";
+
+                $file_update_sql = "";
+                // If a new file is uploaded to replace the existing one
+                if (isset($_FILES['doc_file']) && $_FILES['doc_file']['error'] == 0) {
+                    $uploadDir = __DIR__ . '/../../view/uploads/employee_documents/';
+                    if (!file_exists($uploadDir)) {
+                        mkdir($uploadDir, 0777, true);
+                    }
+                    $origName = $_FILES['doc_file']['name'];
+                    $ext = pathinfo($origName, PATHINFO_EXTENSION);
+                    $newFileName = 'emp_doc_' . $emp_id . '_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                    $targetFile = $uploadDir . $newFileName;
+                    $relFilePath = 'uploads/employee_documents/' . $newFileName;
+
+                    if (move_uploaded_file($_FILES['doc_file']['tmp_name'], $targetFile)) {
+                        $origName_esc = $this->varDBConnection->real_escape_string($origName);
+                        $file_update_sql = ", `file_path` = '$relFilePath', `original_file_name` = '$origName_esc'";
+                    }
+                }
+
+                $sql_upd = "UPDATE `tbl_employee_attachments` SET 
+                    `document_name` = '$doc_name_esc',
+                    `expiry_date` = $exp_date_sql,
+                    `remarks` = '$remarks_esc'
+                    $file_update_sql
+                WHERE `attachment_id` = '$att_id'";
+
+                if (mysqli_query($this->varDBConnection, $sql_upd)) {
+                    // Sync CPR Expiry Date to tbl_employees
+                    if ($doc_name == 'CPR Card' || stripos($doc_name, 'CPR') !== false) {
+                        $emp_cpr_exp = ($exp_date && $exp_date != '1970-01-01' && $exp_date != '0000-00-00') ? "'".$this->varDBConnection->real_escape_string($exp_date)."'" : "'0000-00-00'";
+                        mysqli_query($this->varDBConnection, "UPDATE `tbl_employees` SET `cpr_expiry_date` = $emp_cpr_exp WHERE `employee_id` = '$emp_id'");
+                    }
+
+                    // Sync Visa Expiry Date to tbl_employees
+                    if ($doc_name == 'Visa / Work Permit' || stripos($doc_name, 'Visa') !== false) {
+                        $emp_visa_exp = ($exp_date && $exp_date != '1970-01-01' && $exp_date != '0000-00-00') ? "'".$this->varDBConnection->real_escape_string($exp_date)."'" : "'0000-00-00'";
+                        mysqli_query($this->varDBConnection, "UPDATE `tbl_employees` SET `visa_validity_on` = $emp_visa_exp WHERE `employee_id` = '$emp_id'");
+                    }
+
+                    echo json_encode(['status' => 'success', 'message' => 'Document details updated successfully!']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Database error: ' . mysqli_error($this->varDBConnection)]);
                 }
             break;
 
