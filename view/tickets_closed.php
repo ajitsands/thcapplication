@@ -21,32 +21,74 @@ $OBJ->URLEncode('head=dashboard');
 
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.1.1/css/buttons.dataTables.min.css">
 	<style>
-	    	td.details-control {
+	    td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
             cursor: pointer;
         }
         tr.shown td.details-control {
             background: url('../httpdocs/images/minus.png') no-repeat center center;
         }
+
         .modal {
-  overflow-y:auto;
-  
-  .excel-button {
-		background-color: black;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		padding: 6px 12px;
-		cursor: pointer;
-		font-size: 14px;
-		float: right; 
-	} 
-        
-      
-       .excel-button:hover {
-        background-color: #333; 
-       }
-}
+            overflow-y: auto;
+        }
+
+        .dt-buttons,
+        .excel-button {
+            display: none !important;
+        }
+
+        #tbl_closed_tickets_wrapper {
+            width: 100% !important;
+            position: relative !important;
+        }
+
+        #tbl_closed_tickets_wrapper .dataTables_filter {
+            float: left !important;
+            text-align: left !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            margin-bottom: 14px !important;
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+
+        #tbl_closed_tickets_wrapper .dataTables_filter label {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            margin-bottom: 0 !important;
+        }
+
+        #tbl_closed_tickets_wrapper .dataTables_filter label input {
+            margin-left: 8px !important;
+            width: 260px !important;
+        }
+
+        #tbl_closed_tickets_wrapper .dataTables_length {
+            float: left !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            margin-bottom: 14px !important;
+            margin-right: 15px !important;
+        }
+
+        #tbl_closed_tickets_wrapper .dataTables_info {
+            float: left !important;
+            padding-top: 10px !important;
+        }
+
+        #tbl_closed_tickets_wrapper .dataTables_paginate {
+            float: right !important;
+            text-align: right !important;
+            padding-top: 6px !important;
+        }
+
+        #tbl_closed_tickets_wrapper:after {
+            content: "" !important;
+            display: table !important;
+            clear: both !important;
+        }
 	</style>
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
 	<script src="global_assets/js/plugins/forms/styling/uniform.min.js"></script>
