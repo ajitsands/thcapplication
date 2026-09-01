@@ -1198,4 +1198,324 @@ $(document).ready(function(){
         });
     });
 
+    // ==========================================
+    // EMPLOYEE TYPE TAB FUNCTIONALITY
+    // ==========================================
+    var v_btn_emp_type_add = $('#btn_emp_type_add').ladda();
+    var v_btn_emp_type_edit = $('#btn_emp_type_edit').ladda();
+    var v_btn_emp_type_new = $('#btn_emp_type_new').ladda();
+
+    var employee_type_table = $('#tbl_employee_types').DataTable({});
+
+    // Tab switch to Employee Type tab
+    $('a[href="#tab_employee_type"]').on('shown.bs.tab', function (e) {
+        load_data_to_grid_employee_types();
+    });
+
+    // Function to reload Employee Type grid
+    function load_data_to_grid_employee_types() {
+        if ($.fn.DataTable.isDataTable('#tbl_employee_types')) {
+            employee_type_table.destroy();
+        }
+        employee_type_table = $('#tbl_employee_types').DataTable({
+            "ajax": {
+                'type': 'POST',
+                'url': '../controller/employee_type/employee_type_controller.php',
+                'data': {
+                    action: 'list_employee_types'
+                }
+            },
+            "language": {
+                "zeroRecords": "No employee types configured yet",
+                "infoEmpty": "No employee types available"
+            },
+            "order": [[0, "asc"]],
+            "Paginate": true,
+            "bLengthChange": true,
+            "bFilter": true,
+            "bInfo": true,
+            "autoWidth": false,
+            "columns": [
+                { "data": null, "className": "text-center" },
+                { "data": "user_type_id", "visible": false },
+                { 
+                    "data": "user_type_name",
+                    render: function(data) {
+                        return '<span class="font-weight-semibold text-primary"><i class="icon-user-check mr-2"></i>' + data + '</span>';
+                    }
+                },
+                { 
+                    "data": "user_type_description",
+                    render: function(data) {
+                        return data ? data : '<span class="text-muted font-italic">No description</span>';
+                    }
+                },
+                {
+                    "data": "assigned_count",
+                    "className": "text-center",
+                    render: function(data) {
+                        var count = parseInt(data) || 0;
+                        if (count > 0) {
+                            return '<span class="badge badge-primary px-2 py-1"><i class="icon-users4 mr-1"></i>' + count + ' Assigned</span>';
+                        } else {
+                            return '<span class="badge badge-light text-muted px-2 py-1 border"><i class="icon-user-cancel mr-1"></i>0 Assigned</span>';
+                        }
+                    }
+                },
+                {
+                    "data": "user_type_status",
+                    "className": "text-center",
+                    render: function(data) {
+                        if (data === 'Active') {
+                            return '<span class="badge badge-success px-2 py-1">Active</span>';
+                        } else {
+                            return '<span class="badge badge-danger px-2 py-1">Deactive</span>';
+                        }
+                    }
+                },
+                {
+                    "data": "user_type_id",
+                    "className": "text-center",
+                    render: function(data, type, row) {
+                        var count = parseInt(row.assigned_count) || 0;
+                        var dropdownHTML = '<div class="list-icons"><div class="dropdown">' +
+                            '<a href="#" class="list-icons-item" data-toggle="dropdown" style="color: #2196f3;"><i class="icon-menu9"></i></a>' +
+                            '<div class="dropdown-menu dropdown-menu-right">' +
+                            '<a href="#" class="dropdown-item name_Type_Edit" style="color: #ff9800;"><i class="icon-database-edit2 mr-2"></i>Edit</a>';
+                        
+                        if (row.user_type_status === 'Active') {
+                            dropdownHTML += '<a href="#" class="dropdown-item name_Type_Deactive text-danger"><i class="icon-cross3 mr-2"></i>Deactivate</a>';
+                        } else {
+                            dropdownHTML += '<a href="#" class="dropdown-item name_Type_Active text-success"><i class="icon-checkmark2 mr-2"></i>Activate</a>';
+                        }
+
+                        if (count === 0) {
+                            dropdownHTML += '<div class="dropdown-divider"></div>';
+                            dropdownHTML += '<a href="#" class="dropdown-item name_Type_Delete text-danger font-weight-semibold"><i class="icon-trash mr-2"></i>Delete</a>';
+                        } else {
+                            dropdownHTML += '<div class="dropdown-divider"></div>';
+                            dropdownHTML += '<a href="#" class="dropdown-item name_Type_Delete_Disabled text-muted" title="Cannot delete: ' + count + ' employee(s) assigned"><i class="icon-lock mr-2"></i>Delete (Disabled)</a>';
+                        }
+
+                        dropdownHTML += '</div></div></div>';
+                        return dropdownHTML;
+                    }
+                }
+            ],
+            pageLength: 25,
+            responsive: true,
+            "fnRowCallback": function(nRow, aData, iDisplayIndex) {
+                $("td:eq(0)", nRow).html(iDisplayIndex + 1);
+                return nRow;
+            }
+        });
+    }
+
+    // Refresh Employee Type dropdown in Employee Form dynamically
+    function refresh_employee_type_dropdowns() {
+        $.post("../controller/employee_type/employee_type_controller.php", {
+            action: 'get_active_employee_types'
+        }, function(response) {
+            try {
+                var types = typeof response === 'string' ? JSON.parse(response) : response;
+                var currentVal = $("#select_employee_type").val();
+                var $select = $("#select_employee_type");
+                
+                $select.empty().append('<option value="select">Select</option>');
+                $.each(types, function(i, item) {
+                    $select.append($('<option>', {
+                        value: item.user_type_id,
+                        text: item.user_type_name
+                    }));
+                });
+
+                if (currentVal && currentVal !== 'select') {
+                    $select.val(currentVal).trigger('change');
+                } else {
+                    $select.val('select').trigger('change');
+                }
+            } catch (e) {
+                console.error("Error updating employee type dropdown:", e);
+            }
+        });
+    }
+
+    // Add Employee Type
+    v_btn_emp_type_add.click(function() {
+        var name = $.trim($('#txt_emp_type_name').val());
+        var desc = $.trim($('#txt_emp_type_description').val());
+
+        if (name === "") {
+            swal("Warning", "Please provide Employee Type Name.", "warning");
+            return false;
+        }
+
+        v_btn_emp_type_add.ladda('start');
+
+        $.post("../controller/employee_type/employee_type_controller.php", {
+            action: 'add_employee_type',
+            v_employee_type_name: name,
+            v_employee_type_description: desc
+        }, function(result) {
+            v_btn_emp_type_add.ladda('stop');
+            result = $.trim(result);
+            if (result === 'Success') {
+                swal("Success", "New Employee Type added successfully!", "success");
+                reset_emp_type_form();
+                load_data_to_grid_employee_types();
+                refresh_employee_type_dropdowns();
+            } else {
+                swal("Error", result, "error");
+            }
+        });
+    });
+
+    // Update Employee Type
+    v_btn_emp_type_edit.click(function() {
+        var id = $('#txt_emp_type_id').val();
+        var name = $.trim($('#txt_emp_type_name').val());
+        var desc = $.trim($('#txt_emp_type_description').val());
+
+        if (name === "" || !id) {
+            swal("Warning", "Please provide Employee Type Name.", "warning");
+            return false;
+        }
+
+        v_btn_emp_type_edit.ladda('start');
+
+        $.post("../controller/employee_type/employee_type_controller.php", {
+            action: 'update_employee_type',
+            v_employee_type_id: id,
+            v_employee_type_name: name,
+            v_employee_type_description: desc
+        }, function(result) {
+            v_btn_emp_type_edit.ladda('stop');
+            result = $.trim(result);
+            if (result === 'Success') {
+                swal("Success", "Employee Type updated successfully!", "success");
+                reset_emp_type_form();
+                load_data_to_grid_employee_types();
+                refresh_employee_type_dropdowns();
+            } else {
+                swal("Error", result, "error");
+            }
+        });
+    });
+
+    // Cancel / New Employee Type button
+    $('#btn_emp_type_new').click(function() {
+        reset_emp_type_form();
+    });
+
+    function reset_emp_type_form() {
+        $('#txt_emp_type_id').val('');
+        $('#txt_emp_type_name').val('');
+        $('#txt_emp_type_description').val('');
+        $('#btn_emp_type_add').show();
+        $('#btn_emp_type_edit').hide();
+        $('#btn_emp_type_new').hide();
+    }
+
+    // Row Actions for Employee Type DataTable
+    $('#tbl_employee_types tbody').on('click', 'a.dropdown-item', function(e) {
+        e.preventDefault();
+        var $row = $(this).closest('tr');
+        var data = employee_type_table.row($row).data();
+        if (!data) return;
+
+        var v_id = data.user_type_id;
+        var count = parseInt(data.assigned_count) || 0;
+
+        // Edit
+        if ($(this).hasClass('name_Type_Edit')) {
+            $('#txt_emp_type_id').val(v_id);
+            $('#txt_emp_type_name').val(data.user_type_name);
+            $('#txt_emp_type_description').val(data.user_type_description || '');
+
+            $('#btn_emp_type_add').hide();
+            $('#btn_emp_type_edit').show();
+            $('#btn_emp_type_new').show();
+
+            $('#txt_emp_type_name').focus();
+            $('html, body').animate({ scrollTop: $('#form_employee_type').offset().top - 100 }, 'fast');
+        }
+
+        // Activate
+        if ($(this).hasClass('name_Type_Active')) {
+            $.post("../controller/employee_type/employee_type_controller.php", {
+                action: 'change_employee_type_status',
+                v_employee_type_id: v_id,
+                v_employee_type_action: 'Active'
+            }, function(res) {
+                if ($.trim(res) === 'Success') {
+                    swal("Activated", "Employee Type is now Active.", "success");
+                    load_data_to_grid_employee_types();
+                    refresh_employee_type_dropdowns();
+                } else {
+                    swal("Error", res, "error");
+                }
+            });
+        }
+
+        // Deactivate
+        if ($(this).hasClass('name_Type_Deactive')) {
+            swal({
+                title: "Deactivate Employee Type?",
+                text: "When deactivated, this type will not appear in the Employee Type dropdown when adding new employees.",
+                icon: "warning",
+                buttons: ["Cancel", "Yes, Deactivate"],
+                dangerMode: true
+            }).then((willDeactivate) => {
+                if (willDeactivate) {
+                    $.post("../controller/employee_type/employee_type_controller.php", {
+                        action: 'change_employee_type_status',
+                        v_employee_type_id: v_id,
+                        v_employee_type_action: 'Deactive'
+                    }, function(res) {
+                        if ($.trim(res) === 'Success') {
+                            swal("Deactivated", "Employee Type has been deactivated.", "success");
+                            load_data_to_grid_employee_types();
+                            refresh_employee_type_dropdowns();
+                        } else {
+                            swal("Error", res, "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        // Delete (When 0 employees assigned)
+        if ($(this).hasClass('name_Type_Delete')) {
+            swal({
+                title: "Delete Employee Type?",
+                text: "Are you sure you want to permanently delete '" + data.user_type_name + "'?",
+                icon: "warning",
+                buttons: ["Cancel", "Yes, Delete"],
+                dangerMode: true
+            }).then((willDelete) => {
+                if (willDelete) {
+                    $.post("../controller/employee_type/employee_type_controller.php", {
+                        action: 'delete_employee_type',
+                        v_employee_type_id: v_id
+                    }, function(res) {
+                        res = $.trim(res);
+                        if (res === 'Success') {
+                            swal("Deleted", "Employee Type deleted successfully!", "success");
+                            reset_emp_type_form();
+                            load_data_to_grid_employee_types();
+                            refresh_employee_type_dropdowns();
+                        } else {
+                            swal("Cannot Delete", res, "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        // Disabled Delete clicked
+        if ($(this).hasClass('name_Type_Delete_Disabled')) {
+            swal("Cannot Delete", "This Employee Type currently has " + count + " employee(s) assigned to it. It cannot be deleted. You can deactivate it instead.", "warning");
+        }
+    });
+
 });

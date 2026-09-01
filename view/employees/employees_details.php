@@ -22,6 +22,11 @@
 									<i class="icon-attachment mr-2"></i> Add Attachments & Documents
 								</a>
 							</li>
+							<li class="nav-item">
+								<a class="nav-link" data-toggle="tab" href="#tab_employee_type">
+									<i class="icon-users4 mr-2"></i> Employee Type
+								</a>
+							</li>
 						</ul>
 					</div>
 
@@ -286,6 +291,60 @@
 												<th>Attachment File</th>
 												<th>Uploaded Date</th>
 												<th>Action</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+						<!-- TAB 3: Employee Type Master -->
+						<div class="tab-pane fade" id="tab_employee_type">
+							<div class="card-body">
+								<!-- Add / Edit Employee Type Form -->
+								<form id="form_employee_type" onsubmit="return false;">
+									<input type="hidden" id="txt_emp_type_id" value="">
+									<div class="row align-items-end">
+										<div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 form-group">
+											<span class="form-text text-muted font-weight-bold"><font color="black">Employee Type Name <span style="color:red;">*</span></font></span>
+											<input type="text" class="form-control" id="txt_emp_type_name" placeholder="e.g. Supervisor, Technician, Driver, Administrator" required>
+										</div>
+										<div class="col-xl-5 col-lg-5 col-md-6 col-sm-12 form-group">
+											<span class="form-text text-muted font-weight-bold"><font color="black">Description / Remarks</font></span>
+											<input type="text" class="form-control" id="txt_emp_type_description" placeholder="Optional notes or job scope description...">
+										</div>
+										<div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 form-group text-right">
+											<button type="button" id="btn_emp_type_add" class="btn bg-teal-400 font-weight-semibold">
+												<b><i class="icon-floppy-disk mr-1"></i></b> Save
+											</button>
+											<button type="button" id="btn_emp_type_edit" class="btn bg-warning-400 font-weight-semibold" style="display:none;">
+												<b><i class="icon-database-edit2 mr-1"></i></b> Update
+											</button>
+											<button type="button" id="btn_emp_type_new" class="btn btn-light font-weight-semibold ml-1" style="display:none;">
+												<b><i class="icon-reload-alt mr-1"></i></b> Cancel
+											</button>
+										</div>
+									</div>
+								</form>
+
+								<hr class="my-3">
+
+								<div class="d-flex align-items-center justify-content-between mb-2">
+									<h6 class="font-weight-semibold mb-0"><i class="icon-users4 mr-2"></i> List of Employee Types</h6>
+								</div>
+
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped table-hover" id="tbl_employee_types" style="width:100%;">
+										<thead>
+											<tr>
+												<th style="width: 60px;">Sl. No.</th>
+												<th style="display:none;">ID</th>
+												<th>Employee Type Name</th>
+												<th>Description</th>
+												<th style="width: 170px; text-align:center;">Assigned Employees</th>
+												<th style="width: 110px; text-align:center;">Status</th>
+												<th style="width: 100px; text-align:center;">Action</th>
 											</tr>
 										</thead>
 										<tbody></tbody>
