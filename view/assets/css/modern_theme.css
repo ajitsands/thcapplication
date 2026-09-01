@@ -625,7 +625,8 @@ table.dataTable tbody tr:has(.dropdown.show),
 
 .table .dropdown,
 table.dataTable .dropdown,
-.list-icons .dropdown {
+.list-icons .dropdown,
+.list-icons .dropdown.position-static {
     position: relative !important;
 }
 
@@ -655,7 +656,7 @@ table.dataTable .dropdown-menu,
 .dataTables_wrapper .datatable-footer,
 .card-footer {
     position: relative !important;
-    z-index: 0 !important;
+    z-index: 1 !important;
     clear: both !important;
 }
 
@@ -665,8 +666,9 @@ table.dataTable .dropdown-menu,
 .datatable-footer .paginate_button,
 .datatable-footer .page-item,
 .datatable-footer .page-link {
-    z-index: 0 !important;
+    z-index: 1 !important;
 }
+
 
 
 

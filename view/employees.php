@@ -72,6 +72,12 @@ $OBJ->URLEncode('head=dashboard');
             position: relative !important;
             z-index: 999999 !important;
         }
+        .table .dropdown,
+        table.dataTable .dropdown,
+        .list-icons .dropdown,
+        .list-icons .dropdown.position-static {
+            position: relative !important;
+        }
         .table .dropdown.show,
         .list-icons .dropdown.show {
             position: relative !important;
@@ -91,7 +97,7 @@ $OBJ->URLEncode('head=dashboard');
         .dataTables_wrapper .datatable-footer,
         .card-footer {
             position: relative !important;
-            z-index: 0 !important;
+            z-index: 1 !important;
             clear: both !important;
         }
         .datatable-footer .dataTables_paginate,
@@ -100,7 +106,7 @@ $OBJ->URLEncode('head=dashboard');
         .datatable-footer .paginate_button,
         .datatable-footer .page-item,
         .datatable-footer .page-link {
-            z-index: 0 !important;
+            z-index: 1 !important;
         }
 
         /* FullCalendar Navigation Buttons & Icons */
@@ -191,7 +197,7 @@ $OBJ->URLEncode('head=dashboard');
    	<script src="global_assets/js/fileupload_ns.js"></script>
     <script src="../httpdocs/user_js/calender/moment.min.js"></script>
     <script src="../httpdocs/user_js/calender/fullcalendar.min.js"></script>
-	<script src="../httpdocs/user_js/employees.js?v=2.2"></script>
+	<script src="../httpdocs/user_js/employees.js?v=2.3"></script>
 </head>
     <?PHP 
 		include_once('template/date_time.inc');

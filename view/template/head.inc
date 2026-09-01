@@ -11,11 +11,11 @@
 	<link href="assets/css/layout.min.css" rel="stylesheet" type="text/css">
 	<link href="assets/css/components.min.css" rel="stylesheet" type="text/css">
 	<!-- Permission CSS-->
-	<link href="permission/css/datagrid.css?v=2.2" rel="stylesheet" type="text/css">
-	<link href="permission/css/dropdown.css?v=2.2" rel="stylesheet" type="text/css">
+	<link href="permission/css/datagrid.css?v=2.3" rel="stylesheet" type="text/css">
+	<link href="permission/css/dropdown.css?v=2.3" rel="stylesheet" type="text/css">
 	
 	<link href="assets/css/colors.min.css" rel="stylesheet" type="text/css">
-	<link href="assets/css/modern_theme.css?v=2.2" rel="stylesheet" type="text/css">
+	<link href="assets/css/modern_theme.css?v=2.3" rel="stylesheet" type="text/css">
 	<!-- /global stylesheets -->
 
 	<style>
@@ -77,7 +77,8 @@
 
 	.table .dropdown,
 	table.dataTable .dropdown,
-	.list-icons .dropdown {
+	.list-icons .dropdown,
+	.list-icons .dropdown.position-static {
 	    position: relative !important;
 	}
 
@@ -105,7 +106,7 @@
 	.dataTables_wrapper .datatable-footer,
 	.card-footer {
 	    position: relative !important;
-	    z-index: 0 !important;
+	    z-index: 1 !important;
 	    clear: both !important;
 	}
 
@@ -116,7 +117,7 @@
 	.datatable-footer .page-item,
 	.datatable-footer .page-link {
 	    position: relative !important;
-	    z-index: 0 !important;
+	    z-index: 1 !important;
 	}
 	</style>
 
@@ -132,7 +133,7 @@
 	<!-- Theme JS files -->
 	<script src="global_assets/js/plugins/ui/prism.min.js"></script>
 
-	<script src="assets/js/app.js?v=2.2"></script>
+	<script src="assets/js/app.js?v=2.3"></script>
 	<!-- /theme JS files -->
 	
 	
