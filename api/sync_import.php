@@ -231,7 +231,7 @@ if ($action === 'run_sync' && $is_cli) {
     <div class="container">
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">🔄 Old Server $\rightarrow$ New Server Database Sync</h3>
+                <h3 class="mb-0">🔄 Old Server &rarr; New Server Database Sync</h3>
                 <a href="../view/dashboard.php" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
             </div>
 
