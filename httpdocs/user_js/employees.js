@@ -1221,7 +1221,7 @@ $(document).ready(function(){
         employee_type_table = $('#tbl_employee_types').DataTable({
             "ajax": {
                 'type': 'POST',
-                'url': '../controller/employee_type/employee_type_controller.php',
+                'url': '../controller/employees/employees_controller.php',
                 'data': {
                     action: 'list_employee_types'
                 }
@@ -1319,7 +1319,7 @@ $(document).ready(function(){
 
     // Refresh Employee Type dropdown in Employee Form dynamically
     function refresh_employee_type_dropdowns() {
-        $.post("../controller/employee_type/employee_type_controller.php", {
+        $.post("../controller/employees/employees_controller.php", {
             action: 'get_active_employee_types'
         }, function(response) {
             try {
@@ -1358,7 +1358,7 @@ $(document).ready(function(){
 
         v_btn_emp_type_add.ladda('start');
 
-        $.post("../controller/employee_type/employee_type_controller.php", {
+        $.post("../controller/employees/employees_controller.php", {
             action: 'add_employee_type',
             v_employee_type_name: name,
             v_employee_type_description: desc
@@ -1389,7 +1389,7 @@ $(document).ready(function(){
 
         v_btn_emp_type_edit.ladda('start');
 
-        $.post("../controller/employee_type/employee_type_controller.php", {
+        $.post("../controller/employees/employees_controller.php", {
             action: 'update_employee_type',
             v_employee_type_id: id,
             v_employee_type_name: name,
@@ -1448,7 +1448,7 @@ $(document).ready(function(){
 
         // Activate
         if ($(this).hasClass('name_Type_Active')) {
-            $.post("../controller/employee_type/employee_type_controller.php", {
+            $.post("../controller/employees/employees_controller.php", {
                 action: 'change_employee_type_status',
                 v_employee_type_id: v_id,
                 v_employee_type_action: 'Active'
@@ -1473,7 +1473,7 @@ $(document).ready(function(){
                 dangerMode: true
             }).then((willDeactivate) => {
                 if (willDeactivate) {
-                    $.post("../controller/employee_type/employee_type_controller.php", {
+                    $.post("../controller/employees/employees_controller.php", {
                         action: 'change_employee_type_status',
                         v_employee_type_id: v_id,
                         v_employee_type_action: 'Deactive'
@@ -1500,7 +1500,7 @@ $(document).ready(function(){
                 dangerMode: true
             }).then((willDelete) => {
                 if (willDelete) {
-                    $.post("../controller/employee_type/employee_type_controller.php", {
+                    $.post("../controller/employees/employees_controller.php", {
                         action: 'delete_employee_type',
                         v_employee_type_id: v_id
                     }, function(res) {

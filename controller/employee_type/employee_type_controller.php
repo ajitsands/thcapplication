@@ -75,10 +75,8 @@ class EmployeeTypeController
                             ut.user_type_name, 
                             COALESCE(ut.user_type_description, '') AS user_type_description,
                             COALESCE(ut.user_type_status, 'Active') AS user_type_status,
-                            COUNT(e.employee_id) AS assigned_count
+                            (SELECT COUNT(*) FROM tbl_employees WHERE employee_type_id = ut.user_type_id) AS assigned_count
                         FROM tbl_user_types ut
-                        LEFT JOIN tbl_employees e ON (e.employee_type_id = ut.user_type_id OR (e.employee_type_id IS NULL AND e.employee_type_name = ut.user_type_name))
-                        GROUP BY ut.user_type_id, ut.user_type_name, ut.user_type_description, ut.user_type_status
                         ORDER BY ut.user_type_id DESC";
                 $this->varModelObj->ListFromTable($sql);
                 break;
