@@ -1072,17 +1072,22 @@ $(document).ready(function(){
                 { 
                     "data": "file_path",
                     "render": function(data, type, row) {
-                        if (data) {
-                            return '<a href="../view/' + data + '" target="_blank" class="btn btn-sm btn-outline-info"><i class="icon-file-download mr-1"></i> View / Download</a>';
+                        if (data && data !== '' && data !== 'null') {
+                            return '<a href="../view/' + data + '" target="_blank" class="btn btn-sm btn-outline-info font-weight-semibold"><i class="icon-file-download mr-1"></i> View Document</a>';
                         }
-                        return '<span class="text-muted">No File</span>';
+                        return '<span class="badge badge-warning font-weight-semibold p-1"><i class="icon-file-upload mr-1"></i> Pending Upload</span>';
                     }
                 },
                 { "data": "created_at_format" },
                 { 
-                    "data": "attachment_id",
-                    "render": function(data) {
-                        return '<button type="button" class="btn btn-sm btn-outline-danger btn-delete-attachment" data-id="' + data + '"><i class="icon-trash"></i></button>';
+                    "data": null,
+                    "render": function(data, type, row) {
+                        var html = '';
+                        if (!row.file_path || row.file_path === '' || row.file_path === 'null') {
+                            html += '<button type="button" class="btn btn-sm btn-outline-primary btn-quick-upload-att mr-1" data-emp-id="' + row.employee_id + '" data-doc="' + row.document_name + '" title="Upload Document File"><i class="icon-upload"></i></button>';
+                        }
+                        html += '<button type="button" class="btn btn-sm btn-outline-danger btn-delete-attachment" data-id="' + row.attachment_id + '" title="Delete"><i class="icon-trash"></i></button>';
+                        return html;
                     }
                 }
             ],
@@ -1165,6 +1170,20 @@ $(document).ready(function(){
                 swal("Error", "Network connection failed.", "error");
             }
         });
+    });
+
+    // Quick Upload Attachment Handler (from table row)
+    $('#tbl_employee_attachments tbody').on('click', '.btn-quick-upload-att', function(){
+        var empId = $(this).data('emp-id');
+        var docName = $(this).data('doc');
+        if (empId) {
+            $('#select_attach_employee').val(empId).trigger('change');
+        }
+        if (docName) {
+            $('#select_attach_doc_name').val(docName).trigger('change');
+        }
+        $('#file_attach_doc').focus();
+        $('html, body').animate({ scrollTop: $('#form_employee_attachment').offset().top - 80 }, 'fast');
     });
 
     // Delete Attachment Handler

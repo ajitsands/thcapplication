@@ -173,6 +173,53 @@ class apartmentController
             }
         }
 
+        // 6. Auto-create entries in tbl_employee_attachments for CPR Card, Visa / Work Permit, and Passport
+        @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `tbl_employee_attachments` (
+          `attachment_id` int(11) NOT NULL AUTO_INCREMENT,
+          `employee_id` int(11) DEFAULT '0',
+          `employee_code` varchar(100) DEFAULT NULL,
+          `document_name` varchar(255) DEFAULT NULL,
+          `expiry_date` date DEFAULT NULL,
+          `file_path` varchar(255) DEFAULT NULL,
+          `original_file_name` varchar(255) DEFAULT NULL,
+          `remarks` text,
+          `status` varchar(20) DEFAULT 'Active',
+          `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`attachment_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+        // 6a. Auto-entry: CPR Card
+        if (!empty($cpr_no) || (!empty($cpr_expiry) && $cpr_expiry != '1970-01-01')) {
+            $cpr_exp_sql = (!empty($cpr_expiry) && $cpr_expiry != '1970-01-01') ? "'$cpr_expiry'" : "NULL";
+            $cpr_remarks = !empty($cpr_no) ? "CPR No: " . $cpr_no : "CPR Card";
+            mysqli_query($conn, "INSERT INTO `tbl_employee_attachments` (
+                `employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`
+            ) VALUES (
+                '$last_id', '$v_employee_code', 'CPR Card', $cpr_exp_sql, NULL, NULL, '$cpr_remarks', 'Active', NOW()
+            )");
+        }
+
+        // 6b. Auto-entry: Visa / Work Permit
+        if ((!empty($visa_validity) && $visa_validity != '1970-01-01') || !empty($visa_type)) {
+            $visa_exp_sql = (!empty($visa_validity) && $visa_validity != '1970-01-01') ? "'$visa_validity'" : "NULL";
+            $visa_remarks = !empty($visa_type) ? "Visa Type: " . $visa_type : "Visa / Work Permit";
+            mysqli_query($conn, "INSERT INTO `tbl_employee_attachments` (
+                `employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`
+            ) VALUES (
+                '$last_id', '$v_employee_code', 'Visa / Work Permit', $visa_exp_sql, NULL, NULL, '$visa_remarks', 'Active', NOW()
+            )");
+        }
+
+        // 6c. Auto-entry: Passport
+        if (!empty($passport_no)) {
+            $passport_remarks = "Passport No: " . $passport_no;
+            mysqli_query($conn, "INSERT INTO `tbl_employee_attachments` (
+                `employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`
+            ) VALUES (
+                '$last_id', '$v_employee_code', 'Passport', NULL, NULL, NULL, '$passport_remarks', 'Active', NOW()
+            )");
+        }
+
         echo "success";
     }
 
@@ -255,6 +302,41 @@ class apartmentController
                         '$emp_id', '$emp_code', '$emp_name', '$exp_id', '$exp_name', 'Active'
                     )");
                 }
+            }
+        }
+
+        // 4. Sync CPR Card in tbl_employee_attachments
+        if (!empty($cpr_no) || (!empty($cpr_expiry) && $cpr_expiry != '1970-01-01')) {
+            $cpr_exp_sql = (!empty($cpr_expiry) && $cpr_expiry != '1970-01-01') ? "'$cpr_expiry'" : "NULL";
+            $cpr_remarks = !empty($cpr_no) ? "CPR No: " . $cpr_no : "CPR Card";
+            $chk_cpr = mysqli_query($conn, "SELECT attachment_id, file_path FROM tbl_employee_attachments WHERE employee_id = '$emp_id' AND document_name = 'CPR Card' AND status = 'Active' LIMIT 1");
+            if ($chk_cpr && mysqli_num_rows($chk_cpr) > 0) {
+                mysqli_query($conn, "UPDATE tbl_employee_attachments SET expiry_date = $cpr_exp_sql, remarks = '$cpr_remarks' WHERE employee_id = '$emp_id' AND document_name = 'CPR Card' AND status = 'Active'");
+            } else {
+                mysqli_query($conn, "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `expiry_date`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code', 'CPR Card', $cpr_exp_sql, '$cpr_remarks', 'Active', NOW())");
+            }
+        }
+
+        // 5. Sync Visa in tbl_employee_attachments
+        if ((!empty($visa_validity) && $visa_validity != '1970-01-01') || !empty($visa_type)) {
+            $visa_exp_sql = (!empty($visa_validity) && $visa_validity != '1970-01-01') ? "'$visa_validity'" : "NULL";
+            $visa_remarks = !empty($visa_type) ? "Visa Type: " . $visa_type : "Visa / Work Permit";
+            $chk_visa = mysqli_query($conn, "SELECT attachment_id, file_path FROM tbl_employee_attachments WHERE employee_id = '$emp_id' AND document_name = 'Visa / Work Permit' AND status = 'Active' LIMIT 1");
+            if ($chk_visa && mysqli_num_rows($chk_visa) > 0) {
+                mysqli_query($conn, "UPDATE tbl_employee_attachments SET expiry_date = $visa_exp_sql, remarks = '$visa_remarks' WHERE employee_id = '$emp_id' AND document_name = 'Visa / Work Permit' AND status = 'Active'");
+            } else {
+                mysqli_query($conn, "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `expiry_date`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code', 'Visa / Work Permit', $visa_exp_sql, '$visa_remarks', 'Active', NOW())");
+            }
+        }
+
+        // 6. Sync Passport in tbl_employee_attachments
+        if (!empty($passport_no)) {
+            $passport_remarks = "Passport No: " . $passport_no;
+            $chk_pass = mysqli_query($conn, "SELECT attachment_id FROM tbl_employee_attachments WHERE employee_id = '$emp_id' AND document_name = 'Passport' AND status = 'Active' LIMIT 1");
+            if ($chk_pass && mysqli_num_rows($chk_pass) > 0) {
+                mysqli_query($conn, "UPDATE tbl_employee_attachments SET remarks = '$passport_remarks' WHERE employee_id = '$emp_id' AND document_name = 'Passport' AND status = 'Active'");
+            } else {
+                mysqli_query($conn, "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code', 'Passport', '$passport_remarks', 'Active', NOW())");
             }
         }
 
@@ -410,9 +492,23 @@ class apartmentController
                     $origName_esc = $this->varDBConnection->real_escape_string($origName);
                     $exp_date_sql = $exp_date ? "'".$this->varDBConnection->real_escape_string($exp_date)."'" : "NULL";
 
-                    $insertSql = "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code_esc', '$doc_name_esc', $exp_date_sql, '$relFilePath', '$origName_esc', '$remarks_esc', 'Active', NOW())";
+                    // Check if an empty placeholder exists for this employee & document type
+                    $chk_placeholder = mysqli_query($this->varDBConnection, "SELECT attachment_id FROM `tbl_employee_attachments` WHERE `employee_id` = '$emp_id' AND `document_name` = '$doc_name_esc' AND (`file_path` IS NULL OR `file_path` = '') AND `status` = 'Active' ORDER BY `attachment_id` ASC LIMIT 1");
+                    if ($chk_placeholder && mysqli_num_rows($chk_placeholder) > 0) {
+                        $row_p = mysqli_fetch_assoc($chk_placeholder);
+                        $pid = $row_p['attachment_id'];
+                        $sql_query = "UPDATE `tbl_employee_attachments` SET 
+                            `expiry_date` = COALESCE($exp_date_sql, expiry_date),
+                            `file_path` = '$relFilePath',
+                            `original_file_name` = '$origName_esc',
+                            `remarks` = CASE WHEN '$remarks_esc' != '' THEN '$remarks_esc' ELSE remarks END,
+                            `created_at` = NOW()
+                        WHERE `attachment_id` = '$pid'";
+                    } else {
+                        $sql_query = "INSERT INTO `tbl_employee_attachments` (`employee_id`, `employee_code`, `document_name`, `expiry_date`, `file_path`, `original_file_name`, `remarks`, `status`, `created_at`) VALUES ('$emp_id', '$emp_code_esc', '$doc_name_esc', $exp_date_sql, '$relFilePath', '$origName_esc', '$remarks_esc', 'Active', NOW())";
+                    }
 
-                    if (mysqli_query($this->varDBConnection, $insertSql)) {
+                    if (mysqli_query($this->varDBConnection, $sql_query)) {
                         echo json_encode(['status' => 'success', 'message' => 'Document attachment uploaded successfully!']);
                     } else {
                         echo json_encode(['status' => 'error', 'message' => 'Database error: ' . mysqli_error($this->varDBConnection)]);
