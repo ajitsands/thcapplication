@@ -53,10 +53,8 @@ if ($num_rows > 0) {
     $attachment_path = $has_attachment ? '../httpdocs/images/amc_attachements/' . $row['asset_attachment'] : '';
     ?>
 
-    <!-- Main Asset Card -->
-    <div class="card" style="box-shadow: 0 4px 18px rgba(0,0,0,0.06); border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
-        
-        <!-- Hero Header -->
+    <!-- Hero Asset Header Card -->
+    <div class="card mb-3" style="box-shadow: 0 4px 18px rgba(0,0,0,0.06); border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
         <div style="background: linear-gradient(135deg, #2e2e79 0%, #1e1b4b 100%); padding: 22px 24px; color: #ffffff;">
             <div class="row align-items-center">
                 <div class="col-md-9 col-sm-12">
@@ -108,9 +106,12 @@ if ($num_rows > 0) {
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- Asset Tabs & Content Card -->
+    <div class="card" style="box-shadow: 0 4px 18px rgba(0,0,0,0.06); border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
         <!-- Navigation Tabs -->
-        <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 0 20px;">
+        <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 20px 0;">
             <ul class="nav nav-tabs nav-tabs-bottom mb-0 border-bottom-0" style="gap: 8px;">
                 <li class="nav-item">
                     <a href="#tab-customer-location" class="nav-link active font-weight-semibold" data-toggle="tab" style="padding: 12px 18px; font-size: 13px;">
