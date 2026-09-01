@@ -436,11 +436,13 @@ $is_active = (strcasecmp($cust_status, 'Active') === 0);
         <table class="tbl-bordered page-break-inside-avoid">
             <tbody>
                 <tr>
-                    <td colspan="5" class="header-bg" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span><strong>2. REGISTERED FACILITIES &amp; LOCATIONS</strong></span>
-                        <span style="font-size: 11px; font-weight: 500; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">
-                            Total: <?PHP echo $total_facilities; ?>
-                        </span>
+                    <td colspan="5" class="header-bg">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span><strong>2. REGISTERED FACILITIES &amp; LOCATIONS</strong></span>
+                            <span style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px;">
+                                Total: <?PHP echo $total_facilities; ?>
+                            </span>
+                        </div>
                     </td>
                 </tr>
                 <tr style="background: #f1f5f9; font-weight: 700; text-align: center; color: #334155;">
@@ -499,11 +501,13 @@ $is_active = (strcasecmp($cust_status, 'Active') === 0);
         <table class="tbl-bordered page-break-inside-avoid">
             <tbody>
                 <tr>
-                    <td colspan="5" class="header-bg" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span><strong>3. ANNUAL MAINTENANCE CONTRACTS (AMC)</strong></span>
-                        <span style="font-size: 11px; font-weight: 500; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">
-                            Total: <?PHP echo $total_amcs; ?>
-                        </span>
+                    <td colspan="5" class="header-bg">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span><strong>3. ANNUAL MAINTENANCE CONTRACTS (AMC)</strong></span>
+                            <span style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px;">
+                                Total: <?PHP echo $total_amcs; ?>
+                            </span>
+                        </div>
                     </td>
                 </tr>
                 <tr style="background: #f1f5f9; font-weight: 700; text-align: center; color: #334155;">
