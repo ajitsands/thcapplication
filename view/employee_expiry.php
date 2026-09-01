@@ -21,12 +21,26 @@ $OBJ->URLEncode('head=dashboard');
 
 	 
 	<style>
-	    	td.details-control {
+	    td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
             cursor: pointer;
         }
         tr.shown td.details-control {
             background: url('../httpdocs/images/minus.png') no-repeat center center;
+        }
+        #list_of_CPR_employees th,
+        #list_of_CPR_employees td,
+        #list_of_visa_employees th,
+        #list_of_visa_employees td {
+            vertical-align: middle !important;
+            white-space: nowrap !important;
+        }
+        #list_of_CPR_employees td:nth-child(4),
+        #list_of_visa_employees td:nth-child(4),
+        .col-employee-name {
+            min-width: 240px !important;
+            white-space: nowrap !important;
+            font-weight: 600;
         }
 	</style>
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>

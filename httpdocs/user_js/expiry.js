@@ -133,7 +133,13 @@ $(document).ready(function(){
                                  
                                  { "data": null},
                                  { "data": "employee_id","visible":false },
-                                 { "data": "employee_name" },
+                                 { 
+                                     "data": "employee_name",
+                                     "className": "col-employee-name",
+                                     render: function(data) {
+                                         return '<span style="white-space:nowrap; font-weight:600;">' + (data || '') + '</span>';
+                                     }
+                                 },
                                  { "data": "employee_type_name"},
                                   { "data": "employee_code",
                                      render: function ( data, type, rows, meta ) {
@@ -264,7 +270,13 @@ $(document).ready(function(){
                                  
                                  { "data": null},
                                  { "data": "employee_id","visible":false },
-                                 { "data": "employee_name" },
+                                 { 
+                                     "data": "employee_name",
+                                     "className": "col-employee-name",
+                                     render: function(data) {
+                                         return '<span style="white-space:nowrap; font-weight:600;">' + (data || '') + '</span>';
+                                     }
+                                 },
                                  { "data": "employee_type_name"},
                                   { "data": "employee_code",
                                      render: function ( data, type, rows, meta ) {
@@ -492,7 +504,13 @@ $(document).ready(function(){
                                  
                                  { "data": null},
                                  { "data": "employee_id","visible":false },
-                                 { "data": "employee_name" },
+                                 { 
+                                     "data": "employee_name",
+                                     "className": "col-employee-name",
+                                     render: function(data) {
+                                         return '<span style="white-space:nowrap; font-weight:600;">' + (data || '') + '</span>';
+                                     }
+                                 },
                                  { "data": "employee_type_name"},
                                  { "data": "employee_code"},
                                  { "data": "visa_validity_on_format"},
@@ -617,7 +635,13 @@ $(document).ready(function(){
                                  
                                  { "data": null},
                                  { "data": "employee_id","visible":false },
-                                 { "data": "employee_name" },
+                                 { 
+                                     "data": "employee_name",
+                                     "className": "col-employee-name",
+                                     render: function(data) {
+                                         return '<span style="white-space:nowrap; font-weight:600;">' + (data || '') + '</span>';
+                                     }
+                                 },
                                  { "data": "employee_type_name"},
                                  { "data": "employee_code"},
                                  { "data": "visa_validity_on_format"},

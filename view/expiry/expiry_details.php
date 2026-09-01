@@ -51,20 +51,19 @@
                             						<h5 class="card-title">List of Employees</h5>
                             						
                             					</div>
-                            					<table class="table datatable-selection-single" id="list_of_CPR_employees">
+                            					<table class="table datatable-selection-single" id="list_of_CPR_employees" style="width:100%;">
                             						<thead>
                             							<tr>
+                            							    <th style="width:30px;"></th>
+                            							    <th style="width:50px;">Sl.No.</th>
                             							    <th></th>
-                            							    <th>Sl.No.</th>
-                            							    <th></th>
-                            				                <th>Emp.Name</th>
-                            				                <th>Emp.Type</th>
-                            				                <th>Emp.Code</th>
-                            				                <th width="600">CPR Expiry Date</th>
-                            				                <th>Emp.Image</th>
+                            				                <th style="min-width:240px;">Emp. Name</th>
+                            				                <th>Emp. Type</th>
+                            				                <th>Emp. Code</th>
+                            				                <th>CPR Expiry Date</th>
+                            				                <th>Emp. Image</th>
                             				                <th>CPR Status</th>
-                            				                <th>Emp.Status</th>
-                            				                
+                            				                <th>Emp. Status</th>
                             				            </tr>
                             						</thead>
                             						<tbody>
@@ -119,20 +118,19 @@
                             						<h5 class="card-title">List of Employees</h5>
                             						
                             					</div>
-                            					<table class="table datatable-selection-single" id="list_of_visa_employees">
+                            					<table class="table datatable-selection-single" id="list_of_visa_employees" style="width:100%;">
                             						<thead>
                             							<tr>
+                            							    <th style="width:30px;"></th>
+                            							    <th style="width:50px;">Sl. No.</th>
                             							    <th></th>
-                            							    <th>Sl. No.</th>
-                            							    <th></th>
-                            				                <th>Emp.Name</th>
-                            				                <th>Emp.Type</th>
-                            				                <th>Emp.Code</th>
-                            				                <th width="500">Visa Valid Upto</th>
-                            				                <th>Emp.Image</th>
+                            				                <th style="min-width:240px;">Emp. Name</th>
+                            				                <th>Emp. Type</th>
+                            				                <th>Emp. Code</th>
+                            				                <th>Visa Valid Upto</th>
+                            				                <th>Emp. Image</th>
                             				                <th>Visa Status</th>
-                            				                <th>Emp.Status</th>
-                            				                
+                            				                <th>Emp. Status</th>
                             				            </tr>
                             						</thead>
                             						<tbody>
