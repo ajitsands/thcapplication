@@ -63,6 +63,12 @@ $OBJ->URLEncode('head=dashboard');
             position: relative !important;
             z-index: 1 !important;
         }
+        .dropup .dropdown-menu {
+            top: auto !important;
+            bottom: 100% !important;
+            margin-bottom: 4px !important;
+            margin-top: 0 !important;
+        }
 
         /* FullCalendar Navigation Buttons & Icons */
         .fc-button .fc-icon {

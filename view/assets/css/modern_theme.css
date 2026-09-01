@@ -612,3 +612,12 @@ table.dataTable .dropdown-menu,
     z-index: 1 !important;
 }
 
+/* Dropup position styling for tables */
+.dropup .dropdown-menu {
+    top: auto !important;
+    bottom: 100% !important;
+    margin-bottom: 4px !important;
+    margin-top: 0 !important;
+}
+
+
