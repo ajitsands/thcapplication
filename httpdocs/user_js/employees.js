@@ -1206,16 +1206,17 @@ $(document).ready(function(){
     var v_btn_emp_type_new = $('#btn_emp_type_new').ladda();
 
     var employee_type_table = $('#tbl_employee_types').DataTable({});
+    load_data_to_grid_employee_types();
 
-    // Tab switch to Employee Type tab
-    $('a[href="#tab_employee_type"]').on('shown.bs.tab', function (e) {
+    // Tab switch to Employee Type tab (handle both click and shown.bs.tab)
+    $('a[href="#tab_employee_type"]').on('click shown.bs.tab', function (e) {
         load_data_to_grid_employee_types();
     });
 
     // Function to reload Employee Type grid
     function load_data_to_grid_employee_types() {
         if ($.fn.DataTable.isDataTable('#tbl_employee_types')) {
-            employee_type_table.destroy();
+            $('#tbl_employee_types').DataTable().destroy();
         }
         employee_type_table = $('#tbl_employee_types').DataTable({
             "ajax": {
@@ -1229,15 +1230,20 @@ $(document).ready(function(){
                 "zeroRecords": "No employee types configured yet",
                 "infoEmpty": "No employee types available"
             },
-            "order": [[0, "asc"]],
+            "order": [[1, "asc"]],
             "Paginate": true,
             "bLengthChange": true,
             "bFilter": true,
             "bInfo": true,
             "autoWidth": false,
             "columns": [
-                { "data": null, "className": "text-center" },
-                { "data": "user_type_id", "visible": false },
+                { 
+                    "data": null, 
+                    "className": "text-center",
+                    render: function(data, type, row, meta) {
+                        return meta.row + 1;
+                    }
+                },
                 { 
                     "data": "user_type_name",
                     render: function(data) {
@@ -1247,7 +1253,7 @@ $(document).ready(function(){
                 { 
                     "data": "user_type_description",
                     render: function(data) {
-                        return data ? data : '<span class="text-muted font-italic">No description</span>';
+                        return (data && $.trim(data) !== '') ? data : '<span class="text-muted font-italic">No description</span>';
                     }
                 },
                 {
@@ -1274,7 +1280,7 @@ $(document).ready(function(){
                     }
                 },
                 {
-                    "data": "user_type_id",
+                    "data": null,
                     "className": "text-center",
                     render: function(data, type, row) {
                         var count = parseInt(row.assigned_count) || 0;
