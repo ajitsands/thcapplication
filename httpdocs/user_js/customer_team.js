@@ -31,10 +31,10 @@ $(document).ready(function(){
                 "infoEmpty": "No records available"
             },
             "order": [[0, "desc"]],
-            "Paginate": true,
-            "bLengthChange": false,
-            "bFilter": false,
-            "bInfo": false,
+            "paginate": true,
+            "bLengthChange": true,
+            "bFilter": true,
+            "bInfo": true,
             "autoWidth": false,
             "columns": [
                 { "data": null },  // Serial number column
@@ -274,11 +274,11 @@ $(document).ready(function(){
                 "zeroRecords": "No records available",
                 "infoEmpty": "No records available",
             },
-            "order": [[0, "desc"]],
-            "Paginate": true,
-            "bLengthChange": false,
-            "bFilter": false,
-            "bInfo": false,
+            "order": [[0, "asc"]],
+            "paginate": true,
+            "bLengthChange": true,
+            "bFilter": true,
+            "bInfo": true,
             "autoWidth": false,
             "columns": [
                 { 
@@ -297,8 +297,8 @@ $(document).ready(function(){
                         // Check if this is the selected leader
                         var isLeader = selectedLeader === rows["employee_id"];
                         
-                        return `<div style="padding-bottom:30px;padding-left:30px;padding-right:60px;width:200px;">
-                                    <td><input type="checkbox" class="form-check-input leader-checkbox" id="${rows["employee_id"]}" ${isLeader ? 'checked' : ''}></td>
+                        return `<div class="text-center" style="display:flex; justify-content:center; align-items:center;">
+                                    <input type="checkbox" class="leader-checkbox" id="${rows["employee_id"]}" ${isLeader ? 'checked' : ''} style="transform:scale(1.2); cursor:pointer;">
                                 </div>`;
                     }   
                 }
