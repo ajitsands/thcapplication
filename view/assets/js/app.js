@@ -480,6 +480,44 @@ var App = function () {
         });
     };
 
+    // Global DataTable Dropdown Overflow Fix
+    var _initDataTableDropdowns = function() {
+        // Automatically set data-boundary="window" on table dropdown toggles
+        $(document).on('click', '.table [data-toggle="dropdown"], .dataTables_wrapper [data-toggle="dropdown"], .list-icons [data-toggle="dropdown"]', function() {
+            var $toggle = $(this);
+            if (!$toggle.attr('data-boundary')) {
+                $toggle.attr('data-boundary', 'window');
+            }
+        });
+
+        // Smart dynamic repositioning / dropup for table dropdowns near the bottom of viewport
+        $(document).on('show.bs.dropdown', '.table .dropdown, .dataTables_wrapper .dropdown, .list-icons .dropdown', function(e) {
+            var $dropdown = $(this);
+            var $menu = $dropdown.find('.dropdown-menu');
+            var $toggle = $dropdown.find('[data-toggle="dropdown"]');
+            
+            $menu.css({ 'z-index': 999999 });
+
+            var toggleOffset = $toggle.offset();
+            if (!toggleOffset) return;
+
+            var windowHeight = $(window).height();
+            var scrollTop = $(window).scrollTop();
+            var spaceBelow = windowHeight - (toggleOffset.top - scrollTop) - $toggle.outerHeight();
+            var menuHeight = $menu.outerHeight() || 180;
+
+            if (spaceBelow < menuHeight && (toggleOffset.top - scrollTop) > menuHeight) {
+                $dropdown.addClass('dropup');
+            } else {
+                $dropdown.removeClass('dropup');
+            }
+        });
+
+        $(document).on('hidden.bs.dropdown', '.table .dropdown, .dataTables_wrapper .dropdown, .list-icons .dropdown', function() {
+            $(this).removeClass('dropup');
+        });
+    };
+
 
     //
     // Return objects assigned to module
@@ -555,6 +593,7 @@ var App = function () {
             App.initCardActions();
             App.initDropdownSubmenu();
             App.initHeaderElementsToggle();
+            _initDataTableDropdowns();
         }
     }
 }();

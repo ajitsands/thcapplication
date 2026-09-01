@@ -47,7 +47,7 @@ body {
     border: 1px solid #d4e4f0 !important;
     box-shadow: var(--shadow-soft) !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     margin-bottom: 24px !important;
 }
 
@@ -563,3 +563,52 @@ table.dataTable tbody tr:hover {
     font-weight: 600 !important;
     font-size: 0.88rem !important;
 }
+
+/* ==========================================================================
+   GLOBAL DATATABLE & ACTION DROPDOWN OVERFLOW FIX (ALL TABLES)
+   ========================================================================== */
+.card-body,
+.content-wrapper,
+.content,
+.tab-content,
+.tab-pane,
+.dataTables_wrapper,
+.datatable-scroll,
+.datatable-scroll-wrap,
+.datatable-scroll-lg,
+.dataTables_scroll,
+.dataTables_scrollBody,
+.table-responsive {
+    overflow: visible !important;
+}
+
+table.dataTable,
+.table {
+    border-collapse: collapse !important;
+}
+
+table.dataTable tbody tr td,
+.table tbody tr td {
+    overflow: visible !important;
+    position: relative;
+}
+
+/* Ensure all action dropdown menus appear above table footers, cards and modals */
+.table .dropdown-menu,
+table.dataTable .dropdown-menu,
+.dataTables_wrapper .dropdown-menu,
+.list-icons .dropdown-menu,
+.dropdown-menu[class*="dropdown-menu-"] {
+    z-index: 999999 !important;
+    box-shadow: 0 8px 24px rgba(0, 29, 57, 0.18) !important;
+}
+
+/* Keep table footer and pagination below active dropdowns */
+.datatable-footer,
+.dataTables_info,
+.dataTables_paginate,
+.pagination {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
