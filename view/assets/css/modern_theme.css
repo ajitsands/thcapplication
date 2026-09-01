@@ -395,6 +395,22 @@ table.dataTable tbody tr:hover {
     transition: background 0.15s ease !important;
 }
 
+.dataTables_wrapper .dataTables_info,
+.dataTables_info {
+    float: left !important;
+    padding-top: 10px !important;
+    font-size: 0.85rem !important;
+    color: #475569 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_paginate {
+    float: right !important;
+    text-align: right !important;
+    padding-top: 6px !important;
+    margin: 0 !important;
+}
+
 .paginate_button.current, 
 .paginate_button.current:hover {
     background: linear-gradient(135deg, #0A4174 0%, #49769F 100%) !important;

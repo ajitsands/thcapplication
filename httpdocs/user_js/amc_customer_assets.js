@@ -11,7 +11,7 @@ $(document).ready(function(){
 	var v_btn_edit_assets = $('#btn_edit_assets').ladda();
 	var v_btn_new_assets = $('#btn_new_assets').ladda();
 	
-	var v_list_of_customer_assets_details_table = $('#list_of_customer_assets_details').DataTable({});
+	var v_list_of_customer_assets_details_table = $('#list_of_customer_asset_details').DataTable({});
        load_data_to_grid_customer__assets_details_list();
     
 	

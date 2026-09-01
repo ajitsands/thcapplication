@@ -21,7 +21,7 @@ $OBJ->URLEncode('head=dashboard');
 	?>
 
 	<style>
-	    	td.details-control {
+	    td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
             cursor: pointer;
         }
@@ -29,6 +29,39 @@ $OBJ->URLEncode('head=dashboard');
             background: url('../httpdocs/images/minus.png') no-repeat center center;
         }
 
+        #list_of_customer_asset_details_wrapper .dataTables_length {
+            float: left !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            margin-bottom: 12px !important;
+        }
+        #list_of_customer_asset_details_wrapper .dataTables_filter {
+            float: right !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            text-align: right !important;
+            margin-bottom: 12px !important;
+        }
+        #list_of_customer_asset_details_wrapper .dataTables_filter label {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            margin-bottom: 0 !important;
+        }
+        #list_of_customer_asset_details_wrapper .dataTables_info {
+            float: left !important;
+            padding-top: 10px !important;
+        }
+        #list_of_customer_asset_details_wrapper .dataTables_paginate {
+            float: right !important;
+            text-align: right !important;
+            padding-top: 6px !important;
+        }
+        #list_of_customer_asset_details_wrapper:after {
+            content: "" !important;
+            display: table !important;
+            clear: both !important;
+        }
 	</style>
 	
 	
@@ -75,7 +108,6 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="global_assets/js/demo_pages/form_layouts.js"></script>
 	<!-- Data Table -->
 	<script src="global_assets/js/plugins/tables/datatables/datatables.min.js"></script>
-	<script src="global_assets/js/demo_pages/datatables_basic.js"></script>
 
     
 
@@ -115,8 +147,6 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="../httpdocs/user_js/location.js"></script>
 	<!--<script src="../httpdocs/user_js/customer_location.js"></script>-->
 	<script src="../httpdocs/user_js/login.js"></script>
-	
-	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
 
     
  <script type="text/javascript">
