@@ -334,21 +334,19 @@
 									<h6 class="font-weight-semibold mb-0"><i class="icon-users4 mr-2"></i> List of Employee Types</h6>
 								</div>
 
-								<div class="table-responsive">
-									<table class="table table-bordered table-striped table-hover" id="tbl_employee_types" style="width:100%;">
-										<thead>
-											<tr>
-												<th style="width: 60px; text-align:center;">Sl. No.</th>
-												<th>Employee Type Name</th>
-												<th>Description</th>
-												<th style="width: 170px; text-align:center;">Assigned Employees</th>
-												<th style="width: 110px; text-align:center;">Status</th>
-												<th style="width: 100px; text-align:center;">Action</th>
-											</tr>
-										</thead>
-										<tbody></tbody>
-									</table>
-								</div>
+								<table class="table datatable-selection-single" id="tbl_employee_types" style="width:100%;">
+									<thead>
+										<tr>
+											<th style="width: 60px; text-align:center;">Sl. No.</th>
+											<th>Employee Type Name</th>
+											<th>Description</th>
+											<th style="width: 170px; text-align:center;">Assigned Employees</th>
+											<th style="width: 110px; text-align:center;">Status</th>
+											<th style="width: 100px; text-align:center;">Action</th>
+										</tr>
+									</thead>
+									<tbody></tbody>
+								</table>
 							</div>
 						</div>
 					</div>

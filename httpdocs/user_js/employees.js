@@ -527,7 +527,7 @@ $(document).ready(function(){
                         
         });
 
-        $(document).on('show.bs.dropdown', '#list_of_employees .dropdown', function () {
+        $(document).on('show.bs.dropdown', '#list_of_employees .dropdown, #tbl_employee_types .dropdown', function () {
             var $dropdown = $(this);
             var $toggle = $dropdown.find('[data-toggle="dropdown"]');
             if ($toggle.length) {
@@ -1285,7 +1285,7 @@ $(document).ready(function(){
                     render: function(data, type, row) {
                         var count = parseInt(row.assigned_count) || 0;
                         var dropdownHTML = '<div class="list-icons"><div class="dropdown">' +
-                            '<a href="#" class="list-icons-item" data-toggle="dropdown" style="color: #2196f3;"><i class="icon-menu9"></i></a>' +
+                            '<a href="#" class="list-icons-item" data-toggle="dropdown" data-boundary="window" style="color: info;"><i class="icon-menu9"></i></a>' +
                             '<div class="dropdown-menu dropdown-menu-right">' +
                             '<a href="#" class="dropdown-item name_Type_Edit" style="color: #ff9800;"><i class="icon-database-edit2 mr-2"></i>Edit</a>';
                         
