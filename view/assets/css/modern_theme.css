@@ -600,7 +600,21 @@ table.dataTable .dropdown-menu,
 .list-icons .dropdown-menu,
 .dropdown-menu[class*="dropdown-menu-"] {
     z-index: 999999 !important;
-    box-shadow: 0 8px 24px rgba(0, 29, 57, 0.18) !important;
+    box-shadow: 0 8px 24px rgba(0, 29, 57, 0.22) !important;
+    border: 1px solid #c2daeb !important;
+}
+
+/* Stacking order: active dropdown row & table-responsive sit above datatable-footer */
+.table-responsive,
+.datatable-scroll-wrap {
+    position: relative !important;
+    z-index: 5 !important;
+}
+
+.table tbody tr.dropdown-open,
+.table tbody tr:has(.dropdown.show) {
+    position: relative !important;
+    z-index: 1000 !important;
 }
 
 /* Keep table footer and pagination below active dropdowns */
@@ -612,12 +626,5 @@ table.dataTable .dropdown-menu,
     z-index: 1 !important;
 }
 
-/* Dropup position styling for tables */
-.dropup .dropdown-menu {
-    top: auto !important;
-    bottom: 100% !important;
-    margin-bottom: 4px !important;
-    margin-top: 0 !important;
-}
 
 

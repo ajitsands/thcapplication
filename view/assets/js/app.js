@@ -480,62 +480,35 @@ var App = function () {
         });
     };
 
-    // Global DataTable Dropdown Overflow & Dropup Fix
+    // Global DataTable Dropdown Overflow & Stacking Fix
     var _initDataTableDropdowns = function() {
-        // Intelligently detect position on click/mousedown to apply dropup before Popper renders
-        $(document).on('mousedown click', '.table [data-toggle="dropdown"], .dataTables_wrapper [data-toggle="dropdown"], .list-icons [data-toggle="dropdown"]', function() {
+        // Ensure data-boundary="window" is set on all table dropdown toggles
+        $(document).on('click', '.table [data-toggle="dropdown"], .dataTables_wrapper [data-toggle="dropdown"], .list-icons [data-toggle="dropdown"]', function() {
             var $toggle = $(this);
-            var $dropdown = $toggle.closest('.dropdown');
-            var $tr = $toggle.closest('tr');
-            var $tbody = $tr.closest('tbody');
-            var totalRows = $tbody.find('tr').length;
-            var rowIndex = $tr.index();
-
-            // Set data-boundary if not present
             if (!$toggle.attr('data-boundary')) {
                 $toggle.attr('data-boundary', 'window');
             }
-
-            // If the row is in the last 3 rows of any table with > 1 row
-            if (rowIndex >= totalRows - 3 && totalRows > 1) {
-                $dropdown.addClass('dropup');
-                return;
-            }
-
-            var toggleOffset = $toggle.offset();
-            if (toggleOffset) {
-                var windowHeight = $(window).height();
-                var scrollTop = $(window).scrollTop();
-                var spaceBelow = windowHeight - (toggleOffset.top - scrollTop) - $toggle.outerHeight();
-                if (spaceBelow < 250) {
-                    $dropdown.addClass('dropup');
-                } else {
-                    $dropdown.removeClass('dropup');
-                }
-            }
         });
 
-        // Ensure high z-index when shown
+        // When dropdown opens, raise the row & table-responsive above datatable-footer
         $(document).on('show.bs.dropdown', function(e) {
-            var $target = $(e.target);
-            var $dropdown = $target.closest('.dropdown');
+            var $dropdown = $(e.target).closest('.dropdown');
             var $menu = $dropdown.find('.dropdown-menu');
-            $menu.css({ 'z-index': 999999 });
-
             var $tr = $dropdown.closest('tr');
-            if ($tr.length) {
-                var $tbody = $tr.closest('tbody');
-                var totalRows = $tbody.find('tr').length;
-                var rowIndex = $tr.index();
-                if (rowIndex >= totalRows - 3 && totalRows > 1) {
-                    $dropdown.addClass('dropup');
-                }
-            }
+            var $responsive = $dropdown.closest('.table-responsive, .datatable-scroll-wrap');
+
+            $menu.css({ 'z-index': 999999 });
+            $tr.addClass('dropdown-open').css({ 'position': 'relative', 'z-index': 1000 });
+            $responsive.css({ 'position': 'relative', 'z-index': 500, 'overflow': 'visible' });
         });
 
         $(document).on('hidden.bs.dropdown', function(e) {
             var $dropdown = $(e.target).closest('.dropdown');
-            $dropdown.removeClass('dropup');
+            var $tr = $dropdown.closest('tr');
+            var $responsive = $dropdown.closest('.table-responsive, .datatable-scroll-wrap');
+
+            $tr.removeClass('dropdown-open').css({ 'position': '', 'z-index': '' });
+            $responsive.css({ 'z-index': '' });
         });
     };
 

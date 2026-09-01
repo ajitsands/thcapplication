@@ -59,15 +59,19 @@ $OBJ->URLEncode('head=dashboard');
         #tab_employee_type .datatable-scroll-wrap {
             overflow: visible !important;
         }
+        .table-responsive,
+        .datatable-scroll-wrap {
+            position: relative !important;
+            z-index: 5 !important;
+        }
+        .table tbody tr.dropdown-open,
+        .table tbody tr:has(.dropdown.show) {
+            position: relative !important;
+            z-index: 1000 !important;
+        }
         .datatable-footer {
             position: relative !important;
             z-index: 1 !important;
-        }
-        .dropup .dropdown-menu {
-            top: auto !important;
-            bottom: 100% !important;
-            margin-bottom: 4px !important;
-            margin-top: 0 !important;
         }
 
         /* FullCalendar Navigation Buttons & Icons */
