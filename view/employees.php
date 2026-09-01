@@ -39,12 +39,25 @@ $OBJ->URLEncode('head=dashboard');
         .table-responsive {
             overflow: visible !important;
         }
-        #list_of_employees tbody tr td {
+        #list_of_employees tbody tr td,
+        #tbl_employee_types tbody tr td,
+        #tbl_employee_attachments tbody tr td {
             overflow: visible !important;
+            position: relative;
         }
-        #list_of_employees .dropdown-menu {
+        #list_of_employees .dropdown-menu,
+        #tbl_employee_types .dropdown-menu,
+        #tbl_employee_attachments .dropdown-menu {
             z-index: 999999 !important;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+        }
+        #tab_employee_type,
+        #tab_employee_type .card-body,
+        #tab_employee_type .table-responsive,
+        #tab_employee_type .dataTables_wrapper,
+        #tab_employee_type .datatable-scroll,
+        #tab_employee_type .datatable-scroll-wrap {
+            overflow: visible !important;
         }
         .datatable-footer {
             position: relative !important;
