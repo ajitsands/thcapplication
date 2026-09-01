@@ -59,8 +59,24 @@ class EmployeeTypeController
                     break;
                 }
 
-                $sql = "INSERT INTO `tbl_user_types` (`user_type_name`, `user_type_description`, `user_type_status`) 
-                        VALUES ('$this->employee_type_name', '$this->employee_type_description', 'Active')";
+                $chk_desc = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_description'");
+                if (!$chk_desc || mysqli_num_rows($chk_desc) == 0) {
+                    @mysqli_query($this->varDBConnection, "ALTER TABLE `tbl_user_types` ADD `user_type_description` text DEFAULT NULL");
+                }
+                $chk_status = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_status'");
+                if (!$chk_status || mysqli_num_rows($chk_status) == 0) {
+                    @mysqli_query($this->varDBConnection, "ALTER TABLE `tbl_user_types` ADD `user_type_status` varchar(50) DEFAULT 'Active'");
+                }
+
+                $chk_desc_final = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_description'");
+                if ($chk_desc_final && mysqli_num_rows($chk_desc_final) > 0) {
+                    $sql = "INSERT INTO `tbl_user_types` (`user_type_name`, `user_type_description`, `user_type_status`) 
+                            VALUES ('$this->employee_type_name', '$this->employee_type_description', 'Active')";
+                } else {
+                    $sql = "INSERT INTO `tbl_user_types` (`user_type_name`, `user_type_status`) 
+                            VALUES ('$this->employee_type_name', 'Active')";
+                }
+
                 $res = mysqli_query($this->varDBConnection, $sql);
                 if ($res) {
                     echo "Success";
@@ -70,11 +86,37 @@ class EmployeeTypeController
                 break;
 
             case 'list_employee_types':
+                $has_desc = false;
+                $chk_desc = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_description'");
+                if ($chk_desc && mysqli_num_rows($chk_desc) > 0) {
+                    $has_desc = true;
+                } else {
+                    @mysqli_query($this->varDBConnection, "ALTER TABLE `tbl_user_types` ADD `user_type_description` text DEFAULT NULL");
+                    $chk_desc2 = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_description'");
+                    if ($chk_desc2 && mysqli_num_rows($chk_desc2) > 0) {
+                        $has_desc = true;
+                    }
+                }
+                $desc_col = $has_desc ? "COALESCE(ut.user_type_description, '')" : "''";
+
+                $has_status = false;
+                $chk_status = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_status'");
+                if ($chk_status && mysqli_num_rows($chk_status) > 0) {
+                    $has_status = true;
+                } else {
+                    @mysqli_query($this->varDBConnection, "ALTER TABLE `tbl_user_types` ADD `user_type_status` varchar(50) DEFAULT 'Active'");
+                    $chk_status2 = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_status'");
+                    if ($chk_status2 && mysqli_num_rows($chk_status2) > 0) {
+                        $has_status = true;
+                    }
+                }
+                $status_col = $has_status ? "COALESCE(ut.user_type_status, 'Active')" : "'Active'";
+
                 $sql = "SELECT 
                             ut.user_type_id, 
                             ut.user_type_name, 
-                            COALESCE(ut.user_type_description, '') AS user_type_description,
-                            COALESCE(ut.user_type_status, 'Active') AS user_type_status,
+                            $desc_col AS user_type_description,
+                            $status_col AS user_type_status,
                             (SELECT COUNT(*) FROM tbl_employees WHERE employee_type_id = ut.user_type_id) AS assigned_count
                         FROM tbl_user_types ut
                         ORDER BY ut.user_type_id DESC";
@@ -93,10 +135,18 @@ class EmployeeTypeController
                     break;
                 }
 
-                $sql = "UPDATE `tbl_user_types` SET 
-                        `user_type_name` = '$this->employee_type_name', 
-                        `user_type_description` = '$this->employee_type_description' 
-                        WHERE `user_type_id` = $this->employee_type_id";
+                $chk_desc = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_description'");
+                if ($chk_desc && mysqli_num_rows($chk_desc) > 0) {
+                    $sql = "UPDATE `tbl_user_types` SET 
+                            `user_type_name` = '$this->employee_type_name', 
+                            `user_type_description` = '$this->employee_type_description' 
+                            WHERE `user_type_id` = $this->employee_type_id";
+                } else {
+                    $sql = "UPDATE `tbl_user_types` SET 
+                            `user_type_name` = '$this->employee_type_name' 
+                            WHERE `user_type_id` = $this->employee_type_id";
+                }
+
                 $res = mysqli_query($this->varDBConnection, $sql);
                 if ($res) {
                     // Also synchronize employee_type_name in tbl_employees for existing assigned employees
@@ -111,6 +161,11 @@ class EmployeeTypeController
                 if ($this->employee_type_id <= 0) {
                     echo "Invalid Employee Type ID.";
                     break;
+                }
+
+                $chk_status = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_status'");
+                if (!$chk_status || mysqli_num_rows($chk_status) == 0) {
+                    @mysqli_query($this->varDBConnection, "ALTER TABLE `tbl_user_types` ADD `user_type_status` varchar(50) DEFAULT 'Active'");
                 }
 
                 $new_status = ($this->employee_type_action == 'Active') ? 'Active' : 'Deactive';
@@ -130,7 +185,7 @@ class EmployeeTypeController
                 }
 
                 // Check if any employees are currently assigned
-                $chk_assigned = mysqli_query($this->varDBConnection, "SELECT COUNT(*) AS cnt FROM tbl_employees WHERE employee_type_id = $this->employee_type_id OR employee_type_name = (SELECT user_type_name FROM tbl_user_types WHERE user_type_id = $this->employee_type_id)");
+                $chk_assigned = mysqli_query($this->varDBConnection, "SELECT COUNT(*) AS cnt FROM tbl_employees WHERE employee_type_id = $this->employee_type_id");
                 $row_cnt = mysqli_fetch_assoc($chk_assigned);
                 $cnt = intval($row_cnt['cnt']);
 
@@ -149,7 +204,13 @@ class EmployeeTypeController
                 break;
 
             case 'get_active_employee_types':
-                $sql = "SELECT user_type_id, user_type_name, COALESCE(user_type_description, '') AS user_type_description FROM tbl_user_types WHERE user_type_status = 'Active' ORDER BY user_type_name ASC";
+                $has_status = false;
+                $chk_status = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_status'");
+                if ($chk_status && mysqli_num_rows($chk_status) > 0) {
+                    $sql = "SELECT user_type_id, user_type_name FROM tbl_user_types WHERE user_type_status = 'Active' ORDER BY user_type_name ASC";
+                } else {
+                    $sql = "SELECT user_type_id, user_type_name FROM tbl_user_types ORDER BY user_type_name ASC";
+                }
                 $res = mysqli_query($this->varDBConnection, $sql);
                 $types = array();
                 if ($res) {
