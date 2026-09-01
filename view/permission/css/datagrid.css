@@ -87,20 +87,22 @@ table.dataTable,
     z-index: 1000 !important;
 }
 
+table.dataTable tbody tr,
+.table tbody tr {
+    position: static;
+}
+
 table.dataTable tbody tr td,
 .table tbody tr td {
     overflow: visible !important;
-    position: relative;
 }
 
-table.dataTable tbody tr:hover,
-table.dataTable tbody tr:focus-within,
 table.dataTable tbody tr.dropdown-open,
-.table tbody tr:hover,
-.table tbody tr:focus-within,
-.table tbody tr.dropdown-open {
+table.dataTable tbody tr:has(.dropdown.show),
+.table tbody tr.dropdown-open,
+.table tbody tr:has(.dropdown.show) {
     position: relative !important;
-    z-index: 10000 !important;
+    z-index: 999999 !important;
 }
 
 .table .dropdown.show,

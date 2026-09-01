@@ -64,12 +64,13 @@ $OBJ->URLEncode('head=dashboard');
             position: relative !important;
             z-index: 1000 !important;
         }
-        .table tbody tr:hover,
-        .table tbody tr:focus-within,
+        .table tbody tr {
+            position: static;
+        }
         .table tbody tr.dropdown-open,
         .table tbody tr:has(.dropdown.show) {
             position: relative !important;
-            z-index: 10000 !important;
+            z-index: 999999 !important;
         }
         .table .dropdown.show,
         .list-icons .dropdown.show {
