@@ -565,8 +565,9 @@ table.dataTable tbody tr:hover {
 }
 
 /* ==========================================================================
-   GLOBAL DATATABLE & ACTION DROPDOWN OVERFLOW FIX (ALL TABLES)
+   GLOBAL DATATABLE & ACTION DROPDOWN STACKING FIX (ALL MODULES)
    ========================================================================== */
+.card,
 .card-body,
 .content-wrapper,
 .content,
@@ -582,9 +583,31 @@ table.dataTable tbody tr:hover {
     overflow: visible !important;
 }
 
+.dataTables_wrapper {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.table-responsive,
+.datatable-scroll-wrap,
+.datatable-scroll,
+.dataTables_scroll,
+.dataTables_scrollBody {
+    position: relative !important;
+    z-index: 999 !important;
+    overflow: visible !important;
+}
+
 table.dataTable,
 .table {
+    position: relative !important;
+    z-index: 1000 !important;
     border-collapse: collapse !important;
+}
+
+table.dataTable tbody tr,
+.table tbody tr {
+    position: relative !important;
 }
 
 table.dataTable tbody tr td,
@@ -593,37 +616,59 @@ table.dataTable tbody tr td,
     position: relative;
 }
 
+table.dataTable tbody tr:hover,
+table.dataTable tbody tr:focus-within,
+table.dataTable tbody tr.dropdown-open,
+.table tbody tr:hover,
+.table tbody tr:focus-within,
+.table tbody tr.dropdown-open {
+    position: relative !important;
+    z-index: 10000 !important;
+}
+
+.table .dropdown,
+table.dataTable .dropdown,
+.list-icons .dropdown {
+    position: relative !important;
+}
+
+.table .dropdown.show,
+table.dataTable .dropdown.show,
+.list-icons .dropdown.show {
+    position: relative !important;
+    z-index: 9999999 !important;
+}
+
 /* Ensure all action dropdown menus appear above table footers, cards and modals */
 .table .dropdown-menu,
 table.dataTable .dropdown-menu,
 .dataTables_wrapper .dropdown-menu,
 .list-icons .dropdown-menu,
+.dropdown-menu.show,
 .dropdown-menu[class*="dropdown-menu-"] {
-    z-index: 999999 !important;
-    box-shadow: 0 8px 24px rgba(0, 29, 57, 0.22) !important;
+    position: absolute !important;
+    z-index: 99999999 !important;
+    box-shadow: 0 10px 30px rgba(0, 29, 57, 0.28) !important;
     border: 1px solid #c2daeb !important;
 }
 
-/* Stacking order: active dropdown row & table-responsive sit above datatable-footer */
-.table-responsive,
-.datatable-scroll-wrap {
-    position: relative !important;
-    z-index: 5 !important;
-}
-
-.table tbody tr.dropdown-open,
-.table tbody tr:has(.dropdown.show) {
-    position: relative !important;
-    z-index: 1000 !important;
-}
-
-/* Keep table footer and pagination below active dropdowns */
+/* Keep table footer and pagination strictly in background plane */
 .datatable-footer,
-.dataTables_info,
-.dataTables_paginate,
-.pagination {
+.dataTables_wrapper > .datatable-footer,
+.dataTables_wrapper .datatable-footer,
+.card-footer {
     position: relative !important;
-    z-index: 1 !important;
+    z-index: 0 !important;
+    clear: both !important;
+}
+
+.datatable-footer .dataTables_paginate,
+.datatable-footer .dataTables_info,
+.datatable-footer .pagination,
+.datatable-footer .paginate_button,
+.datatable-footer .page-item,
+.datatable-footer .page-link {
+    z-index: 0 !important;
 }
 
 

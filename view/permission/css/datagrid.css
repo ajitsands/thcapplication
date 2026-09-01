@@ -51,7 +51,7 @@
     background-color: #C70039; /* Dark grey */
   }
 
-/* Global DataTable and Dropdown Overflow Fix */
+/* Global DataTable and Dropdown Stacking Fix */
 .card,
 .card-body,
 .content-wrapper,
@@ -68,28 +68,77 @@
     overflow: visible !important;
 }
 
+.dataTables_wrapper {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.table-responsive,
+.datatable-scroll-wrap,
+.datatable-scroll {
+    position: relative !important;
+    z-index: 999 !important;
+    overflow: visible !important;
+}
+
+table.dataTable,
+.table {
+    position: relative !important;
+    z-index: 1000 !important;
+}
+
 table.dataTable tbody tr td,
 .table tbody tr td {
     overflow: visible !important;
     position: relative;
 }
 
+table.dataTable tbody tr:hover,
+table.dataTable tbody tr:focus-within,
+table.dataTable tbody tr.dropdown-open,
+.table tbody tr:hover,
+.table tbody tr:focus-within,
+.table tbody tr.dropdown-open {
+    position: relative !important;
+    z-index: 10000 !important;
+}
+
+.table .dropdown.show,
+.list-icons .dropdown.show {
+    position: relative !important;
+    z-index: 9999999 !important;
+}
+
 .table .dropdown-menu,
 table.dataTable .dropdown-menu,
 .dataTables_wrapper .dropdown-menu,
 .list-icons .dropdown-menu,
+.dropdown-menu.show,
 .dropdown-menu[class*="dropdown-menu-"] {
-    z-index: 999999 !important;
-    box-shadow: 0 8px 24px rgba(0, 29, 57, 0.18) !important;
+    position: absolute !important;
+    z-index: 99999999 !important;
+    box-shadow: 0 10px 30px rgba(0, 29, 57, 0.28) !important;
+    border: 1px solid #c2daeb !important;
 }
 
 .datatable-footer,
-.dataTables_info,
-.dataTables_paginate,
-.pagination {
+.dataTables_wrapper > .datatable-footer,
+.dataTables_wrapper .datatable-footer,
+.card-footer {
     position: relative !important;
-    z-index: 1 !important;
+    z-index: 0 !important;
+    clear: both !important;
 }
+
+.datatable-footer .dataTables_paginate,
+.datatable-footer .dataTables_info,
+.datatable-footer .pagination,
+.datatable-footer .paginate_button,
+.datatable-footer .page-item,
+.datatable-footer .page-link {
+    z-index: 0 !important;
+}
+
 
   
   

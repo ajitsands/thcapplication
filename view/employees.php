@@ -45,33 +45,61 @@ $OBJ->URLEncode('head=dashboard');
             overflow: visible !important;
             position: relative;
         }
-        #list_of_employees .dropdown-menu,
-        #tbl_employee_types .dropdown-menu,
-        #tbl_employee_attachments .dropdown-menu {
-            z-index: 999999 !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
-        }
-        #tab_employee_type,
-        #tab_employee_type .card-body,
-        #tab_employee_type .table-responsive,
-        #tab_employee_type .dataTables_wrapper,
-        #tab_employee_type .datatable-scroll,
-        #tab_employee_type .datatable-scroll-wrap {
+        .dataTables_wrapper {
+            position: relative !important;
+            z-index: 1 !important;
             overflow: visible !important;
         }
         .table-responsive,
-        .datatable-scroll-wrap {
+        .datatable-scroll-wrap,
+        .datatable-scroll {
             position: relative !important;
-            z-index: 5 !important;
+            z-index: 999 !important;
+            overflow: visible !important;
         }
-        .table tbody tr.dropdown-open,
-        .table tbody tr:has(.dropdown.show) {
+        #list_of_employees,
+        #tbl_employee_types,
+        #tbl_employee_attachments,
+        .table {
             position: relative !important;
             z-index: 1000 !important;
         }
-        .datatable-footer {
+        .table tbody tr:hover,
+        .table tbody tr:focus-within,
+        .table tbody tr.dropdown-open,
+        .table tbody tr:has(.dropdown.show) {
             position: relative !important;
-            z-index: 1 !important;
+            z-index: 10000 !important;
+        }
+        .table .dropdown.show,
+        .list-icons .dropdown.show {
+            position: relative !important;
+            z-index: 9999999 !important;
+        }
+        #list_of_employees .dropdown-menu,
+        #tbl_employee_types .dropdown-menu,
+        #tbl_employee_attachments .dropdown-menu,
+        .table .dropdown-menu {
+            position: absolute !important;
+            z-index: 99999999 !important;
+            box-shadow: 0 10px 30px rgba(0,29,57,0.28) !important;
+            border: 1px solid #c2daeb !important;
+        }
+        .datatable-footer,
+        .dataTables_wrapper > .datatable-footer,
+        .dataTables_wrapper .datatable-footer,
+        .card-footer {
+            position: relative !important;
+            z-index: 0 !important;
+            clear: both !important;
+        }
+        .datatable-footer .dataTables_paginate,
+        .datatable-footer .dataTables_info,
+        .datatable-footer .pagination,
+        .datatable-footer .paginate_button,
+        .datatable-footer .page-item,
+        .datatable-footer .page-link {
+            z-index: 0 !important;
         }
 
         /* FullCalendar Navigation Buttons & Icons */
