@@ -190,7 +190,7 @@ $OBJ->URLEncode('head=dashboard');
    	<script src="global_assets/js/fileupload_ns.js"></script>
     <script src="../httpdocs/user_js/calender/moment.min.js"></script>
     <script src="../httpdocs/user_js/calender/fullcalendar.min.js"></script>
-	<script src="../httpdocs/user_js/employees.js"></script>
+	<script src="../httpdocs/user_js/employees.js?v=2.2"></script>
 </head>
     <?PHP 
 		include_once('template/date_time.inc');
