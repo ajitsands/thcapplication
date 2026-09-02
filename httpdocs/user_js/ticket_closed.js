@@ -742,7 +742,7 @@ $(document).ready(function(){
 	    {
 	        img_to_load='default.jpg';
 	    }
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_close_image/';
+	    var filePath='../httpdocs/images/ticket_close_image/';
 	    window.open(filePath + img_to_load );
 	});            
 				 

@@ -1083,7 +1083,7 @@ $(document).ready(function() {
 	$("#hidden_image_show").val('default.jpg');
 	$("#i_image").click(function(){
 	    var img_to_load=$("#hidden_image_show").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
 	
@@ -1096,7 +1096,7 @@ $(document).ready(function() {
 	$("#hidden_image_show2").val('default.jpg');
 	$("#i_image2").click(function(){
 	    var img_to_load=$("#hidden_image_show2").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
     var v_btn_new_ticket = $('#btn_new_ticket').ladda(); 

@@ -836,7 +836,7 @@ $(document).ready(function(){
 	});
 		$("#i_image1").click(function(){
 	    var img_to_load=$("#txt_hidden_ticket_image").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
 	
@@ -872,7 +872,7 @@ $(document).ready(function(){
 	});
 		$("#i_image3").click(function(){
 	    var img_to_load=$("#txt_hidden_ticket_image3").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
       
@@ -1969,7 +1969,7 @@ function load_asset_combo_add_entries()
 	
 	$("#i_image_add_entries").click(function(){
 	    var img_to_load=$("#hidden_image_show_add_entries").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
 	
@@ -2005,7 +2005,7 @@ function load_asset_combo_add_entries()
 	
 	$("#i_image_add_entries2").click(function(){
 	    var img_to_load=$("#hidden_image_show_add_entries2").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
     var v_btn_book_ticket_add_entries = $('#btn_submit_new_tkt_entries').ladda(); 

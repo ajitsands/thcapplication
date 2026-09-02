@@ -31,7 +31,7 @@ class ticketController
         
         
         $this->ticket_count=$_POST['ticket_count'];
-        $this->domain_path="http://thc.sianlab.com/httpdocs/";
+        $this->domain_path="../httpdocs/";
         $this->service_report_no = $this->varDBConnection->real_escape_string($_POST['service_report_no']);
         
          

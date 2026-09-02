@@ -107,9 +107,9 @@ $OBJ->URLEncode('head=dashboard');
 
 	<script src="../httpdocs/spinner/spinner.js"></script>
 	<!--<script src="../httpdocs/user_js/ticket_customer.js"></script>-->
-    <script src="../httpdocs/user_js/ticket.js"></script>
+    <script src="../httpdocs/user_js/ticket.js?v=<?= time() ?>"></script>
 	<script src="../httpdocs/user_js/login.js"></script>
-	<script src="../httpdocs/user_js/ticket_pending_list.js"></script>
+	<script src="../httpdocs/user_js/ticket_pending_list.js?v=<?= time() ?>"></script>
 	
 	
 	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>

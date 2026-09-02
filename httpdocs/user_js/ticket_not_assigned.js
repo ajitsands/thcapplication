@@ -858,7 +858,7 @@ $(document).ready(function(){
 	});
 		$("#i_image1").click(function(){
 	    var img_to_load=$("#txt_hidden_ticket_image").val();
-	    var filePath='http://thc.sianlab.com/httpdocs/images/ticket_book_image/';
+	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
       
