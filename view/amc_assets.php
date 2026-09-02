@@ -142,7 +142,7 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="../httpdocs/barcode/jquery-barcode.js"></script>
 	<!--<script src="../httpdocs/barcode/jquery-barcode.min.js"></script>-->
 	
-	<script src="../httpdocs/user_js/amc_customer_assets.js"></script>
+	<script src="../httpdocs/user_js/amc_customer_assets.js?v=<?= time() ?>"></script>
 		<script src="../httpdocs/user_js/building.js"></script>
 	<script src="../httpdocs/user_js/location.js"></script>
 	<!--<script src="../httpdocs/user_js/customer_location.js"></script>-->

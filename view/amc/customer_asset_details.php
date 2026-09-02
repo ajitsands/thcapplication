@@ -69,17 +69,43 @@ if (!isset($varDBConnection) || !$varDBConnection) {
 										
 									</div>
 									<div class="col-lg-5 col-md-5 col-sm-11" id="div_category_select">	
-									
+									    <span class="form-text text-muted font-weight-bold"><font color="black">Asset Category&nbsp;<span style="color:red;">*</span> </font></span>
+                                        <select class="form-control form-control-select2" id="select_category" data-placeholder="Select Category" data-fouc tabindex=8>
+                                    	    <option value="Select Category">Select Category</option>
+                                    	    <?PHP 
+                                    	    if ($varDBConnection) {
+                                    	    	$result_cat_init = mysqli_query($varDBConnection,"select category_id,category_name from tbl_category where category_status='Active' order by category_name asc");
+                                    	    	if ($result_cat_init) {
+                                    	    		while($row_cat_i=mysqli_fetch_assoc($result_cat_init)) { ?>
+                                              <option value="<?PHP echo $row_cat_i['category_id']; ?>"><?PHP echo htmlspecialchars($row_cat_i['category_name']); ?></option>
+                                            <?PHP }
+                                    	    	}
+                                    	    }
+                                    	    ?>
+                                        </select>
 									</div>
 									<div class="col-lg-1 col-md-1 col-sm-1" style="padding-top:30px;" id="div_plus_category_add">
-								        <button type="button" class="btn btn-primary btn-sm" id="btn_add_category"  data-toggle="modal" data-target="#modal_category_add">+</button></td>
+								        <button type="button" class="btn btn-primary btn-sm" id="btn_add_category"  data-toggle="modal" data-target="#modal_category_add">+</button>
 								    </div>
 								    <input type="hidden" id="txt_asset_id">
 									<div class="col-lg-5 col-md-5 col-sm-11" id="div_asset_type_select">	
-									
-							       </div>
-								   <div class="col-lg-1 col-md-1 col-sm-1" style="padding-top:30px;" id="div_plus_asset_type_modal">
-								        <button type="button" class="btn btn-primary btn-sm" id="btn_add_asset_type"  data-toggle="modal" data-target="#modal_asset_type_add">+</button></td>
+									    <span class="form-text text-muted font-weight-bold"><font color="black">Select Asset Type&nbsp;<span style="color:red;">*</span> </font></span>
+                                        <select class="form-control form-control-select2 asset" id="select_asset_type" data-placeholder="Select Type" data-fouc tabindex=9>
+                                    	    <option value="Select Type">Select Asset Type</option>
+                                    	    <?PHP 
+                                    	    if ($varDBConnection) {
+                                    	    	$result_t_init = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from tbl_asset_type where asset_type_status='Active' order by asset_type_name asc");
+                                    	    	if ($result_t_init) {
+                                    	    		while($row_t_i=mysqli_fetch_assoc($result_t_init)) { ?>
+                                              <option value="<?PHP echo $row_t_i['asset_type_id']; ?>"><?PHP echo htmlspecialchars($row_t_i['asset_type_name']); ?></option>
+                                            <?PHP }
+                                    	    	}
+                                    	    }
+                                    	    ?>
+                                        </select>
+							        </div>
+								    <div class="col-lg-1 col-md-1 col-sm-1" style="padding-top:30px;" id="div_plus_asset_type_modal">
+								        <button type="button" class="btn btn-primary btn-sm" id="btn_add_asset_type"  data-toggle="modal" data-target="#modal_asset_type_add">+</button>
 								    </div> 	
 								    <div class="col-lg-6 col-md-6 col-sm-12" >
 							            <div class="form-group">
