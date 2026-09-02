@@ -233,10 +233,12 @@ $(document).ready(function(){
                                           return '<div align="center"><img src="../httpdocs/images/building_image/default.jpg" class="rounded-circle" style="width:38px;height:38px;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.08);"/></div>';
                                       }
                                       var clean = raw.split('\\').pop().split('/').pop();
-                                      var primarySrc = '../httpdocs/images/building_image/' + clean;
-                                      var fallbackSrc = '../httpdocs/images/' + clean;
+                                      var sanitized = clean.replace(/[^a-zA-Z0-9._-]/g, '_');
+                                      var primarySrc = '../httpdocs/images/building_image/' + sanitized;
+                                      var rawSrc = '../httpdocs/images/building_image/' + encodeURIComponent(clean);
+                                      var fallbackSrc = '../httpdocs/images/' + sanitized;
                                       var defaultSrc = '../httpdocs/images/building_image/default.jpg';
-                                      return '<div align="center"><img src="' + primarySrc + '" onerror="if(this.getAttribute(\'data-tried-root\')!==\'1\'){this.setAttribute(\'data-tried-root\',\'1\');this.src=\'' + fallbackSrc + '\';}else{this.onerror=null;this.src=\'' + defaultSrc + '\';}" class="rounded-circle" style="width:38px;height:38px;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.08);"/></div>';
+                                      return '<div align="center"><img src="' + primarySrc + '" onerror="if(this.getAttribute(\'data-step\')!==\'1\'){this.setAttribute(\'data-step\',\'1\');this.src=\'' + rawSrc + '\';}else if(this.getAttribute(\'data-step\')===\'1\'){this.setAttribute(\'data-step\',\'2\');this.src=\'' + fallbackSrc + '\';}else{this.onerror=null;this.src=\'' + defaultSrc + '\';}" class="rounded-circle" style="width:38px;height:38px;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.08);"/></div>';
                                   }
                                 },
                                  { "data": "building_name",
@@ -417,9 +419,19 @@ $(document).ready(function(){
                                 $("#select_location_for_customer_location").val(customer_location_data.location_id).trigger("change");
                                 
                                
-                                 $("#txt_contact_person_building_code").val(customer_location_data.building_code);
-                                $('#building_img_name').text(customer_location_data.building_image);
-                                $("#building_img_preview").html("<img style='width:60px;height:60px;'src='../httpdocs/images/building_image/"+$.trim(customer_location_data.building_image)+"'>");
+                                 var rawImg = $.trim(customer_location_data.building_image || '');
+                                 var cleanImg = rawImg.split('\\').pop().split('/').pop();
+                                 var sanitizedImg = cleanImg.replace(/[^a-zA-Z0-9._-]/g, '_');
+                                 $('#building_img_name').text(sanitizedImg || cleanImg);
+                                 if (sanitizedImg && sanitizedImg !== 'null' && sanitizedImg !== 'NA' && sanitizedImg !== 'default.jpg') {
+                                     var primaryP = '../httpdocs/images/building_image/' + sanitizedImg;
+                                     var rawP = '../httpdocs/images/building_image/' + encodeURIComponent(cleanImg);
+                                     var fallbackP = '../httpdocs/images/' + sanitizedImg;
+                                     var defaultP = '../httpdocs/images/building_image/default.jpg';
+                                     $("#building_img_preview").html("<img style='width:38px;height:38px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='" + primaryP + "' onerror=\"if(this.getAttribute('data-step')!=='1'){this.setAttribute('data-step','1');this.src='" + rawP + "';}else if(this.getAttribute('data-step')==='1'){this.setAttribute('data-step','2');this.src='" + fallbackP + "';}else{this.onerror=null;this.src='" + defaultP + "';}\">");
+                                 } else {
+                                     $("#building_img_preview").html("<img style='width:38px;height:38px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='../httpdocs/images/building_image/default.jpg'>");
+                                 }
                                 
                             }
                             

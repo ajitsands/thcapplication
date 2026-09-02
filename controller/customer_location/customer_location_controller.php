@@ -25,7 +25,13 @@ class apartmentController
         $this->contact_person_building_code = strtoupper($_POST['v_contact_person_building_code']);
          $this->location_name_customer_location_code = strtoupper($_POST['v_location_name_customer_location_code']);
          $this->customer_name_customer_location_code = strtoupper($_POST['v_customer_name_customer_location_code']);
-         $this->building_image =$_POST['v_building_image'];
+         $raw_img = isset($_POST['v_building_image']) ? trim($_POST['v_building_image']) : '';
+         if (!empty($raw_img) && $raw_img != 'null' && $raw_img != 'NA') {
+             $clean_img = basename(str_replace('\\', '/', $raw_img));
+             $this->building_image = preg_replace('/[^a-zA-Z0-9._-]/', '_', $clean_img);
+         } else {
+             $this->building_image = 'default.jpg';
+         }
         
         
         
