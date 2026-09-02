@@ -419,6 +419,7 @@ $(document).ready(function(){
                                 $("#select_location_for_customer_location").val(customer_location_data.location_id).trigger("change");
                                 
                                
+                                 $("#txt_contact_person_building_code").val(customer_location_data.building_code);
                                  var rawImg = $.trim(customer_location_data.building_image || '');
                                  var cleanImg = rawImg.split('\\').pop().split('/').pop();
                                  var sanitizedImg = cleanImg.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -457,7 +458,7 @@ $(document).ready(function(){
                                 var v_customer_name_customer_location=$("#select_customer_for_customer_location option:selected").text();
                                 var v_location_id_customer_location=$("#select_location_for_customer_location option:selected").val();
                                 var v_location_name_customer_location=$("#select_location_for_customer_location option:selected").text();
-                                v_location_name_customer_location_dis=v_location_name_customer_location.split("--");
+                                var v_location_name_customer_location_dis=v_location_name_customer_location.split("--");
                                 //alert(v_location_name_customer_location);
                                 v_location_name_customer_location=v_location_name_customer_location_dis[1];
                                 v_location_name_customer_location_code=v_location_name_customer_location_dis[0];
@@ -466,12 +467,14 @@ $(document).ready(function(){
                                 var v_contact_person_name_customer_location=$("#txt_contact_person_name").val();
                                 var v_contact_person_number_customer_location=$("#txt_contact_person_number_build").val();
                                 var v_customer_location_id=$("#txt_customer_location_id").val();
-                               var v_saved_img = $.trim($('#building_img_name').text());
-                               if (!v_saved_img || v_saved_img === "" || v_saved_img === "null" || v_saved_img.indexOf('fakepath') !== -1) {
-                                   v_saved_img = "default.jpg";
-                               }
-                               v_session_image = v_saved_img;
-                               if($.trim(v_customer_location_id)===""|| $.trim(v_customer_name_customer_location)===""|| $.trim(v_location_name_customer_location)===""||$.trim(v_building_name_customer_location)===""||typeof v_customer_id_customer_location === "undefined"||typeof v_location_id_customer_location === "undefined")
+                                var v_contact_person_building_code=$('#txt_contact_person_building_code').val();
+                                var v_customer_location_status = 'Active';
+                                var v_saved_img = $.trim($('#building_img_name').text());
+                                if (!v_saved_img || v_saved_img === "" || v_saved_img === "null" || v_saved_img.indexOf('fakepath') !== -1) {
+                                    v_saved_img = "default.jpg";
+                                }
+                                v_session_image = v_saved_img;
+                                if($.trim(v_customer_location_id)===""|| $.trim(v_customer_name_customer_location)===""|| $.trim(v_location_name_customer_location)===""||$.trim(v_building_name_customer_location)===""||typeof v_customer_id_customer_location === "undefined"||typeof v_location_id_customer_location === "undefined")
                             
                             {
                                 swal("Warning","Please provide all the details ....", "warning");
@@ -484,22 +487,24 @@ $(document).ready(function(){
                                  $.post("../controller/customer_location/customer_location_controller.php",{action:'update_customer_location',v_customer_id_customer_location:v_customer_id_customer_location,v_customer_name_customer_location:v_customer_name_customer_location,v_location_id_customer_location:v_location_id_customer_location,v_location_name_customer_location:v_location_name_customer_location,v_building_name_customer_location:v_building_name_customer_location,v_building_address_customer_location:v_building_address_customer_location,v_contact_person_name_customer_location:v_contact_person_name_customer_location,v_contact_person_number_customer_location:v_contact_person_number_customer_location,v_customer_location_id:v_customer_location_id,v_customer_location_status:v_customer_location_status,v_contact_person_building_code:v_contact_person_building_code,v_building_image:v_session_image,v_location_name_customer_location_code:v_location_name_customer_location_code}
                                         , function(result,status)
                                         {
+                                            v_btn_customer_location_edit.ladda( 'stop' );
                                             console.log(result);
                                             result = $.trim(result);
                                             if(result.charAt(0)==='U')
                                             {
-                                                v_btn_customer_location_edit.ladda( 'stop' );
                                                 swal("Error", result, "error");
                                                 clear_text();
                                             }
                                             else 
                                             {
-                                                 v_btn_customer_location_edit.ladda( 'stop' );
                                                  swal("Success", "Customer location details updated successfully..", "success");
                                                  load_data_to_grid_customer_location_details_list();
                                                  clear_text();
 												 location.reload();
                                             }
+                                        }).fail(function() {
+                                            v_btn_customer_location_edit.ladda( 'stop' );
+                                            swal("Error", "Server error while updating.", "error");
                                         });
                                 
                              }
