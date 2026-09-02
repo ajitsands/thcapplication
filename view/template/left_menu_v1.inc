@@ -46,9 +46,7 @@
 							<!--<li class="nav-item"><a href="employee_leave.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=17&title=employee_leave');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='17' ){ echo 'active';} ?>">Employee Leave</a></li>-->
 								<li class="nav-item"><a href="employee_report.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=3&title=employees');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='3'){ echo 'active';} ?>">Employee List</a></li>
 								<li class="nav-item"><a href="employee_expiry.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=18&title=employee_expiry');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='18' ){ echo 'active';} ?>">CPR/Visa Expiry</a></li>
-						
-						
-							
+								<li class="nav-item"><a href="employee_document_expiry.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=20&title=document_expiry');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='20' ){ echo 'active';} ?>">Document Expiry</a></li>
 							</ul>
 					</li>
 					<?php }?>

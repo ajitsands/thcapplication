@@ -70,6 +70,7 @@ function menuActive($p, $key, $val) {
           <li class="classEmployeesView"><a href="employee_leave.php?param=<?= $OBJ->URLEncode('head=hr&open=17&title=employee_leave') ?>" class="<?= menuActive($params,'open','17') ? 'active' : '' ?>"><i class="icon-calendar3"></i> Leave Scheduler</a></li>
           <li class="classEmployeesView"><a href="employee_report.php?param=<?= $OBJ->URLEncode('head=hr&open=3&title=employees') ?>" class="<?= menuActive($params,'open','3') ? 'active' : '' ?>"><i class="icon-list"></i> Employee List</a></li>
           <li class="classCPRAndVisaExpiryView"><a href="employee_expiry.php?param=<?= $OBJ->URLEncode('head=hr&open=18&title=employee_expiry') ?>" class="<?= menuActive($params,'open','18') ? 'active' : '' ?>"><i class="icon-alarm"></i> CPR/Visa Expiry</a></li>
+          <li class="classDocumentExpiryView classCPRAndVisaExpiryView"><a href="employee_document_expiry.php?param=<?= $OBJ->URLEncode('head=hr&open=20&title=document_expiry') ?>" class="<?= menuActive($params,'open','20') ? 'active' : '' ?>"><i class="icon-file-text2"></i> Document Expiry</a></li>
         </ul>
       </li>
 

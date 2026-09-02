@@ -129,6 +129,10 @@
 								case 'visa_expiry':
 									echo 'Expires';
 								break;
+								case 'document_expiry':
+								case 'employee_document_expiry':
+									echo 'Document Expiry Report';
+								break;
 								
 								default:
 								break;

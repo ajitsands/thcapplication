@@ -105,6 +105,14 @@ $params = [];
                         CPR/Visa Expiry
                     </a>
                 </li>
+                <li class="nav-item classDocumentExpiryView classCPRAndVisaExpiryView">
+                    <a
+                        href="employee_document_expiry.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=20&title=document_expiry');?>"
+                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='20' ){ echo 'active';} ?>"
+                    >
+                        Document Expiry
+                    </a>
+                </li>
             </ul>
         </li>
 <!--/HR Module-->
