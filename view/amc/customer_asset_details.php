@@ -1,3 +1,10 @@
+<?php
+if (!isset($varDBConnection) || !$varDBConnection) {
+    include_once __DIR__ . '/../../model/db_connection/connection.php';
+    $DBConn = new DBConnection();
+    $varDBConnection = $DBConn->ConnectToMYSQL();
+}
+?>
 <div class="card classCustomerAssetModify">
 					<div class="card-header header-elements-inline">
 						<h5 class="card-title">Add Customer Assets
@@ -383,12 +390,16 @@
                                      <select class="form-control form-control-select2" id="select_category_modal" data-placeholder="Select Category" data-fouc tabindex=1>
                                 	    <option value="select">Select Category</option>
                                 	    
-                                	    <?PHP 
-                                	    	$result_cat = mysqli_query($varDBConnection,"select category_id,category_name from  tbl_category where category_status='Active'");
-                                	    while($row_cat=mysqli_fetch_assoc($result_cat)) { ?>
-                                          <option value="<?PHP echo $row_cat['category_id']; ?>"><?PHP echo $row_cat['category_name']; ?></option>
-                                        
-                                        <?PHP } ?>
+                                 	    <?PHP 
+                                 	    if ($varDBConnection) {
+                                 	    	$result_cat = mysqli_query($varDBConnection,"select category_id,category_name from  tbl_category where category_status='Active' order by category_name asc");
+                                 	    	if ($result_cat) {
+                                 	    		while($row_cat=mysqli_fetch_assoc($result_cat)) { ?>
+                                           <option value="<?PHP echo $row_cat['category_id']; ?>"><?PHP echo $row_cat['category_name']; ?></option>
+                                         <?PHP }
+                                 	    	}
+                                 	    }
+                                 	    ?>
                                       </select>
                                      	
                                 </div>

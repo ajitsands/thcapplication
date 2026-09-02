@@ -961,19 +961,34 @@ function clear_text()
                                 			$("#div_category_select").html(data);
             								$("#select_category").select2();
     							});
-                                    
-                                }
-                                
+                                     load_category_modal_options();
+                                     
+                                 }
                                  
-                            
-                        });
+                                  
+                             
+                         });
+                         
                         
-                       
-                        
-                     }
-                  
-                });
-             var v_btn_asset_type_add = $('#btn_asset_type_add').ladda();
+                         
+                      }
+                   
+                 });
+
+              function load_category_modal_options() {
+                  $.post("../view/amc/category_combo_options.php", function(data) {
+                      if ($.trim(data) != "") {
+                          $("#select_category_modal").html(data);
+                      }
+                  });
+              }
+              $('#modal_asset_type_add').on('show.bs.modal', function() {
+                  if ($("#select_category_modal option").length <= 1) {
+                      load_category_modal_options();
+                  }
+              });
+
+              var v_btn_asset_type_add = $('#btn_asset_type_add').ladda();
               v_btn_asset_type_add.click(function(){
                     
                     v_btn_asset_type_add.ladda( 'start' );
