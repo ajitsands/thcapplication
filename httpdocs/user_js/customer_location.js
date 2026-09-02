@@ -228,8 +228,15 @@ $(document).ready(function(){
                                 { "data": "building_code","visible":false },
                                 { "data": "building_image",
                                   render: function ( data, type, rows, meta ) {
-                                      var imgName = (data && data !== 'null' && data !== 'NA' && data !== '' && data.indexOf('fakepath') === -1) ? $.trim(data) : 'default.jpg';
-                                      return '<div align="center"><img src="../httpdocs/images/building_image/' + imgName + '" onerror="this.onerror=null;this.src=\'../httpdocs/images/building_image/default.jpg\';" class="rounded-circle" style="width:38px;height:38px;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.08);"/></div>';
+                                      var raw = $.trim(data || '');
+                                      if (!raw || raw === 'null' || raw === 'NA' || raw === 'default.jpg') {
+                                          return '<div align="center"><img src="../httpdocs/images/building_image/default.jpg" class="rounded-circle" style="width:38px;height:38px;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.08);"/></div>';
+                                      }
+                                      var clean = raw.split('\\').pop().split('/').pop();
+                                      var primarySrc = '../httpdocs/images/building_image/' + clean;
+                                      var fallbackSrc = '../httpdocs/images/' + clean;
+                                      var defaultSrc = '../httpdocs/images/building_image/default.jpg';
+                                      return '<div align="center"><img src="' + primarySrc + '" onerror="if(this.getAttribute(\'data-tried-root\')!==\'1\'){this.setAttribute(\'data-tried-root\',\'1\');this.src=\'' + fallbackSrc + '\';}else{this.onerror=null;this.src=\'' + defaultSrc + '\';}" class="rounded-circle" style="width:38px;height:38px;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.08);"/></div>';
                                   }
                                 },
                                  { "data": "building_name",
