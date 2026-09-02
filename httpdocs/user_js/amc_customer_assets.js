@@ -34,29 +34,29 @@ $(document).ready(function(){
                       });    
 
      $('#assets_attachment').change(function (e) {
-					    attachment_upload('#assets_attachment',v_assets_attachment);
-                    });
-                    function attachment_upload(txt_param,v_attachment)
-            		 {
-            				v_attachment = $(txt_param).val();
-            				randomNum = Math.ceil(Math.random() * 999999);
-            			   
-            				if(v_attachment=="")
-            				{
-            				
-            					v_attachment="default.jpg";
-            				}
-            				else
-            				{
-            					var doc_file_obj = $(txt_param)[0].files[0];
-            					var upload = new ns.Upload(doc_file_obj);
-            					doc_file1= doc_file_obj.name;
-            					 doc_file1 = doc_file1.replace(/[^a-zA-Z0-9._-]/g, "_");
-            					 v_attachment=$.trim(randomNum+'_'+doc_file1);
-            					 attachments.push(v_attachment);
-            					var success = upload.doUpload("../httpdocs/user_upload/amc_attachements.php?random_no="+randomNum);
-            				} 
-            		 }
+		attachment_upload('#assets_attachment',v_assets_attachment);
+     });
+     function attachment_upload(txt_param,v_attachment)
+	 {
+			var fileInput = $(txt_param)[0];
+			if (fileInput && fileInput.files && fileInput.files[0])
+			{
+				var doc_file_obj = fileInput.files[0];
+				var randomNum = Math.ceil(Math.random() * 999999);
+				var doc_file1 = doc_file_obj.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+				v_attachment = $.trim(randomNum + '_' + doc_file1);
+				attachments.push(v_attachment);
+				$('#assets_img_name').text(v_attachment);
+				var upload = new ns.Upload(doc_file_obj, $(txt_param));
+				var success = upload.doUpload("../httpdocs/user_upload/amc_attachements.php?random_no="+randomNum, v_attachment);
+			}
+			else
+			{
+				v_attachment = "default.jpg";
+				$('#assets_img_name').text('');
+				$('#img_assets_preview').empty();
+			}
+	 }
     
     
  //fill combo_customer location

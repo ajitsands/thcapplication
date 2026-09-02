@@ -126,7 +126,7 @@ $OBJ->URLEncode('head=dashboard');
 	
 	<!-- sweet alert -->
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-    <script src="global_assets/js/fileupload_ns.js"></script>
+    <script src="global_assets/js/fileupload_ns.js?v=<?= time() ?>"></script>
 
 	<script src="global_assets/js/plugins/ui/moment/moment.min.js"></script>
 	<script src="global_assets/js/plugins/pickers/daterangepicker.js"></script>

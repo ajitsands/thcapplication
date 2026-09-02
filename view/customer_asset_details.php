@@ -49,7 +49,7 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="assets/js/ladda/ladda.jquery.min.js" type="text/javascript"></script>
 	<!-- sweet alert -->
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-    <script src="global_assets/js/fileupload_ns.js"></script>
+    <script src="global_assets/js/fileupload_ns.js?v=<?= time() ?>"></script>
  <!--   <script src="../httpdocs/user_js/building.js"></script>-->
 	<!--<script src="../httpdocs/user_js/location.js"></script>-->
 	<script src="../httpdocs/user_js/customer_location.js?v=<?= time() ?>"></script>

@@ -7,6 +7,9 @@ if ($_FILES['file']['error'] > 0) {
 } else {
 
     $folder = __DIR__ . '/../images/amc_attachements/';
+    if (!file_exists($folder)) {
+        mkdir($folder, 0777, true);
+    }
 
     $filename = preg_replace('/[^A-Za-z0-9._-]/', '_', $_FILES['file']['name']);
 

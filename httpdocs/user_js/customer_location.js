@@ -104,7 +104,7 @@ $(document).ready(function(){
                                  var doc_file1 = doc_file_obj.name.replace(/[^a-zA-Z0-9._-]/g, "_");
                                  v_session_image = $.trim(randomNum + '_' + doc_file1);
                                  $('#building_img_name').text(v_session_image);
-                                 var upload = new ns.Upload(doc_file_obj);
+                                 var upload = new ns.Upload(doc_file_obj, $("#session_image"));
                                  upload.doUpload("../httpdocs/user_upload/building_image_upload.php?random_no=" + randomNum, v_session_image);
                              } else {
                                  v_session_image = "default.jpg";
