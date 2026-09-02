@@ -768,9 +768,6 @@ function clear_text()
 						});
 					}
 				});
-					}
-					 
-				});
 				
 				 $('#txt_customer_name').blur(function() {
 			  
