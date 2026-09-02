@@ -100,8 +100,8 @@ $sql = "SELECT
     e.employee_contact_no,
     e.employee_status,
     e.cpr_no,
-    DATE_FORMAT(a.expiry_date, '%d/%m/%Y') AS formatted_expiry_date,
-    DATE_FORMAT(a.created_at, '%d/%m/%Y') AS formatted_created_at,
+    DATE_FORMAT(a.expiry_date, '%d-%m-%Y') AS formatted_expiry_date,
+    DATE_FORMAT(a.created_at, '%d-%m-%Y') AS formatted_created_at,
     DATEDIFF(a.expiry_date, CURDATE()) AS days_to_expire,
     CASE 
         WHEN a.expiry_date < CURDATE() THEN 'Expired'
@@ -114,246 +114,455 @@ WHERE $whereClause
 ORDER BY a.expiry_date ASC, e.employee_name ASC";
 
 $result = mysqli_query($varDBConnection, $sql);
+$doc_list = array();
+$total_expired = 0;
+$total_soon = 0;
+$total_valid = 0;
+
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $doc_list[] = $row;
+        $days = intval($row['days_to_expire']);
+        if ($days < 0) {
+            $total_expired++;
+        } elseif ($days <= 30) {
+            $total_soon++;
+        } else {
+            $total_valid++;
+        }
+    }
+}
+$total_documents = count($doc_list);
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Employee Document Expiry Report</title>
+    <title>Employee Document Expiry Report - Total (<?PHP echo $total_documents; ?>)</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style type="text/css">
-        body, td, th {
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
             font-family: 'Montserrat', sans-serif;
             font-style: normal;
-            font-size: 11px;
-            color: #000000;
+            font-size: 12px;
+            color: #1e293b;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 24px 0 40px 0;
         }
 
-        table.bordered-table, table.bordered-table th, table.bordered-table td {
-            border: 1px solid #4E4E4E;
+        .report-container {
+            width: 950px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 8px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        table.tbl-report {
+            width: 100%;
+            border: 1px solid #cbd5e1;
             border-collapse: collapse;
-            padding: 5px 6px;
+            margin-bottom: 20px;
+            background: #ffffff;
         }
 
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-        .text-right { text-align: right; }
+        table.tbl-report th {
+            background-color: #2e2e79 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            padding: 9px 10px;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            border: 1px solid #2e2e79;
+            vertical-align: middle;
+        }
+
+        table.tbl-report td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            vertical-align: middle;
+        }
+
+        table.tbl-report tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        table.tbl-report tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .badge-ref {
+            display: inline-block;
+            background-color: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-weight: 700;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .badge-doc-pill {
+            display: inline-block;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .badge-status-expired {
+            display: inline-block;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-weight: 700;
+            font-size: 10.5px;
+            text-transform: uppercase;
+        }
+
+        .badge-status-soon {
+            display: inline-block;
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-weight: 700;
+            font-size: 10.5px;
+            text-transform: uppercase;
+        }
+
+        .badge-status-valid {
+            display: inline-block;
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-weight: 600;
+            font-size: 10.5px;
+            text-transform: uppercase;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e2e79;
+            line-height: 1.2;
+        }
+
+        .stat-lbl {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-top: 2px;
+        }
 
         .btn-action {
-            display: inline-block;
-            padding: 6px 14px;
-            background-color: #2e2e79;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
+            background: #2e2e79;
+            color: #ffffff;
             border: none;
+            padding: 7px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            margin: 4px;
+            font-weight: 600;
+            font-size: 11.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: background-color 0.2s;
         }
+
         .btn-action:hover {
-            background-color: #1b1b50;
+            background: #1e1e59;
+            color: #ffffff;
         }
+
         .btn-excel {
-            background-color: #15803d;
+            background: #0f766e;
         }
+
         .btn-excel:hover {
-            background-color: #14532d;
+            background: #115e59;
+        }
+
+        .divFooter {
+            margin-top: 20px;
         }
 
         @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .report-container {
+                width: 100% !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
             .no-print {
                 display: none !important;
             }
-            div.divFooter {
+            .divFooter {
                 position: fixed;
                 bottom: 0;
+                width: 100%;
+            }
+            .page-break-inside-avoid {
+                page-break-inside: avoid;
+            }
+            body, table, td, th {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Print / Export Bar -->
-    <div class="no-print" style="text-align: right; padding: 10px 40px; background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1; margin-bottom: 15px;">
-        <button type="button" class="btn-action" onclick="window.print();">&#128438; Print Report</button>
-        <button type="button" class="btn-action btn-excel" onclick="fnExcelReport();">&#128190; Export to Excel</button>
+<div class="report-container">
+
+    <!-- Top Action Bar (No Print) -->
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+        <div style="font-size: 12px; color: #64748b;">
+            Document: <strong>Employee Document Expiry Report Summary</strong>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-action btn-excel" onclick="fnExcelReport();">
+                <span>&#128196;</span> Export to Excel
+            </button>
+            <button type="button" class="btn-action" onclick="window.print();">
+                <span>&#128438;</span> Print Report
+            </button>
+        </div>
     </div>
 
-    <!-- Header / Logo -->
-    <table align="center" style="border: none; width: 1000px;">
+    <!-- Brand & Report Header -->
+    <table style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 16px;">
         <tbody>
-            <tr style="border: none;">
-                <td style="border: none;" width="200">
-                    <img src="global_assets/images/backgrounds/thc_logo.png" height="70" width="70" alt="Logo" onerror="this.style.display='none';" />
-                </td>
-                <td style="border: none; text-align: center;" width="600">
-                    <h2 style="margin: 0; color: #1b2441; font-size: 18px; font-weight: 700;">EMPLOYEE DOCUMENT EXPIRY REPORT</h2>
-                    <div style="font-size: 11px; color: #555; margin-top: 4px;">
-                        <?php 
-                        if (!empty($filter_desc)) {
-                            echo "<b>Filtered By:</b> " . implode(" | ", $filter_desc);
-                        } else {
-                            echo "<b>All Document Expiries</b>";
-                        }
-                        ?>
-                    </div>
-                </td>
-                <td style="border: none; text-align: right; font-size: 11px; color: #555;" width="200">
-                    <b>Report Date:</b><br><?php echo date("d-m-Y H:i"); ?>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div style="height: 10px;"></div>
-
-    <!-- Main Table -->
-    <table align="center" width="1000" id="main_table" class="bordered-table">
-        <thead>
-            <tr bgcolor="#1b2441" style="color: #daa505; font-weight: bold; text-align: center;">
-                <th width="35">Sl.</th>
-                <th width="45">Pic</th>
-                <th width="75">Code</th>
-                <th width="160">Employee Name</th>
-                <th width="110">Designation / Type</th>
-                <th width="130">Document Name</th>
-                <th width="85">Expiry Date</th>
-                <th width="110">Days Remaining</th>
-                <th width="75">Status</th>
-                <th width="110">Remarks</th>
-                <th width="65">Emp Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            $count = 0;
-            $expired_total = 0;
-            $soon_total = 0;
-            $valid_total = 0;
-
-            if ($result && mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    $count++;
-                    $days = intval($row['days_to_expire']);
-                    
-                    if ($days < 0) {
-                        $expired_total++;
-                        $days_text = "<font color='red'><b>Expired " . abs($days) . " d ago</b></font>";
-                        $status_badge = "<font color='red'><b>Expired</b></font>";
-                    } elseif ($days == 0) {
-                        $soon_total++;
-                        $days_text = "<font color='orange'><b>Expires Today</b></font>";
-                        $status_badge = "<font color='orange'><b>Expiring</b></font>";
-                    } elseif ($days <= 30) {
-                        $soon_total++;
-                        $days_text = "<font color='#b45309'><b>" . $days . " days left</b></font>";
-                        $status_badge = "<font color='#b45309'><b>Expiring Soon</b></font>";
-                    } else {
-                        $valid_total++;
-                        $days_text = "<font color='green'>" . $days . " days left</font>";
-                        $status_badge = "<font color='green'>Valid</font>";
-                    }
-
-                    $empImg = (!empty($row['employee_image']) && $row['employee_image'] != 'null' && strpos($row['employee_image'], 'fakepath') === false) 
-                        ? trim($row['employee_image']) 
-                        : 'default.jpg';
-            ?>
             <tr>
-                <td class="text-center"><?php echo $count; ?></td>
-                <td class="text-center">
-                    <img src="../httpdocs/images/employee_image/<?php echo htmlspecialchars($empImg); ?>" width="35" height="35" style="border-radius: 50%; object-fit: cover;" alt="" onerror="this.src='../httpdocs/images/employee_image/default.jpg';" />
+                <td style="border: none; padding: 0; width: 50%; vertical-align: middle;">
+                    <img src="global_assets/images/logo_print.png" alt="THC Logo" style="max-height: 70px; height: auto;" />
                 </td>
-                <td class="text-center font-weight-bold"><b><?php echo htmlspecialchars($row['employee_code']); ?></b></td>
-                <td><b><?php echo htmlspecialchars($row['employee_name']); ?></b></td>
-                <td><?php echo htmlspecialchars($row['employee_type_name']); ?></td>
-                <td><b><?php echo htmlspecialchars($row['document_name']); ?></b></td>
-                <td class="text-center"><b><?php echo $row['formatted_expiry_date']; ?></b></td>
-                <td class="text-center"><?php echo $days_text; ?></td>
-                <td class="text-center"><?php echo $status_badge; ?></td>
-                <td style="font-size: 10px;"><?php echo !empty($row['remarks']) ? htmlspecialchars($row['remarks']) : '-'; ?></td>
-                <td class="text-center">
-                    <?php if ($row['employee_status'] == 'Active') { ?>
-                        <font color="green">Active</font>
-                    <?php } else { ?>
-                        <font color="red">Inactive</font>
+                <td style="border: none; padding: 0; width: 50%; text-align: right; vertical-align: middle;">
+                    <div style="font-size: 18px; font-weight: 700; color: #2e2e79; letter-spacing: 0.5px;">EMPLOYEE DOCUMENT EXPIRY REPORT</div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                        <b>Generated Date:</b> <?PHP echo date("d-m-Y h:i A"); ?>
+                    </div>
+                    <?php if (!empty($filter_desc)) { ?>
+                        <div style="font-size: 10.5px; color: #475569; margin-top: 2px;">
+                            <b>Filter:</b> <?PHP echo htmlspecialchars(implode(" | ", $filter_desc)); ?>
+                        </div>
                     <?php } ?>
                 </td>
             </tr>
-            <?php 
-                }
-            } else {
-            ?>
-            <tr>
-                <td colspan="11" class="text-center" style="padding: 20px; color: #888; font-style: italic;">
-                    No document expiry records found matching the specified criteria.
-                </td>
-            </tr>
-            <?php } ?>
         </tbody>
     </table>
 
-    <div style="height: 15px;"></div>
-
-    <!-- Summary Counts Table -->
-    <table align="center" width="1000" style="border: 1px solid #4E4E4E; border-collapse: collapse;">
-        <tr bgcolor="#f1f5f9">
-            <td style="padding: 8px; border: 1px solid #4E4E4E; font-weight: 600;" width="250">
-                Total Documents with Expiry: <b><?php echo $count; ?></b>
-            </td>
-            <td style="padding: 8px; border: 1px solid #4E4E4E; font-weight: 600; color: #b91c1c;" width="250">
-                Expired: <b><?php echo $expired_total; ?></b>
-            </td>
-            <td style="padding: 8px; border: 1px solid #4E4E4E; font-weight: 600; color: #b45309;" width="250">
-                Expiring in &le; 30 Days: <b><?php echo $soon_total; ?></b>
-            </td>
-            <td style="padding: 8px; border: 1px solid #4E4E4E; font-weight: 600; color: #15803d;" width="250">
-                Valid (> 30 Days): <b><?php echo $valid_total; ?></b>
-            </td>
-        </tr>
-    </table>
-
-    <div style="height: 25px;"></div>
-
-    <!-- Footer -->
-    <div class="divFooter" style="padding-top: 15px;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" width="1000" style="border: none; padding: 15px 0;">
-            <tr style="border: none; background-color: #f9df5c; padding: 15px;">
-                <td style="border: none; padding-left: 20px; font-size: 10px;" width="500">
-                    C.R. 88982-1, Bldg 155, Road 1703, Block 317<br>
-                    Entrance 144, Diplomatic Area, Kingdom of Bahrain
+    <!-- Quick Stats Cards (No Print / Subtle Print) -->
+    <table style="width: 100%; border: none; border-collapse: separate; border-spacing: 8px 0; margin-bottom: 18px;" class="page-break-inside-avoid">
+        <tbody>
+            <tr>
+                <td class="stat-box" style="width: 25%;">
+                    <div class="stat-num" style="color: #2e2e79;"><?PHP echo $total_documents; ?></div>
+                    <div class="stat-lbl">Total Documents</div>
                 </td>
-                <td style="border: none; text-align: right; padding-right: 20px; font-size: 10px;" width="500">
-                    Tele: <strong>+973 17 100 190</strong> Fax: +973 77 226 060<br>
-                    info@thc.com.bh <strong>www.thc.com.bh</strong>
+                <td class="stat-box" style="width: 25%;">
+                    <div class="stat-num" style="color: #b91c1c;"><?PHP echo $total_expired; ?></div>
+                    <div class="stat-lbl">Already Expired</div>
+                </td>
+                <td class="stat-box" style="width: 25%;">
+                    <div class="stat-num" style="color: #b45309;"><?PHP echo $total_soon; ?></div>
+                    <div class="stat-lbl">Expiring &le; 30 Days</div>
+                </td>
+                <td class="stat-box" style="width: 25%;">
+                    <div class="stat-num" style="color: #15803d;"><?PHP echo $total_valid; ?></div>
+                    <div class="stat-lbl">Valid (&gt; 30 Days)</div>
                 </td>
             </tr>
+        </tbody>
+    </table>
+
+    <!-- Main Data Table -->
+    <div id="main_table">
+        <table class="tbl-report">
+            <thead>
+                <tr>
+                    <th style="width: 35px; text-align: center;">SL</th>
+                    <th style="width: 45px; text-align: center;">Pic</th>
+                    <th style="width: 85px; text-align: left;">Emp. Code</th>
+                    <th style="text-align: left;">Employee Name</th>
+                    <th style="width: 120px; text-align: left;">Designation</th>
+                    <th style="width: 130px; text-align: left;">Document Name</th>
+                    <th style="width: 95px; text-align: center;">Expiry Date</th>
+                    <th style="width: 125px; text-align: center;">Days Remaining</th>
+                    <th style="width: 85px; text-align: center;">Status</th>
+                    <th style="width: 120px; text-align: left;">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?PHP 
+                if ($total_documents > 0) {
+                    $ctr = 1;
+                    foreach ($doc_list as $row_t) {
+                        $days = intval($row_t['days_to_expire']);
+                        
+                        if ($days < 0) {
+                            $days_badge = '<span class="badge-status-expired">Expired ' . abs($days) . ' d ago</span>';
+                            $status_badge = '<span class="badge-status-expired">Expired</span>';
+                        } elseif ($days == 0) {
+                            $days_badge = '<span class="badge-status-soon">Expires Today</span>';
+                            $status_badge = '<span class="badge-status-soon">Expiring</span>';
+                        } elseif ($days <= 30) {
+                            $days_badge = '<span class="badge-status-soon">' . $days . ' days left</span>';
+                            $status_badge = '<span class="badge-status-soon">Expiring Soon</span>';
+                        } else {
+                            $days_badge = '<span class="badge-status-valid">' . $days . ' days left</span>';
+                            $status_badge = '<span class="badge-status-valid">Valid</span>';
+                        }
+
+                        $emp_code = !empty($row_t['employee_code']) ? htmlspecialchars($row_t['employee_code']) : '';
+                        $emp_name = htmlspecialchars($row_t['employee_name']);
+                        $emp_type = !empty($row_t['employee_type_name']) ? htmlspecialchars($row_t['employee_type_name']) : '-';
+                        $doc_name_txt = htmlspecialchars($row_t['document_name']);
+                        $exp_date_txt = htmlspecialchars($row_t['formatted_expiry_date']);
+                        $remarks = !empty($row_t['remarks']) ? htmlspecialchars($row_t['remarks']) : '-';
+
+                        $empImg = (!empty($row_t['employee_image']) && $row_t['employee_image'] != 'null' && strpos($row_t['employee_image'], 'fakepath') === false) 
+                            ? trim($row_t['employee_image']) 
+                            : 'default.jpg';
+                        ?>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #64748b;"><?PHP echo $ctr; ?></td>
+                            <td style="text-align: center; padding: 4px;">
+                                <img src="../httpdocs/images/employee_image/<?PHP echo htmlspecialchars($empImg); ?>" width="32" height="32" style="border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1;" alt="" onerror="this.src='../httpdocs/images/employee_image/default.jpg';" />
+                            </td>
+                            <td>
+                                <span class="badge-ref"><?PHP echo $emp_code; ?></span>
+                            </td>
+                            <td>
+                                <strong><?PHP echo $emp_name; ?></strong>
+                            </td>
+                            <td><?PHP echo $emp_type; ?></td>
+                            <td>
+                                <span class="badge-doc-pill"><?PHP echo $doc_name_txt; ?></span>
+                            </td>
+                            <td style="text-align: center; font-weight: 600;"><?PHP echo $exp_date_txt; ?></td>
+                            <td style="text-align: center;"><?PHP echo $days_badge; ?></td>
+                            <td style="text-align: center;"><?PHP echo $status_badge; ?></td>
+                            <td style="font-size: 11px; color: #475569;"><?PHP echo $remarks; ?></td>
+                        </tr>
+                        <?PHP 
+                        $ctr++;
+                    }
+                } else {
+                    ?>
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 24px; color: #64748b; font-style: italic;">
+                            No document expiry records found in the system matching the criteria.
+                        </td>
+                    </tr>
+                    <?PHP 
+                }
+                ?>
+            </tbody>
         </table>
     </div>
 
-</body>
+    <!-- Official THC Footer -->
+    <div class="divFooter page-break-inside-avoid">
+        <table style="width: 100%; border: none; border-collapse: collapse; background-color: #2e2e79; border-radius: 6px; overflow: hidden;">
+            <tbody>
+                <tr>
+                    <td style="border: none; padding: 12px 18px; color: #ffffff; line-height: 1.5; width: 68%;">
+                        <div style="font-size: 11px;">
+                            <small>Tele:</small> +973 17 100 190 &nbsp;|&nbsp; info@thc.com.bh &nbsp;|&nbsp; <strong>www.thc.com.bh</strong><br>
+                            CR. <strong>88982-1</strong> &nbsp;|&nbsp; Level 14, Entrance 143/144, Bldg 155, Road 1703, Block 317<br>
+                            <strong>YBA Kanoo Tower, Diplomatic Area</strong>, Kingdom of Bahrain
+                        </div>
+                    </td>
+                    <td style="border: none; text-align: right; padding: 12px 18px; width: 32%; vertical-align: middle;">
+                        <img src="global_assets/images/a.png" alt="THC Emblem" style="max-height: 38px;" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
 <script>
-function fnExcelReport()
-{
-    var tab_text="<table border='2px' ><tr bgcolor='#1b2441' style='color:#FFFFFF;'>";
-    var j=0;
+function fnExcelReport() {
     var tab = document.getElementById('main_table');
-
-    for(j = 0 ; j < tab.rows.length ; j++) 
-    {     
-        tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+    if (!tab) return;
+    
+    var tab_text = "<table border='1px' style='font-family: Arial, sans-serif;'>";
+    tab_text += "<tr><th colspan='10' style='background:#2e2e79;color:#ffffff;font-size:16px;padding:8px;'>EMPLOYEE DOCUMENT EXPIRY REPORT - " + <?php echo json_encode(date("d-m-Y")); ?> + "</th></tr>";
+    
+    var table = tab.getElementsByTagName('table')[0];
+    if (table) {
+        var rows = table.rows;
+        for (var j = 0; j < rows.length; j++) {
+            tab_text += "<tr>" + rows[j].innerHTML + "</tr>";
+        }
     }
-
-    tab_text = tab_text + "</table>";
+    tab_text += "</table>";
+    
     tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, "");
+    tab_text = tab_text.replace(/<button[^>]*>.*?<\/button>/gi, "");
+    tab_text = tab_text.replace(/<input[^>]*>/gi, "");
     tab_text = tab_text.replace(/<img[^>]*>/gi, "");
-    tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, "");
 
-    var sa = window.open('data:application/vnd.ms-excel,' + encodeURIComponent(tab_text));  
-    return (sa);
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf("MSIE ");
+    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+        var txtArea1 = document.createElement("iframe");
+        document.body.appendChild(txtArea1);
+        txtArea1.contentWindow.document.open("txt/html", "replace");
+        txtArea1.contentWindow.document.write(tab_text);
+        txtArea1.contentWindow.document.close();
+        txtArea1.contentWindow.focus();
+        txtArea1.contentWindow.document.execCommand("SaveAs", true, "Employee_Document_Expiry_Report.xls");
+        document.body.removeChild(txtArea1);
+    } else {
+        var a = document.createElement('a');
+        var data_type = 'data:application/vnd.ms-excel,' + encodeURIComponent(tab_text);
+        a.href = data_type;
+        a.download = "Employee_Document_Expiry_Report_" + <?php echo json_encode(date("d_m_Y")); ?> + ".xls";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 }
 </script>
+
+</body>
 </html>
