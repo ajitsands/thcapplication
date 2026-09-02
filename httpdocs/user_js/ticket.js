@@ -1201,28 +1201,22 @@ $(document).ready(function() {
                   
     });
             
-      	$("#txt_building_code").blur(function(){
-							
-							var v_building_code=$("#txt_building_code").val();
-							
-							 $.post("../controller/building/building_controller.php",{action:'check_building_code',v_building_code:v_building_code}
-									, function(result,status)
-							 { 
-								var obj = jQuery.parseJSON(result);
-								 if(obj.length==0)
-								{
-									return true;
-								}
-								else
-								{
-									
-									swal("Warning","Building code already exists", "warning");
-									$("#txt_building_code").val('');
-									return false;
-								}
-
-							 });
-							
+   					   	$("#txt_building_code").blur(function(){
+							var v_building_code = $.trim($("#txt_building_code").val());
+							if(v_building_code != '')
+							{
+								$.post("../controller/building/building_controller.php", {action:'check_building_code', v_building_code:v_building_code}, function(result, status) { 
+									try {
+										var obj = jQuery.parseJSON(result);
+										var count = (obj && obj.data) ? obj.data.length : (Array.isArray(obj) ? obj.length : 0);
+										if(count > 0)
+										{
+											swal("Warning", "Building code already exists", "warning");
+											$("#txt_building_code").val('');
+										}
+									} catch(e) {}
+								});
+							}
 						});
 					var v_btn_building_add = $('#btn_building_add').ladda();
                     v_btn_building_add.click(function(){
@@ -1340,51 +1334,44 @@ $(document).ready(function() {
                                                  
                     });
                  
-          	$("#txt_contact_person").blur(function(){
-					var v_customer_contact_no=$("#txt_contact_person").val();
-					 $.post("../controller/customer/customer_controller.php",{action:'check_contact_person_number',v_customer_contact_no:v_customer_contact_no}
-							, function(result,status)
-					 { 
-						var obj = jQuery.parseJSON(result);
-						 if(obj.length==0)
-						{
-							return true;
-						}
-						else
-						{
-							
-							swal("Warning","Customer contact number already exists", "warning");
-							$("#txt_contact_person_number").val('');
-							return false;
-						}
-
-					 });
-					
+				// Check if customer contact number already exists
+				$('#txt_customer_contact_no').blur(function() {
+					var v_customer_contact_no = $.trim($("#txt_customer_contact_no").val());
+					$("#txt_contact_person_number").val(v_customer_contact_no);
+					if(v_customer_contact_no != "")
+					{
+						$.post("../controller/customer/customer_controller.php", {action:'check_contact_person_number', v_customer_contact_no:v_customer_contact_no}, function(result, status) { 
+							try {
+								var obj = jQuery.parseJSON(result);
+								var count = (obj && obj.data) ? obj.data.length : (Array.isArray(obj) ? obj.length : 0);
+								if(count > 0)
+								{
+									swal("Warning", "Customer contact number already exists", "warning");
+									$("#txt_customer_contact_no").val('');
+									$("#txt_contact_person_number").val('');
+								}
+							} catch(e) {}
+						});
+					}
 				});
 				
-					$("#txt_cpr_cr_number").blur(function(){
-					var v_cpr_cr_number=$("#txt_cpr_cr_number").val();
-					if(v_cpr_cr_number!="")
+				// Check if CPR/CR number already exists
+				$("#txt_cpr_cr_number").blur(function(){
+					var v_cpr_cr_number = $.trim($("#txt_cpr_cr_number").val());
+					if(v_cpr_cr_number != "")
 					{
-					 $.post("../controller/customer/customer_controller.php",{action:'check_cpr_cr_number',v_cpr_cr_number:v_cpr_cr_number}
-							, function(result,status)
-					 { 
-						var obj = jQuery.parseJSON(result);
-						if(obj.length==0)
-						{
-							return true;
-						}
-						else
-						{
-							
-							swal("Warning","CPR/CR number already exists", "warning");
-							$("#txt_cpr_cr_number").val('');
-							return false;
-						}
-
-					 });
+						$.post("../controller/customer/customer_controller.php", {action:'check_cpr_cr_number', v_cpr_cr_number:v_cpr_cr_number}, function(result, status) { 
+							try {
+								var obj = jQuery.parseJSON(result);
+								var count = (obj && obj.data) ? obj.data.length : (Array.isArray(obj) ? obj.length : 0);
+								if(count > 0)
+								{
+									swal("Warning", "CPR/CR number already exists", "warning");
+									$("#txt_cpr_cr_number").val('');
+								}
+							} catch(e) {}
+						});
 					}
-					 
 				});
 				
 				 $('#txt_customer_name').blur(function() {

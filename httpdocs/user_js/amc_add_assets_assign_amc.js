@@ -421,27 +421,21 @@ function clear_text_assets()
     });
             
       	$("#txt_building_code").blur(function(){
-							
-							var v_building_code=$("#txt_building_code").val();
-							
-							 $.post("../controller/building/building_controller.php",{action:'check_building_code',v_building_code:v_building_code}
-									, function(result,status)
-							 { 
-								var obj = jQuery.parseJSON(result);
-								 if(obj.length==0)
-								{
-									return true;
-								}
-								else
-								{
-									
-									swal("Warning","Building code already exists", "warning");
-									$("#txt_building_code").val('');
-									return false;
-								}
-
-							 });
-							
+							var v_building_code = $.trim($("#txt_building_code").val());
+							if(v_building_code != '')
+							{
+								$.post("../controller/building/building_controller.php", {action:'check_building_code', v_building_code:v_building_code}, function(result, status) { 
+									try {
+										var obj = jQuery.parseJSON(result);
+										var count = (obj && obj.data) ? obj.data.length : (Array.isArray(obj) ? obj.length : 0);
+										if(count > 0)
+										{
+											swal("Warning", "Building code already exists", "warning");
+											$("#txt_building_code").val('');
+										}
+									} catch(e) {}
+								});
+							}
 						});
 					
                     $('#btn_building_add').click(function(){
