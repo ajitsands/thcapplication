@@ -1,3 +1,15 @@
+<?PHP
+    include_once(__DIR__ . '/../../model/db_connection/connection.php');
+    if (!isset($varDBConnection) || !$varDBConnection) {
+        $DBConn = new DBConnection();
+        $varDBConnection = $DBConn->ConnectToMYSQL();
+    }
+    $res_docs = mysqli_query($varDBConnection, "SELECT DISTINCT document_name FROM tbl_employee_attachments WHERE status = 'Active' AND document_name IS NOT NULL AND document_name != '' ORDER BY document_name ASC");
+    $res_types = mysqli_query($varDBConnection, "SELECT user_type_id, user_type_name FROM tbl_user_types WHERE user_type_status = 'Active' ORDER BY user_type_name ASC");
+    if (!$res_types || mysqli_num_rows($res_types) == 0) {
+        $res_types = mysqli_query($varDBConnection, "SELECT DISTINCT employee_type_id AS user_type_id, employee_type_name AS user_type_name FROM tbl_employees WHERE employee_type_name IS NOT NULL AND employee_type_name != '' AND employee_type_name != 'NA' ORDER BY employee_type_name ASC");
+    }
+?>
 <div class="card">
     <?PHP
         include('template/card_head_control.inc');
@@ -114,6 +126,13 @@
                         </label>
                         <select id="select_doc_type" class="form-control form-control-select2" data-fouc>
                             <option value="all">All Document Types</option>
+                            <?php 
+                            if ($res_docs) {
+                                while ($d_row = mysqli_fetch_assoc($res_docs)) {
+                                    echo '<option value="' . htmlspecialchars($d_row['document_name']) . '">' . htmlspecialchars($d_row['document_name']) . '</option>';
+                                }
+                            }
+                            ?>
                         </select>
                     </div>
 
@@ -124,6 +143,13 @@
                         </label>
                         <select id="select_emp_type" class="form-control form-control-select2" data-fouc>
                             <option value="all">All Employee Types</option>
+                            <?php 
+                            if ($res_types) {
+                                while ($t_row = mysqli_fetch_assoc($res_types)) {
+                                    echo '<option value="' . htmlspecialchars($t_row['user_type_id']) . '">' . htmlspecialchars($t_row['user_type_name']) . '</option>';
+                                }
+                            }
+                            ?>
                         </select>
                     </div>
 

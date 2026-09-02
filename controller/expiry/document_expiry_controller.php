@@ -98,7 +98,7 @@ class DocumentExpiryController
 
         // Employee Type Filter
         if (!empty($emp_type_id) && $emp_type_id != 'all') {
-            $where[] = "e.employee_type_id = '$emp_type_id'";
+            $where[] = "(e.employee_type_id = '$emp_type_id' OR e.employee_type_name = '$emp_type_id')";
         }
 
         // Employee Status Filter
@@ -194,12 +194,21 @@ class DocumentExpiryController
     private function getEmployeeTypes()
     {
         $conn = $this->varDBConnection;
-        $sql = "SELECT employee_type_id, employee_type_name FROM tbl_employee_type WHERE employee_type_status = 'Active' ORDER BY employee_type_name ASC";
+        $sql = "SELECT user_type_id AS employee_type_id, user_type_name AS employee_type_name FROM tbl_user_types WHERE user_type_status = 'Active' ORDER BY user_type_name ASC";
         $result = mysqli_query($conn, $sql);
         $types = array();
-        if ($result) {
+        if ($result && mysqli_num_rows($result) > 0) {
             while ($row = mysqli_fetch_assoc($result)) {
                 $types[] = $row;
+            }
+        }
+        if (empty($types)) {
+            $sql2 = "SELECT DISTINCT employee_type_id, employee_type_name FROM tbl_employees WHERE employee_type_name IS NOT NULL AND employee_type_name != '' AND employee_type_name != 'NA' ORDER BY employee_type_name ASC";
+            $res2 = mysqli_query($conn, $sql2);
+            if ($res2) {
+                while ($r2 = mysqli_fetch_assoc($res2)) {
+                    $types[] = $r2;
+                }
             }
         }
         echo json_encode(array('status' => 'success', 'data' => $types));

@@ -245,14 +245,17 @@ $(document).ready(function () {
             data: { action: 'get_distinct_doc_types' },
             dataType: 'json',
             success: function (res) {
-                if (res && res.status === 'success' && res.data) {
+                if (res && res.status === 'success' && res.data && res.data.length > 0) {
                     var select = $('#select_doc_type');
+                    var currentVal = select.val() || 'all';
                     select.empty();
                     select.append('<option value="all">All Document Types</option>');
                     $.each(res.data, function (idx, docName) {
                         select.append('<option value="' + docName + '">' + docName + '</option>');
                     });
+                    select.val(currentVal);
                     if ($.fn.select2) {
+                        select.select2();
                         select.trigger('change');
                     }
                 }
@@ -268,14 +271,17 @@ $(document).ready(function () {
             data: { action: 'get_employee_types' },
             dataType: 'json',
             success: function (res) {
-                if (res && res.status === 'success' && res.data) {
+                if (res && res.status === 'success' && res.data && res.data.length > 0) {
                     var select = $('#select_emp_type');
+                    var currentVal = select.val() || 'all';
                     select.empty();
                     select.append('<option value="all">All Employee Types</option>');
                     $.each(res.data, function (idx, item) {
                         select.append('<option value="' + item.employee_type_id + '">' + item.employee_type_name + '</option>');
                     });
+                    select.val(currentVal);
                     if ($.fn.select2) {
+                        select.select2();
                         select.trigger('change');
                     }
                 }
