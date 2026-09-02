@@ -91,12 +91,8 @@
                     					   
                     					<!--</div>-->
     							    </div>
-    							    <div class="col-lg-6 col-md-6 col-sm-12">
-                    					<!--<div class="card-body" >-->
-                    					    
-                    					    <div id="building_img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>
-                    					   
-                    					<!--</div>-->
+    							    <div class="col-lg-6 col-md-6 col-sm-12" style="padding-top: 28px;">
+                    					    <div id="building_img_preview" style="display: flex; align-items: center; min-height: 38px;"> </div>
     							    </div>
 						
 						</div>
