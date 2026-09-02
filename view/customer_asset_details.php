@@ -52,7 +52,7 @@ $OBJ->URLEncode('head=dashboard');
     <script src="global_assets/js/fileupload_ns.js"></script>
  <!--   <script src="../httpdocs/user_js/building.js"></script>-->
 	<!--<script src="../httpdocs/user_js/location.js"></script>-->
-	<script src="../httpdocs/user_js/customer_location.js"></script>
+	<script src="../httpdocs/user_js/customer_location.js?v=<?= time() ?>"></script>
 	<script src="../httpdocs/user_js/login.js"></script>
 	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>

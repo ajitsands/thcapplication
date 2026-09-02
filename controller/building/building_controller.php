@@ -91,8 +91,15 @@ class buildingController
                 }
             break; 
             case 'check_building_code':
-            
-                $this->varModelObj->ListFromTable($var[5]);
+                $conn = $this->varDBConnection;
+                $res = mysqli_query($conn, $var[5]);
+                $rows = array();
+                if ($res) {
+                    while ($r = mysqli_fetch_assoc($res)) {
+                        $rows[] = $r;
+                    }
+                }
+                echo json_encode($rows);
             break;
             case 'update_building_code':
             

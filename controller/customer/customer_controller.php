@@ -89,13 +89,27 @@ class customerController
         {
         
             case 'check_contact_person_number':
-               // echo $var[7];
-            		$this->varModelObj->ListFromTable($var[7]);
+                $conn = $this->varDBConnection;
+                $res = mysqli_query($conn, $var[7]);
+                $rows = array();
+                if ($res) {
+                    while ($r = mysqli_fetch_assoc($res)) {
+                        $rows[] = $r;
+                    }
+                }
+                echo json_encode($rows);
             break;
             	
             case 'check_cpr_cr_number':
-               // echo $var[8];
-            		$this->varModelObj->ListFromTable($var[8]);
+                $conn = $this->varDBConnection;
+                $res = mysqli_query($conn, $var[8]);
+                $rows = array();
+                if ($res) {
+                    while ($r = mysqli_fetch_assoc($res)) {
+                        $rows[] = $r;
+                    }
+                }
+                echo json_encode($rows);
             break;
          
             case 'add_customer':
