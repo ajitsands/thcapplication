@@ -42,7 +42,7 @@ if (!class_exists('DBConnection')) {
                 $host = "localhost";
                 $user = "root";
                 $pass = "S@nds1@b";
-                $db   = "db_thc";
+                $db   = "thcfm_application_db";
             } else {
                 // Production Server: portal.thcfm.com
                 $host = "localhost";
@@ -56,14 +56,14 @@ if (!class_exists('DBConnection')) {
             // Fallback between localhost / 127.0.0.1 and environments if initial attempt fails
             if (!$con) {
                 if ($is_local) {
-                    $con = @mysqli_connect("127.0.0.1", "root", "S@nds1@b", "db_thc");
+                    $con = @mysqli_connect("127.0.0.1", "root", "S@nds1@b", "thcfm_application_db");
                     if (!$con) {
                         $con = @mysqli_connect("localhost", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
                     }
                 } else {
                     $con = @mysqli_connect("127.0.0.1", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
                     if (!$con) {
-                        $con = @mysqli_connect("localhost", "root", "S@nds1@b", "db_thc");
+                        $con = @mysqli_connect("localhost", "root", "S@nds1@b", "thcfm_application_db");
                     }
                 }
             }

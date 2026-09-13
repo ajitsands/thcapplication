@@ -1,5 +1,9 @@
-<?php 
+<?php
 if (session_status() == PHP_SESSION_NONE) {
+    $savePath = session_save_path();
+    if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
+        session_save_path(sys_get_temp_dir());
+    }
     session_start();
 }
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -275,7 +279,13 @@ class CommonModel extends FunctionDefinitions
 			   
 				if($password==$user_password)
 				{
-					session_start();
+					if (session_status() == PHP_SESSION_NONE) {
+						$savePath = session_save_path();
+						if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
+							session_save_path(sys_get_temp_dir());
+						}
+						session_start();
+					}
 			  	  
 									
 									$_SESSION["loggedin"] = "true";
@@ -358,6 +368,10 @@ class CommonModel extends FunctionDefinitions
 				if($password==$user_password)
 				{
 					if (session_status() == PHP_SESSION_NONE) {
+						$savePath = session_save_path();
+						if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
+							session_save_path(sys_get_temp_dir());
+						}
 						session_start();
 					}
 					
@@ -441,7 +455,13 @@ class CommonModel extends FunctionDefinitions
 			   
 				if($password==$user_password)
 				{
-					session_start();
+					if (session_status() == PHP_SESSION_NONE) {
+						$savePath = session_save_path();
+						if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
+							session_save_path(sys_get_temp_dir());
+						}
+						session_start();
+					}
 									
 									$_SESSION["loggedin"] = "true";
 								    $_SESSION["username"] = $username;

@@ -59,7 +59,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- HR Module -->
-      <li class="thc-nav-item thc-has-dropdown classHRModule<?= menuActive($params,'head','hr') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classHRModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','hr') ? ' active' : '' ?>">
           <i class="icon-users"></i> HR Module <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -75,7 +75,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- Assets & Services Master -->
-      <li class="thc-nav-item thc-has-dropdown classAssetsAndServiceModule<?= menuActive($params,'head','master') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classAssetsAndServiceModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','master') ? ' active' : '' ?>">
           <i class="icon-target2"></i> Masters <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -88,7 +88,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- Customers & Assets -->
-      <li class="thc-nav-item thc-has-dropdown classCustomerAndAssetsModule<?= menuActive($params,'head','customer_master') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classCustomerAndAssetsModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','customer_master') ? ' active' : '' ?>">
           <i class="icon-vcard"></i> Customers <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -104,7 +104,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- Work Orders -->
-      <li class="thc-nav-item thc-has-dropdown classWorkOrderManagementModule<?= menuActive($params,'head','tickets') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classWorkOrderManagementModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','tickets') ? ' active' : '' ?>">
           <i class="icon-shutter"></i> Work Orders <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -122,7 +122,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- WO Reports -->
-      <li class="thc-nav-item thc-has-dropdown classWorkOrderReportsModule<?= menuActive($params,'head','daily_reports') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classWorkOrderReportsModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','daily_reports') ? ' active' : '' ?>">
           <i class="icon-hour-glass"></i> WO Reports <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -135,7 +135,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- AMC -->
-      <li class="thc-nav-item thc-has-dropdown classAmcModule<?= menuActive($params,'head','amc') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classAmcModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','amc') ? ' active' : '' ?>">
           <i class="icon-calculator3"></i> AMC <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -154,7 +154,7 @@ function menuActive($p, $key, $val) {
       </li>
 
       <!-- Material Requisition -->
-      <li class="thc-nav-item thc-has-dropdown classMaterialRequisitionModule<?= menuActive($params,'head','requisition') ? ' open' : '' ?>">
+      <li class="thc-nav-item thc-has-dropdown classMaterialRequisitionModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','requisition') ? ' active' : '' ?>">
           <i class="icon-folder-plus2"></i> Requisition <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -263,6 +263,15 @@ document.querySelectorAll('.thc-has-dropdown').forEach(function(item) {
   }
 });
 
+// Close dropdown when ANY submenu item / link is clicked
+document.querySelectorAll('.thc-dropdown a').forEach(function(subItem) {
+  subItem.addEventListener('click', function() {
+    document.querySelectorAll('.thc-has-dropdown.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  });
+});
+
 // Close dropdowns on outside click
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.thc-has-dropdown')) {
@@ -271,4 +280,37 @@ document.addEventListener('click', function(e) {
     });
   }
 });
+
+// Close dropdowns on ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.thc-has-dropdown.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+});
+
+// Ensure all modals are appended directly to body (outside cards) and centered
+if (window.jQuery) {
+  function detachModalsToBody() {
+    jQuery('.modal').each(function() {
+      if (!jQuery(this).parent().is('body')) {
+        jQuery(this).appendTo('body');
+      }
+    });
+  }
+
+  jQuery(document).ready(function() {
+    detachModalsToBody();
+    jQuery('.modal-dialog').addClass('modal-dialog-centered');
+  });
+
+  jQuery(document).on('show.bs.modal', '.modal', function() {
+    if (!jQuery(this).parent().is('body')) {
+      jQuery(this).appendTo('body');
+    }
+    jQuery('.thc-has-dropdown.open').removeClass('open');
+    jQuery(this).find('.modal-dialog').addClass('modal-dialog-centered');
+  });
+}
 </script>

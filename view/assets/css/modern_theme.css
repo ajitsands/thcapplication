@@ -46,14 +46,12 @@ body {
     border-radius: var(--radius-card) !important;
     border: 1px solid #d4e4f0 !important;
     box-shadow: var(--shadow-soft) !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    overflow: hidden !important;
+    transition: box-shadow 0.25s ease !important;
     margin-bottom: 24px !important;
 }
 
 .card:hover {
     box-shadow: var(--shadow-hover) !important;
-    transform: translateY(-2px);
 }
 
 /* Outer Card Header - Clean background with thin subtle divider line */
@@ -530,13 +528,120 @@ table.dataTable tbody tr:hover {
     display: none !important;
 }
 
-/* ---- Modernized Modals System ----------------------------------------- */
+/* ---- Modernized Centered Modals --------------------------------------- */
+.modal {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 105000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 104990 !important;
+}
+
+.modal:not(.show) {
+    display: none !important;
+}
+
+.modal.show {
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -ms-flex-align: center !important;
+    align-items: center !important;
+    -ms-flex-pack: center !important;
+    justify-content: center !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+.modal-dialog {
+    position: relative !important;
+    margin: 1.5rem auto !important;
+    max-height: calc(100vh - 3rem) !important;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    -ms-flex-pack: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+}
+
+/* Remove any pseudo-element height spacers */
+.modal-dialog::before,
+.modal-dialog::after,
+.modal::before,
+.modal::after {
+    display: none !important;
+    content: none !important;
+    height: 0 !important;
+    width: 0 !important;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.22s ease !important;
+    transform: scale(0.96) !important;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) !important;
+}
+
+.modal-dialog .modal-content,
 .modal-content {
+    width: 100% !important;
+    max-height: calc(100vh - 3rem) !important;
+    display: -ms-flexbox !important;
+    display: flex !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    margin: 0 !important;
     border-radius: 18px !important;
     overflow: hidden !important;
     border: none !important;
     box-shadow: 0 20px 45px rgba(0, 29, 57, 0.22) !important;
     background-color: #ffffff !important;
+}
+
+.modal-dialog .modal-header {
+    -ms-flex-negative: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+.modal-dialog .modal-body {
+    -ms-flex: 1 1 auto !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 170px) !important;
+    padding: 22px 24px !important;
+    background-color: #ffffff !important;
+}
+
+.modal-dialog .modal-footer {
+    -ms-flex-negative: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+/* When modal is open, ensure topnav dropdowns are completely inactive */
+body.modal-open .thc-dropdown {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .modal-header,
@@ -599,3 +704,59 @@ table.dataTable tbody tr:hover {
     font-weight: 600 !important;
     font-size: 0.88rem !important;
 }
+
+/* ==========================================================================
+   DataTables & Table High-Visibility Selected Row Styling
+   ========================================================================== */
+table.dataTable tbody tr.selected,
+table.dataTable tbody tr.selected > td,
+table.dataTable tbody tr.selected > th,
+.table tbody tr.selected,
+.table tbody tr.selected > td,
+.table tbody tr.selected > th,
+.table-striped tbody tr.selected:nth-of-type(odd),
+.table-striped tbody tr.selected:nth-of-type(odd) > td,
+.table-striped tbody tr.selected:nth-of-type(even),
+.table-striped tbody tr.selected:nth-of-type(even) > td,
+.table-hover tbody tr.selected,
+.table-hover tbody tr.selected > td,
+table tbody tr.activeTableRowColor,
+table tbody tr.activeTableRowColor > td,
+table.dataTable tbody tr.activeTableRowColor,
+table.dataTable tbody tr.activeTableRowColor > td {
+    background-color: #bce1f9 !important;
+    background: #bce1f9 !important;
+    color: #001D39 !important;
+    font-weight: 600 !important;
+    box-shadow: inset 0 1px 0 #7BBDE8, inset 0 -1px 0 #7BBDE8 !important;
+}
+
+table.dataTable tbody tr.selected:hover,
+table.dataTable tbody tr.selected:hover > td,
+.table tbody tr.selected:hover,
+.table tbody tr.selected:hover > td,
+.table-hover tbody tr.selected:hover,
+.table-hover tbody tr.selected:hover > td {
+    background-color: #a8d5f5 !important;
+    background: #a8d5f5 !important;
+    color: #001D39 !important;
+}
+
+/* Prominent left indicator bar on the first cell of selected row */
+table.dataTable tbody tr.selected > td:first-child,
+table.dataTable tbody tr.selected > th:first-child,
+.table tbody tr.selected > td:first-child,
+.table tbody tr.selected > th:first-child,
+table tbody tr.activeTableRowColor > td:first-child {
+    border-left: 5px solid #0A4174 !important;
+}
+
+/* Ensure links and text inside selected row have high contrast */
+table.dataTable tbody tr.selected a,
+.table tbody tr.selected a,
+table.dataTable tbody tr.selected td a,
+.table tbody tr.selected td a {
+    color: #0A4174 !important;
+    font-weight: 700 !important;
+}
+

@@ -14,7 +14,7 @@ if ($is_local) {
     $servername = "localhost";
     $username   = "root";
     $password   = "S@nds1@b";
-    $database   = "db_thc";
+    $database   = "thcfm_application_db";
 } else {
     $servername = "localhost";
     $username   = "thcfm_application_user";

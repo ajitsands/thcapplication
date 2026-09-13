@@ -1,5 +1,9 @@
 <?PHP
 if (session_status() == PHP_SESSION_NONE) {
+    $savePath = session_save_path();
+    if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
+        session_save_path(sys_get_temp_dir());
+    }
     session_start();
 }
 
@@ -28,6 +32,46 @@ $OBJ->URLEncode('head=dashboard');
             background: url('../httpdocs/images/minus.png') no-repeat center center;
         }
 
+        /* High visibility for selected rows in datatables */
+        table.dataTable tbody tr.selected,
+        table.dataTable tbody tr.selected > td,
+        table.dataTable tbody tr.selected > th,
+        .table tbody tr.selected,
+        .table tbody tr.selected > td,
+        .table tbody tr.selected > th,
+        .table-striped tbody tr.selected:nth-of-type(odd),
+        .table-striped tbody tr.selected:nth-of-type(odd) > td,
+        .table-striped tbody tr.selected:nth-of-type(even),
+        .table-striped tbody tr.selected:nth-of-type(even) > td,
+        .table-hover tbody tr.selected,
+        .table-hover tbody tr.selected > td {
+            background-color: #bce1f9 !important;
+            background: #bce1f9 !important;
+            color: #001D39 !important;
+            font-weight: 600 !important;
+            box-shadow: inset 0 1px 0 #7BBDE8, inset 0 -1px 0 #7BBDE8 !important;
+        }
+
+        table.dataTable tbody tr.selected:hover,
+        table.dataTable tbody tr.selected:hover > td,
+        .table tbody tr.selected:hover,
+        .table tbody tr.selected:hover > td {
+            background-color: #a8d5f5 !important;
+            background: #a8d5f5 !important;
+        }
+
+        table.dataTable tbody tr.selected > td:first-child,
+        .table tbody tr.selected > td:first-child {
+            border-left: 5px solid #0A4174 !important;
+        }
+
+        table.dataTable tbody tr.selected a,
+        .table tbody tr.selected a,
+        table.dataTable tbody tr.selected td a,
+        .table tbody tr.selected td a {
+            color: #0A4174 !important;
+            font-weight: 700 !important;
+        }
 	</style>
 	
 	

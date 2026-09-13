@@ -1,18 +1,15 @@
 <?php
 if (session_status() == PHP_SESSION_NONE) {
+    $savePath = session_save_path();
+    if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
+        session_save_path(sys_get_temp_dir());
+    }
     session_start();
 }
 
-if($_SESSION["loggedin"]!="true")
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== "true")
 {
-    //header("Location: ../index.php"); /* Redirect browser */
-    //echo '<script>window.location="http://"'+location.hostname+'"/index.php"</script>';
-        $URL="http://".$_SERVER['SERVER_NAME']."/index.php";
-        echo "<script type='text/javascript'>document.location.href='{$URL}';</script>";
-        echo '<META HTTP-EQUIV="refresh" content="0;URL=' . $URL . '">';
-    
+    echo "<script type='text/javascript'>window.location.href='login.php';</script>";
     exit();
 }
-
-
 ?>

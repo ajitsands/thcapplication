@@ -5,7 +5,7 @@
 $is_local = (stripos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || stripos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false);
 $db_user = $is_local ? 'root' : 'thcfm_application_user';
 $db_pass = 'S@nds1@b';
-$db_name = $is_local ? 'db_thc' : 'thcfm_application_db';
+$db_name = 'thcfm_application_db';
 try {
     $connect = new PDO("mysql:host=localhost;dbname=$db_name", $db_user, $db_pass);
 } catch (PDOException $e) {
