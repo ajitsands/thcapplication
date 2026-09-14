@@ -44,13 +44,12 @@ $(document).ready(function(){
                        
                         });
                 $('#session_image').change(function (e) {
-         
-                 
                 v_item_img = $("#session_image").val();
                 var  randomNum = Math.ceil(Math.random() * 999999);
                     if(v_item_img=="")
                 {
                     v_item_img="default.jpg";
+                    $("#img_preview").empty().hide();
                 }
                 else
                 {
@@ -60,7 +59,17 @@ $(document).ready(function(){
                     v_item_img=$.trim(randomNum+'_'+doc_file1);
 					//alert(v_item_img);
                     var success = upload.doUpload("../../httpdocs/user_upload/subcontractor_reg_form_upload.php?random_no="+randomNum,v_item_img);
-
+                    
+                    var reader = new FileReader();
+                    reader.onload = function(evt) {
+                        var fileType = doc_file_obj.type;
+                        if(fileType.match('image.*')) {
+                             $("#img_preview").show().html("<img style='width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='" + evt.target.result + "'>");
+                        } else {
+                             $("#img_preview").show().html("<a href='" + evt.target.result + "' target='_blank' style='color:blue;'><i class='icon-file-text3'></i> Preview Document</a>");
+                        }
+                    };
+                    reader.readAsDataURL(doc_file_obj);
                 }  
         });   
        
@@ -332,8 +341,17 @@ $(document).ready(function(){
 							$("#txt_subcontratcor_contact_person_name").val(subcontractor_data.subcontratcor_contact_person_name);
 							$("#txt_contact_no1").val(subcontractor_data.contact_no1);
 							$("#txt_contact_no2").val(subcontractor_data.contact_no2);
-							
-							$("#img_preview").html("<img style='width:60px;height:60px;'src='../httpdocs/images/subcontractors_reg_form/"+$.trim(subcontractor_data.vendor_reg_form)+"'>");
+							var vendor_file = $.trim(subcontractor_data.vendor_reg_form);
+							if (vendor_file !== '') {
+							    var ext = vendor_file.split('.').pop().toLowerCase();
+							    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+							        $("#img_preview").show().html("<img style='width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #c2daeb;' src='../httpdocs/images/subcontractors_reg_form/" + vendor_file + "'>");
+							    } else {
+							        $("#img_preview").show().html("<a href='../httpdocs/images/subcontractors_reg_form/" + vendor_file + "' target='_blank' style='color:blue;'><i class='icon-file-text3'></i> Preview Document</a>");
+							    }
+							} else {
+							    $("#img_preview").empty().hide();
+							}
 							$('#vendor_reg_form').text(subcontractor_data.vendor_reg_form);
             			    $( '#btn_subcontractor_add').hide();
                             $( '#btn_subcontractor_edit').show();
@@ -508,9 +526,10 @@ $(document).ready(function(){
 					$("#txt_contact_no2").val('');
 					
                     $("#session_image").val(null);
+                    $.uniform.update('#session_image');
 					
                     $("#vendor_reg_form").empty();
-                    $("#img_preview").hide()
+                    $("#img_preview").empty().hide();
                  }
                   
 

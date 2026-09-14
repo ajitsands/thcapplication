@@ -1,4 +1,8 @@
 $(document).ready(function(){
+    $('.select-warrantee').select2({ dropdownParent: $('#modal_add_assets_assign_assets_to_amc') });
+     var v_url = document.URL;
+      var v_url_split=v_url.split('/');
+       var v_url_link=v_url_split[v_url_split.length-1];
     var v_assets_attachment,attachments =[];
 
   
@@ -56,7 +60,7 @@ $(document).ready(function(){
                         		 }).done(function(data){
     
                         			$("#div_cust_location_assign_add_assets").html(data);
-    								$("#select_location_for_customer_location_assets").select2();
+    								$("#select_location_for_customer_location_assets").select2({ dropdownParent: $('#modal_add_assets_assign_assets_to_amc') });
 							});
     						
           }
@@ -75,7 +79,7 @@ $(document).ready(function(){
                             		     
                             			
                             			$("#div_cust_building_assign_add_assets").html(data);
-        								$("#select_building_for_customer_location").select2();
+        								$("#select_building_for_customer_location").select2({ dropdownParent: $('#modal_add_assets_assign_assets_to_amc') });
     							});
     										
 							
@@ -89,7 +93,7 @@ $(document).ready(function(){
                         		 }).done(function(data){
     
                         			$("#div_category_select_add_assets").html(data);
-    								$("#select_category").select2();
+    								$("#select_category").select2({ dropdownParent: $('#modal_add_assets_assign_assets_to_amc') });
 							});
     }
     
@@ -251,7 +255,7 @@ function clear_text_assets()
                     $("#txt_des").val('');
                     $("#barcodeTarget").empty();
                     $("#barcodeValue").val('');
-                     $("#txt_is_warrantee").val(null).trigger("change");
+                     $("#txt_is_warrantee").val("NA").trigger("change");
                     $("#select_location_for_customer_location_assets").val(null).trigger("change");
                     $("#select_building_for_customer_location").val(null).trigger("change");
                     $("#txt_type_des").val('');
@@ -260,6 +264,8 @@ function clear_text_assets()
 					$("#txt_room_no").val('');
 					$("#txt_specify_if_any").val('');
 					$("#assets_attachment").val('');
+					$.uniform.update();
+					$('.filename').text('No file selected');
 					$("#assets_img_name").text('');
 				
 						$( "#img_assets_preview" ).empty();
@@ -270,10 +276,10 @@ function clear_text_assets()
       
                        
             $("#btn_x_add_assets").click(function(){
-                $('#modal_add_assets_assign_assets_to_amc').hide();
+                $('#modal_add_assets_assign_assets_to_amc').modal('hide');
             });
              $("#btn_close_add_assets_modal").click(function(){
-                $('#modal_add_assets_assign_assets_to_amc').hide();
+                $('#modal_add_assets_assign_assets_to_amc').modal('hide');
             });       
          
         
@@ -302,33 +308,33 @@ function clear_text_assets()
                         		 }).done(function(data){
     
                         			$("#div_category_combo1").html(data);
-    								$("#select_category1").select2();
+    								$("#select_category1").select2({ dropdownParent: $('#modal_asset_type') });
 							});
            
       });
       $("#btn_close_new_bldg").click(function(){
-                $('#modal_building').hide();
+                $('#modal_building').modal('hide');
       });
      $("#btn_close_new_loc").click(function(){
-                $('#modal_location').hide();
+                $('#modal_location').modal('hide');
       });
       $("#btn_close_new_category").click(function(){
-                $('#modal_asset_category').hide();
+                $('#modal_asset_category').modal('hide');
       });
       $("#btn_close_new_asset_type").click(function(){
-                $('#modal_asset_type').hide();
+                $('#modal_asset_type').modal('hide');
       });
       $("#btn_x_new_bldg").click(function(){
-                $('#modal_building').hide();
+                $('#modal_building').modal('hide');
       });
      $("#btn_x_new_loc").click(function(){
-                $('#modal_location').hide();
+                $('#modal_location').modal('hide');
       });
       $("#btn_x_new_category").click(function(){
-                $('#modal_asset_category').hide();
+                $('#modal_asset_category').modal('hide');
       });
       $("#btn_x_new_asset_type").click(function(){
-                $('#modal_asset_type').hide();
+                $('#modal_asset_type').modal('hide');
       });
          $('#txt_location_code').keydown(function (e) {
            var k = e.which;
@@ -403,7 +409,7 @@ function clear_text_assets()
                                    
                                      swal("Success", "New location added successfully..", "success");
                                      
-                                   $('#modal_location').hide();
+                                   $('#modal_location').modal('hide');
                                     $("#txt_location_name").val('');
                                      $("#txt_location_code").val('');
                                      	load_location();
@@ -473,7 +479,7 @@ function clear_text_assets()
                         						$("#txt_building_name").val("");
                         						$("#txt_building_code").val("");
                         						$("#txt_building_address").val("");
-                        								$('#modal_building').hide();
+                        								$('#modal_building').modal('hide');
 		                                        load_building();
                                             }
                                             
@@ -565,7 +571,7 @@ function clear_text_assets()
                                      swal("Success", "New asset type added successfully..", "success");
                                      
                                     $("#txt_asset_name").val('');
-                                     $('#modal_asset_type').hide();
+                                     $('#modal_asset_type').modal('hide');
                                    $('#div_asset_type_select').load("amc/assets_type_combo.php?category_id=0"); 
 									$("#select_category1").val(null).trigger("change");
                                 }

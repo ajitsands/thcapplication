@@ -472,6 +472,7 @@ $('#list_of_amc_schedules tbody').on( 'click', 'tr', function () {
        }
        else
        {
+          load_data_to_grid_amc_schedules_list($.trim($('#txt_amc_ref_no').val()));
           load_two_datatables();
            
        }
@@ -519,7 +520,6 @@ $('#list_of_amc_schedules tbody').on( 'click', 'tr', function () {
               var new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
                var new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
              load_data_to_grid_tech_avail_list(visit_date,new_slot_sql_string,tech_type);
-         load_data_to_grid_amc_asset_sch_list(amc_ref_no,visit_date,visit_slot,visit_duration);
            
           }
     }
@@ -857,9 +857,9 @@ var v_btn_ticket_entries_assign = $('#btn_amc_assign').ladda();
 		v_btn_ticket_entries_assign.ladda( 'start' );
 		
 	       var leadr_emp_id;
-	       var ticket_count = v_amc_assets_sch_list_table.rows('.selected').data().length;
+	       var ticket_count = v_amc_schedules_list_table.rows('.selected').data().length;
 		
-        		  var ticketTableSelectedValues = $.map(v_amc_assets_sch_list_table.rows('.selected').data(), function (item) {
+        		  var ticketTableSelectedValues = $.map(v_amc_schedules_list_table.rows('.selected').data(), function (item) {
         			return item;
         		}); 
         
@@ -896,7 +896,7 @@ var v_btn_ticket_entries_assign = $('#btn_amc_assign').ladda();
         				     building_idarray.push(ticketTableSelectedValues[t].building_id);
         				     building_codearray.push(ticketTableSelectedValues[t].building_code);
         				     building_namearray.push(ticketTableSelectedValues[t].building_name);
-        				     visit_date_array.push(ticketTableSelectedValues[t].date_of_visits);
+        				     visit_date_array.push(ticketTableSelectedValues[t].date_of_visits1);
         				     startslot_array.push(ticketTableSelectedValues[t].time_of_visit);
         				     additional_slotsarray.push(ticketTableSelectedValues[t].additional_slots);
         				     visit_start_timearray.push(ticketTableSelectedValues[t].visit_start_time);
@@ -1086,7 +1086,7 @@ var v_btn_ticket_entries_assign = $('#btn_amc_assign').ladda();
                      });   
                  }
                       
-    var list_of_tech_schedules_multiple = $('#tbl_tech_schedules_multiple').DataTable();
+    var list_of_tech_schedules_multiple = $('#tbl_tech_schedules_multiple').DataTable({scrollX: true});
     
      function load_data_to_grid_tech_schedules_multiple(tech_code)
                  {
@@ -1115,10 +1115,7 @@ var v_btn_ticket_entries_assign = $('#btn_amc_assign').ladda();
             				"bFilter": false,
             				"bInfo": false,
             				"bSearch": false,
-            				"autoWidth": false,
-            				
-            			
-                            "columns": [
+            				"autoWidth": false, "scrollX": true, "columns": [
                                
                                 
                                   { "data": "slot_date","width": "100px",
@@ -1897,3 +1894,8 @@ function remove_team(amc_child_id,amc_ref_nos,amc_visit_id,visit_date,start_slot
          
          
 } );
+
+
+
+
+

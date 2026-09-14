@@ -2,7 +2,8 @@
 <input type="hidden"  id="txt_amc_ref_no" >
 
     <?php include('view_services_modal_assign_services.php');?> 
-    <?php  include('view_team_modal.php');?> 
+    <?php include('view_team_modal.php');?> 
+    <?php include('amc_schedule/update_schedule_modal.php');?> 
 	                   <div class="card">
 	                       <div class="card-header header-elements-inline">
 						<h5 class="card-title">Request To Reschedule AMC WOs.

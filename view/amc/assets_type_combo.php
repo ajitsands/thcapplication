@@ -32,9 +32,10 @@ else
       </select>
      	
  <script>
-        
-        $('.asset').select2();
-        
-        
-              
+        var $modal = $('.modal.show');
+        if ($modal.length > 0) {
+            $('.asset').select2({ dropdownParent: $modal });
+        } else {
+            $('.asset').select2();
+        }
     </script>

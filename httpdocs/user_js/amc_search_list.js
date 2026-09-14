@@ -156,7 +156,7 @@ $(document).ready(function(){
                                 { "data": "total_amc_amount","visible":false},
                                  { "data": "amc_ref_no",
                                       render: function ( data, type, rows, meta ) {
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black;">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item classActiveSearchAMCReport" data-name="classActiveSearchAMCReport" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR</a><a href="https://' + serverName + '/thc/printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red;"><i class="icon-trash" style="color:red;"></i> Delete</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black;">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item classActiveSearchAMCReport" data-name="classActiveSearchAMCReport" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR</a><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red;"><i class="icon-trash" style="color:red;"></i> Delete</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }
@@ -390,7 +390,7 @@ $(document).ready(function(){
                                 { "data": "total_amc_amount","visible":false },
                                 { "data": "amc_ref_no",
                                       render: function ( data, type, rows, meta ) {
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="amc_active" style="color:black;"><i class="icon-database-edit2" style="color:black;"></i> Active</a><a href="#" class="dropdown-item" name="renew_amc_report" data-name="" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red"><i class="icon-trash" style="color:red;"></i>Delete</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="amc_active" style="color:black;"><i class="icon-database-edit2" style="color:black;"></i> Active</a><a href="#" class="dropdown-item" name="renew_amc_report" data-name="" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR</a><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red"><i class="icon-trash" style="color:red;"></i>Delete</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -624,7 +624,7 @@ $(document).ready(function(){
                                 { "data": "total_amc_amount","visible":false },
                                  { "data": "amc_ref_no",
                                       render: function ( data, type, rows, meta ) {
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black;">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black;"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="amc_active" style="color:black;"><i class="icon-database-edit2"style="color:black;"></i> Active</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red;"><i class="icon-trash" style="color:red;"></i>Delete</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black;">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black;"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="amc_active" style="color:black;"><i class="icon-database-edit2"style="color:black;"></i> Active</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR</a><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red;"><i class="icon-trash" style="color:red;"></i>Delete</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -794,7 +794,7 @@ $(document).ready(function(){
                                 { "data": "total_amc_amount","visible":false },
                                  { "data": "amc_ref_no",
                                       render: function ( data, type, rows, meta ) {
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="amc_active" style="color:black"><i class="icon-database-edit2" style="color:black;"></i> Active</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red"><i class="icon-trash" style="color:red;"></i>Delete</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_amc_child_details" data-toggle="modal" data-target="#modal_view_amc_child_details" style="color:black"><i class="icon-eye"></i> View Asset Details</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="amc_active" style="color:black"><i class="icon-database-edit2" style="color:black;"></i> Active</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR</a><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="amc_delete" style="color:red"><i class="icon-trash" style="color:red;"></i>Delete</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -1398,80 +1398,39 @@ $(document).ready(function(){
                 } );
                       function format_amc_child_details(d)
 	               	{
-		
-            			return '<table style="table-layout: fixed; width: 100%; word-wrap: break-word;">'+
-            			 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Zone/Floor </div></td>'+
-            				'<td ><div align="center"> Area Code </div></td>'+
-            				'<td ><div align="center">Room No </div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.zone_floor+'</div></td>'+
-            				'<td><div align="center">'+d.flat_area_code+'</div></td>'+
-            				'<td><div align="center">'+d.room_no+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			  	 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Location Details </div></td>'+
-            				'<td ><div align="center">Brand </div></td>'+
-            				'<td ><div align="center">Serial No</div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.asset_sp_des+'</div></td>'+
-            				'<td><div align="center">'+d.asset_brand+'</div></td>'+
-            				'<td><div align="center">'+d.asset_serial_no+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			   	 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Capacity</div></td>'+
-            				'<td ><div align="center">Cost</div></td>'+
-            				'<td ><div align="center">Is Warrenty</div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.asset_capacity+'</div></td>'+
-            				'<td><div align="center">'+d.asset_cost+'</div></td>'+
-            				'<td><div align="center">'+d.is_warentee+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			  '<tr style="background: #989898;color:#ffffff;">'+
-            			  '<td ><div align="center">Warrenty End Date</div></td>'+
-            			    '<td ><div align="center">Asset Description</div></td>'+
-            				'<td ><div align="center">Asset Image</div></td>'+
-            				
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.warentee_end_date+'</div></td>'+
-            				'<td><div align="center">'+d.asset_description+'</div></td>'+
-            				'<td><div align="center"><a href="../httpdocs/images/amc_attachements/'+d.asset_attachment+'" target="_blank" rel="noopener"><i class="icon-image4 mr-3 icon-2x"></a></i></div></td>'+
-							
-            				
-            			  '</tr>'+
-            			 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">AMC Renewal Notes</div></td>'+
-            				'<td ><div align="center">AMC Renewal Attachment</div></td>'+
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            				'<td><div align="center">'+d.amc_renewal_notes+'</div></td>'+
-            					'<td><div align="center"><a href="../httpdocs/images/amc_renewal_attachments/'+d.amc_renewal_attachment+'" target="_blank" rel="noopener"><i class="icon-image4 mr-3 icon-2x"></a></i></div></td>'+
-							
-            				
-            			  '</tr>'+
-            			'</table>' ;
-                        			
-		
-		
+                        var imageHtml = (d.asset_attachment && d.asset_attachment.trim() !== '') ? 
+                            '<a href="../httpdocs/images/amc_attachements/' + d.asset_attachment + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><i class="icon-image4 mr-2"></i>View Image</a>' : 
+                            '<span class="text-muted">No Image</span>';
+                    
+                        var attachmentHtml = (d.amc_renewal_attachment && d.amc_renewal_attachment.trim() !== '') ? 
+                            '<a href="../httpdocs/images/amc_renewal_attachments/' + d.amc_renewal_attachment + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><i class="icon-attachment mr-2"></i>View Doc</a>' : 
+                            '<span class="text-muted">No Attachment</span>';
+                    
+                        return '<div class="p-3 bg-light border rounded" style="margin: 10px 0;">' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-3"><strong>Zone/Floor:</strong><br>' + (d.zone_floor || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Area Code:</strong><br>' + (d.flat_area_code || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Room No:</strong><br>' + (d.room_no || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Brand:</strong><br>' + (d.asset_brand || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-3"><strong>Serial No:</strong><br>' + (d.asset_serial_no || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Capacity:</strong><br>' + (d.asset_capacity || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Cost:</strong><br>' + (d.asset_cost || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Warranty:</strong><br>' + (d.is_warentee || '-') + ' (' + (d.warentee_end_date || '-') + ')</div>' +
+                            '</div>' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-6"><strong>Location Details:</strong><br>' + (d.asset_sp_des || '-') + '</div>' +
+                                '<div class="col-md-6"><strong>Asset Description:</strong><br>' + (d.asset_description || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-6"><strong>AMC Renewal Notes:</strong><br>' + (d.amc_renewal_notes || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="row mt-3 pt-3 border-top">' +
+                                '<div class="col-md-3"><strong>Asset Image:</strong><br><div class="mt-1">' + imageHtml + '</div></div>' +
+                                '<div class="col-md-3"><strong>Renewal Attachment:</strong><br><div class="mt-1">' + attachmentHtml + '</div></div>' +
+                            '</div>' +
+                        '</div>';
 	            }
 				
 				

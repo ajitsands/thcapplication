@@ -6,9 +6,8 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
 ?>
 
 
-  	<span class="form-text text-muted font-weight-bold"><font color="black">Type&nbsp;<span style="color:red;">*</span> </font></span>
-
-     <select class="form-control form-control-select2" id="select_type" name="select_type" data-placeholder="Select Type" data-fouc>
+    <label class="font-weight-semibold text-muted mb-1">Type <span class="text-danger">*</span></label>
+    <select class="form-control select-search" id="select_type" name="select_type" data-placeholder="Select Type" data-fouc>
 	    <option value="0">Select Type</option>
 	    
 	    <?PHP 	while($row=mysqli_fetch_assoc($result)) { ?>

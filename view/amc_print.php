@@ -61,26 +61,18 @@ table, th, td {
 	<tbody>
 		<tr style="border: none; ">
 			<td style="border: none;" width="400">
-			    <img src="global_assets/images/logo_print.png"  />
+			   <img src="global_assets/images/logo_print.png"  />
 			</td>
 			<td style="border: none; color: #daa505;text-align: right;font-weight:700;padding-right:20px;" width="400">
-			 
-			   
-			   
 			</td>
 		</tr>
-		<!--<tr style="border: none;">
-			<td style="border: none;"></td>
-			<td style="text-align: right;border: none; font-size: 15px;font-weight: 700;padding-bottom: 30px;"><b>AMC</b></td>
-		</tr>-->
-		<!--<tr style="border: none;">
-			<td style="border: none; margin-top:20px;"><?PHP //echo $amc_ref_no ; ?></td>
-			<td style="text-align: right;border: none;"><b>Work Request Date :</b></td>
-		</tr>-->
 		<tr style="border: none;">
-			<td style="border: none;"><?PHP echo $amc_ref_no ; ?></td>
 			<td style="border: none;"></td>
-			<td style="text-align: right;border: none; font-size: 25px;font-weight: 700;"><b>AMC</b></td>
+			<td style="text-align: right;border: none; font-size: 15px;font-weight: 700;padding-bottom: 30px;"><b>AMC FORM</b></td>
+		</tr>
+		<tr style="border: none;">
+			<td style="border: none;"><?PHP echo $amc_ref_no; ?></td>
+			<td style="text-align: right;border: none;"><b>AMC Signed Date :</b> <?PHP echo date('d-m-Y', strtotime($amc_signed_date)); ?></td>
 		</tr>
 	</tbody>
 </table>
@@ -110,9 +102,7 @@ table, th, td {
 			<td><b>Contract Value p.a</b></td>
 			<td><?PHP echo number_format($amc_amount + $amc_vat_amt,3) ;?></td>
 		</tr> 
-		<tr>
-			
-		</tr>
+
 		<?php
 		if ($amc_status == 'Cancelled') {
 		echo 
@@ -217,10 +207,11 @@ table, th, td {
 <div class="divFooter">
 	<table align="center" border="0" cellpadding="0" cellspacing="0" width="800" style="border: none; padding: 25px;" >
 	    <tr style="border: none; background-color: #2e2e79; padding: 25px;">
-			<td style="border: none;padding-left: 20px;color:white;" width="500">
-			    <small>Tele:</small> +973 17 100 190 | info@thc.com.bh | <strong>www.thc.com.bh</strong><br>
+			<td style="border: none;padding-left: 20px;color:white; font-size:11px;" width="500">
+			   <p style="line-height: 1.8;"> <small>Tele:</small> +973 17 100 190 | info@thc.com.bh | <strong>www.thc.com.bh</strong><br>
 			     CR. <strong>88982-1</strong> | Level 14, Enterance 143/144,  Bldg 155, Road 1703, Block 317<br>
 			    <strong>YBA Kanoo Tower, Diplomatic Area</strong>, Kingdom of Bahrain
+			    </p>
 			</td>
 			<td style="border: none;text-align: right;padding-right:20px;padding: 25px;" width="300">
 			 

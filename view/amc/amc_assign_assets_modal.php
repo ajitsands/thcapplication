@@ -1,7 +1,7 @@
 	
 			
-				<div id="modal_assign_assets" class="modal fade" data-backdrop="false" tabindex="-1">
-					<div class="modal-dialog modal-xl">
+				<div id="modal_assign_assets" class="modal fade" data-backdrop="false">
+					<div class="modal-dialog modal-full" style="width: 95%; max-width: 95%;">
 						<div class="modal-content">
 							<div class="modal-header bg-info">
 							<h5 class="modal-title"><span id="span_location_cust_amcno_assign_assets"></span></h5>
@@ -18,30 +18,12 @@
 							</div>
 
 							<div class="modal-body">
-									<?PHP include("add_new_assets_assign_assets_modal.php");?>
-									 <?php include("add_assets_new_location_modal.php");?>
-	                                <?php include("add_assets_new_building_modal.php");?>
-	                                <?php include("add_assets_new_category_modal.php");?>
-	                                <?php include("add_assets_new_asset_type_modal.php");?>
-								<div class="row">
-								   <div class="col-lg-10 col-md-10 col-sm-10" ></div>
-								   <div class="col-lg-2 col-md-2 col-sm-2" >
-								       <button id="btn_add_new_asset_assign_assets" type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#modal_add_assets_assign_assets_to_amc"><i class="icon-add"></i> Add New Asset</button>
-								       
-								       
-								   </div>
-    						    
-    						   
-								</div>
-								
-								<div class="row">
-								    
-									<div class="col-lg-5 col-md-5 col-sm-12" id="div_location_select_assign_assets"></div>
-									<div class="col-lg-5 col-md-5 col-sm-12" id="div_building_select_assign_assets"></div>
-									
-							        <div class="col-md-2 col-sm-12" style="padding-top:30px">
-								   
-									<button type="button" class="btn bg-primary" id="assign_asset_search">SEARCH</button>
+								<div class="row mb-3">
+									<div class="col-lg-4 col-md-4 col-sm-12" id="div_location_select_assign_assets"></div>
+									<div class="col-lg-4 col-md-4 col-sm-12" id="div_building_select_assign_assets"></div>
+									<div class="col-lg-4 col-md-4 col-sm-12 d-flex justify-content-between" style="padding-top: 25px;">
+									    <button type="button" class="btn bg-primary mr-2" id="assign_asset_search"><i class="icon-search4 mr-1"></i> SEARCH</button>
+								        <button id="btn_add_new_asset_assign_assets" type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#modal_add_assets_assign_assets_to_amc"><i class="icon-plus22 mr-1"></i> Add New Asset</button>
 									</div>
 							    </div>
 								
@@ -87,5 +69,10 @@
 						</div>
 					</div>
 				</div>
+				<?PHP include("add_new_assets_assign_assets_modal.php");?>
+				<?php include("add_assets_new_location_modal.php");?>
+				<?php include("add_assets_new_building_modal.php");?>
+				<?php include("add_assets_new_category_modal.php");?>
+				<?php include("add_assets_new_asset_type_modal.php");?>
 		
 				

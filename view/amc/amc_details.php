@@ -1,170 +1,172 @@
 <div class="card">
     <div class="card-body">
         <form id="amc_form">
-            <div class="form-group row">
-                <div class="col-lg-2 col-md-2 col-sm-12" style="display: none;">
+            <div class="form-group row" style="display: none;">
+                <div class="col-lg-2 col-md-2 col-sm-12">
                     <span class="form-text text-muted font-weight-bold"><font color="black">AMC Number&nbsp;</font></span>
                     <div class="input-group">
-                        <input type="text" class="form-control form-control-lg text-center" id="txt_amc_number" name="amc_ref_no" align="center" disabled />
-                        <div class="form-control-feedback form-control-feedback-lg">
+                        <input type="text" class="form-control text-center" id="txt_amc_number" name="amc_ref_no" align="center" disabled />
+                        <div class="form-control-feedback">
                             <i class="icon-sun3"></i>
                         </div>
                     </div>
                 </div>
-
-                <?PHP include_once("customer_combo.php");?>
-                <div class="col-lg-1 col-md-1 col-sm-1" style="padding-top: 5px;">
-                    <button type="button" class="btn btn-primary btn-sm" id="bootbox_customer">+</button>
-                </div>
-                <?PHP include_once("contract_type_combo.php");?>
-
-                <div class="col-lg-1 col-md-1 col-sm-1" style="padding-top: 5px;">
-                    <button type="button" class="btn btn-primary btn-sm" id="contract_type_add_modal">+</button>
-                </div>
-
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold">
-                        <font color="black">AMC Signed Date &nbsp;<span style="color: red;">*</span></font>
-                    </span>
-                    <div class="input-group">
-                        <input type="text" class="form-control daterange-single" value="<?PHP echo date('%m-%d-%Y');?>" id="txt_amc_signed_date" name="amc_signed_date" tabindex="3" />
-                        <span class="input-group-prepend">
-                            <span class="input-group-text"><i class="icon-calendar22"></i></span>
-                        </span>
-                    </div>
-                </div>
-
-                <!--</div>-->
-
-                <!--<div class="form-group row">-->
-
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold">
-                        <font color="black">AMC Start & End Date&nbsp;<span style="color: red;">*</span></font>
-                    </span>
-                    <div class="input-group">
-                        <input type="text" id="txt_amc_start_end_date" name="amc_start_end_date" class="form-control daterange-basic" value="<?PHP echo date('%m-%d-%Y');?>
-                        -
-                        <?PHP echo date("%m-%d-%Y", strtotime("+1 years"));?>" tabindex=4>
-
-                        <span class="input-group-append">
-                            <span class="input-group-text"><i class="icon-calendar22"></i></span>
-                        </span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-6">
-                    <span class="form-text text-muted font-weight-bold">
-                        <font color="black">AMC Amount&nbsp;<span style="color: red;">*</span></font>
-                    </span>
-                    <div class="input-group">
-                        <input
-                            type="text"
-                            id="txt_amc_amount"
-                            name="amc_amount"
-                            class="form-control form-control-lg"
-                            placeholder="AMC Amount"
-                            onkeypress="return event.charCode == 46 || (event.charCode >= 48 && event.charCode <= 57)"
-                            onpaste="return false"
-                            autocomplete="off"
-                            tabindex="5"
-                        />
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-6">
-                    <span class="form-text text-muted font-weight-bold">
-                        <font color="black">Total AMC Amount&nbsp;<span style="color: red;">*</span></font>
-                    </span>
-                    <div class="input-group">
-                        <input
-                            type="text"
-                            id="txt_total_amc_amount"
-                            name="total_amc_amount"
-                            class="form-control form-control-lg"
-                            placeholder="Total AMC Amount"
-                            autocomplete="off"
-                            tabindex="5"
-                            disabled
-                        />
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-3 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold">
-                        <font color="black">VAT % &nbsp;<span style="color: red;">*</span></font>
-                    </span>
-                    <div class="input-group">
-                        <input type="text" id="txt_vat_percentage" name="vat_percentage" class="form-control form-control-lg" placeholder="VAT %" autocomplete="off" tabindex="6" />
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold">
-                        <font color="black">VAT Amount&nbsp;<span style="color: red;">*</span></font>
-                    </span>
-                    <div class="input-group">
-                        <input type="text" id="txt_amc_vat_amount" name="amc_vat_amount" class="form-control form-control-lg" placeholder="VAT Amount" autocomplete="off" disabled tabindex="7" />
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Description</font></span>
-                    <textarea rows="1" class="form-control elastic" placeholder="Description" id="txt_amc_description" name="amc_description" tabindex="8"></textarea>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-12" style="padding-top: 20px;">
-                    <div class="custom-control custom-control-right custom-checkbox custom-control-inline">
-                        <input type="checkbox" class="custom-control-input" name="" id="custom_checkbox_inline_right_checked" checked tabindex="9" />
-                        <label class="custom-control-label position-static font-weight-bold" for="custom_checkbox_inline_right_checked">Request for proposal –Yes/No </label>
-                    </div>
-                </div>
-
-                <!--</div>-->
-
-                <!--			<div class="form-group row">-->
             </div>
 
-            <div class="form-group row">
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment1&nbsp;</font></span>
-                    <input type="file" class="form-input-styled" id="first_attachment" name="amc_first_attachment" accept="image/*" title="&nbsp;" data-fouc=""/ tabindex=10>
-                    <p id="emp_img_name"></p>
+            <style>
+                #contract_details_fieldset .combo-container > div {
+                    flex: 1 1 auto;
+                    max-width: 100%;
+                    padding-right: 0 !important;
+                    padding-left: 0 !important;
+                }
+            </style>
+            <fieldset id="contract_details_fieldset" class="mb-3 border p-3 rounded">
+                <legend class="text-uppercase font-size-sm font-weight-bold w-auto px-2" style="color: #333;">Contract Details</legend>
+                
+                <div class="row mb-2">
+                    <div class="col-lg-6 col-md-6 col-sm-12 d-flex align-items-end mb-2 mb-lg-0">
+                        <div class="combo-container flex-grow-1">
+                            <?PHP include_once("customer_combo.php");?>
+                        </div>
+                        <div class="ml-2 mb-1">
+                            <button type="button" class="btn btn-primary btn-icon rounded-round btn-sm shadow-sm d-flex align-items-center justify-content-center" id="bootbox_customer" style="width: 36px; height: 36px; padding: 0;" title="Add Customer"><i class="icon-plus22"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12 d-flex align-items-end mb-2 mb-lg-0">
+                        <div class="combo-container flex-grow-1">
+                            <?PHP include_once("contract_type_combo.php");?>
+                        </div>
+                        <div class="ml-2 mb-1">
+                            <button type="button" class="btn btn-primary btn-icon rounded-round btn-sm shadow-sm d-flex align-items-center justify-content-center" id="contract_type_add_modal" style="width: 36px; height: 36px; padding: 0;" title="Add Contract Type"><i class="icon-plus22"></i></button>
+                        </div>
+                    </div>
+                </div>
 
-                    <span id="first_image_name" style="width: 40px; height: 40px; padding-top: 5px;"></span>
+                <div class="row align-items-end">
+                    <div class="col-lg-4 col-md-4 col-sm-12 mb-2">
+                        <span class="form-text text-muted font-weight-bold">
+                            <font color="black">AMC Signed Date &nbsp;<span style="color: red;">*</span></font>
+                        </span>
+                        <div class="input-group">
+                            <input type="text" class="form-control daterange-single" value="<?PHP echo date('%m-%d-%Y');?>" id="txt_amc_signed_date" name="amc_signed_date" tabindex="3" />
+                            <span class="input-group-append" style="cursor: pointer;" onclick="$('#txt_amc_signed_date').click()">
+                                <span class="input-group-text"><i class="icon-calendar22"></i></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-12 mb-2">
+                        <span class="form-text text-muted font-weight-bold">
+                            <font color="black">AMC Start & End Date&nbsp;<span style="color: red;">*</span></font>
+                        </span>
+                        <div class="input-group">
+                            <input type="text" id="txt_amc_start_end_date" name="amc_start_end_date" class="form-control daterange-basic" value="<?PHP echo date('%m-%d-%Y');?> - <?PHP echo date("%m-%d-%Y", strtotime("+1 years"));?>" tabindex=4>
+                            <span class="input-group-append" style="cursor: pointer;" onclick="$('#txt_amc_start_end_date').click()">
+                                <span class="input-group-text"><i class="icon-calendar22"></i></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-12 mb-2 pb-1">
+                        <div class="custom-control custom-control-right custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" name="" id="custom_checkbox_inline_right_checked" checked tabindex="9" />
+                            <label class="custom-control-label position-static font-weight-bold" for="custom_checkbox_inline_right_checked">Request for proposal –Yes/No </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-2 col-md-6 col-sm-12">
-                    <div id="img_attachment1_preview" style="width: 40px; height: 40px; padding-top: 5px;"></div>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment1 Description&nbsp;</font></span>
-                    <textarea rows="1" class="form-control elastic" id="txt_first_attachment_desc" name="amc_first_attachment_desc" placeholder="Description" tabindex="11"></textarea>
-                </div>
+            </fieldset>
 
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment2&nbsp;</font></span>
-                    <input type="file" class="form-input-styled" id="second_attachment" name="amc_second_attachment" accept="image/*" title="&nbsp;" data-fouc=""/ tabindex=12>
-                    <p id="emp_img_name"></p>
-                    <!--<div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>-->
-                    <span id="second_image_name" style="width: 40px; height: 40px; padding-top: 5px;"></span>
+            <fieldset class="mb-3 border p-3 rounded">
+                <legend class="text-uppercase font-size-sm font-weight-bold w-auto px-2" style="color: #333;">Financials & Description</legend>
+                <div class="form-group row">
+                    <div class="col-lg-3 col-md-3 col-sm-6">
+                        <span class="form-text text-muted font-weight-bold">
+                            <font color="black">AMC Amount&nbsp;<span style="color: red;">*</span></font>
+                        </span>
+                        <div class="input-group">
+                            <input type="text" id="txt_amc_amount" name="amc_amount" class="form-control" placeholder="AMC Amount" onkeypress="return event.charCode == 46 || (event.charCode >= 48 && event.charCode <= 57)" onpaste="return false" autocomplete="off" tabindex="5"/>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6">
+                        <span class="form-text text-muted font-weight-bold">
+                            <font color="black">VAT % &nbsp;<span style="color: red;">*</span></font>
+                        </span>
+                        <div class="input-group">
+                            <input type="text" id="txt_vat_percentage" name="vat_percentage" class="form-control" placeholder="VAT %" autocomplete="off" tabindex="6" />
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6">
+                        <span class="form-text text-muted font-weight-bold">
+                            <font color="black">VAT Amount&nbsp;<span style="color: red;">*</span></font>
+                        </span>
+                        <div class="input-group">
+                            <input type="text" id="txt_amc_vat_amount" name="amc_vat_amount" class="form-control" placeholder="VAT Amount" autocomplete="off" disabled tabindex="7" />
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6">
+                        <span class="form-text text-muted font-weight-bold">
+                            <font color="black">Total AMC Amount&nbsp;<span style="color: red;">*</span></font>
+                        </span>
+                        <div class="input-group">
+                            <input type="text" id="txt_total_amc_amount" name="total_amc_amount" class="form-control" placeholder="Total AMC Amount" autocomplete="off" tabindex="5" disabled/>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-2 col-md-6 col-sm-12">
-                    <div id="img_attachment2_preview" style="width: 40px; height: 40px; padding-top: 5px;"></div>
+                <div class="form-group row">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">AMC Description</font></span>
+                        <textarea rows="2" class="form-control elastic" placeholder="Description" id="txt_amc_description" name="amc_description" tabindex="8"></textarea>
+                    </div>
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment2 Description&nbsp;</font></span>
-                    <textarea rows="1" class="form-control elastic" id="txt_sec_attachment_desc" name="amc_second_attachment_desc" placeholder="Description" tabindex="13"></textarea>
+            </fieldset>
+
+            <fieldset class="mb-3 border p-3 rounded">
+                <legend class="text-uppercase font-size-sm font-weight-bold w-auto px-2" style="color: #333;">Attachments</legend>
+                <div class="form-group row align-items-center mb-2">
+                    <div class="col-lg-4 col-md-5 col-sm-12">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment 1&nbsp;</font></span>
+                        <div class="d-flex align-items-center">
+                            <div style="flex-grow: 1;">
+                                <input type="file" class="form-input-styled" id="first_attachment" name="amc_first_attachment" accept="image/*,.pdf,.doc,.docx" title="&nbsp;" data-fouc="" tabindex="10">
+                            </div>
+                            <div id="img_attachment1_preview" class="ml-2" style="width: 40px; height: 40px; min-width: 40px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f8f8; display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-md-7 col-sm-12 mt-2 mt-md-0">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">Description&nbsp;</font></span>
+                        <input type="text" class="form-control" id="txt_first_attachment_desc" name="amc_first_attachment_desc" placeholder="Description" tabindex="11">
+                    </div>
                 </div>
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment3 &nbsp;</font></span>
-                    <input type="file" class="form-input-styled" id="third_attachment" name="amc_third_attachment" accept="image/*" title="&nbsp;" data-fouc=""/ tabindex=14>
-                    <p id="emp_img_name"></p>
-                    <!--<div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>-->
-                    <span id="thrid_image_name" style="width: 40px; height: 40px; padding-top: 5px;"></span>
+                <div class="form-group row align-items-center mb-2">
+                    <div class="col-lg-4 col-md-5 col-sm-12">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment 2&nbsp;</font></span>
+                        <div class="d-flex align-items-center">
+                            <div style="flex-grow: 1;">
+                                <input type="file" class="form-input-styled" id="second_attachment" name="amc_second_attachment" accept="image/*,.pdf,.doc,.docx" title="&nbsp;" data-fouc="" tabindex="12">
+                            </div>
+                            <div id="img_attachment2_preview" class="ml-2" style="width: 40px; height: 40px; min-width: 40px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f8f8; display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-md-7 col-sm-12 mt-2 mt-md-0">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">Description&nbsp;</font></span>
+                        <input type="text" class="form-control" id="txt_sec_attachment_desc" name="amc_second_attachment_desc" placeholder="Description" tabindex="13">
+                    </div>
                 </div>
-                <div class="col-lg-2 col-md-6 col-sm-12">
-                    <div id="img_attachment3_preview" style="width: 40px; height: 40px; padding-top: 5px;"></div>
+                <div class="form-group row align-items-center mb-2">
+                    <div class="col-lg-4 col-md-5 col-sm-12">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment 3&nbsp;</font></span>
+                        <div class="d-flex align-items-center">
+                            <div style="flex-grow: 1;">
+                                <input type="file" class="form-input-styled" id="third_attachment" name="amc_third_attachment" accept="image/*,.pdf,.doc,.docx" title="&nbsp;" data-fouc="" tabindex="14">
+                            </div>
+                            <div id="img_attachment3_preview" class="ml-2" style="width: 40px; height: 40px; min-width: 40px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f8f8; display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-md-7 col-sm-12 mt-2 mt-md-0">
+                        <span class="form-text text-muted font-weight-bold"><font color="black">Description&nbsp;</font></span>
+                        <input type="text" class="form-control" id="txt_third_attachment_desc" name="amc_third_attachment_desc" placeholder="Description" tabindex="15">
+                    </div>
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <span class="form-text text-muted font-weight-bold"><font color="black">AMC Attachment3 Description&nbsp;</font></span>
-                    <textarea rows="1" class="form-control elastic" id="txt_third_attachment_desc" name="amc_third_attachment_desc" placeholder="Description" tabindex="15"></textarea>
-                </div>
-            </div>
+            </fieldset>
         </form>
 
         <div id="update"></div>

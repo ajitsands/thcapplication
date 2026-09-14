@@ -730,7 +730,7 @@ table tbody tr.activeTableRowColor > td,
 table.dataTable tbody tr.activeTableRowColor,
 table.dataTable tbody tr.activeTableRowColor > td {
     background-color: #bce1f9 !important;
-    background: #bce1f9 !important;
+
     color: #001D39 !important;
     font-weight: 600 !important;
     box-shadow: inset 0 1px 0 #7BBDE8, inset 0 -1px 0 #7BBDE8 !important;
@@ -743,7 +743,7 @@ table.dataTable tbody tr.selected:hover > td,
 .table-hover tbody tr.selected:hover,
 .table-hover tbody tr.selected:hover > td {
     background-color: #a8d5f5 !important;
-    background: #a8d5f5 !important;
+
     color: #001D39 !important;
 }
 
@@ -765,6 +765,8 @@ table.dataTable tbody tr.selected td a,
     font-weight: 700 !important;
 }
 
-. s w a l - o v e r l a y  
-   z - i n d e x :   9 9 9 9 9 9   ! i m p o r t a n t ;    
+. s w a l - o v e r l a y 
+ 
+   z - i n d e x :   9 9 9 9 9 9   ! i m p o r t a n t ;   
+ 
  

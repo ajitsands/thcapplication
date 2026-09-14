@@ -25,9 +25,9 @@
                 </div>-->
             </div>
 
-            <table style="width: 100%;" class="table table-bordered table-hover datatable-highlight display" id="tbl_amc_renewal_list" style="padding-right: 10px; padding-left: 10px;">
-                <thead>
-                    <tr>
+            <table class="table datatable-selection-single" id="tbl_amc_renewal_list" style="width: 100%;">
+                  <thead class="bg-light">
+                      <tr>
                         <th>SI No</th> <!--0-->
                         <th>ID</th> <!--1-->
                         <th>AMC NO</th> <!--2-->

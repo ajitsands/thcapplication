@@ -228,6 +228,7 @@ $(document).ready(function(){
                               $('#span_customer_schedule_building_multiple').html('  ,Building - '+ticket_data.building_code+' - '+ticket_data.building_name);
                             
                             load_data_to_grid_ticket_schedules_list_multiple_extended(ticket_data.ticket_ref_code);
+                            $('#txt_date_multiple').trigger('change');
             			 }
             			   if($(this).attr("name")=='change_status_ticket')
                          {
@@ -1729,7 +1730,7 @@ $(document).ready(function(){
                      });   
                  }
                       
-    var list_of_tech_schedules_multiple = $('#tbl_tech_schedules_multiple').DataTable();
+    var list_of_tech_schedules_multiple = $('#tbl_tech_schedules_multiple').DataTable({scrollX: true});
     
      function load_data_to_grid_tech_schedules_multiple(tech_code)
                  {
@@ -1758,10 +1759,7 @@ $(document).ready(function(){
             				"bFilter": false,
             				"bInfo": false,
             				"bSearch": false,
-            				"autoWidth": false,
-            				
-            			
-                            "columns": [
+            				"autoWidth": false, "scrollX": true, "columns": [
                                
                                 
                                   { "data": "slot_date","width": "100px",
@@ -2159,3 +2157,8 @@ $(document).ready(function(){
                  }
 
 });
+
+
+
+
+

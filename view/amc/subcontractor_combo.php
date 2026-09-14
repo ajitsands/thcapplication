@@ -17,3 +17,16 @@ $result_customer = mysqli_query($varDBConnection,"SELECT * FROM  tbl_subcontract
         
         <?PHP } ?>
     </select> 
+
+<script>
+    (function() {
+        var activeModal = $('.modal.show');
+        if (activeModal.length > 0) {
+            $('#select_amc_subcontractors').select2({
+                dropdownParent: activeModal
+            });
+        } else {
+            $('#select_amc_subcontractors').select2();
+        }
+    })();
+</script>

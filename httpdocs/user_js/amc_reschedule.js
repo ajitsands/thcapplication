@@ -255,7 +255,7 @@ $(document).ready(function() {
                     { "data": "amc_visit_id",
                          render: function ( data, type, rows, meta ) {
                             
-                            return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_update_amc_schedule" name="amc_update_amc_schedule"><i class="icon-pencil"></i> Update Schedule</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_requisition" name="amc_view_requistion"><i class="icon-circle-right2"></i> View Requisition</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_services" name="amc_view_services"><i class="icon-eye"></i> View Services</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_assigned_team" name="amc_view_team"><i class="icon-collaboration"></i> View Team</a></div></div></div>';
+                            return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_update_schedule" name="amc_update_schedule"><i class="icon-pencil"></i> Update Schedule</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_requisition" name="amc_view_requistion"><i class="icon-circle-right2"></i> View Requisition</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_services" name="amc_view_services"><i class="icon-eye"></i> View Services</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_assigned_team" name="amc_view_team"><i class="icon-collaboration"></i> View Team</a></div></div></div>';
                              
                          }   
                     }
@@ -315,10 +315,22 @@ $('#list_of_amc_schedules tbody').on( 'click', 'tr', function () {
     $('#list_of_amc_schedules tbody').on('click', 'a', function(e){
         var $row = $(this).closest('tr');
         var data = v_amc_schedules_list_table.row($row).data();
-        var v_amc_visit_id  = data.amc_visit_id;
-        var v_amc_ref_no  = data.amc_ref_no;
-        var v_amc_asset_code  = data.asset_ref_no;
-       if($(this).attr("name")=='amc_view_services')
+          var v_amc_visit_id  = data.amc_visit_id;
+          var v_amc_ref_no  = data.amc_ref_no;
+          var v_amc_asset_code  = data.asset_ref_no;
+          
+         if($(this).attr("name")=='amc_update_schedule')
+           {
+               $('#amc_no_view_head_update_visit').html('AMC Ref No : '+v_amc_ref_no+' , Asset Code : '+v_amc_asset_code);
+               $('#txt_amc_visit_id_hidden').val(v_amc_visit_id);
+               $('#txt_amc_refno_update_hidden').val(v_amc_ref_no);
+               
+               $('#txt_visit_date_update').val(data.date_of_visits1);
+               $('#select_slots_updated').val(data.time_of_visit).change();
+               $('#duration_update').val(data.additional_slots).change();
+           }
+           
+         if($(this).attr("name")=='amc_view_services')
          {
            
          $('#span_ticket_ref_no_completed_view_services').html(data.amc_ref_no);
@@ -507,4 +519,56 @@ $('#list_of_amc_schedules tbody').on( 'click', 'tr', function () {
                  });
          
          
+
+      var v_btn_amc_change_schedule = $("#btn_change_schedule").ladda();
+      v_btn_amc_change_schedule.click(function(){ 
+         var amc_visit_id = $("#txt_amc_visit_id_hidden").val();
+         var visit_date = $("#txt_visit_date_update").val();
+         var start_slot=$("#select_slots_updated").val();
+         var add_slot=$("#duration_update").val();
+         var schedule_time=$("#txt_time_update").val();
+         var amc_ref_no=$("#txt_amc_refno_update_hidden").val();
+       		
+         if($.trim(amc_visit_id)=="")
+         {
+             swal("Warning","Please select the schedule ....", "warning");
+             v_btn_amc_change_schedule.ladda( "stop" );
+             return false;
+         }
+         if(visit_date=="")
+         {
+             swal("Warning","Please select visit date ....", "warning");
+             v_btn_amc_change_schedule.ladda( "stop" );
+             return false;
+         }
+         else
+         {         
+  				  swal({                                      
+          							title: "Are you sure to proceed with Schedule Update?",
+          							icon: "warning",
+          							dangerMode: true,
+          							allowOutsideClick: false,
+                                      closeOnClickOutside: false,
+          							buttons: {
+          							  cancel: "No Cancel !",
+          							  delete: "Yes Please Proceed."
+          							}
+          							}).then(function (willadd) {
+          							if (willadd) {
+          						
+          						         $.post("../controller/amc_schedule/amc_assign_controller.php",{action:"update_visits",amc_visit_id:amc_visit_id,visit_date:visit_date,schedule_time:schedule_time,start_slot:start_slot,add_slot:add_slot}
+                     , function(result,status)
+                     {
+                         result = $.trim(result);
+                        v_btn_amc_change_schedule.ladda( "stop" );
+                        load_data_to_grid_amc_schedules_list(amc_ref_no);
+                      });
+                       						 
+          							} else {
+          							   return false;
+          							}
+          			});
+         }
+     });
+
 } );

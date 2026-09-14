@@ -32,37 +32,20 @@
 	                          
 	                            <ul class="nav nav-tabs nav-tabs-highlight" style="padding-top:2px;margin-bottom: 0.00rem;">
 									<li class="nav-item"><a href="#ticket-tab1" class="nav-link active" data-toggle="tab"  id="tab_customer">Select AMC</a></li>
-								
-								
-									<li class="nav-item"><a href="#ticket-tab4" class="nav-link" data-toggle="tab"  id="tab_scheduled_visits">List of Scheduled WO.</a></li>
-									<li class="nav-item"><a href="#ticket-tab6" class="nav-link" data-toggle="tab"  id="tab_assign_tech">Assign Technician</a></li>
+									<li class="nav-item"><a href="#ticket-tab6" class="nav-link" data-toggle="tab"  id="tab_assign_tech">Scheduled WOs & Assign Tech</a></li>
 									<li class="nav-item"><a href="#ticket-tab5" class="nav-link" data-toggle="tab"  id="tab_assigned_list">List of Assigned WO.</a></li>
-								
-								
 								</ul>
 
 								<div class="tab-content" >
 									<div class="tab-pane fade show active" id="ticket-tab1">
-									
 									    <?PHP include_once('amc_schedule/amc_list_in_assign.php');?>
-									
 									</div>
                                    
-								
-	                                <div class="tab-pane fade" id="ticket-tab4">
-									   
-									    <?PHP include_once('amc_schedule/amc_list_of_scheduled_visits.php');?>
-										
-									</div>
 									<div class="tab-pane fade" id="ticket-tab5">
-									   
 									    <?PHP include_once('amc_schedule/amc_assigned_list.php');?>
-										
 									</div>
 									<div class="tab-pane fade" id="ticket-tab6">
-									   
 									    <?PHP include_once('amc_schedule/amc_assign_team.php');?>
-										
 									</div>
                                    
 									

@@ -75,17 +75,43 @@
 								}
 							});
                         
+                    function handleFilePreview(inputElement, previewContainerId) {
+                        var previewContainer = $(previewContainerId);
+                        previewContainer.empty().hide();
+                    
+                        if (inputElement.files && inputElement.files[0]) {
+                            var file = inputElement.files[0];
+                            var fileType = file.type;
+                            var validImageTypes = ["image/gif", "image/jpeg", "image/png"];
+                    
+                            previewContainer.show();
+                            
+                            if ($.inArray(fileType, validImageTypes) < 0) {
+                                // Document
+                                var iconHtml = '<div style="font-size: 24px; color: #555;"><i class="icon-file-pdf"></i></div>';
+                                previewContainer.html(iconHtml);
+                            } else {
+                                // Image
+                                var reader = new FileReader();
+                                reader.onload = function(e) {
+                                    previewContainer.html('<img src="' + e.target.result + '" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;">');
+                                }
+                                reader.readAsDataURL(file);
+                            }
+                        }
+                    }
+
                     $('#first_attachment').change(function (e) {
                          attachment_upload('#first_attachment',v_first_attachment);
-                            
+                         handleFilePreview(this, '#img_attachment1_preview');
                     });
                     $('#second_attachment').change(function (e) {
-                         
                              attachment_upload('#second_attachment',v_second_attachment);
+                             handleFilePreview(this, '#img_attachment2_preview');
                     });
                     $('#third_attachment').change(function (e) {
-                         
                              attachment_upload('#third_attachment',v_third_attachment);
+                             handleFilePreview(this, '#img_attachment3_preview');
                     });
                       
 
@@ -215,10 +241,10 @@
                                         v_third_attachment="default.jpg";
                                     }
 
-                                if($.trim(v_amc_start_end_date)===""||$.trim(v_amc_vat_per_amount)===""||$.trim(v_amc_amount)===""||$.trim(v_amc_vat_percentage)===""||$.trim(v_amc_amount)===""||$.trim(v_amc_start_end_date)===""||typeof v_amc_cust_id === "undefined"|| typeof v_amc_contract_type_id === "undefined"|| $.trim(v_amc_signed_date)==="")
+                                if($.trim(v_amc_start_end_date)===""||$.trim(v_amc_vat_per_amount)===""||$.trim(v_amc_amount)===""||$.trim(v_amc_vat_percentage)===""||$.trim(v_amc_signed_date)===""||v_amc_cust_id === "select" || typeof v_amc_cust_id === "undefined" || v_amc_contract_type_id === "select" || typeof v_amc_contract_type_id === "undefined")
                                 
                                 {
-                                    swal("Warning","Please provide all the details ....", "warning");
+                                    swal("Warning","Please provide all required details (Customer, Contract, Dates, Amount, VAT).", "warning");
                                     v_btn_amc_add.ladda( 'stop' );
                                     return false;
                                 }

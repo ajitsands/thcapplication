@@ -1,9 +1,11 @@
 <?php
-$amc_ref_no = $_GET['amc_ref_no'];
-$amc_id = $_GET['amc_id'];
-$contract_type = $_GET['contract_type'];
-$customer_code = $_GET['customer_code'];
-$customer_name = $_GET['customer_name'];
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING); // Prevent warnings from breaking PDF output
+
+$amc_ref_no = isset($_GET['amc_ref_no']) ? $_GET['amc_ref_no'] : '';
+$amc_id = isset($_GET['amc_id']) ? $_GET['amc_id'] : '';
+$contract_type = isset($_GET['contract_type']) ? $_GET['contract_type'] : '';
+$customer_code = isset($_GET['customer_code']) ? $_GET['customer_code'] : '';
+$customer_name = isset($_GET['customer_name']) ? $_GET['customer_name'] : '';
 $param = $amc_ref_no;
 //$param = 'amc_ref_no='.$amc_ref_no.'&amc_id='.$amc_id.'&contract_type='.$contract_type.'&customer_code='.$customer_code.'&customer_name='.$customer_name;
 $encryptedData = base64_encode($param);
@@ -11,7 +13,8 @@ $encryptedData = base64_encode($param);
 $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
 $protocol = $is_https ? 'https://' : 'http://';
 $server_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'portal.thcfm.com');
-$subfolder = (stripos($_SERVER['REQUEST_URI'], '/thc/') !== false) ? '/thc' : '';
+$request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+$subfolder = (stripos($request_uri, '/thc/') !== false) ? '/thc' : '';
 $encryptedURL = $protocol . $server_host . $subfolder . '/customer_feedback/?param=' . urlencode($encryptedData);
 
 //============================================================+

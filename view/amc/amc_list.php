@@ -1,4 +1,8 @@
-
+<style>
+    .daterangepicker {
+        z-index: 1060 !important;
+    }
+</style>
 
 <!-- Highlighting rows and columns -->
 				
@@ -54,45 +58,46 @@
 							    <div class="row">
 									<div class="col-md-12">
 										<div class="form-group row">
-											<div class="col-lg-5 col-md-5 col-sm-5" id="div_subcontractors_load" >
-												
+											<div class="col-lg-4 col-md-4 col-sm-12 mb-3" id="div_subcontractors_load">
 											</div>
 											
-											<?PHP //include("subcontractor_combo.php");?>
-											<div class="col-lg-2 col-md-2 col-sm-2">
+											<div class="col-lg-2 col-md-2 col-sm-12 mb-3">
 												<span class="form-text text-muted font-weight-bold"><font color="black">Amount&nbsp;<span style="color:red;">*</span></font></span> 
-												<input type="text"  class="form-control " id="txt_contractor_amount" name="Amount"  placeholder="0.000" tabindex=2>
+												<input type="text" class="form-control" id="txt_contractor_amount" name="Amount" placeholder="0.000" tabindex=2>
 											</div>
 											
-											<div class="col-lg-2 col-md-2 col-sm-2">
+											<div class="col-lg-2 col-md-2 col-sm-12 mb-3">
 												<span class="form-text text-muted font-weight-bold"><font color="black">VAT %&nbsp;<span style="color:red;">*</span></font></span> 
-												<input type="text"  class="form-control " id="txt_contractor_vat" name="VAT%"  placeholder="0.000" tabindex=3>
+												<input type="text" class="form-control" id="txt_contractor_vat" name="VAT%" placeholder="0.000" tabindex=3>
 											</div>
 											
-											<div class="col-lg-3 col-md-3 col-sm-3">
+											<div class="col-lg-4 col-md-4 col-sm-12 mb-3">
 												<span class="form-text text-muted font-weight-bold"><font color="black">Total Amount&nbsp;<span style="color:red;">*</span></font></span> 
-												<input type="text"  class="form-control " id="txt_contractor_total_amount" name="Total Amount" placeholder="0.000" tabindex=4 disabled>
+												<input type="text" class="form-control" id="txt_contractor_total_amount" name="Total Amount" placeholder="0.000" tabindex=4 disabled>
 											</div>
 											
-											<div class="col-lg-6 col-md-6 col-sm-12">
-											 <span class="form-text text-muted font-weight-bold"><font color="black">Start &amp; End Date&nbsp;<span style="color:red;">*</span></font></span>
+											<div class="col-lg-4 col-md-4 col-sm-12 mb-3">
+											    <span class="form-text text-muted font-weight-bold"><font color="black">Start &amp; End Date&nbsp;<span style="color:red;">*</span></font></span>
 												<div class="input-group">
 													<input type="text" id="txt_list_contractor_start_end_date" class="form-control daterange-basic" value="%11-%07-%2023 - %11-%07-%2024" tabindex=5> 
-													<span class="input-group-append">
+													<span class="input-group-append" style="cursor: pointer;" onclick="setTimeout(function(){ $('#txt_list_contractor_start_end_date').click(); }, 10);">
 														<span class="input-group-text"><i class="icon-calendar22"></i></span>
 													</span>
 												</div>
 											</div>
 											
-											<div class="col-lg-6 col-md-6 col-sm-6">
+											<div class="col-lg-4 col-md-4 col-sm-12 mb-3">
 												<span class="form-text text-muted font-weight-bold"><font color="black">Description&nbsp;<span style="color:red;">*</span></font></span> 
-												<input type="text"  class="form-control " id="txt_contractor_description" name="Description" placeholder="Description" tabindex=6>
+												<input type="text" class="form-control" id="txt_contractor_description" name="Description" placeholder="Description" tabindex=6>
 											</div>
 											
-											<div class="col-lg-12 col-md-12 col-sm-12">
-												 <span class="form-text text-muted font-weight-bold"><font color="black">File Upload&nbsp;</font></span>	
-												<input type="file" class="form-input-styled"  id="session_image" accept="image/*" title="&nbsp;" tabindex=7 data-fouc=""/><p id="amc_contractor_file_name"></p>
-												<div id="img_preview" style="width:40px;height:40px;padding-top:5px;"> </div>
+											<div class="col-lg-4 col-md-4 col-sm-12 mb-3">
+												<span class="form-text text-muted font-weight-bold"><font color="black">File Upload&nbsp;</font></span>	
+												<div class="form-group mb-1">
+												    <input type="file" class="form-input-styled" id="session_image" accept="image/*" title="&nbsp;" tabindex=7 data-fouc=""/>
+												</div>
+												<p id="amc_contractor_file_name" class="mt-0 mb-0 text-muted"></p>
+												<div id="img_preview" style="width:40px;height:40px;"></div>
 											</div>
 											
 										</div>
@@ -302,9 +307,18 @@
 					</div>
 				</div>
 				<!-- /disabled backdrop Renew-->	
-				
-				
-				
+				<script>
+				    $(document).ready(function() {
+				        $('#modal_assign_to_subcontractors').on('shown.bs.modal', function () {
+				            $('#txt_list_contractor_start_end_date').daterangepicker({
+				                parentEl: $(this),
+				                applyClass: 'btn-primary',
+				                cancelClass: 'btn-light',
+                                locale: { format: 'MM/DD/YYYY' }
+				            });
+				        });
+				    });
+				</script>
 		    <!-- ADD SERVICES  -->  
 		    
 		    <?php include("amc_add_services_modal.php");?>

@@ -305,12 +305,12 @@ var v_tbl_for_list_renew_amc = $('#tbl_for_list_renew_amc').DataTable({});
                                       render: function ( data, type, rows, meta ) {
                                                if(rows['renewal_status']=='YES')
                                                {
-                                     	      return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-quill4"></i> Edit AMC Details</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_assets" name="assign_assets"><i class="icon-redo2"></i> Assign Assets To AMC </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_child_details" name="assigned_assets"><i class="icon-stack3"></i> View Assets </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_to_subcontractors" name="assign_subcontractor"><i class="icon-users4"></i> Assign to Subcontractors </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="amc_change_status" data-target="#modal_change_status"><i class="icon-pencil5"></i> Change Status</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_backdrop_amc_payments1" name="a_amc_payments"><i class="icon-calculator3"></i> Payment Collection</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR Code</a></div></div></div>';
+                                      	      return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-quill4"></i> Edit AMC Details</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_assets" name="assign_assets"><i class="icon-redo2"></i> Assign Assets To AMC </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_child_details" name="assigned_assets"><i class="icon-stack3"></i> View Assets </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_to_subcontractors" name="assign_subcontractor"><i class="icon-users4"></i> Assign to Subcontractors </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="amc_change_status" data-target="#modal_change_status"><i class="icon-pencil5"></i> Change Status</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_backdrop_amc_payments1" name="a_amc_payments"><i class="icon-calculator3"></i> Payment Collection</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR Code</a><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a></div></div></div>';
                                      	        //return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-quill4"></i> View Details</a><a href="#" class="dropdown-item" data-toggle="modal" name="amc_change_status" data-target="#modal_change_status"><i class="icon-pencil5"></i> Change Status</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_add_assets" name="add_assets"><i class="icon-barcode2"></i> Add Assets </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_assets" name="assign_assets"><i class="icon-redo2"></i> Assign Assets </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_backdrop_amc_payments1" name="a_amc_payments"><i class="icon-calculator3"></i> Payment Collection</a><div class="dropdown-divider"></div></div></div></div>';
                                                }
                                                else
                                                {
-                                                   return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-quill4"></i> Edit AMC Details</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_assets" name="assign_assets"><i class="icon-redo2"></i> Assign Assets To AMC</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_child_details" name="assigned_assets"><i class="icon-stack3"></i> View Assets </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_to_subcontractors" name="assign_subcontractor"><i class="icon-users4"></i> Assign to Subcontractors </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="amc_change_status" data-target="#modal_change_status"><i class="icon-pencil5"></i> Change Status</a><a href="#" class="dropdown-item" data-toggle="modal" name="amc_renew" data-target="#modal_view_amc_renew"><i class="icon-reload-alt"></i> Renew</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_backdrop_amc_payments1" name="a_amc_payments"><i class="icon-calculator3"></i> Payment Collection</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a></div></div></div>';
+                                                   return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-quill4"></i> Edit AMC Details</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_assets" name="assign_assets"><i class="icon-redo2"></i> Assign Assets To AMC</a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_child_details" name="assigned_assets"><i class="icon-stack3"></i> View Assets </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_to_subcontractors" name="assign_subcontractor"><i class="icon-users4"></i> Assign to Subcontractors </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="amc_change_status" data-target="#modal_change_status"><i class="icon-pencil5"></i> Change Status</a><a href="#" class="dropdown-item" data-toggle="modal" name="amc_renew" data-target="#modal_view_amc_renew"><i class="icon-reload-alt"></i> Renew</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_backdrop_amc_payments1" name="a_amc_payments"><i class="icon-calculator3"></i> Payment Collection</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> AMC QR Code</a><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no=' + rows['amc_ref_no'] + '&amc_id=' + rows['amc_id'] + '&contract_type=' + rows['contract_type_name'] + '&customer_code=' + rows['customer_code'] + '&customer_name=' + rows['customer_name'] + '" class="dropdown-item" name="qr_amc_customer" data-toggle="" data-target="" style="color:black" target="_blank"><i class="icon-qrcode"></i> Customer Feedback QR</a></div></div></div>';
                                                //  return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-quill4"></i> View Details</a><a href="#" class="dropdown-item" data-toggle="modal" name="amc_change_status" data-target="#modal_change_status"><i class="icon-pencil5"></i> Change Status</a><a href="#" class="dropdown-item" data-toggle="modal" name="amc_renew" data-target="#modal_amc_renew"><i class="icon-reload-alt"></i> Renew</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_add_assets" name="add_assets"><i class="icon-barcode2"></i> Add Assets </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_assign_assets" name="assign_assets"><i class="icon-redo2"></i> Assign Assets </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_backdrop_amc_payments1" name="a_amc_payments"><i class="icon-calculator3"></i> Payment Collection</a><div class="dropdown-divider"></div></div></div></div>';
                                                 
                                                }
@@ -598,21 +598,31 @@ var v_tbl_for_list_renew_amc = $('#tbl_for_list_renew_amc').DataTable({});
 							$("#txt_sec_attachment_desc").val(data.amc_attachment2_desc);
 							$("#txt_third_attachment_desc").val(data.amc_attachment3_desc);
 							
-							$("#first_image_name").html(data.amc_attachment1);
-							
-							$("#second_image_name").html(data.amc_attachment2);
-							$("#thrid_image_name").html(data.amc_attachment3);
-							
-							
-							$("#img_attachment1_preview").html("<a href='../httpdocs/images/amc_attachements/"+data.amc_attachment1+"' target='_BLANK'  title='Click here to view atatchment' data-toggle='tooltip'><i class='icon-attachment' style='font-size:30px;color:#0d6efd;'></i></a>");
-						
-						
-							$("#img_attachment2_preview").html("<a href='../httpdocs/images/amc_attachements/"+data.amc_attachment2+"' target='_BLANK' title='Click here to view atatchment' data-toggle='tooltip'><i class='icon-attachment' style='font-size:30px;color:#0d6efd;'></i></a>");
-							$("#img_attachment3_preview").html("<a href='../httpdocs/images/amc_attachements/"+data.amc_attachment3+"' target='_BLANK' title='Click here to view atatchment' ><i class='icon-attachment' style='font-size:30px;color:#0d6efd;position:relative;top:3px;'></i></a>");
-							
-						     attachments[0]=$("#first_image_name").text();
-                            attachments[1]=$("#second_image_name").text();
-                            attachments[2]=$("#thrid_image_name").text();
+                            function getPreviewHtml(fileName) {
+                                if (!fileName || fileName === "default.jpg" || fileName === "") {
+                                    return ""; // No preview
+                                }
+                                var ext = fileName.split('.').pop().toLowerCase();
+                                var validImageTypes = ["gif", "jpeg", "jpg", "png"];
+                                if ($.inArray(ext, validImageTypes) !== -1) {
+                                    return "<a href='../httpdocs/images/amc_attachements/" + fileName + "' target='_BLANK' title='Click here to view attachment'><img src='../httpdocs/images/amc_attachements/" + fileName + "' style='max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;'></a>";
+                                } else {
+                                    return "<a href='../httpdocs/images/amc_attachements/" + fileName + "' target='_BLANK' title='Click here to view attachment'><i class='icon-file-pdf' style='font-size:24px;color:#555;'></i></a>";
+                                }
+                            }
+                            
+                            var p1 = getPreviewHtml(data.amc_attachment1);
+                            if (p1 !== "") { $("#img_attachment1_preview").html(p1).show(); } else { $("#img_attachment1_preview").empty().hide(); }
+                            
+                            var p2 = getPreviewHtml(data.amc_attachment2);
+                            if (p2 !== "") { $("#img_attachment2_preview").html(p2).show(); } else { $("#img_attachment2_preview").empty().hide(); }
+                            
+                            var p3 = getPreviewHtml(data.amc_attachment3);
+                            if (p3 !== "") { $("#img_attachment3_preview").html(p3).show(); } else { $("#img_attachment3_preview").empty().hide(); }
+                            
+                            attachments[0] = data.amc_attachment1;
+                            attachments[1] = data.amc_attachment2;
+                            attachments[2] = data.amc_attachment3;
 						 }
                           if($(this).attr("name")=='a_schedule_visits')
                          {
@@ -767,7 +777,9 @@ var v_tbl_for_list_renew_amc = $('#tbl_for_list_renew_amc').DataTable({});
                     		 }).done(function(data){
 
                     			$("#div_location_select_assign_assets").html(data);
-								$("#select_location_assign_asset").select2();
+								$("#select_location_assign_asset").select2({
+                                    dropdownParent: $('#modal_assign_assets')
+                                });
 										});
 							
 													
@@ -778,7 +790,9 @@ var v_tbl_for_list_renew_amc = $('#tbl_for_list_renew_amc').DataTable({});
                     		data: { v_cust_id : v_cust_id } 
                     		 }).done(function(data){
                     			$("#div_building_select_assign_assets").html(data);
-								$("#select_building_new").select2();
+								$("#select_building_new").select2({
+                                    dropdownParent: $('#modal_assign_assets')
+                                });
 										}); 
 						  
                         } 
@@ -1225,14 +1239,13 @@ var v_tbl_for_list_renew_amc = $('#tbl_for_list_renew_amc').DataTable({});
                             var vat_renewal_per=parseFloat(v_amc_renewal_vat_percentage)/100;
                             var v_renewal_vat_amount= v_amc_renewal_amount * vat_renewal_per;
                            
-                            if(isNaN(v_renewal_vat_amount))
-                                {
-                                     $("#txt_amc_renewal_vat_amount").val(0);
-                                }
-                            else
-                                {
-                                     $("#txt_amc_renewal_vat_amount").val(v_renewal_vat_amount);
-                                }
+                            if(isNaN(v_renewal_vat_amount)) {
+                                 $("#txt_amc_renewal_vat_amount").val(0);
+                                 $("#txt_amc_renewal_total_amount").val((parseFloat(v_amc_renewal_amount) || 0).toFixed(2));
+                            } else {
+                                 $("#txt_amc_renewal_vat_amount").val(v_renewal_vat_amount.toFixed(2));
+                                 $("#txt_amc_renewal_total_amount").val(((parseFloat(v_amc_renewal_amount) || 0) + v_renewal_vat_amount).toFixed(2));
+                            }
                        
                         }
            var convertDate = function(usDate) {
@@ -1333,6 +1346,7 @@ var v_tbl_for_list_renew_amc = $('#tbl_for_list_renew_amc').DataTable({});
                // $("#txt_amc_renewal_amount").val('');
                // $("#txt_vat_renewal_percentage").val('');
                // $("#txt_amc_renewal_vat_amount").val('');
+               // $("#txt_amc_renewal_total_amount").val('');
            // }
             
     
@@ -2689,70 +2703,39 @@ function load_data_to_grid_amc_service_list(asset_cate_combo,assettype_combo)
                 } );
                       function format_amc_child_details(d)
 	               	{
-		
-            			return '<table style="table-layout: fixed; width: 100%; word-wrap: break-word;">'+
-            			 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Zone/Floor </div></td>'+
-            				'<td ><div align="center"> Area Code </div></td>'+
-            				'<td ><div align="center">Room No </div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.zone_floor+'</div></td>'+
-            				'<td><div align="center">'+d.flat_area_code+'</div></td>'+
-            				'<td><div align="center">'+d.room_no+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			  	 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Location Details </div></td>'+
-            				'<td ><div align="center">Brand </div></td>'+
-            				'<td ><div align="center">Serial No</div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.asset_sp_des+'</div></td>'+
-            				'<td><div align="center">'+d.asset_brand+'</div></td>'+
-            				'<td><div align="center">'+d.asset_serial_no+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			   	 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Capacity</div></td>'+
-            				'<td ><div align="center">Cost</div></td>'+
-            				'<td ><div align="center">Is Warrenty</div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.asset_capacity+'</div></td>'+
-            				'<td><div align="center">'+d.asset_cost+'</div></td>'+
-            				'<td><div align="center">'+d.is_warentee+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			  '<tr style="background: #989898;color:#ffffff;">'+
-            			  '<td ><div align="center">Warrenty End Date</div></td>'+
-            			    '<td ><div align="center">Asset Description</div></td>'+
-            				'<td ><div align="center">Asset Image</div></td>'+
-            				
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.warentee_end_date+'</div></td>'+
-            				'<td><div align="center">'+d.asset_description+'</div></td>'+
-            				'<td><div align="center"><a href="../httpdocs/images/amc_attachements/'+d.asset_attachment+'" target="_blank" rel="noopener"><i class="icon-image4 mr-3 icon-2x"></a></i></div></td>'+
-							
-            				
-            			  '</tr>'+
-            			
-            			'</table>' ;
-                        			
-		
-		
+                        var imageHtml = (d.asset_attachment && d.asset_attachment.trim() !== '') ? 
+                            '<a href="../httpdocs/images/amc_attachements/' + d.asset_attachment + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><i class="icon-image4 mr-2"></i>View Image</a>' : 
+                            '<span class="text-muted">No Image</span>';
+                    
+                        var attachmentHtml = (d.amc_renewal_attachment && d.amc_renewal_attachment.trim() !== '') ? 
+                            '<a href="../httpdocs/images/amc_renewal_attachments/' + d.amc_renewal_attachment + '" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><i class="icon-attachment mr-2"></i>View Doc</a>' : 
+                            '<span class="text-muted">No Attachment</span>';
+                    
+                        return '<div class="p-3 bg-light border rounded" style="margin: 10px 0;">' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-3"><strong>Zone/Floor:</strong><br>' + (d.zone_floor || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Area Code:</strong><br>' + (d.flat_area_code || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Room No:</strong><br>' + (d.room_no || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Brand:</strong><br>' + (d.asset_brand || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-3"><strong>Serial No:</strong><br>' + (d.asset_serial_no || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Capacity:</strong><br>' + (d.asset_capacity || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Cost:</strong><br>' + (d.asset_cost || '-') + '</div>' +
+                                '<div class="col-md-3"><strong>Warranty:</strong><br>' + (d.is_warentee || '-') + ' (' + (d.warentee_end_date || '-') + ')</div>' +
+                            '</div>' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-6"><strong>Location Details:</strong><br>' + (d.asset_sp_des || '-') + '</div>' +
+                                '<div class="col-md-6"><strong>Asset Description:</strong><br>' + (d.asset_description || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="row mb-3">' +
+                                '<div class="col-md-6"><strong>AMC Renewal Notes:</strong><br>' + (d.amc_renewal_notes || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="row mt-3 pt-3 border-top">' +
+                                '<div class="col-md-3"><strong>Asset Image:</strong><br><div class="mt-1">' + imageHtml + '</div></div>' +
+                                '<div class="col-md-3"><strong>Renewal Attachment:</strong><br><div class="mt-1">' + attachmentHtml + '</div></div>' +
+                            '</div>' +
+                        '</div>';
 	            }
 				
 				function load_data_to_grid_assign_subcontractor_list(v_amc_id)
@@ -2821,13 +2804,18 @@ function load_data_to_grid_amc_service_list(asset_cate_combo,assettype_combo)
                                  },
 								{ "data": "amc_subcontractor_ids",
 								 render: function ( data, type, rows, meta ) {
+                                     var viewDocStr = '';
+                                     if(rows["file_name"] && rows["file_name"] !== 'default.jpg') {
+                                         viewDocStr = '<a href="../httpdocs/images/amc_subcontractor_file_upload/'+rows["file_name"]+'" target="_blank" class="dropdown-item" name="view_doc"><i class="icon-file-text3"></i> View Doc </a>';
+                                     }
+
 									 if(rows['amc_subcontractor_status'] === 'Active')
 									 {
-										str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-database-edit2"></i> Edit </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_deactive_reason" name="Deactive"><i class="icon-cross3"></i> Deactive </a><a href="../httpdocs/images/amc_subcontractor_file_upload/'+rows["file_name"]+'" target="_blank" class="dropdown-item" name="view_doc"><i class="icon-file-text3"></i> View Doc </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="delete_data" data-target="#"><i class="icon-trash"></i> Delete</a></div></div>'; 
+										str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-database-edit2"></i> Edit </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_deactive_reason" name="Deactive"><i class="icon-cross3"></i> Deactive </a>' + viewDocStr + '<div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="delete_data" data-target="#"><i class="icon-trash"></i> Delete</a></div></div>'; 
 									 }
 									else
 									{
-										str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-database-edit2"></i> Edit </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#" name="Active"><i class="icon-checkmark2"></i> Active </a><a href="../httpdocs/images/amc_subcontractor_file_upload/'+rows["file_name"]+'" target="_blank" class="dropdown-item" name="view_doc"><i class="icon-file-text3"></i> View Doc </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="delete_data" data-target="#"><i class="icon-trash"></i> Delete</a></div></div>';
+										str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="Edit_data"><i class="icon-database-edit2"></i> Edit </a><a href="#" class="dropdown-item" data-toggle="modal" data-target="#" name="Active"><i class="icon-checkmark2"></i> Active </a>' + viewDocStr + '<div class="dropdown-divider"></div><a href="#" class="dropdown-item" data-toggle="modal" name="delete_data" data-target="#"><i class="icon-trash"></i> Delete</a></div></div>';
 									}
 									return str_actions; 
 								 }
@@ -2961,8 +2949,18 @@ function load_data_to_grid_amc_service_list(asset_cate_combo,assettype_combo)
 								
 								$("#txt_list_contractor_start_end_date").val(start_date_end_date);
 								
-								$("#img_preview").html("<img style='width:60px;height:60px;'src='../httpdocs/images/amc_subcontractor_file_upload/"+$.trim(subcontractor_data.file_name)+"'>");
-								$('#amc_contractor_file_name').text(subcontractor_data.file_name);
+                                var fileName = $.trim(subcontractor_data.file_name);
+                                $('#amc_contractor_file_name').text(fileName);
+                                if (fileName && fileName !== 'default.jpg') {
+                                    if (fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                                        $("#img_preview").html("<img style='width:100%;height:100%;object-fit:cover;border-radius:4px;border:1px solid #ddd;' src='../httpdocs/images/amc_subcontractor_file_upload/" + fileName + "'>");
+                                    } else {
+                                        $("#img_preview").html('<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;"><i class="icon-file-pdf text-danger" style="font-size:24px;"></i></div>');
+                                    }
+                                    $("#img_preview").show();
+                                } else {
+                                    $("#img_preview").hide();
+                                }
 								$( '#btn_assign_subcontractors').hide();
 								$( '#btn_edit_assign_subcontractors').show();
 				   
@@ -3139,6 +3137,26 @@ function load_data_to_grid_amc_service_list(asset_cate_combo,assettype_combo)
                     $("#img_preview").hide();
 				}
 				 
+                $('#session_image').change(function(e) {
+                    var file = this.files[0];
+                    if (file) {
+                        $('#amc_contractor_file_name').text(file.name);
+                        $('#img_preview').show();
+                        if (file.type.match('image.*')) {
+                            var reader = new FileReader();
+                            reader.onload = function(e) {
+                                $('#img_preview').html('<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px;border:1px solid #ddd;">');
+                            }
+                            reader.readAsDataURL(file);
+                        } else {
+                            $('#img_preview').html('<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;"><i class="icon-file-pdf text-danger" style="font-size:24px;"></i></div>');
+                        }
+                    } else {
+                        $('#amc_contractor_file_name').text('');
+                        $('#img_preview').empty().hide();
+                    }
+                });
+
 				$('#btn_deactive').click(function(){
 					var amcRefNoReasonText = $('#amc_ref_no_reason').text();
 					var splitValues = amcRefNoReasonText.split('-');
@@ -3261,6 +3279,7 @@ function load_data_to_grid_amc_service_list(asset_cate_combo,assettype_combo)
                $("#txt_amc_renewal_amount").val('');
                $("#txt_vat_renewal_percentage").val('');
                $("#txt_amc_renewal_vat_amount").val('');
+               $("#txt_amc_renewal_total_amount").val('');
            }
 		   
 		   

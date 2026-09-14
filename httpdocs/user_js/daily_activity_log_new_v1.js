@@ -167,7 +167,7 @@ $("#btn_print").click(function(){
 		else
 		{
 		    var img_to_load=$("#hidden_image_show_add_entries2").val();
-	         var filePath='http://thc.sianlab.com/view/daily_reports/daily_activity_log_print.php?status='+status+'&start_date='+start_date;
+	         var filePath='daily_reports/daily_activity_log_print.php?status='+status+'&start_date='+start_date;
 	    
 		    window.open(filePath, '_blank');
 		}

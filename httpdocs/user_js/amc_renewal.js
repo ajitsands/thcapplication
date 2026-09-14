@@ -150,7 +150,7 @@ $(document).ready(function(){
                                   { "data": "amc_ id","className":"text-center",
                                       render: function ( data, type, rows, meta ) {
                                          
-                                          return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_renew" name="renew_amc"><i class="icon-reload-alt"></i> Renew</a><a href="#" class="dropdown-item" data-toggle="" data-target="#" name="renew_amc_complete"><i class="icon-task"></i> Complete</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a></div></div></div>';
+                                          return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_renew" name="renew_amc"><i class="icon-reload-alt"></i> Renew</a><a href="#" class="dropdown-item" data-toggle="" data-target="#" name="renew_amc_complete"><i class="icon-task"></i> Complete</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id='+rows['amc_id']+'&contract_type='+encodeURIComponent(rows['contract_type_name'] || '')+'&customer_code='+encodeURIComponent(rows['customer_code'] || '')+'&customer_name='+encodeURIComponent(rows['customer_name'] || '')+'" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a></div></div></div>';
                                         
                                       }   
                                  },
@@ -318,7 +318,7 @@ $(document).ready(function(){
                                       render: function ( data, type, rows, meta ) {
                                          
                                            //return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_amc_renew"><i class="icon-reload-alt"></i> Renew</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-arrow-right7"></i> View Subcontractors</a></div></div></div>';
-                                          return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_renew" name="renew_amc"><i class="icon-reload-alt" ></i> Renew</a><a href="#" class="dropdown-item" data-toggle="" data-target="#" name="renew_amc_complete"><i class="icon-task"></i> Complete</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/generate_amc_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id=' + rows['amc_id'] + '" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a></div></div></div>';
+                                          return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_amc_renew" name="renew_amc"><i class="icon-reload-alt" ></i> Renew</a><a href="#" class="dropdown-item" data-toggle="" data-target="#" name="renew_amc_complete"><i class="icon-task"></i> Complete</a><a href="#" class="dropdown-item" name="view_amc_subcontractors_details" data-toggle="modal" data-target="#modal_view_amc_subcontractors_details" style="color:black"><i class="icon-users"></i> View Subcontractors</a><a href="#" class="dropdown-item" name="renew_amc_report" data-toggle="" data-target="#" style="color:black"><i class="icon-printer2"></i> Report</a><div class="dropdown-divider"></div><a href="../printpdf/qr_code/customer_feedback_qr.php?amc_ref_no='+rows['amc_ref_no']+'&amc_id='+rows['amc_id']+'&contract_type='+encodeURIComponent(rows['contract_type_name'] || '')+'&customer_code='+encodeURIComponent(rows['customer_code'] || '')+'&customer_name='+encodeURIComponent(rows['customer_name'] || '')+'" class="dropdown-item" name="" data-toggle="" data-target="#" style="color:black" target="_blank"><i class="icon-qrcode"></i> QR Customer Feedback</a></div></div></div>';
                                         
                                       }   
                                  },
@@ -789,14 +789,13 @@ $(document).ready(function(){
                             var vat_renewal_per=parseFloat(v_amc_renewal_vat_percentage)/100;
                             var v_renewal_vat_amount= v_amc_renewal_amount * vat_renewal_per;
                            
-                            if(isNaN(v_renewal_vat_amount))
-                                {
-                                     $("#txt_amc_renewal_vat_amount").val(0);
-                                }
-                            else
-                                {
-                                     $("#txt_amc_renewal_vat_amount").val(v_renewal_vat_amount);
-                                }
+                            if(isNaN(v_renewal_vat_amount)) {
+                                 $("#txt_amc_renewal_vat_amount").val(0);
+                                 $("#txt_amc_renewal_total_amount").val((parseFloat(v_amc_renewal_amount) || 0).toFixed(2));
+                            } else {
+                                 $("#txt_amc_renewal_vat_amount").val(v_renewal_vat_amount.toFixed(2));
+                                 $("#txt_amc_renewal_total_amount").val(((parseFloat(v_amc_renewal_amount) || 0) + v_renewal_vat_amount).toFixed(2));
+                            }
                        
                         }
            var convertDate = function(usDate) {
@@ -896,6 +895,7 @@ $(document).ready(function(){
                $("#txt_amc_renewal_amount").val('');
                $("#txt_vat_renewal_percentage").val(''); 
                $("#txt_amc_renewal_vat_amount").val('');
+               $("#txt_amc_renewal_total_amount").val('');
            }
             
 	
@@ -1554,4 +1554,18 @@ $(document).ready(function(){
        }, 1000);  
 
 
+
+      $("#modal_view_amc_renew").on("shown.bs.modal", function() {
+          $("#txt_amc_renewal_signed_date").daterangepicker({
+              singleDatePicker: true,
+              parentEl: "#modal_view_amc_renew .modal-body"
+          });
+          $("#txt_amc_renewal_start_end_date").daterangepicker({
+              opens: "left",
+              parentEl: "#modal_view_amc_renew .modal-body"
+          });
+      });
+
 });
+
+
