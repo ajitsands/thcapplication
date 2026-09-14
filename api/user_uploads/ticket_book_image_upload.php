@@ -4,7 +4,11 @@
         echo 'Error: ' . $_FILES['file']['error'] . '<br>';
     }
     else {
-        move_uploaded_file($_FILES['file']['tmp_name'], '../images/ticket_book_image/' .$_GET["random_no"].'_'.  $_FILES['file']['name']);
+        $folder = __DIR__ . '/../images/ticket_book_image/';
+        if (!file_exists($folder)) {
+            mkdir($folder, 0777, true);
+        }
+        move_uploaded_file($_FILES['file']['tmp_name'], $folder . $_GET["random_no"] . '_' . $_FILES['file']['name']);
        // echo "Uploaded";
     }
 

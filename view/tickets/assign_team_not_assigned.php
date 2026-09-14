@@ -1,12 +1,12 @@
 <div id="modal_assign_ticket_multiple" class="modal fade" data-backdrop="false" tabindex="-1" >
-    <div class="modal-dialog modal-lg " style="max-width:90%">
+    <div class="modal-dialog modal-lg " style="width:90% !important; max-width:90% !important;">
 		<div class="modal-content">
 		    	<div class="modal-header bg-info">
 					<h5 class="modal-title"><b>Assign WO. : <span id="span_ticket_ref_no_assign_ticket_multiple"></span><span id="span_customer_assign_ticket_multiple" data-popup="popover" data-placement="bottom" title="Popover title" ></span><span id="span_customer_assign_location_multiple"></span><span id="span_customer_assign_building_multiple" data-popup="popover" data-placement="bottom" title="Popover title" data-content=""></span></b>
     							  </h5>
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 				</div>
-				<div class="modal-body">
+				<div class="modal-body" style="max-height: 70vh; overflow-y: auto; overflow-x: hidden;">
 				      <div class="row">
                              	<input type="hidden" id="txt_hidden_ticket_ref_code_assign_ticket_multiple1"/>
                              	<!--<input type="hidden" id="txt_ticket_id_assign_hidden_multiple"/>-->

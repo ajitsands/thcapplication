@@ -2,8 +2,9 @@
 include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
- 	$result = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from   tbl_asset_type where asset_type_status='Active' and category_id=".$_POST['category_id']);
 
+$category_id = isset($_POST['category_id']) && $_POST['category_id'] !== '' ? intval($_POST['category_id']) : 0;
+$result = mysqli_query($varDBConnection,"select asset_type_id,asset_type_name from   tbl_asset_type where asset_type_status='Active' and category_id=".$category_id);
 	?>
 
 

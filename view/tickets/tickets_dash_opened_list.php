@@ -1,5 +1,5 @@
 			<!-- Single row selection -->
-				<div class="card" style="overflow:auto;">
+				<div class="card" style="overflow:visible;">
 				   
 					<table class="table datatable-selection-single table-hover datatable-highlight" id="tbl_of_scheduled_not_assigned_tickets">
 						<thead>

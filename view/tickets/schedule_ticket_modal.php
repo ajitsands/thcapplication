@@ -1,5 +1,5 @@
 <div id="modal_schedule_ticket" class="modal fade" data-backdrop="false" tabindex="-1" >
-					<div class="modal-dialog modal-lg" style="max-width:90%">
+					<div class="modal-dialog modal-lg" style="width:90% !important; max-width:90% !important;">
 						<div class="modal-content">
 							<div class="modal-header">
 							<h5 class="modal-title"><b>Schedule Ticket : <span id="span_ticket_ref_no_schedule_ticket"></span><span id="span_customer_schedule_ticket" data-popup="popover" data-placement="bottom" title="Popover title" ></span><span id="span_customer_schedule_location"></span><span id="span_customer_schedule_building" data-popup="popover" data-placement="bottom" title="Popover title" data-content=""></span></b>

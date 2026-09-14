@@ -1200,7 +1200,7 @@ $(document).ready(function(){
 		                   else
 				                 {
 				                        $('#div_tech_list').show();
-				                        var visit_date=ticketassignTableSelectedValues[t].date_of_visits;
+				                        var visit_date=ticketassignTableSelectedValues[t].date_of_visits1;
                                          var visit_slot=ticketassignTableSelectedValues[t].time_of_visit;
                                          var visit_duration=ticketassignTableSelectedValues[t].additional_slots;
                                          var j=visit_slot;
@@ -1281,7 +1281,7 @@ $(document).ready(function(){
 				    
 				     visitidarray.push(ticketTableSelectedValues[t].amc_visit_id);
 				     ticketidarray.push(ticketTableSelectedValues[t].amc_tkt_id);
-		        	visit_date=	ticketTableSelectedValues[t].date_of_visits;
+		        	visit_date=	ticketTableSelectedValues[t].date_of_visits1;
 		        	visit_duration=	ticketTableSelectedValues[t].additional_slots;
 		        	visit_start_time=ticketTableSelectedValues[t].visit_start_time;
 		        	visit_slot=ticketTableSelectedValues[t].time_of_visit;
@@ -1534,6 +1534,42 @@ $(document).ready(function(){
 	            }
 	            
 	    var v_btn_update_schedule = $('#btn_update_schedule').ladda();         
+	$('#txt_date_multiple_update, #select_slots_multiple_update, #duration_multiple_update').on('change', function(){
+         var visit_date=$("#txt_date_multiple_update").val();
+         var visit_slot=$("#select_slots_multiple_update option:selected").val();
+         var visit_duration=$("#duration_multiple_update option:selected").val();
+         var new_slot_sql_string = "";
+         var new_sch_slot_sql_string = "";
+         if(visit_slot && visit_duration && visit_slot !== "" && visit_duration !== "") {
+             var t=parseInt(visit_slot)+parseInt(visit_duration);
+             if(t>24) {
+                 swal("Warning", "Sorry! the slots schedule exceeds the slots available for the day...", "warning");
+                 return false;
+             } else {
+                 var slot_sql_string="";
+                 var sch_slot_sql_string="";
+                 for(var i=parseInt(visit_slot);i<=t;i++) {
+                     slot_sql_string=slot_sql_string+' slot_'+i+' ="0" and';
+                     sch_slot_sql_string=sch_slot_sql_string+' slot_'+i+' ="1" ,';
+                 }
+                 new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
+                 new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
+             }
+         }
+         
+         load_data_to_grid_available_technicians_multiple(visit_date,new_slot_sql_string);
+         
+         $("#txt_visit_date_assign_hidden_multiple").val(visit_date);
+         $("#txt_visit_slot_assign_hidden_multiple").val(visit_slot);
+         $("#txt_visit_slot_assign_hidden_for_sch_multiple").val(new_sch_slot_sql_string);
+         $("#txt_visit_added_slot_multiple").val(visit_duration);
+         if(visit_slot && visit_slot !== "") {
+             $("#txt_vist_start_time_hidden_multiple").val(visit_slot+':00');
+         } else {
+             $("#txt_vist_start_time_hidden_multiple").val(visit_date);
+         }
+    });
+
 	 $('#btn_update_schedule').click(function(){
          	v_btn_update_schedule.ladda( 'start' );
           var ticket_sch_count = v_ticket_schedule_category_list_multiple_extended.rows('.selected').data().length;
@@ -1601,7 +1637,7 @@ $(document).ready(function(){
                 for(t=0;t<=ticket_sch_count-1;t++)
         				{
         				    
-        				     visitidarray.push(ticketschTableSelectedValues[t].amc_visit_id);
+         				     visitidarray.push(ticketschTableSelectedValues[t].amc_visit_id);
         				
         				}
         				

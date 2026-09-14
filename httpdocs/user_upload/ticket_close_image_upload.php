@@ -9,6 +9,10 @@ if ($_FILES['file']['error'] > 0) {
 
     $folder = __DIR__ . '/../images/ticket_close_image/';
 
+    if (!file_exists($folder)) {
+        mkdir($folder, 0777, true);
+    }
+
     $filename = preg_replace('/[^A-Za-z0-9._-]/', '_', $_FILES['file']['name']);
 
     $destination = $folder . $_GET['random_no'] . '_' . $filename;

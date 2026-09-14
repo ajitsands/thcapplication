@@ -1,7 +1,7 @@
 	
 			
 				<div id="modal_view_ticket" class="modal fade" data-backdrop="false" tabindex="-1">
-					<div class="modal-dialog modal-lg" style="max-width:80%">
+					<div class="modal-dialog modal-lg" style="width:90% !important; max-width:90% !important;">
 						<div class="modal-content">
 							<div class="modal-header bg-info">
 								<h5 class="modal-title"><b>View WO. : <span id="span_ticket_ref_no_view_ticket"></span><span id="span_customer_view_ticket"></span><span id="span_customer_view_location"></span><span id="span_customer_view_building"></span></b>

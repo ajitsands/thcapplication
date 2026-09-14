@@ -1090,109 +1090,41 @@ $(document).ready(function(){
 	            
 	            
 	            
-    $('#select_slots_multiple_extended').on('change', function(){
+    $('#txt_date_multiple, #select_slots_multiple_extended, #duration_multiple').on('change', function(){
          var visit_date=$("#txt_date_multiple").val();
          var visit_slot=$("#select_slots_multiple_extended option:selected").val();
          var visit_duration=$("#duration_multiple option:selected").val();
-         var i=visit_slot;
-         var slot_sql_string="";
-         var sch_slot_sql_string="";
-         var t=parseInt(visit_slot)+parseInt(visit_duration);
-        
-          if(t>24)
-          {
-               swal("Warning", "Sorry! the slots schedule exceeds the slots available for the day...", "warning");
-              return false;
-          }
-          else
-          {
-                  for(i=visit_slot;i<=t;i++)
-             {
-                  slot_sql_string=slot_sql_string+' slot_'+i+' ="0" and';
-                  sch_slot_sql_string=sch_slot_sql_string+' slot_'+i+' ="1" ,';
+         var new_slot_sql_string = "";
+         var new_sch_slot_sql_string = "";
+         if(visit_slot && visit_duration && visit_slot !== "" && visit_duration !== "") {
+             var t=parseInt(visit_slot)+parseInt(visit_duration);
+             if(t>24) {
+                 swal("Warning", "Sorry! the slots schedule exceeds the slots available for the day...", "warning");
+                 return false;
+             } else {
+                 var slot_sql_string="";
+                 var sch_slot_sql_string="";
+                 for(var i=parseInt(visit_slot);i<=t;i++) {
+                     slot_sql_string=slot_sql_string+' slot_'+i+' ="0" and';
+                     sch_slot_sql_string=sch_slot_sql_string+' slot_'+i+' ="1" ,';
+                 }
+                 new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
+                 new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
              }
-              var new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
-               var new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
-             load_data_to_grid_available_technicians_multiple(visit_date,new_slot_sql_string);
+         }
          
-             $("#txt_visit_date_assign_hidden_multiple").val(visit_date);
-             $("#txt_visit_slot_assign_hidden_multiple").val(visit_slot);
-             $("#txt_visit_slot_assign_hidden_for_sch_multiple").val(new_sch_slot_sql_string);
-             $("#txt_visit_added_slot_multiple").val(visit_duration);
+         load_data_to_grid_available_technicians_multiple(visit_date,new_slot_sql_string);
+         
+         $("#txt_visit_date_assign_hidden_multiple").val(visit_date);
+         $("#txt_visit_slot_assign_hidden_multiple").val(visit_slot);
+         $("#txt_visit_slot_assign_hidden_for_sch_multiple").val(new_sch_slot_sql_string);
+         $("#txt_visit_added_slot_multiple").val(visit_duration);
+         if(visit_slot && visit_slot !== "") {
              $("#txt_vist_start_time_hidden_multiple").val(visit_slot+':00');
-          }
+         } else {
+             $("#txt_vist_start_time_hidden_multiple").val(visit_date);
+         }
     });
-	         
-    $('#duration_multiple').on('change', function(){
-         var visit_date=$("#txt_date_multiple").val();
-         var visit_slot=$("#select_slots_multiple_extended option:selected").val();
-         var visit_duration=$("#duration_multiple option:selected").val();
-         var i=visit_slot;
-         var slot_sql_string="";
-         var sch_slot_sql_string="";
-         var t=parseInt(visit_slot)+parseInt(visit_duration);
-        
-          if(t>24)
-          {
-              swal("Warning", "Sorry! the slots schedule exceeds the slots available for the day...", "warning");
-              return false;
-          }
-          else
-          {
-                  for(i=visit_slot;i<=t;i++)
-             {
-                  slot_sql_string=slot_sql_string+' slot_'+i+' ="0" and';
-                  sch_slot_sql_string=sch_slot_sql_string+' slot_'+i+' ="1" ,';
-             }
-              var new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
-              var new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
-             load_data_to_grid_available_technicians_multiple(visit_date,new_slot_sql_string);
-         
-             $("#txt_visit_date_assign_hidden_multiple").val(visit_date);
-             $("#txt_visit_slot_assign_hidden_multiple").val(visit_slot);
-             $("#txt_visit_slot_assign_hidden_for_sch_multiple").val(new_sch_slot_sql_string);
-             $("#txt_visit_added_slot_multiple").val(visit_duration);
-             $("#txt_vist_start_time_hidden_multiple").val(visit_slot+':00');
-          }
-    });   
-    
-    $('#txt_date_multiple').on('change', function(){
-         var visit_date=$("#txt_date_multiple").val();
-         var visit_slot=$("#select_slots_multiple_extended option:selected").val();
-         var visit_duration=$("#duration_multiple option:selected").val();
-         var i=visit_slot;
-         var slot_sql_string="";
-         var sch_slot_sql_string="";
-         var t=parseInt(visit_slot)+parseInt(visit_duration);
-        
-          if(t>24)
-          {
-               swal("Warning", "Sorry! the slots schedule exceeds the slots available for the day...", "warning");
-              return false;
-          }
-          else
-          {
-                  for(i=visit_slot;i<=t;i++)
-             {
-                  slot_sql_string=slot_sql_string+' slot_'+i+' ="0" and';
-                  sch_slot_sql_string=sch_slot_sql_string+' slot_'+i+' ="1" ,';
-             }
-              var new_slot_sql_string = slot_sql_string.split(" ").slice(0, -1).join(" ");
-               var new_sch_slot_sql_string = sch_slot_sql_string.replace(/,\s*$/, "");
-             load_data_to_grid_available_technicians_multiple(visit_date,new_slot_sql_string);
-         
-             $("#txt_visit_date_assign_hidden_multiple").val(visit_date);
-             $("#txt_visit_slot_assign_hidden_multiple").val(visit_slot);
-             $("#txt_visit_slot_assign_hidden_for_sch_multiple").val(new_sch_slot_sql_string);
-             $("#txt_visit_added_slot_multiple").val(visit_duration);
-             $("#txt_vist_start_time_hidden_multiple").val(visit_slot+':00');
-          }
-    });   
-
-$('#txt_date_multiple').on('change', function(){
-    var visit_date=$("#txt_date_multiple").val();
-        $("#txt_vist_start_time_hidden_multiple").val($("#txt_date_multiple").val());
-});
 	 
 	
 	

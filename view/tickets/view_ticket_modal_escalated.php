@@ -1,5 +1,5 @@
 <div id="modal_view_complaints" class="modal fade" data-backdrop="false" tabindex="-1" >
-					<div class="modal-dialog modal-lg" style="max-width:80%" >
+					<div class="modal-dialog modal-lg" style="width:90% !important; max-width:90% !important;" >
 						<div class="modal-content">
 							<div class="modal-header bg-info">
 							<h5 class="modal-title"><b>Ref No:<span id="span_ticket_ref_no_completed_view_ticket"></span></b><br><br><span id="span_customer_completed_view_ticket" data-popup="popover" data-placement="bottom" title="Popover title" ></span><span id="span_location_completed_view_ticket"></span><span id="span_building_completed_view_ticket" data-popup="popover" data-placement="bottom" title="Popover title" data-content=""></span>
@@ -87,7 +87,7 @@
 				</div>
 				
 <div id="modal_reopen_workorder_escalated" class="modal fade" data-backdrop="false" tabindex="-1" >
-	<div class="modal-dialog modal-lg" style="max-width:80%" >
+	<div class="modal-dialog modal-lg" style="width:90% !important; max-width:90% !important;" >
 		<div class="modal-content">
 			<div class="modal-header bg-info">
 			<h5 class="modal-title"><b>Ref No:<span id="span_ticket_ref_no_escalated_reopen"></span></b>
@@ -117,7 +117,7 @@
 </div>
 
 <div id="modal_close_workorder_escalated" class="modal fade" data-backdrop="false" tabindex="-1" >
-	<div class="modal-dialog modal-lg" style="max-width:80%" >
+	<div class="modal-dialog modal-lg" style="width:90% !important; max-width:90% !important;" >
 		<div class="modal-content">
 			<div class="modal-header bg-info">
 			<h5 class="modal-title"><b>Ref No:<span id="span_ticket_ref_no_escalated_close"></span></b>
@@ -177,7 +177,7 @@
 </div>
 				
 <div id="modal_cancel_workorder_escalated" class="modal fade" data-backdrop="false" tabindex="-1" >
-	<div class="modal-dialog modal-lg" style="max-width:80%" >
+	<div class="modal-dialog modal-lg" style="width:90% !important; max-width:90% !important;" >
 		<div class="modal-content">
 			<div class="modal-header bg-info">
 			<h5 class="modal-title"><b>Ref No:<span id="span_ticket_ref_no_escalated_cancel"></span></b>

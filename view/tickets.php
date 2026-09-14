@@ -24,6 +24,9 @@ $OBJ->URLEncode('head=dashboard');
 	?>
 
 	<style>
+		.swal-overlay, .swal-modal, .swal2-container {
+			z-index: 999999 !important;
+		}
 	    	td.details-control {
             background: url('../httpdocs/images/plus.png') no-repeat center center;
             cursor: pointer;

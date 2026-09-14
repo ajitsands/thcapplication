@@ -29,6 +29,26 @@
 
 	<!-- Theme JS files -->
 	<script src="global_assets/js/plugins/ui/prism.min.js"></script>
+	<script src="assets/js/app.js"></script>
+	<!-- /theme JS files -->
+
+	<script src="global_assets/js/plugins/extensions/jquery_ui/interactions.min.js"></script>
+	
+    <script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
+    <script src="global_assets/js/demo_pages/form_select2.js"></script>
+
+    <script src="global_assets/js/plugins/notifications/pnotify.min.js"></script>
+    <script src="global_assets/js/demo_pages/extra_pnotify.js"></script>
+    <script src="global_assets/js/demo_pages/components_popovers.js"></script>
+
+	<style>
+		.swal-overlay, .swal-modal, .swal2-container {
+			z-index: 999999 !important;
+		}
+	</style>
+
+	<!-- Theme JS files -->
+	<script src="global_assets/js/plugins/ui/prism.min.js"></script>
 
 	<script src="assets/js/app.js"></script>
 	<!-- /theme JS files -->
