@@ -263,8 +263,7 @@ $(document).ready(function(){
                             
                             load_data_to_grid_ticket_schedules_list_multiple(ticket_data.ticket_ref_code);
                             $('#txt_date_multiple').trigger('change');
-             			 }
-                           
+                            
                         
                             
                             $("#txt_visit_added_slot_multiple").val($("#duration_multiple option:selected").val());
