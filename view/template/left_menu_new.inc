@@ -473,10 +473,10 @@ $params = [];
         <li class="nav-item nav-item-submenu classMaterialRequisitionModule <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='requisition'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
             <a href="#" class="nav-link">
                 <i class="icon-folder-plus2"></i>
-                <span>Material Requisition </span>
+                <span>Material Request </span>
             </a>
             <ul class="nav nav-group-sub" data-submenu-title="Layouts">
-                <li class="nav-item classMaterialRequisitionModify">
+<!--                 <li class="nav-item classMaterialRequisitionModify">
                     <a
                         href="requisition.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=1&title=add_requisition');?>"
                         class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active legitRipple';} ?>"
@@ -491,13 +491,21 @@ $params = [];
                     >
                         View Requisition
                     </a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a
                         href="request_spare_parts.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=3&title=request_spare_parts');?>"
                         class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='3'){ echo 'active legitRipple';} ?>"
                     >
-                        Request Spare Parts
+                        Request Material
+                    </a>
+                </li>
+                <li class="nav-item classMaterialMaster">
+                    <a
+                        href="spare_parts_master.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=4&title=material_master');?>"
+                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='4'){ echo 'active legitRipple';} ?>"
+                    >
+                        Material Master
                     </a>
                 </li>
             </ul>

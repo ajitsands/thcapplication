@@ -1,0 +1,1 @@
+<?php $_POST["action"] = "amc_list_schedules"; $_POST["amc_ref_nos"] = "AMC0167"; require ("controller/amc_schedule/amc_assign_controller.php"); $ctrl = new amcscheduleController(); $ctrl->RequestAccept("amc_list_schedules"); ?>

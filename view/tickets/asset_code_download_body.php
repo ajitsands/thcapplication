@@ -69,8 +69,8 @@ bottom: 16px;
 						<h5 class="card-title">Asset Details</h5>
 						<div class="header-elements">
 						    <button type="button" id="btn_asset_qr_pdf" class="btn bg-success classDownloadAssetsPrintQR">Print QR Code</button>
-						    <button type="button" id="btn_asset_code_excel" class="btn bg-primary exportToExcelAction classDownloadAndAssetsExcel">EXCEL</button>	
-						    <button type="button" id="btn_asset_code_pdf" class="btn bg-warning exportToPDFAction classDownloadAndAssetsPDF">PDF</button>
+						    <button type="button" id="btn_asset_code_excel" class="btn bg-white text-success border-success font-weight-semibold shadow-sm exportToExcelAction classDownloadAndAssetsExcel">EXCEL</button>	
+						    <button type="button" id="btn_asset_code_pdf" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm exportToPDFAction classDownloadAndAssetsPDF">PDF</button>
 	                	</div>
 					</div>
                    

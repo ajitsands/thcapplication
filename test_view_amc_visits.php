@@ -1,0 +1,1 @@
+<?php require ("model/common/common_functions.php"); $model = new CommonModel(); $conn = $model->varDBConnection; $sql = "SELECT * FROM `view_amc_visits` limit 1"; $res = mysqli_query($conn, $sql); print_r(mysqli_fetch_assoc($res)); ?>

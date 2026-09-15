@@ -35,7 +35,7 @@
 							        </div>
 							         <div class="col-lg-2 col-md-12 col-sm-12 " >
 							        	<button type="button" id="btn_go" class="btn bg-info">Go</button>
-							        	<button type="button" id="btn_print_go" class="btn bg-info classWOReportsDailyTeamReportPDF classExportToPDF">Report</button>
+							        	<button type="button" id="btn_print_go" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm classWOReportsDailyTeamReportPDF classExportToPDF">Report</button>
 							        </div>
 							        
 					       </div>

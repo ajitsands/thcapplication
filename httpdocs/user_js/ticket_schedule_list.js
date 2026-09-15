@@ -25,27 +25,28 @@ $(document).ready(function(){
 	{
 	    var start_date=$('#txt_start_date').val();
 		var end_date=$('#txt_end_date').val();
-		$.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_not_assigned',start_date:start_date,end_date:end_date},function(result,status){
+		var customer=$('#select_customer option:selected').val();
+		$.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_not_assigned',start_date:start_date,end_date:end_date,customer:customer},function(result,status){
                 d = JSON.parse(result);
                 $('#span_count_not_assigned').html(d.data[0].count_not_assigned);
         });
-        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_assigned',start_date:start_date,end_date:end_date},function(result,status){
+        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_assigned',start_date:start_date,end_date:end_date,customer:customer},function(result,status){
                 d = JSON.parse(result);
                 $('#span_count_assigned').html(d.data[0].count_assigned);
         });
-        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_extended',start_date:start_date,end_date:end_date},function(result,status){
+        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_extended',start_date:start_date,end_date:end_date,customer:customer},function(result,status){
                 d = JSON.parse(result);
                 $('#span_count_extended').html(d.data[0].count_extended);
         });
-        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_completed',start_date:start_date,end_date:end_date},function(result,status){
+        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_completed',start_date:start_date,end_date:end_date,customer:customer},function(result,status){
                 d = JSON.parse(result);
                 $('#span_count_completed').html(d.data[0].count_completed);
         });
-        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_closed',start_date:start_date,end_date:end_date},function(result,status){
+        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_closed',start_date:start_date,end_date:end_date,customer:customer},function(result,status){
                 d = JSON.parse(result);
                 $('#span_count_closed').html(d.data[0].count_closed);
         });
-        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_cancelled',start_date:start_date,end_date:end_date},function(result,status){
+        $.post('../controller/ticket/ticket_assign_controller.php',{action:'action_count_cancelled',start_date:start_date,end_date:end_date,customer:customer},function(result,status){
                 d = JSON.parse(result);
                 $('#span_count_cancelled').html(d.data[0].count_cancelled);
         });
@@ -230,7 +231,7 @@ $(document).ready(function(){
 										  if (data === 'NA') {
 												return '';
 										  }
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item" name="print_wo"  style="color:black" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr"  style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item" name="print_wo"  style="color:black" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr"  style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequestsForWO('+rows["amc_tkt_id"]+',&quot;'+rows["amc_tkt_ref_no"]+'&quot;)" style="color:black"><i class="icon-cube"></i> Material Requests</a></div></div></div>';
                                           return str_active_status_edit;
                                            
                                       }   
@@ -610,7 +611,7 @@ $(document).ready(function(){
 										  if (data === 'NA') {
 												return '';
 										  }
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item"  style="color:black" name="print_wo" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr"  style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item"  style="color:black" name="print_wo" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr"  style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequestsForWO('+rows["amc_tkt_id"]+',&quot;'+rows["amc_tkt_ref_no"]+'&quot;)" style="color:black"><i class="icon-cube"></i> Material Requests</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -871,7 +872,7 @@ $(document).ready(function(){
 										  if (data === 'NA') {
 												return '';
 										  }
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item" name="print_wo"  style="color:black" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr"  style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item" name="print_wo"  style="color:black" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr"  style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequestsForWO('+rows["amc_tkt_id"]+',&quot;'+rows["amc_tkt_ref_no"]+'&quot;)" style="color:black"><i class="icon-cube"></i> Material Requests</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -1133,7 +1134,7 @@ $(document).ready(function(){
 										  if (data === 'NA') {
 												return '';
 										  }
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item" name="print_wo"  style="color:black" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr" style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item" name="print_wo"  style="color:black" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item" name="print_sr" style="color:black" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequestsForWO('+rows["amc_tkt_id"]+',&quot;'+rows["amc_tkt_ref_no"]+'&quot;)" style="color:black"><i class="icon-cube"></i> Material Requests</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -1396,7 +1397,7 @@ $(document).ready(function(){
 										  if (data === 'NA') {
 												return '';
 										  }
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item"  style="color:black" name="print_wo" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item"  style="color:black" name="print_sr" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item"  style="color:black" name="print_wo" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item"  style="color:black" name="print_sr" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequestsForWO('+rows["amc_tkt_id"]+',&quot;'+rows["amc_tkt_ref_no"]+'&quot;)" style="color:black"><i class="icon-cube"></i> Material Requests</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -1655,7 +1656,7 @@ $(document).ready(function(){
 										  if (data === 'NA') {
 												return '';
 										  }
-                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item"  style="color:black" name="print_wo" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item"  style="color:black" name="print_sr" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a></div></div></div>';
+                                         str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right">		<a href="#" class="dropdown-item" name="view_ticket_details_search" data-toggle="modal" data-target="#modal_view_ticket_details_search" style="color:black"><i class="icon-eye"></i> View Details</a><a  class="dropdown-item"  style="color:black" name="print_wo" href="../view/work_order_print.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print WO</a>	<a  class="dropdown-item"  style="color:black" name="print_sr" href="../view/service_report.php?ticket_id='+rows["amc_tkt_id"]+'" target="_blank"><i class="icon-printer4"></i>Print SR</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequestsForWO('+rows["amc_tkt_id"]+',&quot;'+rows["amc_tkt_ref_no"]+'&quot;)" style="color:black"><i class="icon-cube"></i> Material Requests</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   

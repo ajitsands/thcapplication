@@ -2,162 +2,208 @@
 include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
-  
-                 
-                     
 ?>
 <!doctype html>
 <html>
-<head><meta charset="us-ascii">
+<head>
+	<meta charset="utf-8">
 	<title>Daily Team Tasks</title>
 	<link href="https://fonts.googleapis.com" rel="preconnect" />
 	<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-	<link href="https://fonts.googleapis.com/css2?family=Montserrat&amp;display=swap" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 	
-	<!-- Add this in the head section of your HTML -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+	<style type="text/css">
+		* { box-sizing: border-box; }
+		body {
+			font-family: 'Montserrat', sans-serif;
+			font-style: normal;
+			font-size: 11px;
+			color: #1e293b;
+			background-color: #f1f5f9;
+			margin: 0;
+			padding: 24px 0 40px 0;
+		}
+		.report-container {
+			width: 100%;
+			max-width: 1600px;
+			margin: 0 auto;
+			background: #ffffff;
+			padding: 28px;
+			border-radius: 8px;
+			box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+		}
+		table.tbl-report {
+			width: 100%;
+			border: 1px solid #cbd5e1;
+			border-collapse: collapse;
+			margin-bottom: 20px;
+			background: #ffffff;
+		}
+		table.tbl-report th {
+			background-color: #2e2e79 !important;
+			color: #ffffff !important;
+			font-weight: 700;
+			padding: 9px 6px;
+			font-size: 11.5px;
+			letter-spacing: 0.3px;
+			text-transform: uppercase;
+			border: 1px solid #2e2e79;
+			vertical-align: middle;
+            text-align: center;
+		}
+		table.tbl-report td {
+			border: 1px solid #cbd5e1;
+			padding: 8px 8px;
+			font-size: 12px;
+			vertical-align: middle;
+            color: #0f172a;
+		}
+		table.tbl-report tbody tr:nth-child(even) { background-color: #f8fafc; }
+		table.tbl-report tbody tr:hover { background-color: #f1f5f9; }
 
-	
-	<style type="text/css">body,td,th {
-    font-family:  'Montserrat', sans-serif;
-    font-style: normal;
-    font-size: 12px;
-    color: #000000;
-    
-}
+		.details-grid {
+			display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;
+			background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;
+		}
+		.details-item { width: calc(33.333% - 15px); }
+		.details-item label { display: block; font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+		.details-item .val { font-size: 13px; font-weight: 600; color: #0f172a; }
 
-table, th, td {
-    border: 1px solid #4E4E4E;
-    border-collapse: collapse;
-    padding: 5px;
-}
+		.btn-action {
+			background: #16a34a; color: #ffffff; border: none; padding: 7px 15px; border-radius: 5px;
+			cursor: pointer; font-weight: 600; font-size: 11.5px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+		}
+		.btn-action:hover { background: #15803d; }
+		
+        .divFooter { margin-top: 30px; }
+        .signature-grid {
+            display: flex; justify-content: space-around; margin-top: 40px; padding: 0 40px;
+        }
+        .signature-box {
+            text-align: center; font-weight: 600; font-size: 12px; color: #0f172a; width: 220px; border-top: 1px solid #94a3b8; padding-top: 8px;
+        }
+        .team-block {
+            margin-bottom: 60px;
+            page-break-after: always;
+        }
+        .team-block:last-child {
+            page-break-after: auto;
+        }
 
-@media print {
-  div.divFooter {
-    position: fixed;
-    bottom: 0;
-  }
-  
-  #exportExcelButton {
-    display: none; /* Hide the Excel button when printing */
-  }
-  
-}
+		@media print {
+            @page { size: landscape; margin: 10mm; }
+			body { background: #ffffff !important; padding: 0 !important; }
+			.report-container { width: 100% !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+			.no-print { display: none !important; }
+			.divFooter { position: fixed; bottom: 0; width: 100%; }
+			body, table, td, th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+		}
 	</style>
 </head>
 <body>
     
-    <div align="center" style="border: none; width: 1000px; margin: 0 auto;">
-        <div style="border: none; display: flex; justify-content: space-between;">
-            <div style="border: none;">
-                <!-- Your content for the left side of the div goes here -->
+<div class="report-container">
+
+    <!-- Top Action Bar (No Print) -->
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+        <div style="font-size: 12px; color: #64748b;">
+            Document: <strong>Daily Team Tasks</strong>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button id="exportExcelButton" class="btn-action" onclick="exportToExcel()">
+                <span>&#128190;</span> Export to Excel
+            </button>
+            <button type="button" class="btn-action" style="background-color: #2e2e79;" onclick="window.print();">
+                <span>&#128438;</span> Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Section for Excel parsing -->
+    <table style="width: 100%; border: none; margin-bottom: 20px;" id="first_table">
+        <tbody>
+            <tr>
+                <td style="border: none; padding: 0; width: 50%; vertical-align: middle;">
+                    <img src="../global_assets/images/logo_print.png" alt="THC Logo" style="max-height: 60px; height: auto;" />
+                </td>
+                <td style="border: none; padding: 0; width: 50%; text-align: right; vertical-align: middle;">
+                    <div style="font-size: 18px; font-weight: 700; color: #2e2e79; letter-spacing: 0.5px;">DAILY TEAM REPORT : <?PHP echo date("d-m-Y",strtotime($_GET['start_date']));  ?></div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                        <b>Date & Time:</b> <?PHP date_default_timezone_set('Asia/Bahrain'); echo date("d-m-Y H:i:s");  ?>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+<?php  
+$result = mysqli_query($varDBConnection,"SELECT  distinct(GROUP_CONCAT( distinct(employee_id) ORDER BY employee_id ASC)) as Emp_id FROM  tbl_ticket_teams where ticket_team_status='Active' and visit_date = '".$_GET['start_date']."' group by ticket_ref_no  ");
+                        
+while($row=mysqli_fetch_assoc($result)) { 
+    $result_name = mysqli_query($varDBConnection,"SELECT  distinct(GROUP_CONCAT( distinct(employee_name))) as Emp_name FROM  tbl_ticket_teams where ticket_team_status='Active' and visit_date = '".$_GET['start_date']."' and employee_id in (".$row['Emp_id'].")");
+    while($row_name=mysqli_fetch_assoc($result_name)) {
+        $emp_names= $row_name['Emp_name'];
+    }
+    $eds='';
+    $j=0;     
+    $i=rand(10,100);
+    $result1 = mysqli_query($varDBConnection,"SELECT GROUP_CONCAT(ticket_team_ids) as team_ids,GROUP_CONCAT(employee_id ORDER BY employee_id ASC) as e_ids FROM `tbl_ticket_teams` WHERE `visit_date`='".$_GET['start_date']."' and ticket_team_status='Active' group by `ticket_ref_no` ");
+    while($row1=mysqli_fetch_assoc($result1)) {
+        if ($row['Emp_id']== $row1['e_ids'])
+        {
+            $eds=$eds.$row1['team_ids'].',';
+        }
+    }
+
+    $eds=rtrim($eds, ",");
+
+    $result_cn = mysqli_query($varDBConnection,"select distinct(GROUP_CONCAT(employee_contact_no)) as employee_contact_no,GROUP_CONCAT(employee_name) as Emp_name from   tbl_employees where   employee_id in (".$row['Emp_id'].")");
+    while($row_cn=mysqli_fetch_assoc($result_cn)) {
+        $Emp_name=$row_cn['Emp_name'];
+        $employee_contact_no=$row_cn['employee_contact_no'];
+    }    
+?>
+    <div class="team-block">
+        <!-- Hidden Table for Excel Export -->
+        <div style="display: none;">
+            <table id="second_table">
+                <tr><td colspan="4">TEAM DETAILS</td></tr>
+                <tr><td>Team Members</td><td colspan="3"><?PHP echo $Emp_name; ?></td></tr>
+                <tr><td>Contact Numbers</td><td colspan="3"><?PHP echo $employee_contact_no; ?></td></tr>
+            </table>
+        </div>
+
+        <div class="details-grid">
+            <div class="details-item">
+                <label>Team Members</label>
+                <div class="val"><?PHP echo $Emp_name; ?></div>
             </div>
-            <div style="border: none; color: #daa505; text-align: right; font-weight: 700; padding-right: 20px;">
-                <button id="exportExcelButton" class="btn btn-success btn-sm" onclick="exportToExcel()">Export to Excel</button>
+            <div class="details-item">
+                <label>Contact Numbers</label>
+                <div class="val"><?PHP echo $employee_contact_no; ?></div>
             </div>
         </div>
-    </div> 
-                             
-<table align="center" id="first_table" style="border: none;" width="1000">
-	<tbody>
-		<tr style="border: none; ">
-				<td style="border: none;" width="400">
-			    <img src="../global_assets/images/logo_print.png"  />
-			</td>
-			<td style="border: none; color: #daa505;text-align: right;font-weight:700;padding-right:20px;" width="400">
-			 
-			   
-			   
-			</td>
-		</tr>
-	
-		<tr style="border: none;">
-			<td style="border: none;font-size: 15px;font-weight: 700;"><b>DAILY TEAM REPORT : <?PHP echo date("d-m-Y",strtotime($_GET['start_date']));  ?></b></td>
-			
-			<td style="text-align: right;border: none;"><b>Date & Time:</b> <?PHP date_default_timezone_set('Asia/Bahrain'); echo date("d-m-Y H:i:s");  ?></td>
-		</tr>
-		
-	</tbody>
-</table>
-<?php  
 
-	$result = mysqli_query($varDBConnection,"SELECT  distinct(GROUP_CONCAT( distinct(employee_id) ORDER BY employee_id ASC)) as Emp_id FROM  tbl_ticket_teams where ticket_team_status='Active' and visit_date = '".$_GET['start_date']."' group by ticket_ref_no  ");
-				    		
-				    	
-                        while($row=mysqli_fetch_assoc($result)) { 
-                             $result_name = mysqli_query($varDBConnection,"SELECT  distinct(GROUP_CONCAT( distinct(employee_name))) as Emp_name FROM  tbl_ticket_teams where ticket_team_status='Active' and visit_date = '".$_GET['start_date']."' and employee_id in (".$row['Emp_id'].")");
-                         while($row_name=mysqli_fetch_assoc($result_name)) {
-                          $emp_names= $row_name['Emp_name'];
-                         }
-                         $eds='';
-                           $j=0;     
-                         $i=rand(10,100);
-                 	$result1 = mysqli_query($varDBConnection,"SELECT GROUP_CONCAT(ticket_team_ids) as team_ids,GROUP_CONCAT(employee_id ORDER BY employee_id ASC) as e_ids FROM `tbl_ticket_teams` WHERE `visit_date`='".$_GET['start_date']."' and ticket_team_status='Active' group by `ticket_ref_no` ");
-                 	while($row1=mysqli_fetch_assoc($result1)) {
-                 	 
-                             if ($row['Emp_id']== $row1['e_ids'])
-                             {
-                                 $eds=$eds.$row1['team_ids'].',';
-                                 
-                             }
-                             
-                         }
-                        
-                          $eds=rtrim($eds, ",");
-                        
-                    $result_cn = mysqli_query($varDBConnection,"select distinct(GROUP_CONCAT(employee_contact_no)) as employee_contact_no,GROUP_CONCAT(employee_name) as Emp_name from   tbl_employees where   employee_id in (".$row['Emp_id'].")");
-                  while($row_cn=mysqli_fetch_assoc($result_cn)) {
-                      $Emp_name=$row_cn['Emp_name'];
-                     
-                       $employee_contact_no=$row_cn['employee_contact_no'];
-                  }    
-                        ?>
-                         <table align="center" id="second_table" width="1000">
-	<tbody>
-		
-		<tr>
-			<td bgcolor="#2e2e79" colspan="4" style="color: #ffffff"><strong>TEAM DETAILS</strong></td>
-		</tr>
-		
-	
-		<tr>
-			<td><b>Team Members</b></td>
-			
-			<td colspan="4"><?PHP echo $Emp_name; ?></td>
-	
-		</tr>
-			<tr>
-			<td><b>Contact Numbers</b></td>
-			<td colspan="4"><?PHP echo $employee_contact_no; ?></td>
-		
-		</tr>
-	
-	</tbody>
-</table>
-
-<p></p>
-
-<table align="center" border="0" cellpadding="0" id="third_table" cellspacing="0" width="1000" >
-	<tbody>
-		<tr >
-			<td bgcolor="#2e2e79" colspan="13" style="color: #ffffff"><strong>DAILY TASKS DETAILS</strong></td>
-		</tr>
-		<tr bgcolor="#C1C1C1">
-		    <td width="80" style="text-align:center" ><b>SL.No. </b></td>
-		    <td width="158" style="text-align:center"><b>WO.No. </b></td>
-		    <td width="158" style="text-align:center" ><b>Customer </b></td>
-		     <td width="158" style="text-align:center" ><b>Bldg./Loc. </b></td>
-		    <td width="158" style="text-align:center"><b>Time Slot </b></td>
-		    <td width="158" style="text-align:center"><b>Start Time </b></td>
-		    <td width="158" style="text-align:center"><b>End Time </b></td>
-		    <td width="158" style="text-align:center"><b>Duration </b></td>
-		      <td width="200" style="text-align:center"><b>Job Description</b></td>
-		       <td width="158" style="text-align:center"><b>Service</b></td>
-		    <td width="200" style="text-align:center"><b>Status </b></td>
-		    <td width="200" style="text-align:center"><b>Remarks </b></td>
-		    <td width="158" style="text-align:center"><b>Service Report No. </b></td>
-		</tr>
-	
+        <table class="tbl-report" id="third_table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">SL</th>
+                    <th style="width: 110px;">WO.No.</th>
+                    <th>Customer</th>
+                    <th>Bldg./Loc.</th>
+                    <th style="width: 100px;">Time Slot</th>
+                    <th style="width: 75px;">Start Time</th>
+                    <th style="width: 75px;">End Time</th>
+                    <th style="width: 90px;">Duration</th>
+                    <th>Job Description</th>
+                    <th>Service</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Remarks</th>
+                    <th style="width: 110px;">Service Report No.</th>
+                </tr>
+            </thead>
+            <tbody>
 	<?php 
 
 	$result_entries = mysqli_query($varDBConnection,"select ticket_id,amc_ticket,ticket_ref_no,visit_id from   tbl_ticket_teams where   visit_date = '".$_GET['start_date']."' and ticket_team_ids in (".$eds.") and ticket_team_status='Active' group by ticket_id");
@@ -210,11 +256,11 @@ table, th, td {
                              <tr>
                 			<td style="text-align:center;"><?php echo $j;?></td>
                 			<td ><?php if($row_entries['amc_ticket']=='AMC'){echo 'WO-'.$row_details['ticket_ref_code'].'-'.$row_entries['visit_id'];} else {echo 'WO-'.$row_details['ticket_ref_code'].'-'.$row_details['ticket_id'];} ?></td>
-                			<td ><?php echo $row_details['customer_name'];?></td>
-                			<td ><?php echo $row_details['building_name'].', '.$row_details['location_name'];?></td>
+                			<td ><?php echo htmlspecialchars($row_details['customer_name']);?></td>
+                			<td ><?php echo htmlspecialchars($row_details['building_name']).', '.htmlspecialchars($row_details['location_name']);?></td>
                 		
                 									
-                										<td  >
+                										<td style="text-align:center;">
                 								
                 								<?php if($row_entries['amc_ticket']=='AMC'){	 
                 								    $result_slots = mysqli_query($varDBConnection,"select visit_date,visit_time,additional_slots from    tbl_ticket_teams where   ticket_id=".$row_details['ticket_id']." and amc_ticket='AMC' and ticket_team_status='Active' and visit_date = '".$_GET['start_date']."' group by visit_id");
@@ -285,7 +331,7 @@ table, th, td {
                 											
 
                      						
-                										<td >
+                										<td style="text-align:center;">
                 									<?php if($row_services['service_start_by_emp_code']!="NA" ){
                 										echo $row_services['service_start_date_time2'];
                 						
@@ -293,14 +339,14 @@ table, th, td {
                 									?>
                 									</td>
                 									
-                									<td>
+                									<td style="text-align:center;">
                 									<?php if($row_services['service_complete_cancel_by_emp_code']!="NA" ){
                 									echo $row_services['service_complete_cancel_date_time2'];
                 								
                 									}
                 									?>
                 									</td>
-                										<td>
+                										<td style="text-align:center; font-weight: 600;">
                 									<?php if($row_services['service_complete_cancel_by_emp_code']!="NA" && $row_services['service_start_by_emp_code']!="NA"){
                 								if($row_services['days_cnt']!=0)
                 								{
@@ -321,33 +367,33 @@ table, th, td {
                 									}
                 									?>
                 									</td>
-                								<td><?php  echo $job_description;?></td>
-                								<td><?php echo $row_services['service_description'];?></td>	
+                								<td><?php  echo htmlspecialchars($job_description);?></td>
+                								<td><?php echo htmlspecialchars($row_services['service_description']);?></td>	
                 								
                 									
                 									<?PHP switch($row_services['ticket_service_status'])
                 									{
                 									    case 'Pending': ?>
-                									    <td style="text-align:center"><span style="color:orange"><?php echo $row_services['ticket_service_status'];?></span></td>
+                									    <td style="text-align:center"><span style="color:orange; font-weight: 600;"><?php echo $row_services['ticket_service_status'];?></span></td>
                 									  <?PHP break;
                 									  case 'Start': ?>
-                									    <td style="text-align:center"><span tyle="color:blue"><?php echo $row_services['ticket_service_status'];?></span></td>
+                									    <td style="text-align:center"><span style="color:blue; font-weight: 600;"><?php echo $row_services['ticket_service_status'];?></span></td>
                 									  <?PHP break;
                 									  case 'Completed': ?>
-                									    <td style="text-align:center"><span tyle="color:green"><?php echo $row_services['ticket_service_status'];?></span></td>
+                									    <td style="text-align:center"><span style="color:green; font-weight: 600;"><?php echo $row_services['ticket_service_status'];?></span></td>
                 									  <?PHP break;
                 									  case 'Cancelled': ?>
-                									    <td style="text-align:center"><span tyle="color:red"><?php echo $row_services['ticket_service_status'];?></span></td>
+                									    <td style="text-align:center"><span style="color:red; font-weight: 600;"><?php echo $row_services['ticket_service_status'];?></span></td>
                 									  <?PHP break;
                 									  default: ?>
-                									    <td style="text-align:center"><span tyle="color:brown"><?php echo $row_services['ticket_service_status'];?></span></td>
+                									    <td style="text-align:center"><span style="color:brown; font-weight: 600;"><?php echo $row_services['ticket_service_status'];?></span></td>
                 									  <?PHP break;
                 									} 
                 									?>
                 								
                 								
-                									<td><?php echo $row_services['tech_remarks'];?></td>
-                								   	<td><?php if($row_entries['amc_ticket']=='TKT'){ echo  $service_report_no;} else { echo '';}?></td> 
+                									<td><?php echo htmlspecialchars($row_services['tech_remarks']);?></td>
+                								   	<td style="text-align:center;"><?php if($row_entries['amc_ticket']=='TKT'){ echo  $service_report_no;} else { echo '';}?></td> 
                 								</tr>
                 								
                 								
@@ -362,69 +408,37 @@ table, th, td {
  }	// close of row_entries					
      ?>           		
          		
-                										
-                										
-                										
-                						
- 
-	</tbody>
-	
-</table>
+            </tbody>
+        </table>
+    </div>
 
+<?php } ?>
 
+    <!-- Hidden Table for Excel (to capture signatures and footer if needed, but previously they were separate tables) -->
+    <div style="display: none;">
+        <table id="fourth_table">
+            <tr>
+                <td>Supervisor</td><td></td>
+                <td>Operation Coordinator</td><td></td>
+            </tr>
+        </table>
+    </div>
 
-<p></p> 
-                    <?php    }
-                  
-                      ?>
+    <div class="divFooter" style="text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 30px;">
+        <div style="background-color: #2e2e79; padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;">
+            <div style="text-align: left; padding-left: 20px;">
+                <small>Tele:</small> +973 17 100 190 | info@thc.com.bh | <strong>www.thc.com.bh</strong><br>
+                CR. <strong>88982-1</strong> | Level 14, Enterance 143/144,  Bldg 155, Road 1703, Block 317<br>
+                <strong>YBA Kanoo Tower, Diplomatic Area</strong>, Kingdom of Bahrain
+            </div>
+            <div style="text-align: right; padding-right: 20px;">
+                <img src="../global_assets/images/a.png" style="max-height: 40px;" />
+            </div>
+        </div>
+    </div>
 
-
-
-
-<p></p>
-
-
-<p></p>
-
-<p></p>
-
-
-<table align="center" border="0" cellpadding="0" id="fourth_table" cellspacing="0" width="1000">
-	<tbody>
-		<tr>
-			<td width="143"><b>Supervisor</b></td>
-			<td width="184"></td>
-			<td width="143"><b>Operation Coordinator</b></td>
-			<td width="184"></td>
-		
-		</tr>
-	
-	
-	</tbody>
-
-</table>
-<p></p>
-
-<p></p>
-<div class="divFooter">
-	<table align="center" border="0" cellpadding="0" cellspacing="0" width="1000"  style="border: none; padding: 25px;" >
-	    <tr style="border: none; background-color: #2e2e79; padding: 25px;">
-			<td style="border: none;padding-left: 20px;color:white;" width="500">
-			    <small>Tele:</small> +973 17 100 190 | info@thc.com.bh | <strong>www.thc.com.bh</strong><br>
-			     CR. <strong>88982-1</strong> | Level 14, Enterance 143/144,  Bldg 155, Road 1703, Block 317<br>
-			    <strong>YBA Kanoo Tower, Diplomatic Area</strong>, Kingdom of Bahrain
-			</td>
-			<td style="border: none;text-align: right;padding-right:20px;padding: 25px;" width="300">
-			 
-			    <img src="../global_assets/images/a.png" />
-			   
-			</td>
-		</tr>
-	</table>
 </div>
-<p></p>
 
-<p></p>
 <script>
      function exportToExcel() {
     

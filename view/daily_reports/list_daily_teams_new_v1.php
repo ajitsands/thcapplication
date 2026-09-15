@@ -103,8 +103,8 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
 							</h6>
 							<div class="header-elements">
 										<div class="list-icons">
-					                		<a href="../view/daily_reports/daily_team_report_print.php?start_date=<?php echo $row_date['visit_date'];?>&Emp_id=<?php echo $row['Emp_id'];?>&ids=<?php echo $eds;?>"  target="_blank" class="list-icons-item" data-action="fullscreen"></a>
-					                		
+					                		<a href="../view/daily_reports/daily_team_report_print.php?start_date=<?php echo $row_date['visit_date'];?>&Emp_id=<?php echo $row['Emp_id'];?>&ids=<?php echo $eds;?>"  target="_blank" class="list-icons-item" data-action="fullscreen" data-popup="tooltip" title="Print Daily Team Report"></a>
+					                		<a href="../view/work_order_material_requisition_print.php?ticket_id=<?php echo $row_entries['ticket_id'];?>" target="_blank" class="list-icons-item" data-popup="tooltip" title="Print Material Requisition" style="margin-left: 15px; color: #ffeb3b; font-weight: bold; font-size: 14px;"><i class="icon-printer"></i> Print MR</a>
 					                	</div>
 				                	</div>
 						</div>

@@ -173,7 +173,7 @@
                         <button type="button" id="btn_doc_reset" class="btn btn-light border font-weight-semibold" style="height: 38px;">
                             <i class="icon-reset mr-1"></i> Reset
                         </button>
-                        <button type="button" id="btn_doc_export_pdf" class="btn btn-warning font-weight-semibold classExportToPDF" style="height: 38px;">
+                        <button type="button" id="btn_doc_export_pdf" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm font-weight-semibold classExportToPDF" style="height: 38px;">
                             <i class="icon-printer mr-1"></i> Print / Export
                         </button>
                     </div>
@@ -235,3 +235,4 @@
 
     </div>
 </div>
+

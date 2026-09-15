@@ -2,9 +2,9 @@
 				<div class="card" style="overflow:auto;">
 				   <div class="row" style="margin-top: 10px;margin-left:10px;">
 						<div class="col-lg-2 col-md-2 col-sm-2 ml-auto" >
-							<button type="button" id="not_assigned_pdf" class="btn bg-warning exportToPDFAction classWOReportsScheduledPDF">PDF</button>
+							<button type="button" id="not_assigned_pdf" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm exportToPDFAction classWOReportsScheduledPDF">PDF</button>
 						
-							<button type="button" id="not_assigned_excel" class="btn bg-primary exportToExcelAction classWOReportsScheduledExcel">Excel</button>
+							<button type="button" id="not_assigned_excel" class="btn bg-white text-success border-success font-weight-semibold shadow-sm exportToExcelAction classWOReportsScheduledExcel">Excel</button>
 						</div>
 					</div>
 					<table class="table datatable-selection-single table-hover datatable-highlight" id="tbl_of_scheduled_not_assigned_tickets">

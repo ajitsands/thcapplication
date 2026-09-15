@@ -228,8 +228,8 @@
 								<i class="icon-folder-plus2"></i>
 								<span>Material Requisition	</span>	</a>
 								<ul class="nav nav-group-sub" data-submenu-title="Layouts">
-								<li class="nav-item"><a href="requisition.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=1&title=add_requisition');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active legitRipple';} ?>">Create Requisition</a></li>
-							   	<li class="nav-item"><a href="requisition_list.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=2&title=view_requisition');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='2'){ echo 'active legitRipple';} ?>">View Requisition</a></li>
+<!-- 								<li class="nav-item"><a href="requisition.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=1&title=add_requisition');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active legitRipple';} ?>">Create Requisition</a></li> -->
+<!-- 							   	<li class="nav-item"><a href="requisition_list.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=2&title=view_requisition');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='2'){ echo 'active legitRipple';} ?>">View Requisition</a></li> -->
 								
 							   	</ul>
 							

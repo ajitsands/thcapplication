@@ -21,7 +21,7 @@
                     <span class="form-text text-muted" style="font-size: 16px;"><font color="black"></font></span>
                 </div>
                 <!--<div class="col-lg-6 col-md-6 col-sm-12 text-right mt-1">
-                    <button type="button" id="btn_amcrenewal_excell" class="btn bg-primary legitRipple" tabindex="6" fdprocessedid="zkd5x">EXCEL</button>
+                    <button type="button" id="btn_amcrenewal_excell" class="btn bg-white text-success border-success font-weight-semibold shadow-sm legitRipple" tabindex="6" fdprocessedid="zkd5x">EXCEL</button>
                 </div>-->
             </div>
 
@@ -59,3 +59,4 @@
  
 
 <?PHP  include('amc_renew_modal.php') ?>
+

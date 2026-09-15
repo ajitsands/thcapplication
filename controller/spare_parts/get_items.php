@@ -7,7 +7,7 @@ $category = isset($_GET['category']) ? $conn->real_escape_string($_GET['category
 
 $items = [];
 if ($category != '') {
-    $sql = "SELECT id, item_name, item_code FROM tbl_spare_parts_master WHERE category = '$category'";
+    $sql = "SELECT id, item_name, item_code FROM tbl_spare_parts_master WHERE category = '$category' AND status = 'Active'";
     $result = $conn->query($sql);
     if ($result) {
         while ($row = $result->fetch_assoc()) {

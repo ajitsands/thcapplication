@@ -136,6 +136,7 @@ $(document).ready(function(){
                                           {
                                               dropdownHTML += '<label class="dropdown-item text-danger">You have no Privilege</label>';
                                           }
+if (filteredOptions != "") { dropdownHTML += '<div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequisitionModal(\''+data+'\')" style="color: black;"><i class="icon-cube"></i> Material Requisition</a>'; }
                                         
                                         dropdownHTML += '</div></div></div>';
                                         return dropdownHTML;
@@ -3316,6 +3317,7 @@ function load_asset_combo_add_entries()
                  }
 
 });
+
 
 
 

@@ -130,6 +130,7 @@ $(document).ready(function(){
                                           if(filteredOptions=="WoExtensionModify")
                                           {
                                               dropdownHTML += ' <a href="#" class="dropdown-item" name="view_ticket" data-toggle="modal" data-target="#modal_view_ticket" style="color: black;"><i class="icon-eye"></i> View Ticket</a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="schedule_ticket_multiple" style="color: black;" data-toggle="modal" data-target="#modal_schedule_ticket_multiple"><i class="icon-calendar"></i>Schedule & Assign </a><div class="dropdown-divider"></div><a href="#" class="dropdown-item" name="change_status_ticket" style="color: black;" data-toggle="modal" data-target="#modal_change_status_ticket"><i class="icon-pencil5"></i> Change Status</a>';  
+                                              dropdownHTML += '<div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequisitionModal(\''+data+'\')" style="color: black;"><i class="icon-cube"></i> Material Requisition</a>';
                                           }
                                           else
                                           {

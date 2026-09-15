@@ -1,0 +1,2 @@
+Incorrect DATE value: '16-06-2024'
+SQL: select count(slot_ids) as count_slot ,slot_ids from tbl_technician_slots where employee_id=12 and   slot_date="16-06-2024"

@@ -47,7 +47,7 @@
     									
     										<button type="button" id="btn_employee_search" class="btn bg-teal-400 " ><b><i class="icon-floppy-disk"></i></b>&nbsp;&nbsp;&nbsp;Search</button>
     										
-    										<button type="button" id="btn_employee_download" class="btn bg-warning-400 exportToPDFAction classEmployeeListPDF"><b><i class="icon-database-edit2"></i></b>&nbsp;&nbsp;&nbsp; Export</button>
+    										<button type="button" id="btn_employee_download" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm exportToPDFAction classEmployeeListPDF"><b><i class="icon-database-edit2"></i></b>&nbsp;&nbsp;&nbsp; Export</button>
     										
     									</div>
 						              

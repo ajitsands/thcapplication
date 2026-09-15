@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -100,6 +100,7 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="../httpdocs/spinner/spinner.js"></script>
 	<script src="global_assets/js/demo_pages/editor_summernote.js"></script>
 	<script src="../httpdocs/user_js/ticket_schedule_list.js"></script>
+	<script src="../httpdocs/user_js/view_material_requests_wo_modal.js"></script>
 	<script src="../httpdocs/user_js/login.js"></script>
 	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>
@@ -145,6 +146,7 @@ $OBJ->URLEncode('head=dashboard');
 			</div>
 			<!-- /content area -->
             <?PHP 
+				include_once('tickets/view_ticket_wo_material_requests_modal.php');
 				include_once('template/reset_password_modal.php');
 			?>
 

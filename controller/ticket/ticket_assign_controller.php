@@ -83,6 +83,15 @@ class ticketassignController
 		   $array[31] = "select *,DATE_FORMAT(date_of_visits, '%d-%m-%Y') as date_of_visits1,DATE_FORMAT(visit_start_time, '%d-%m-%Y %H:%i')as visit_start_time from  tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Cancelled' and customer_id = '".$this->customer_id."' group by date_of_visits, amc_tkt_ref_no  order by date_of_visits asc";
 		   $array[32] = "select *,DATE_FORMAT(date_of_visits, '%d-%m-%Y') as date_of_visits1,DATE_FORMAT(visit_start_time, '%d-%m-%Y %H:%i')as visit_start_time from  tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Extended' and customer_id = '".$this->customer_id."' order by date_of_visits asc";
           
+          // Customer-filtered count queries (indexes 33-38)
+         $customer_filter = ($this->customer_id !== 'All') ? " and customer_id = '".$this->customer_id."'" : '';
+         $array[33] = "select count(amc_visit_id) as count_not_assigned from tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Scheduled'".$customer_filter;
+         $array[34] = "select count(amc_visit_id) as count_assigned from tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Assigned'".$customer_filter;
+         $array[35] = "select count(amc_visit_id) as count_completed from tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Completed'".$customer_filter;
+         $array[36] = "select count(amc_visit_id) as count_closed from tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Closed'".$customer_filter;
+         $array[37] = "select count(amc_visit_id) as count_cancelled from tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Cancelled'".$customer_filter;
+         $array[38] = "select count(amc_visit_id) as count_extended from tbl_visits where amc_ticket='TKT' and date_of_visits between '".$this->start_date."' and '".$this->end_date."' and amc_visit_status='Extended'".$customer_filter;
+
         return $array;
     }
     function RequestAccept($FunctionEvents)
@@ -125,8 +134,7 @@ class ticketassignController
 				}
                 else
 				{
-					$this->jsondata = $this->varModelObj->ListFromTable($var[27]);
-					echo "Q".$this->jsondata;
+					$this->jsondata = $this->varModelObj->ListFromJSONWithReturn($var[27]);
 					if($this->jsondata == '[]')
 					{
 						echo "NoData";  
@@ -169,8 +177,7 @@ class ticketassignController
 				}
 				else
 				{
-					$this->jsondata = $this->varModelObj->ListFromTable($var[28]);
-					echo "Q".$this->jsondata;
+					$this->jsondata = $this->varModelObj->ListFromJSONWithReturn($var[28]);
 					if($this->jsondata == '[]')
 					{
 						echo "NoData";  
@@ -213,8 +220,7 @@ class ticketassignController
 				}
                 else
 				{
-					$this->jsondata = $this->varModelObj->ListFromTable($var[29]);
-					echo "Q".$this->jsondata;
+					$this->jsondata = $this->varModelObj->ListFromJSONWithReturn($var[29]);
 					if($this->jsondata == '[]')
 					{
 						echo "NoData";  
@@ -257,8 +263,7 @@ class ticketassignController
 				}
 				else
 				{
-					$this->jsondata = $this->varModelObj->ListFromTable($var[30]);
-					echo "Q".$this->jsondata;
+					$this->jsondata = $this->varModelObj->ListFromJSONWithReturn($var[30]);
 					if($this->jsondata == '[]')
 					{
 						echo "NoData";  
@@ -301,8 +306,7 @@ class ticketassignController
 				}
                 else
 				{
-					$this->jsondata = $this->varModelObj->ListFromTable($var[31]);
-					echo "Q".$this->jsondata;
+					$this->jsondata = $this->varModelObj->ListFromJSONWithReturn($var[31]);
 					if($this->jsondata == '[]')
 					{
 						echo "NoData";  
@@ -345,8 +349,7 @@ class ticketassignController
 				}
                 else
 				{
-					$this->jsondata = $this->varModelObj->ListFromTable($var[32]);
-					echo "Q".$this->jsondata;
+					$this->jsondata = $this->varModelObj->ListFromJSONWithReturn($var[32]);
 					if($this->jsondata == '[]')
 					{
 						echo "NoData";  
@@ -428,27 +431,27 @@ class ticketassignController
             break;
              case 'action_count_not_assigned':
      
-                $this->varModelObj->ListFromTable($var[15]);
+                $this->varModelObj->ListFromTable($var[33]);
             break;
              case 'action_count_assigned':
    
-                $this->varModelObj->ListFromTable($var[16]);
+                $this->varModelObj->ListFromTable($var[34]);
             break;
             case 'action_count_completed':
      
-                $this->varModelObj->ListFromTable($var[17]);
+                $this->varModelObj->ListFromTable($var[35]);
             break;
              case 'action_count_closed':
      
-                $this->varModelObj->ListFromTable($var[18]);
+                $this->varModelObj->ListFromTable($var[36]);
             break;
             case 'action_count_cancelled':
      
-                $this->varModelObj->ListFromTable($var[19]);
+                $this->varModelObj->ListFromTable($var[37]);
             break;
             case 'action_count_extended':
      
-                $this->varModelObj->ListFromTable($var[20]);
+                $this->varModelObj->ListFromTable($var[38]);
             break;
             case 'action_view_details':
    

@@ -1,0 +1,112 @@
+Array
+(
+    [action] => assign_technician
+    [visitidarray] => Array
+        (
+            [0] => 3613
+        )
+
+    [amc_tkt_idarray] => Array
+        (
+            [0] => 25
+        )
+
+    [amc_ref_noarray] => Array
+        (
+            [0] => AMC0167
+        )
+
+    [customer_idarray] => Array
+        (
+            [0] => 81
+        )
+
+    [customer_codearray] => Array
+        (
+            [0] => C0081
+        )
+
+    [customer_namearray] => Array
+        (
+            [0] => Aramex
+        )
+
+    [location_idarray] => Array
+        (
+            [0] => 54
+        )
+
+    [location_codearray] => Array
+        (
+            [0] => BU
+        )
+
+    [location_namearray] => Array
+        (
+            [0] => Busaiteen
+        )
+
+    [building_idarray] => Array
+        (
+            [0] => 197
+        )
+
+    [building_codearray] => Array
+        (
+            [0] => F0197
+        )
+
+    [building_namearray] => Array
+        (
+            [0] => Aramex
+        )
+
+    [visit_date_array] => Array
+        (
+            [0] => 16-06-2024
+        )
+
+    [startslot_array] => Array
+        (
+            [0] => 8
+        )
+
+    [additional_slotsarray] => Array
+        (
+            [0] => 1
+        )
+
+    [visit_start_timearray] => Array
+        (
+            [0] => 00:00:00
+        )
+
+    [empidarray] => Array
+        (
+            [0] => 12
+        )
+
+    [empcodearray] => Array
+        (
+            [0] => EMP001
+        )
+
+    [empnamearray] => Array
+        (
+            [0] => John Doe
+        )
+
+    [leadr_emp_id] => 12
+    [totalslot_array] => Array
+        (
+            [0] => 9
+        )
+
+    [emp_count] => 1
+    [ticket_count] => 1
+    [empcontactnoarray] => Array
+        (
+            [0] => 12345678
+        )
+
+)

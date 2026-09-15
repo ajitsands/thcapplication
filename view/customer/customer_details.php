@@ -147,7 +147,7 @@
 						<h5 class="card-title">List of Customers</h5>
 						<div class="header-elements">
 						    
-						    <button type="button" id="btn_customer_list_excel" class="btn bg-primary legitRipple exportToExcelAction classCustomersExportExcel" tabindex="6" fdprocessedid="zkd5x">EXCEL</button>	
+						    <button type="button" id="btn_customer_list_excel" class="btn bg-white text-success border-success font-weight-semibold shadow-sm legitRipple exportToExcelAction classCustomersExportExcel" tabindex="6" fdprocessedid="zkd5x">EXCEL</button>	
 						    
 	                	</div>
 						

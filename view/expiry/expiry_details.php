@@ -39,7 +39,7 @@
         						<div class="col-lg-4 col-md-6 col-sm-12" style="padding-top:20px">
         							<button type="button" id="btn_customer_search" class="btn btn-primary" style="height:40px; width:100px;" ><i class="fa fa-search"></i>SEARCH</button>
         						
-        							<button type="button" id="btn_cpr_export" class="btn btn-warning classExportToPDF classCPRExpiryPDF" style="height:40px; width:100px;" ><i class="fa fa-icon-database-edit2"></i>EXPORT</button>
+        							<button type="button" id="btn_cpr_export" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm classExportToPDF classCPRExpiryPDF" style="height:40px; width:100px;" ><i class="fa fa-icon-database-edit2"></i>EXPORT</button>
         						
         						</div>
         					
@@ -108,7 +108,7 @@
                                     					
                                     						<div class="col-lg-4 col-md-6 col-sm-12" style="padding-top:20px">
                                     							<button type="button" id="btn_customer_search_visa" class="btn btn-primary" style="height:40px; width:100px;" ><i class="fa fa-search"></i>SEARCH</button>
-                                    							<button type="button" id="btn_visa_export" class="btn btn-warning classExportToPDF classVisaExpiryPDF" style="height:40px; width:100px;" ><i class="fa fa-icon-database-edit2"></i>EXPORT</button>
+                                    							<button type="button" id="btn_visa_export" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm classExportToPDF classVisaExpiryPDF" style="height:40px; width:100px;" ><i class="fa fa-icon-database-edit2"></i>EXPORT</button>
         						
                                     						</div>
                             						

@@ -125,6 +125,7 @@ $(document).ready(function(){
                                           if(filteredOptions=="WoCompletedModify")
                                           {
                                              dropdownHTML += ' <a href="#" class="dropdown-item" name="view_ticket" data-toggle="modal" data-target="#modal_view_complaints" style="color: black;"><i class="icon-eye"></i> View Tickets</a>'; 
+                                             dropdownHTML += '<div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequisitionModal(\''+data+'\')" style="color: black;"><i class="icon-cube"></i> Material Requisition</a>';
                                           }
                                           else
                                           {

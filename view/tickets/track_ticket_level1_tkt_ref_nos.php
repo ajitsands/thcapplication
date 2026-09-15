@@ -57,8 +57,8 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
 							</h6>
 							<div class="header-elements">
 										<div class="list-icons">
-					                		<a href="../view/work_order_print.php?ticket_id=<?php echo $row_ticket_entries['ticket_id'];?>"  target="_blank" class="list-icons-item" data-action="fullscreen"></a>
-					                		
+					                		<a href="../view/work_order_print.php?ticket_id=<?php echo $row_ticket_entries['ticket_id'];?>"  target="_blank" class="list-icons-item" data-action="fullscreen" data-popup="tooltip" title="Print Work Order"></a>
+					                		<a href="../view/work_order_material_requisition_print.php?ticket_id=<?php echo $row_ticket_entries['ticket_id'];?>" target="_blank" class="list-icons-item" data-popup="tooltip" title="Print Material Requisition" style="margin-left: 15px; color: #ffeb3b; font-weight: bold; font-size: 14px;"><i class="icon-printer"></i> Print MR</a>
 					                	</div>
 				                	</div>
 						</div>

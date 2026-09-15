@@ -60,8 +60,8 @@
 					
 				<div class="card" style="overflow:auto; position: relative;">
 					<div style="position: absolute; top: 15px; right: 20px; z-index: 10; display: flex; gap: 8px;">
-						<button type="button" id="closed_pdf" class="btn bg-warning classExportToPDF classWorkOrdersClosedPDF font-weight-semibold shadow-sm" style="border-radius: 6px; padding: 6px 14px;"><i class="icon-file-pdf mr-1"></i> PDF</button>
-						<button type="button" id="closed_excel" class="btn bg-primary exportToExcelAction classWorkOrdersClosedExcel font-weight-semibold shadow-sm" style="border-radius: 6px; padding: 6px 14px;"><i class="icon-file-excel mr-1"></i> Excel</button>
+						<button type="button" id="closed_pdf" class="btn bg-white text-danger border-danger font-weight-semibold shadow-sm classExportToPDF classWorkOrdersClosedPDF font-weight-semibold shadow-sm" style="border-radius: 6px; padding: 6px 14px;"><i class="icon-file-pdf mr-1"></i> PDF</button>
+						<button type="button" id="closed_excel" class="btn bg-white text-success border-success font-weight-semibold shadow-sm exportToExcelAction classWorkOrdersClosedExcel font-weight-semibold shadow-sm" style="border-radius: 6px; padding: 6px 14px;"><i class="icon-file-excel mr-1"></i> Excel</button>
 					</div>
 					<table class="table datatable-selection-single table-hover datatable-highlight" id="tbl_closed_tickets">
 						<thead>
