@@ -66,6 +66,7 @@ function menuActive($p, $key, $val) {
         <ul class="thc-dropdown">
           <li class="classExpertiseView"><a href="expertise.php?param=<?= $OBJ->URLEncode('head=hr&open=2&title=expertise') ?>" class="<?= menuActive($params,'open','2') ? 'active' : '' ?>"><i class="icon-certificate"></i> Expertise</a></li>
           <li class="classEmployeesView"><a href="leave_type.php?param=<?= $OBJ->URLEncode('head=hr&open=19&title=leave_type') ?>" class="<?= menuActive($params,'open','19') ? 'active' : '' ?>"><i class="icon-color-sampler"></i> Leave Types</a></li>
+          <li class="classEmployeesView"><a href="employee_types.php?param=<?= $OBJ->URLEncode('head=hr&open=21&title=employee_types') ?>" class="<?= menuActive($params,'open','21') ? 'active' : '' ?>"><i class="icon-users4"></i> Employee Types</a></li>
           <li class="classEmployeesView"><a href="employees.php?param=<?= $OBJ->URLEncode('head=hr&open=1&title=employees') ?>" class="<?= menuActive($params,'open','1') ? 'active' : '' ?>"><i class="icon-user"></i> Employees</a></li>
           <li class="classEmployeesView"><a href="employee_leave.php?param=<?= $OBJ->URLEncode('head=hr&open=17&title=employee_leave') ?>" class="<?= menuActive($params,'open','17') ? 'active' : '' ?>"><i class="icon-calendar3"></i> Leave Scheduler</a></li>
           <li class="classEmployeesView"><a href="employee_report.php?param=<?= $OBJ->URLEncode('head=hr&open=3&title=employees') ?>" class="<?= menuActive($params,'open','3') ? 'active' : '' ?>"><i class="icon-list"></i> Employee List</a></li>
@@ -153,6 +154,7 @@ function menuActive($p, $key, $val) {
         </ul>
       </li>
 
+
       <!-- Material Requisition -->
       <li class="thc-nav-item thc-has-dropdown classMaterialRequisitionModule">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','requisition') ? ' active' : '' ?>">
@@ -168,27 +170,31 @@ function menuActive($p, $key, $val) {
 
       <!-- More (Feedback, Logs, Quotation, Local PO) -->
       <li class="thc-nav-item thc-has-dropdown">
-        <a href="#" class="thc-nav-link thc-dropdown-toggle<?= (menuActive($params,'head','feedback') || menuActive($params,'head','log') || menuActive($params,'head','quotation') || menuActive($params,'head','localpo')) ? ' active' : '' ?>">
+        <a href="#" class="thc-nav-link thc-dropdown-toggle<?= (menuActive($params,'head','feedback') || menuActive($params,'head','log') || menuActive($params,'head','quotation') || menuActive($params,'head','localpo') || menuActive($params,'head','janitor')) ? ' active' : '' ?>">
           <i class="icon-more2"></i> More <i class="thc-arrow icon-arrow-down22"></i>
         </a>
         <ul class="thc-dropdown thc-dropdown-right">
 
-          <li class="thc-dropdown-section-header">Customer Feedback</li>
-          <li class="classCustomerFeedbackQuestionsAdd"><a href="feedback_questions.php?param=<?= $OBJ->URLEncode('head=feedback&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','feedback') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-question3"></i> Questions</a></li>
-          <li class="classCustomerFeedbackReportView"><a href="feedback_report.php?param=<?= $OBJ->URLEncode('head=feedback&open=2&title=feedback') ?>" class="<?= (menuActive($params,'head','feedback') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-comments3"></i> Feedback</a></li>
+          <li class="thc-dropdown-section-header classJanitorModule">Janitor Operations</li>
+          <li class="classChecklistMaster classJanitorModule"><a href="janitor_checklist_master.php?param=<?= $OBJ->URLEncode('head=janitor&open=1&title=checklist_master') ?>" class="<?= menuActive($params,'open','1') ? 'active' : '' ?>"><i class="icon-list3"></i> Checklist Master</a></li>
+          <li class="classJanitorAssignment classJanitorModule"><a href="janitor_assignment.php?param=<?= $OBJ->URLEncode('head=janitor&open=2&title=janitor_assignment') ?>" class="<?= menuActive($params,'open','2') ? 'active' : '' ?>"><i class="icon-user-check"></i> Assign Checklists</a></li>
 
-          <li class="thc-dropdown-section-header">Logs</li>
-          <li><a href="admin_log.php?param=<?= $OBJ->URLEncode('head=log&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-enter3"></i> Login &amp; Logout</a></li>
-          <li><a href="amc_event_log.php?param=<?= $OBJ->URLEncode('head=log&open=2&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-calculator3"></i> AMC Log</a></li>
+          <li class="thc-dropdown-section-header classCustomerFeedbackModule">Customer Feedback</li>
+          <li class="classCustomerFeedbackQuestionsAdd classCustomerFeedbackModule"><a href="feedback_questions.php?param=<?= $OBJ->URLEncode('head=feedback&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','feedback') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-question3"></i> Questions</a></li>
+          <li class="classCustomerFeedbackReportView classCustomerFeedbackModule"><a href="feedback_report.php?param=<?= $OBJ->URLEncode('head=feedback&open=2&title=feedback') ?>" class="<?= (menuActive($params,'head','feedback') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-comments3"></i> Feedback</a></li>
 
-          <li class="thc-dropdown-section-header">Quotation</li>
-          <li class="classCreateQuotation"><a href="quotation.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=add_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Quotation</a></li>
-          <li class="classViewQuotation"><a href="quotation_list.php?param=<?= $OBJ->URLEncode('head=quotation&open=2&title=view_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Quotation</a></li>
-          <li class="classViewQuotationRevision"><a href="quotation_rivision.php?param=<?= $OBJ->URLEncode('head=quotation&open=3&title=view_quotation_rivision') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','3')) ? 'active' : '' ?>"><i class="icon-redo2"></i> Quotation Revision</a></li>
+          <li class="thc-dropdown-section-header classLogsView">Logs</li>
+          <li class="classLogsView"><a href="admin_log.php?param=<?= $OBJ->URLEncode('head=log&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-enter3"></i> Login &amp; Logout</a></li>
+          <li class="classLogsView"><a href="amc_event_log.php?param=<?= $OBJ->URLEncode('head=log&open=2&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-calculator3"></i> AMC Log</a></li>
 
-          <li class="thc-dropdown-section-header">Local PO</li>
-          <li class="classCreateLocalPO"><a href="localpo.php?param=<?= $OBJ->URLEncode('head=localpo&open=1&title=add_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Local PO</a></li>
-          <li class="classViewLocalPO"><a href="localpo_list.php?param=<?= $OBJ->URLEncode('head=localpo&open=2&title=view_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Local PO</a></li>
+          <li class="thc-dropdown-section-header d-none">Quotation</li>
+          <li class="classCreateQuotation d-none"><a href="quotation.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=add_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Quotation</a></li>
+          <li class="classViewQuotation d-none"><a href="quotation_list.php?param=<?= $OBJ->URLEncode('head=quotation&open=2&title=view_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Quotation</a></li>
+          <li class="classViewQuotationRevision d-none"><a href="quotation_rivision.php?param=<?= $OBJ->URLEncode('head=quotation&open=3&title=view_quotation_rivision') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','3')) ? 'active' : '' ?>"><i class="icon-redo2"></i> Quotation Revision</a></li>
+
+          <li class="thc-dropdown-section-header d-none">Local PO</li>
+          <li class="classCreateLocalPO d-none"><a href="localpo.php?param=<?= $OBJ->URLEncode('head=localpo&open=1&title=add_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Local PO</a></li>
+          <li class="classViewLocalPO d-none"><a href="localpo_list.php?param=<?= $OBJ->URLEncode('head=localpo&open=2&title=view_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Local PO</a></li>
         </ul>
       </li>
 

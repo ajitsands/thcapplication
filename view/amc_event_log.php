@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -21,7 +21,6 @@ $OBJ->URLEncode('head=dashboard');
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
 	<?PHP 
 		include_once('template/head.inc');
 	?>
@@ -119,8 +118,6 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="../httpdocs/user_js/requisition_list.js"></script>
     
 	<script src="../httpdocs/user_js/login.js"></script>
-	
-	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script> 
 	
 
 	<script src="global_assets/js/plugins/editors/summernote/summernote.min.js"></script>
@@ -334,23 +331,37 @@ $OBJ->URLEncode('head=dashboard');
 			// Parse JSON data
 			var parsedData = JSON.parse(jsonData);
 
-			// Create HTML for child table
-			var childTable = '<tr class="child"><td colspan="7"><table style="width:100%;max-width:1000px; border: 1px solid #636363;" class="table table-bordered table-hover datatable-highlight display childTable table-responsive">';
-			childTable += '<thead><tr>';
+			// Create HTML for child row
+			var childTable = '<tr class="child"><td colspan="7" class="bg-light p-3">';
+			childTable += '<div class="border rounded bg-white p-3 shadow-sm">';
+			childTable += '<div class="row">';
 			
-			// Add headers with keys
+			// Iterate through data and create a grid layout
 			for (var key in parsedData) {
-				childTable += '<th style="background-color: #D6EAF8;border: 1px solid #636363 ;width:50%">' + key + '</th>';  
+				var valStr = parsedData[key] ? parsedData[key].toString() : '';
+				var displayVal = parsedData[key] ? parsedData[key] : '<span class="text-muted font-italic">N/A</span>';
+				
+				// Try to pair descriptions with their files to make the description a clickable link
+				var fileName = null;
+				if (key.match(/first_desc/i)) fileName = parsedData['v_first_attachment'] || parsedData['AMC_FIRST_ATTACHMENT'] || parsedData['FIRST_ATTACHMENT'];
+				else if (key.match(/second_desc/i)) fileName = parsedData['v_second_attachment'] || parsedData['AMC_SECOND_ATTACHMENT'] || parsedData['SECOND_ATTACHMENT'];
+				else if (key.match(/third_desc/i)) fileName = parsedData['v_third_attachment'] || parsedData['AMC_THIRD_ATTACHMENT'] || parsedData['THIRD_ATTACHMENT'];
+				else if (key.indexOf('_DESC') !== -1) fileName = parsedData[key.replace('_DESC', '')];
+				
+				if (fileName && fileName !== 'NA' && fileName.trim() !== '') {
+					displayVal = '<a href="../httpdocs/images/amc_attachements/' + fileName + '" target="_blank" class="font-weight-bold text-primary"><i class="icon-attachment mr-1"></i> ' + displayVal + '</a>';
+				} else if (valStr.match(/\.(jpeg|jpg|gif|png|pdf|doc|docx|xls|xlsx)$/i) || (key.toLowerCase().indexOf('attachment') !== -1 && key.toLowerCase().indexOf('desc') === -1 && valStr !== '' && valStr !== 'NA')) {
+					// If the value itself is the filename
+					displayVal = '<a href="../httpdocs/images/amc_attachements/' + valStr + '" target="_blank" class="btn btn-sm btn-outline bg-primary text-primary border-primary p-1" style="font-size: 11px;"><i class="icon-attachment mr-1"></i> View File</a>';
+				}
+
+				childTable += '<div class="col-lg-3 col-md-4 col-sm-6 mb-3">';
+				childTable += '<div class="font-weight-bold text-primary mb-1" style="font-size: 11px; text-transform: uppercase;">' + key.replace(/_/g, ' ') + '</div>';
+				childTable += '<div class="text-dark" style="word-break: break-word;">' + displayVal + '</div>';
+				childTable += '</div>';
 			}
 			
-			childTable += '</tr></thead><tbody><tr>';
-			 
-			// Add values in rows
-			for (var key in parsedData) {
-				childTable += '<td>' + parsedData[key] + '</td>';
-			}
-			
-			childTable += '</tr></tbody></table></td></tr>';
+			childTable += '</div></div></td></tr>';
 
 			// Insert the child table row after the main table row
 			var mainTableRow = $(cell).closest('tr');

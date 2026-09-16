@@ -162,7 +162,7 @@ $(document).ready(function() {
 
 	var eventAmcModule = document.querySelectorAll(".classAmcModule");
 
-	var eventMaterialRequisitionModule  = document.querySelectorAll(".classMaterialRequisitionModule ");
+	var eventMaterialRequisitionModule = document.querySelectorAll(".classMaterialRequisitionModule");
 
 	var eventCustomerFeedbackModule = document.querySelectorAll(".classCustomerFeedbackModule");
 
@@ -272,6 +272,11 @@ $(document).ready(function() {
 
 
 	var eventViewLocalPO = document.querySelectorAll(".classViewLocalPO");
+	
+	var eventJanitorModule = document.querySelectorAll(".classJanitorModule");
+	var eventChecklistMaster = document.querySelectorAll(".classChecklistMaster");
+	var eventJanitorAssignment = document.querySelectorAll(".classJanitorAssignment");
+	
 	// add_new_var
 	
 	
@@ -498,7 +503,7 @@ $(document).ready(function() {
 
 	eventAmcModule.forEach(function(obj) {if (!hasPermission("AmcModule")) {obj.style.display = "none";}});
 
-	eventMaterialRequisitionModule .forEach(function(obj) {if (!hasPermission("MaterialRequisitionModule")) {obj.style.display = "none";}});
+	eventMaterialRequisitionModule.forEach(function(obj) {if (!hasPermission("MaterialRequisitionModule")) {obj.style.display = "none";}});
 
 	eventCustomerFeedbackModule.forEach(function(obj) {if (!hasPermission("CustomerFeedbackModule")) {obj.style.display = "none";}});
 
@@ -608,6 +613,11 @@ $(document).ready(function() {
 
 
 	eventViewLocalPO.forEach(function(obj) {if (!hasPermission("ViewLocalPO")) {obj.style.display = "none";}});
+	
+	eventJanitorModule.forEach(function(obj) {if (!hasPermission("JanitorModule")) {obj.style.display = "none";}});
+	eventChecklistMaster.forEach(function(obj) {if (!hasPermission("ChecklistMaster")) {obj.style.display = "none";}});
+	eventJanitorAssignment.forEach(function(obj) {if (!hasPermission("JanitorAssignment")) {obj.style.display = "none";}});
+	
 	// adding_new_permission
 	
 		// Donot Remove The above line 

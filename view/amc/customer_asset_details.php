@@ -162,6 +162,23 @@ if (!isset($varDBConnection) || !$varDBConnection) {
 											</select>
 										</div>
 									</div>
+                                    
+                                    <!-- Janitor Asset -->
+									<div class="col-lg-4 col-md-6 col-sm-12">
+										<div class="form-group">
+											<span class="form-text text-muted font-weight-bold"><font color="black">Assign to Janitor? </font></span>
+											<div class="form-check form-check-inline mt-1">
+                                                <label class="form-check-label">
+                                                    <input type="radio" class="form-check-input" name="txt_is_janitor_asset" value="YES" tabindex=12> YES
+                                                </label>
+                                            </div>
+                                            <div class="form-check form-check-inline mt-1">
+                                                <label class="form-check-label">
+                                                    <input type="radio" class="form-check-input" name="txt_is_janitor_asset" value="NO" tabindex=12 checked> NO
+                                                </label>
+                                            </div>
+										</div>
+									</div>
 
 									<!-- 13. Warrantee/Guarantee Upto -->
 									<div class="col-lg-4 col-md-6 col-sm-12">

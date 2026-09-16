@@ -41,66 +41,64 @@
   </div>
 </div>
 
-<div class="card">
-    <div class="card-header bg-white header-elements-inline">
-        <h6 class="card-title font-weight-bold"><i class="icon-key mr-2"></i> Role Management</h6>
-        <div class="header-elements">
+<div class="container" style="padding-top:20px;">
+    <div class="row mb-2">
+        <div class="col-12" style="padding-top: 20px;">
             <?php if(isset($_GET['value']) && $_GET['value']=="developer") { ?>
-            <a type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modal_add_permissions"><i class="icon-add mr-1"></i> Add Permissions</a>
+            <a type="button" class="btn-sm btn-warning" data-toggle="modal" data-target="#modal_add_permissions" style="float: right;"><i class="icon-add"></i></a>
             <?php } ?>
         </div>
     </div>
-    
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6 border-right">
-                <div class="mb-3 d-flex align-items-center">
-                  <div class="dropdown mr-2">
-                      <button class="btn bg-teal-400 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Select User Type
-                      </button>
-                      <ul class="dropdown-menu container_menu" style="height:300px;overflow-y: scroll;">
-                        <li class="px-2 pb-2"><input type="text" class="form-control form-control-sm dropdown-search" placeholder="Search..."></li>
-                         <?php while ($row = $result->fetch_assoc()) { ?>
-                        <li><a class="dropdown-item role_dropdown" href="#" data="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></a></li>
-                        <?php } ?>
-                      </ul>
-                  </div>
-                  
-                  <button id="btn_popup_new_role" class="btn btn-primary rounded-button" type="button">
-                    <i class="bi bi-plus mr-1"></i> Add New User Type
-                  </button>
-                </div>
+    <div class="row">
+        <div class="col-5">
+            <div class="" style="padding-bottom:10px;">
+              <button class="btn btn-secondary btn-sm dropdown-toggle" style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Select User Type
+              </button>
+              <ul class="dropdown-menu container_menu" style="height:300px;overflow-y: scroll;">
+                 <?php while ($row = $result->fetch_assoc()) { ?>
+                <li><a class="dropdown-item role_dropdown" href="#" data="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></a></li>
+                <?php } ?>
+                 <!--<li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item add_new_role" href="#" data="0">Add New Role</a></li>-->
+              </ul>
+              
+              <button  id="btn_popup_new_role"  class="btn btn-primary rounded-button" type="button" style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;">
+                <i class="bi bi-plus"></i>Add New User Type
+              </button>
+            </div>
+            
+              <div id="selected_item" style="padding-bottom:10px;"></div>
+                <p>
                 
-                <div id="selected_item" class="mb-2 font-weight-semibold text-primary"></div>
+                <button type="button" id="btnSelectAll" class="btn btn-danger"
+                        style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;">
+                  <i class="bi bi-check2-all"></i> Select All
+                </button>
+                <button type="button" id="btnDeselectAll" class="btn btn-warning"
+                        style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;">
+                  <i class="bi bi-x"></i> Deselect All
+                </button>
                 
-                <div class="mb-2">
-                    <button type="button" id="btnSelectAll" class="btn btn-danger btn-sm">
-                      <i class="bi bi-check2-all mr-1"></i> Select All
-                    </button>
-                    <button type="button" id="btnDeselectAll" class="btn btn-warning btn-sm">
-                      <i class="bi bi-x mr-1"></i> Deselect All
-                    </button>
-                </div>
                 
-                <span class="text-muted d-block mb-2" style="font-size:12px;">Selected / Non Selected / Total</span>
-                <div id="tree" class="box border rounded p-2" style="width: 100%; min-height: 400px; overflow-y: auto;"></div>
-                
-                <div class="mt-3">
-                    <button type="button" id="button" class="btn btn-success">
-                      <i class="bi bi-floppy mr-1"></i> Assign Modules to Role
-                    </button>
+                </p>
+                <span style="font-size:12px; pading-left: 10px;">Selected/Non Selected/Total</span>
+                <div id="tree" class="box"></div>
+                <div style="padding-top:20px;">
+                    <button type="button" id="button" class="btn btn-success"
+                        style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;">
+                  <i class="bi bi-floppy"></i> Assign Modules to Role
+                </button>
+                    
                 </div>
                 <div id="statusLine"></div>
             </div>
-            
-            <div class="col-md-6 pl-md-4">
-                <div class="dropdown mb-3">
-                  <button class="btn bg-teal-400 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="col-5">
+                <div class="btn-group" style="padding-bottom:10px;">
+                  <button class="btn btn-secondary btn-sm dropdown-toggle" style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Select Users
                   </button>
                   <ul class="dropdown-menu container_menu" style="height:300px;overflow-y: scroll;">
-                    <li class="px-2 pb-2"><input type="text" class="form-control form-control-sm dropdown-search" placeholder="Search..."></li>
                      <li><a class="dropdown-item clear-all-user-items clear-user-all" href="#">Clear All </a></li>
                      <li><hr class="dropdown-divider"></li>
                      <?php
@@ -117,64 +115,46 @@
                      <li><a class="dropdown-item list-selected-user-items add-selected-all" href="#">Add All </a></li>
                   </ul>
                 </div>
-                
-                <div id="selected_user" class="container_menu border rounded bg-light" style="padding:10px;margin-bottom:20px;border-color:#ddd;height:120px;overflow-y: scroll;"></div>
+                <!--<div id="selected_user" style="padding-bottom:10px;"></div>-->
+                <div id="selected_user" class="container_menu" style="padding:5px;margin-bottom:20px;border-width:1px;border-style:solid;border-color:#CECECE;height:100px;overflow-y: scroll;"></div>
                      
-                <div class="dropdown mb-3">
-                  <button class="btn bg-teal-400 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Select User Types
-                  </button>
-                  <ul class="dropdown-menu container_menu" style="height:300px;overflow-y: scroll;">
-                    <li class="px-2 pb-2"><input type="text" class="form-control form-control-sm dropdown-search" placeholder="Search..."></li>
-                    <li><a class="dropdown-item clear-all-items add-all" href="#">Clear All </a></li>
-                     <li><hr class="dropdown-divider"></li>
-                     <?php
-                     // Your SQL query
-                     $sql = "select * from  roles order by name asc";
-                     // Execute the query
-                     $result = $permmison_conn->query($sql);
-
-                     while ($row = $result->fetch_assoc()) { ?>
-                    <li><a class="dropdown-item list-of-items user_role_dropdown" href="#" data-user-role="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></a></li>
-                    <?php }
-                     ?>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item list-of-items add-all" href="#">Add All</a></li>
-                  </ul>
-                </div>
-                        
-                <span class="text-muted d-block mb-2 font-weight-semibold" style="font-size:12px;">Select Roles to add to the Selected User</span>
-                <div id="div_list_user_roles" class="container_menu border rounded bg-light" style="padding:10px;margin-bottom:20px;border-color:#ddd;height:120px;overflow-y: auto;"></div>
                 
-                <button type="button" id="button_save_user_role" class="btn btn-success">
-                  <i class="bi bi-floppy mr-1"></i> Save User Roles
+                <!--User Roles-->
+                
+                
+                    <div class="btn-group" style="padding-bottom:10px;">
+                      <button class="btn btn-secondary btn-sm dropdown-toggle" style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Select User Types
+                      </button>
+                      <ul class="dropdown-menu  container_menu" style="height:300px;overflow-y: scroll;">
+                       
+                        <li><a class="dropdown-item clear-all-items add-all" href="#">Clear All </a></li>
+                         <li><hr class="dropdown-divider"></li>
+                         <?php
+                         // Your SQL query
+                         $sql = "select * from  roles order by name asc";
+                         // Execute the query
+                         $result = $permmison_conn->query($sql);
+
+                         while ($row = $result->fetch_assoc()) { ?>
+                        <li><a class="dropdown-item list-of-items user_role_dropdown" href="#" data-user-role="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></a></li>
+                        <?php }
+                         ?>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item list-of-items add-all" href="#">Add All</a></li>
+                      </ul>
+                    </div>
+                        
+                <!--User Roles End -->
+                Select Roles to add to the Selected User
+                <div id="div_list_user_roles" class="container_menu" style="padding:5px;margin-bottom:20px;border-width:1px;border-style:solid;border-color:#CECECE;"></div>
+                <button type="button" id="button_save_user_role" class="btn btn-success"
+                        style="--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .80rem;">
+                  <i class="bi bi-floppy"></i> Save User Roles
                 </button>
             </div>
         </div>
-    </div>
 </div>
-
-<script>
-    $(document).ready(function() {
-        // Dropdown search functionality
-        $('.dropdown-search').on('keyup', function() {
-            var value = $(this).val().toLowerCase();
-            // Get the parent ul
-            var dropdownMenu = $(this).closest('.dropdown-menu');
-            // Filter all li elements except the first one (which contains the search box itself) and dividers
-            dropdownMenu.find('li:not(:first-child):not(:has(hr))').filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-            });
-        });
-        
-        // Prevent dropdown from closing when clicking inside the search box
-        $('.dropdown-menu').on('click', function(e) {
-            if ($(e.target).hasClass('dropdown-search')) {
-                e.stopPropagation();
-            }
-        });
-    });
-</script>
 
 
 	<!-- User Permission Script -->

@@ -1,4 +1,4 @@
-<?PHP
+﻿<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -305,15 +305,13 @@ $("#selected_user").css("overflow-y", "auto");
 	<div class="content-wrapper" style="margin-left:0;padding:20px 24px 0;">
 
 			<!-- Page header -->
-			<div class="page-header page-header-light mb-3">
-				<div class="page-header-content header-elements-md-inline">
-					<div class="page-title d-flex">
-						<h4><i class="icon-key mr-2"></i> <span class="font-weight-semibold">User Roles & Permissions</span></h4>
-						<a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-					</div>
-				</div>
-			</div>
+			<?PHP 
+				//include_once('template/header_bellow_title.inc');
+			?>
+			
 			<!-- /page header -->
+
+
 			<!-- Content area -->
 			<div class="content pt-0">
 

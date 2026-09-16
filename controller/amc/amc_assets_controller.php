@@ -6,7 +6,7 @@ require ('../../model/common/common_functions.php');
 class apartmentController
 {
     var $varModelObj,$varDBConnection;
-    public $actionevents,$asset_ref_no,$asset_category_id,$asset_category_name,$asset_type_id,$asset_type_name,$asset_cust_id,$asset_cust_code,$asset_cust_name,$asset_location_id,$asset_location,$asset_building,$flat_area_code,$asset_serial_no,$asset_brand,$asset_capacity,$asset_cost,$asset_is_warentee,$warentee_end_date,$asset_attachment,$asset_description,$asset_spgen,$asset_sp_des,$asset_building_code,$zone_or_floor_no,$asset_roon_no,$asset_specify_description,$v_location,$v_asset_cate_combo,$v_assettype_combo,$v_asset_building_combo,$location_code,$asset_building_id,$asset_status,$customer_assets_action,$v_asset_id,$asset_location_code,$amc_id,$amc_ref_no,$amc_ed_date,$amc_st_date,$current_date;
+    public $actionevents,$asset_ref_no,$asset_category_id,$asset_category_name,$asset_type_id,$asset_type_name,$asset_cust_id,$asset_cust_code,$asset_cust_name,$asset_location_id,$asset_location,$asset_building,$flat_area_code,$asset_serial_no,$asset_brand,$asset_capacity,$asset_cost,$asset_is_warentee,$warentee_end_date,$asset_attachment,$asset_description,$asset_spgen,$asset_sp_des,$asset_building_code,$zone_or_floor_no,$asset_roon_no,$asset_specify_description,$v_location,$v_asset_cate_combo,$v_assettype_combo,$v_asset_building_combo,$location_code,$asset_building_id,$asset_status,$customer_assets_action,$v_asset_id,$asset_location_code,$amc_id,$amc_ref_no,$amc_ed_date,$amc_st_date,$current_date,$is_janitor_asset;
        
      
     function __construct()
@@ -32,7 +32,8 @@ class apartmentController
         $this->asset_brand = $_POST['v_asset_brand'];
         $this->asset_capacity = $_POST['v_asset_capacity'];
         $this->asset_cost = $_POST['v_asset_cost'];
-        $this->asset_is_warentee = $_POST['v_is_warentee'];
+        $this->asset_is_warentee = isset($_POST['v_is_warentee']) ? $_POST['v_is_warentee'] : 'NA';
+        $this->is_janitor_asset = isset($_POST['v_is_janitor_asset']) ? $_POST['v_is_janitor_asset'] : 'NO';
         $this->warentee_end_date = $_POST['v_warentee_end_date'];
 		$this->asset_attachment = $_POST['assets_attachment_file'];
         $this->asset_description = $_POST['v_asset_description'];
@@ -72,13 +73,13 @@ class apartmentController
     function SQLArray()
     { 
         $array =  array();
-	 $array[0]="call proc_amc_add_assets('".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."',".$this->asset_type_id.",'".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location."','".	$this->location_code."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."','".$this->asset_cost."','".$this->asset_is_warentee."','".$this->warentee_end_date."','".$this->asset_attachment."','".$this->asset_description."','Active',0,'NA','".$this->current_date."',0,'NA','".$this->current_date."','NA','0000-00-00','0000-00-00',0,@msg)";
+	 $array[0]="call proc_amc_add_assets('".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."',".$this->asset_type_id.",'".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location."','".	$this->location_code."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."','".$this->asset_cost."','".$this->asset_is_warentee."','".$this->warentee_end_date."','".$this->asset_attachment."','".$this->asset_description."','Active',0,'NA','".$this->current_date."',0,'NA','".$this->current_date."','NA','0000-00-00','0000-00-00',0,'".$this->is_janitor_asset."',@msg)";
      $array[1]="select * from tbl_assets where (location_id='".$this->v_location."' and asset_category_id='".$this->v_asset_cate_combo."' and asset_type_id='".$this->v_assettype_combo."')";
      $array[2]="select location_id from   tbl_customer_location where customer_id=".$this->asset_cust_id;
      $array[3]="select *,REGEXP_REPLACE(asset_description, '[^ -~]', '') AS asset_description from tbl_assets order by asset_id desc"; 																										                                          
 	 $array[4] ="update tbl_assets set `asset_status`='Active' where asset_id='".$this->v_asset_id."'";   
 	 $array[5] ="update tbl_assets set `asset_status`='Deactive' where asset_id='".$this->v_asset_id."'";
-	 $array[6]="call proc_amc_edit_assets('".$this->v_asset_id."','".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."',".$this->asset_type_id.",'".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location_code."','".$this->asset_location."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."','".$this->asset_cost."','".$this->asset_is_warentee."','".$this->warentee_end_date."','".$this->asset_attachment."','".$this->asset_description."','".$this->current_date."',@msg)";	 
+	 $array[6]="call proc_amc_edit_assets('".$this->v_asset_id."','".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."',".$this->asset_type_id.",'".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location_code."','".$this->asset_location."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."','".$this->asset_cost."','".$this->asset_is_warentee."','".$this->warentee_end_date."','".$this->asset_attachment."','".$this->asset_description."','".$this->current_date."','".$this->is_janitor_asset."',@msg)";	 
      $array[7]="select asset_ref_no from tbl_assets order by asset_id desc";
  
 		 

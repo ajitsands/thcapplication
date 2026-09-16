@@ -66,80 +66,62 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
   
 }
-
-
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback Report</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .card {
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-            margin: 20px auto;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    
- <?php if ($result && mysqli_num_rows($result) > 0 && !empty($counts))  { ?>    
-    
-    <h2>Feedback Report</h2>
-    <?php 
-    date_default_timezone_set('Asia/Bahrain');
-    $toddate = date('Y-m-d');
-    ?>
-    <p>
-        <a href="../view/customer_feedback_graph.php?param=<?php echo urlencode('head=feedback&open=2&title=feedback');?>&start_date=<?php echo $toddate;?>&end_date=<?php echo $toddate;?>&cust_id=All&cust_name=All&cat_val=All&cat_text=All" target="_blank" type="button" id="btn_search_tickets" class="btn bg-info legitRipple ladda-button" tabindex="4" data-style="expand-right" style="float: right;">Feedback Graph</a>
-    </p>
-    <p></p>
-
-    <table>
-        <?php foreach ($counts as $questionId => $questionData): ?>
-            <tr>
-                <th colspan="2"><?= $questionData[0]['question_text']; ?></th>
-            </tr>
-            <tr>
-                <th width="50%">Option</th>
-                <th>Count</th>
-            </tr>
-            <?php foreach ($questionData as $count): ?>
-                <tr>
-                    <td><?= $count['option_text']; ?></td>
-                    <td>
-                        <span><?= $count['count']; ?></span>
-                        <?php if($count['option_text']=='Text Response'): ?>
-                            &nbsp;&nbsp;<span id="google_sentimentals">Loading sentiments please wait...!</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endforeach; ?>
-    </table>
-<?php } else { ?>    
-    <div class="card">
-        <div class="text-danger">No data available</div>
+<?php if ($result && mysqli_num_rows($result) > 0 && !empty($counts)) { ?>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header header-elements-inline">
+                <h5 class="card-title">Feedback Report</h5>
+                <div class="header-elements">
+                    <?php 
+                    date_default_timezone_set('Asia/Bahrain');
+                    $toddate = date('Y-m-d');
+                    ?>
+                    <a href="../view/customer_feedback_graph.php?param=<?php echo urlencode('head=feedback&open=2&title=feedback');?>&start_date=<?php echo $toddate;?>&end_date=<?php echo $toddate;?>&cust_id=All&cust_name=All&cat_val=All&cat_text=All" target="_blank" id="btn_search_tickets" class="btn btn-primary">
+                        <i class="icon-stats-dots mr-2"></i> Feedback Graph
+                    </a>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <?php foreach ($counts as $questionId => $questionData): ?>
+                        <tr class="bg-light">
+                            <th colspan="2" class="font-weight-bold font-size-lg"><?= htmlspecialchars($questionData[0]['question_text']); ?></th>
+                        </tr>
+                        <tr>
+                            <th width="50%" class="font-weight-semibold">Option</th>
+                            <th class="font-weight-semibold">Count</th>
+                        </tr>
+                        <?php foreach ($questionData as $count): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($count['option_text']); ?></td>
+                                <td>
+                                    <span class="badge badge-success font-size-sm"><?= $count['count']; ?></span>
+                                    <?php if($count['option_text'] == 'Text Response'): ?>
+                                        <span class="ml-3 text-muted font-italic" id="google_sentimentals">Loading sentiments please wait...!</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+        </div>
     </div>
-<?php }  ?>    
-</body>
-</html>
+</div>
+<?php } else { ?>    
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body text-danger text-center font-weight-bold">
+                No data available
+            </div>
+        </div>
+    </div>
+</div>
+<?php } ?>    
+
 <?php mysqli_close($conn); ?>

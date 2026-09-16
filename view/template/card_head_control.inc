@@ -9,6 +9,9 @@
 								case 'dashboard':
 									echo 'Dashboard';
 								break;
+								case 'employee_types':
+									echo 'Employee Types ';
+								break;
 								case 'employees':
 									echo 'Add Employees ';
 								break;

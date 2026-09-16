@@ -189,6 +189,7 @@ $(document).ready(function(){
 								var v_asset_cost=$("#txt_cost").val();
 								var v_is_warentee=$("#txt_is_warrantee option:selected").text();
 								var v_warentee_end_date=$("#warrantee_date").val();
+								var v_is_janitor_asset=$("input[name='txt_is_janitor_asset']:checked").val();
 								
 								var v_asset_description=$("#txt_des").val();
 								
@@ -231,7 +232,7 @@ $(document).ready(function(){
                                
                                 else
                                 {         
-                                     $.post("../controller/amc/amc_assets_controller.php",{action:'add_amc_assets',location_code:location_code,v_asset_building_id:v_asset_building_id,v_zone_or_floor_no:v_zone_or_floor_no,v_asset_roon_no:v_asset_roon_no,v_asset_specify_description:v_asset_specify_description,v_asset_ref_no:v_asset_ref_no,v_asset_category_id:v_asset_category_id,v_asset_category_name:v_asset_category_name,v_asset_type_id:v_asset_type_id,v_asset_type_name:v_asset_type_name,v_cust_id:v_cust_id,v_cust_code:cust_code_view,v_cust_name:cust_code_name,v_location_id:v_location_id,v_asset_location:v_asset_location,v_asset_building:v_asset_building_name,v_asset_building_code:v_asset_building_code,v_flat_area_code:v_flat_area_code,v_asset_serial_no:v_asset_serial_no,v_asset_brand:v_asset_brand,v_asset_capacity:v_asset_capacity,v_asset_cost:v_asset_cost,v_is_warentee:v_is_warentee,v_warentee_end_date:v_warentee_end_date,assets_attachment_file:assets_attachment_file,v_asset_description:v_asset_description}
+                                     $.post("../controller/amc/amc_assets_controller.php",{action:'add_amc_assets',location_code:location_code,v_asset_building_id:v_asset_building_id,v_zone_or_floor_no:v_zone_or_floor_no,v_asset_roon_no:v_asset_roon_no,v_asset_specify_description:v_asset_specify_description,v_asset_ref_no:v_asset_ref_no,v_asset_category_id:v_asset_category_id,v_asset_category_name:v_asset_category_name,v_asset_type_id:v_asset_type_id,v_asset_type_name:v_asset_type_name,v_cust_id:v_cust_id,v_cust_code:cust_code_view,v_cust_name:cust_code_name,v_location_id:v_location_id,v_asset_location:v_asset_location,v_asset_building:v_asset_building_name,v_asset_building_code:v_asset_building_code,v_flat_area_code:v_flat_area_code,v_asset_serial_no:v_asset_serial_no,v_asset_brand:v_asset_brand,v_asset_capacity:v_asset_capacity,v_asset_cost:v_asset_cost,v_is_warentee:v_is_warentee,v_warentee_end_date:v_warentee_end_date,v_is_janitor_asset:v_is_janitor_asset,assets_attachment_file:assets_attachment_file,v_asset_description:v_asset_description}
                                             , function(result,status)
                                             {
                                                
@@ -446,7 +447,8 @@ $(document).ready(function(){
 							'<td ><div align="center">Warrantee/Guarantee</div></td>'+
             				'<td ><div align="center">Capacity</div></td>'+
             				'<td ><div align="center">Cost</div></td>'+
-            				'<td colspan="2"><div align="center">Asset Description </div></td>'+
+                            '<td ><div align="center">Assigned to Janitor?</div></td>'+
+            				'<td ><div align="center">Asset Description </div></td>'+
             				'<td ><div align="center">Attachment</div></td>'+
             			
             			  '</tr>'+
@@ -456,7 +458,8 @@ $(document).ready(function(){
 							'<td><div align="center">'+d.warentee_end_date+'</div></td>'+
             				'<td><div align="center">'+d.asset_capacity+' </div></td>'+
             				'<td><div align="center">'+d.asset_cost+' </div></td>'+
-            				'<td colspan="2"><div align="center">'+d.asset_description+'</div></td>'+
+                            '<td><div align="center">'+d.is_janitor_asset+' </div></td>'+
+            				'<td><div align="center">'+d.asset_description+'</div></td>'+
             				'<td><div align="center"><a href="../../httpdocs/images/amc_attachements/'+d.asset_attachment+'" target="_BLANK"><i class="icon-attachment mr-3 icon-2x"></i> </a> </div></td>'+
             				
             				
@@ -506,6 +509,7 @@ $(document).ready(function(){
                                 $("#txt_brand").val(custmr_asset_data.asset_brand);
 								$("#txt_modal_no").val(custmr_asset_data.asset_serial_no);
 								$("#txt_is_warrantee").val(custmr_asset_data.is_warentee).trigger("change");
+                                $("input[name='txt_is_janitor_asset'][value='" + custmr_asset_data.is_janitor_asset + "']").prop("checked", true);
 								$("#warrantee_date").val(custmr_asset_data.warentee_end_date);
 								$("#txt_capacity").val(custmr_asset_data.asset_capacity);
 								$("#txt_cost").val(custmr_asset_data.asset_cost);
@@ -581,6 +585,7 @@ $(document).ready(function(){
 					var v_asset_serial_no=$("#txt_modal_no").val();
 					var v_is_warentee=$("#txt_is_warrantee option:selected").text();
 					var v_warentee_end_date=$("#warrantee_date").val();
+                    var v_is_janitor_asset=$("input[name='txt_is_janitor_asset']:checked").val();
 					var v_asset_capacity=$("#txt_capacity").val();
 					var v_asset_cost=$("#txt_cost").val();
 					var v_asset_description=$("#txt_des").val();
@@ -620,7 +625,7 @@ $(document).ready(function(){
                    
                     else
                     {         
-                         $.post("../controller/amc/amc_assets_controller.php",{action:'edit_amc_assets',v_assets_id:v_assets_id,v_asset_ref_no:v_asset_ref_no,v_asset_category_id:v_asset_category_id,v_asset_category_name:v_asset_category_name,v_asset_type_id:v_asset_type_id,v_asset_type_name:v_asset_type_name,v_cust_id:v_customer_id,v_cust_code:v_asset_customer_code,v_cust_name:v_asset_customer_name,v_location_id:v_location_id,v_asset_location_code:v_asset_location_code,v_asset_location:v_asset_location_name,v_asset_building_id:v_asset_building_id,v_asset_building_code:v_asset_building_code,v_asset_building:v_asset_building_name,v_zone_or_floor_no:v_zone_or_floor_no,v_flat_area_code:v_flat_area_code,v_asset_roon_no:v_asset_roon_no,v_asset_specify_description:v_asset_specify_description,v_asset_serial_no:v_asset_serial_no,v_asset_brand:v_asset_brand,v_asset_capacity:v_asset_capacity,v_asset_cost:v_asset_cost,v_is_warentee:v_is_warentee,v_warentee_end_date:v_warentee_end_date,assets_attachment_file:v_assets_attachment,v_asset_description:v_asset_description}
+                         $.post("../controller/amc/amc_assets_controller.php",{action:'edit_amc_assets',v_assets_id:v_assets_id,v_asset_ref_no:v_asset_ref_no,v_asset_category_id:v_asset_category_id,v_asset_category_name:v_asset_category_name,v_asset_type_id:v_asset_type_id,v_asset_type_name:v_asset_type_name,v_cust_id:v_customer_id,v_cust_code:v_asset_customer_code,v_cust_name:v_asset_customer_name,v_location_id:v_location_id,v_asset_location_code:v_asset_location_code,v_asset_location:v_asset_location_name,v_asset_building_id:v_asset_building_id,v_asset_building_code:v_asset_building_code,v_asset_building:v_asset_building_name,v_zone_or_floor_no:v_zone_or_floor_no,v_flat_area_code:v_flat_area_code,v_asset_roon_no:v_asset_roon_no,v_asset_specify_description:v_asset_specify_description,v_asset_serial_no:v_asset_serial_no,v_asset_brand:v_asset_brand,v_asset_capacity:v_asset_capacity,v_asset_cost:v_asset_cost,v_is_warentee:v_is_warentee,v_warentee_end_date:v_warentee_end_date,v_is_janitor_asset:v_is_janitor_asset,assets_attachment_file:v_assets_attachment,v_asset_description:v_asset_description}
                                 , function(result,status)
                                 {
                                     //console.log(result);

@@ -75,6 +75,14 @@ $params = [];
                 </li>
                 <li class="nav-item classEmployeesView">
                     <a
+                        href="employee_types.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=21&title=employee_types');?>"
+                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='21'){ echo 'active';} ?>"
+                    >
+                        Employee Types
+                    </a>
+                </li>
+                <li class="nav-item classEmployeesView">
+                    <a
                         href="employees.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=1&title=employees');?>"
                         class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active';} ?>"
                     >
@@ -574,9 +582,8 @@ $params = [];
 
 
 <!--Quoatation-->  
-        <li class="nav-item nav-item-submenu classQuotation <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='quotation'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
-            <a href="#" class="nav-link">
-                <i class="icon-stack3"></i>
+        <li class="nav-item nav-item-submenu classQuotation d-none <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='quotation'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
+                <a href="#" class="nav-link"><i class="icon-file-text3"></i> 
                 <span> Quotation </span>
             </a>
             <ul class="nav nav-group-sub" data-submenu-title="Layouts">
@@ -610,9 +617,8 @@ $params = [];
 
 
 <!--Local PO-->  
-        <li class="nav-item nav-item-submenu classLocalPOModule <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='localpo'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
-            <a href="#" class="nav-link">
-                <i class="icon-clipboard3"></i>
+        <li class="nav-item nav-item-submenu classLocalPOModule d-none <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='localpo'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
+                <a href="#" class="nav-link"><i class="icon-file-text2"></i> 
                 <span> Local PO </span>
             </a>
             <ul class="nav nav-group-sub" data-submenu-title="Layouts">

@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -21,7 +21,6 @@ $OBJ->URLEncode('head=dashboard');
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
 	<?PHP 
 		include_once('template/head.inc');
 	?>
@@ -119,8 +118,6 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="../httpdocs/user_js/requisition_list.js"></script>
     
 	<script src="../httpdocs/user_js/login.js"></script>
-	
-	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script> 
 	
 
 	<script src="global_assets/js/plugins/editors/summernote/summernote.min.js"></script>

@@ -69,19 +69,32 @@ class EmployeeTypeController
                 }
 
                 $chk_desc_final = mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_user_types` LIKE 'user_type_description'");
-                if ($chk_desc_final && mysqli_num_rows($chk_desc_final) > 0) {
-                    $sql = "INSERT INTO `tbl_user_types` (`user_type_name`, `user_type_description`, `user_type_status`) 
-                            VALUES ('$this->employee_type_name', '$this->employee_type_description', 'Active')";
-                } else {
-                    $sql = "INSERT INTO `tbl_user_types` (`user_type_name`, `user_type_status`) 
-                            VALUES ('$this->employee_type_name', 'Active')";
-                }
+                
+                // First insert into roles table to generate the shared ID
+                $sql_role = "INSERT INTO `roles` (`name`) VALUES ('$this->employee_type_name')";
+                $res_role = mysqli_query($this->varDBConnection, $sql_role);
+                
+                if ($res_role) {
+                    $new_id = mysqli_insert_id($this->varDBConnection);
+                    
+                    if ($chk_desc_final && mysqli_num_rows($chk_desc_final) > 0) {
+                        $sql = "INSERT INTO `tbl_user_types` (`user_type_id`, `user_type_name`, `user_type_description`, `user_type_status`) 
+                                VALUES ($new_id, '$this->employee_type_name', '$this->employee_type_description', 'Active')";
+                    } else {
+                        $sql = "INSERT INTO `tbl_user_types` (`user_type_id`, `user_type_name`, `user_type_status`) 
+                                VALUES ($new_id, '$this->employee_type_name', 'Active')";
+                    }
 
-                $res = mysqli_query($this->varDBConnection, $sql);
-                if ($res) {
-                    echo "Success";
+                    $res = mysqli_query($this->varDBConnection, $sql);
+                    if ($res) {
+                        echo "Success";
+                    } else {
+                        // Rollback role if user type failed
+                        mysqli_query($this->varDBConnection, "DELETE FROM `roles` WHERE `id` = $new_id");
+                        echo "Failed to add Employee Type: " . mysqli_error($this->varDBConnection);
+                    }
                 } else {
-                    echo "Failed to add Employee Type: " . mysqli_error($this->varDBConnection);
+                    echo "Failed to create Role mapping: " . mysqli_error($this->varDBConnection);
                 }
                 break;
 
@@ -149,6 +162,9 @@ class EmployeeTypeController
 
                 $res = mysqli_query($this->varDBConnection, $sql);
                 if ($res) {
+                    // Update the roles table to keep the name in sync
+                    mysqli_query($this->varDBConnection, "UPDATE `roles` SET `name` = '$this->employee_type_name' WHERE `id` = $this->employee_type_id");
+                    
                     // Also synchronize employee_type_name in tbl_employees for existing assigned employees
                     mysqli_query($this->varDBConnection, "UPDATE tbl_employees SET employee_type_name = '$this->employee_type_name' WHERE employee_type_id = $this->employee_type_id");
                     echo "Success";
@@ -197,6 +213,8 @@ class EmployeeTypeController
                 $sql = "DELETE FROM `tbl_user_types` WHERE `user_type_id` = $this->employee_type_id";
                 $res = mysqli_query($this->varDBConnection, $sql);
                 if ($res) {
+                    // Also delete from roles table to keep it clean
+                    mysqli_query($this->varDBConnection, "DELETE FROM `roles` WHERE `id` = $this->employee_type_id");
                     echo "Success";
                 } else {
                     echo "Failed to delete Employee Type: " . mysqli_error($this->varDBConnection);

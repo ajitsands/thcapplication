@@ -42,6 +42,7 @@
 
 							<ul class="nav nav-group-sub" data-submenu-title="Layouts">
 							<li class="nav-item"><a href="expertise.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=2&title=expertise');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='2' ){ echo 'active';} ?>">Expertise</a></li>
+							<li class="nav-item"><a href="employee_types.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=21&title=employee_types');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='21' ){ echo 'active';} ?>">Employee Types</a></li>
 							<li class="nav-item"><a href="employees.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=1&title=employees');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='1'){ echo 'active';} ?>">Employees</a></li>
 							<!--<li class="nav-item"><a href="employee_leave.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=17&title=employee_leave');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='17' ){ echo 'active';} ?>">Employee Leave</a></li>-->
 								<li class="nav-item"><a href="employee_report.php?param=<?PHP echo $OBJ->URLEncode('head=hr&open=3&title=employees');?>" class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='3'){ echo 'active';} ?>">Employee List</a></li>
@@ -268,7 +269,7 @@
 							</a>
 					    </li>-->
 						<?php }?>
-					<!--	<li class="nav-item nav-item-submenu <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='quotation'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
+					<!--	<li class="nav-item nav-item-submenu d-none <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='quotation'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?> ">
 							<a href="#" class="nav-link ">
 								<i class="icon-stack3"></i>
 								<span>	Quotation	</span>	</a>
@@ -280,7 +281,7 @@
 							   	</ul>
 						
 						</li>
-						<li class="nav-item nav-item-submenu <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='localpo'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
+						<li class="nav-item nav-item-submenu d-none <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['head']=='localpo'){ echo 'legitRipple nav-item-expanded nav-item-open';} ?>">
 							<a href="#" class="nav-link ">
 								<i class="icon-clipboard3"></i>
 								<span>	Local PO	</span>	</a>
