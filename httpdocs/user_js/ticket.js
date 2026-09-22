@@ -903,7 +903,7 @@ $(document).ready(function() {
             {
                 var doc_file_obj = $("#session_image")[0].files[0];
                 var upload = new ns.Upload(doc_file_obj);
-                doc_file1= doc_file_obj.name;
+                doc_file1= doc_file_obj.name.replace(/[^A-Za-z0-9._-]/g, '_');
                 upload.doUpload("../httpdocs/user_upload/ticket_book_image_upload.php?random_no="+randomNum);
                 v_session_image=$.trim(randomNum+'_'+doc_file1);
                  $('#hidden_image_show').val(v_session_image);
@@ -925,7 +925,7 @@ $(document).ready(function() {
             {
                 var doc_file_obj2 = $("#session_image2")[0].files[0];
                 var upload2 = new ns.Upload(doc_file_obj2);
-                doc_file2= doc_file_obj2.name;
+                doc_file2= doc_file_obj2.name.replace(/[^A-Za-z0-9._-]/g, '_');
                 upload2.doUpload("../httpdocs/user_upload/ticket_book_image_upload.php?random_no="+randomNum2);
                 v_session_image2=$.trim(randomNum2+'_'+doc_file2);
                  $('#hidden_image_show2').val(v_session_image2);
@@ -1083,6 +1083,10 @@ $(document).ready(function() {
 	$("#hidden_image_show").val('default.jpg');
 	$("#i_image").click(function(){
 	    var img_to_load=$("#hidden_image_show").val();
+        if (img_to_load === "" || img_to_load === "default.jpg") {
+            swal("Warning", "No image to preview", "warning");
+            return;
+        }
 	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});
@@ -1096,6 +1100,10 @@ $(document).ready(function() {
 	$("#hidden_image_show2").val('default.jpg');
 	$("#i_image2").click(function(){
 	    var img_to_load=$("#hidden_image_show2").val();
+        if (img_to_load === "" || img_to_load === "default.jpg") {
+            swal("Warning", "No image to preview", "warning");
+            return;
+        }
 	    var filePath='../httpdocs/images/ticket_book_image/';
 	    window.open(filePath + img_to_load );
 	});

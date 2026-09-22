@@ -516,6 +516,14 @@ $params = [];
                         Material Master
                     </a>
                 </li>
+                <li class="nav-item classWOMaterialReport">
+                    <a
+                        href="wo_material_report.php?param=<?PHP  echo $OBJ->URLEncode('head=requisition&open=5&title=wo_material_report');?>"
+                        class="nav-link <?PHP if(trim($_GET['param'])!=''){ $params = $OBJ->URLDecode(trim($_GET['param']));} if($params['open']=='5'){ echo 'active legitRipple';} ?>"
+                    >
+                        WO Material Report
+                    </a>
+                </li>
             </ul>
         </li>
 <!--/Material Requisition-->         

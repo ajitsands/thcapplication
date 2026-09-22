@@ -33,8 +33,7 @@ $OBJ->URLEncode('head=janitor');
 	<script src="assets/js/ladda/ladda.min.js" type="text/javascript"></script>
 	<script src="assets/js/ladda/ladda.jquery.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-    <link href="global_assets/js/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css" rel="stylesheet" type="text/css">
-    <script src="global_assets/js/plugins/bootstrap-tagsinput/bootstrap-tagsinput.min.js"></script>
+    <script src="global_assets/js/plugins/forms/tags/tagsinput.min.js"></script>
 
 	<!-- Custom JS -->
 	<script src="../httpdocs/user_js/janitor_assignment.js"></script>

@@ -2,6 +2,7 @@ $(document).ready(function() {
     
     // Initialize Plugins
     $('.select2').select2();
+    $('#slots').tagsinput();
 
     // Initialize DataTable
     var tblAssignments = $('#tblAssignments').DataTable({
@@ -11,12 +12,36 @@ $(document).ready(function() {
             "data": { action: "list_assignments" }
         },
         "columns": [
-            { "data": "id" },
+            { "data": "assignment_ref_no" },
             { "data": "employee_name" },
-            { "data": "checklist_name" },
+            { "data": "checklist_name",
+              "render": function(data, type, row) {
+                  return '<a href="#" class="text-info font-weight-semibold btn-view-checklist-grid" data-checklist_id="'+row.checklist_id+'"><i class="icon-list mr-1 font-size-sm"></i>' + data + '</a>';
+              }
+            },
             { "data": "asset_ref_no" },
             { "data": "amc_ref_no" },
             { "data": "frequency" },
+            { "data": "start_date",
+              "render": function(data, type, row) {
+                  if(!data) return '';
+                  var formatDt = function(d) {
+                      if(!d) return '';
+                      var dt = new Date(d);
+                      return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                  };
+                  return formatDt(row.start_date) + ' <br> ' + formatDt(row.end_date);
+              }
+            },
+            { "data": "slots",
+              "render": function(data, type, row) {
+                  if(!data) return '';
+                  var badges = data.split(',').map(function(s) {
+                      return '<span class="badge badge-light badge-striped badge-striped-left border-left-info mb-1 mr-1">' + s.trim() + '</span>';
+                  }).join('');
+                  return badges;
+              }
+            },
             { "data": "status",
               "render": function(data, type, row) {
                   var badgeClass = data === 'Active' ? 'badge-success' : 'badge-danger';
@@ -245,8 +270,9 @@ $(document).ready(function() {
     });
 
     // View Checklist Details Modal
-    $(document).on('click', '#btn_view_checklist', function() {
-        var chk_id = $('#checklist_id').val();
+    $(document).on('click', '#btn_view_checklist, .btn-view-checklist-grid', function(e) {
+        e.preventDefault();
+        var chk_id = $(this).data('checklist_id') || $('#checklist_id').val();
         if (!chk_id) return;
         
         $('#div_checklist_details_body').html('<div class="text-center p-3"><i class="icon-spinner2 spinner"></i> Loading...</div>');

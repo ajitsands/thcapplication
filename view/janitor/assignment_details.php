@@ -168,12 +168,14 @@
     <table class="table datatable-basic" id="tblAssignments">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>WO Number</th>
                 <th>Janitor</th>
                 <th>Checklist</th>
                 <th>Asset Code</th>
                 <th>AMC Ref</th>
                 <th>Frequency</th>
+                <th>Dates</th>
+                <th>Slots</th>
                 <th>Status</th>
                 <th class="text-center">Actions</th>
             </tr>

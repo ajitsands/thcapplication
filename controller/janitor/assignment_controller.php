@@ -110,26 +110,35 @@ if (isset($_POST['action'])) {
         echo json_encode(["data" => $data]);
     }
     else if ($action == 'save_assignment') {
-        $assignment_id = (int)$_POST['assignment_id'];
-        $customer_id = (int)$_POST['customer_id'];
-        $location_id = (int)$_POST['location_id'];
-        $building_id = (int)$_POST['building_id'];
+        $assignment_id = isset($_POST['assignment_id']) ? (int)$_POST['assignment_id'] : 0;
+        $customer_id = isset($_POST['customer_id']) ? (int)$_POST['customer_id'] : 0;
+        $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : 0;
+        $building_id = isset($_POST['building_id']) ? (int)$_POST['building_id'] : 0;
         
         // Handle array of employee IDs
-        $employee_ids_arr = isset($_POST['employee_id']) ? $_POST['employee_id'] : [];
+        $employee_ids_arr = isset($_POST['employee_id']) && is_array($_POST['employee_id']) ? $_POST['employee_id'] : [];
         $employee_ids_str = mysqli_real_escape_string($conn, implode(',', $employee_ids_arr));
         
-        $asset_id = (int)$_POST['asset_id'];
-        $amc_ref_no = mysqli_real_escape_string($conn, $_POST['amc_ref_no']);
-        $checklist_id = (int)$_POST['checklist_id'];
-        $frequency = mysqli_real_escape_string($conn, $_POST['frequency']);
-        $slots = mysqli_real_escape_string($conn, $_POST['slots']);
-        $start_date = mysqli_real_escape_string($conn, $_POST['start_date']);
-        $end_date = mysqli_real_escape_string($conn, $_POST['end_date']);
+        $asset_id = isset($_POST['asset_id']) ? (int)$_POST['asset_id'] : 0;
+        $amc_ref_no = isset($_POST['amc_ref_no']) ? mysqli_real_escape_string($conn, $_POST['amc_ref_no']) : '';
+        $checklist_id = isset($_POST['checklist_id']) ? (int)$_POST['checklist_id'] : 0;
+        $frequency = isset($_POST['frequency']) ? mysqli_real_escape_string($conn, $_POST['frequency']) : '';
+        $slots = isset($_POST['slots']) ? mysqli_real_escape_string($conn, $_POST['slots']) : '';
+        $start_date = isset($_POST['start_date']) ? mysqli_real_escape_string($conn, $_POST['start_date']) : '';
+        $end_date = isset($_POST['end_date']) ? mysqli_real_escape_string($conn, $_POST['end_date']) : '';
 
         if ($assignment_id == 0) {
-            $sql = "INSERT INTO tbl_janitor_assignments (customer_id, location_id, building_id, checklist_id, employee_id, asset_id, amc_ref_no, frequency, slots, start_date, end_date) 
-                    VALUES ($customer_id, $location_id, $building_id, $checklist_id, '$employee_ids_str', $asset_id, '$amc_ref_no', '$frequency', '$slots', '$start_date', '$end_date')";
+            $wo_prefix = "THC-JN-WO-";
+            $res_ref = mysqli_query($conn, "SELECT MAX(CAST(SUBSTRING(assignment_ref_no, 13) AS UNSIGNED)) as max_id FROM tbl_janitor_assignments WHERE assignment_ref_no LIKE '$wo_prefix%'");
+            $row_ref = mysqli_fetch_assoc($res_ref);
+            $next_id = 1;
+            if ($row_ref && $row_ref['max_id']) {
+                $next_id = $row_ref['max_id'] + 1;
+            }
+            $assignment_ref_no = $wo_prefix . str_pad($next_id, 4, '0', STR_PAD_LEFT);
+
+            $sql = "INSERT INTO tbl_janitor_assignments (assignment_ref_no, customer_id, location_id, building_id, checklist_id, employee_id, asset_id, amc_ref_no, frequency, slots, start_date, end_date) 
+                    VALUES ('$assignment_ref_no', $customer_id, $location_id, $building_id, $checklist_id, '$employee_ids_str', $asset_id, '$amc_ref_no', '$frequency', '$slots', '$start_date', '$end_date')";
         } else {
             $sql = "UPDATE tbl_janitor_assignments SET 
                     customer_id=$customer_id, location_id=$location_id, building_id=$building_id,

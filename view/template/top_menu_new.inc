@@ -165,6 +165,7 @@ function menuActive($p, $key, $val) {
           <!-- <li class="classMaterialRequisitionView"><a href="requisition_list.php?param=<?= $OBJ->URLEncode('head=requisition&open=2&title=view_requisition') ?>" class="<?= menuActive($params,'open','2') ? 'active' : '' ?>"><i class="icon-list"></i> View Requisition</a></li> -->
           <li><a href="request_spare_parts.php?param=<?= $OBJ->URLEncode('head=requisition&open=3&title=request_material') ?>" class="<?= menuActive($params,'open','3') ? 'active' : '' ?>"><i class="icon-wrench"></i> Request Material</a></li>
           <li><a href="spare_parts_master.php?param=<?= $OBJ->URLEncode('head=requisition&open=4&title=material_master') ?>" class="<?= menuActive($params,'open','4') ? 'active' : '' ?>"><i class="icon-database"></i> Material Master</a></li>
+          <li><a href="wo_material_report.php?param=<?= $OBJ->URLEncode('head=requisition&open=5&title=wo_material_report') ?>" class="<?= menuActive($params,'open','5') ? 'active' : '' ?>"><i class="icon-file-stats"></i> WO Material Report</a></li>
         </ul>
       </li>
 
@@ -178,6 +179,7 @@ function menuActive($p, $key, $val) {
           <li class="thc-dropdown-section-header classJanitorModule">Janitor Operations</li>
           <li class="classChecklistMaster classJanitorModule"><a href="janitor_checklist_master.php?param=<?= $OBJ->URLEncode('head=janitor&open=1&title=checklist_master') ?>" class="<?= menuActive($params,'open','1') ? 'active' : '' ?>"><i class="icon-list3"></i> Checklist Master</a></li>
           <li class="classJanitorAssignment classJanitorModule"><a href="janitor_assignment.php?param=<?= $OBJ->URLEncode('head=janitor&open=2&title=janitor_assignment') ?>" class="<?= menuActive($params,'open','2') ? 'active' : '' ?>"><i class="icon-user-check"></i> Assign Checklists</a></li>
+          <li class="classJanitorExecutionReport classJanitorModule"><a href="janitor_execution_report.php?param=<?= $OBJ->URLEncode('head=janitor&open=3&title=janitor_execution_report') ?>" class="<?= menuActive($params,'open','3') ? 'active' : '' ?>"><i class="icon-file-stats"></i> Execution Report</a></li>
 
           <li class="thc-dropdown-section-header classCustomerFeedbackModule">Customer Feedback</li>
           <li class="classCustomerFeedbackQuestionsAdd classCustomerFeedbackModule"><a href="feedback_questions.php?param=<?= $OBJ->URLEncode('head=feedback&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','feedback') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-question3"></i> Questions</a></li>

@@ -39,7 +39,7 @@
 
     <script src="global_assets/js/plugins/notifications/pnotify.min.js"></script>
     <script src="global_assets/js/demo_pages/extra_pnotify.js"></script>
-    <script src="global_assets/js/demo_pages/components_popovers.js"></script>
+    <script src="global_assets/js/demo_pages/components_popups.js"></script>
 
 	<style>
 		.swal-overlay, .swal-modal, .swal2-container {
