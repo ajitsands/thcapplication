@@ -618,6 +618,9 @@ $(document).ready(function() {
 	eventChecklistMaster.forEach(function(obj) {if (!hasPermission("ChecklistMaster")) {obj.style.display = "none";}});
 	eventJanitorAssignment.forEach(function(obj) {if (!hasPermission("JanitorAssignment")) {obj.style.display = "none";}});
 	
+	var eventJanitorExecutionReport = document.querySelectorAll(".classJanitorExecutionReport");
+	eventJanitorExecutionReport.forEach(function(obj) {if (!hasPermission("JanitorExecutionReport")) {obj.style.display = "none";}});
+	
 	// adding_new_permission
 	
 		// Donot Remove The above line 
