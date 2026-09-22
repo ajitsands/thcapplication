@@ -189,14 +189,14 @@ function menuActive($p, $key, $val) {
           <li class="classLogsView"><a href="admin_log.php?param=<?= $OBJ->URLEncode('head=log&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-enter3"></i> Login &amp; Logout</a></li>
           <li class="classLogsView"><a href="amc_event_log.php?param=<?= $OBJ->URLEncode('head=log&open=2&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-calculator3"></i> AMC Log</a></li>
 
-          <li class="thc-dropdown-section-header">Quotation</li>
-          <li class="classCreateQuotation"><a href="quotation.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=add_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Quotation</a></li>
-          <li class="classViewQuotation"><a href="quotation_list.php?param=<?= $OBJ->URLEncode('head=quotation&open=2&title=view_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Quotation</a></li>
-          <li class="classViewQuotationRevision"><a href="quotation_rivision.php?param=<?= $OBJ->URLEncode('head=quotation&open=3&title=view_quotation_rivision') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','3')) ? 'active' : '' ?>"><i class="icon-redo2"></i> Quotation Revision</a></li>
+          <li class="thc-dropdown-section-header d-none">Quotation</li>
+          <li class="classCreateQuotation d-none"><a href="quotation.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=add_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Quotation</a></li>
+          <li class="classViewQuotation d-none"><a href="quotation_list.php?param=<?= $OBJ->URLEncode('head=quotation&open=2&title=view_quotation') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Quotation</a></li>
+          <li class="classViewQuotationRevision d-none"><a href="quotation_rivision.php?param=<?= $OBJ->URLEncode('head=quotation&open=3&title=view_quotation_rivision') ?>" class="<?= (menuActive($params,'head','quotation') && menuActive($params,'open','3')) ? 'active' : '' ?>"><i class="icon-redo2"></i> Quotation Revision</a></li>
 
-          <li class="thc-dropdown-section-header">Local PO</li>
-          <li class="classCreateLocalPO"><a href="localpo.php?param=<?= $OBJ->URLEncode('head=localpo&open=1&title=add_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Local PO</a></li>
-          <li class="classViewLocalPO"><a href="localpo_list.php?param=<?= $OBJ->URLEncode('head=localpo&open=2&title=view_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Local PO</a></li>
+          <li class="thc-dropdown-section-header d-none">Local PO</li>
+          <li class="classCreateLocalPO d-none"><a href="localpo.php?param=<?= $OBJ->URLEncode('head=localpo&open=1&title=add_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Local PO</a></li>
+          <li class="classViewLocalPO d-none"><a href="localpo_list.php?param=<?= $OBJ->URLEncode('head=localpo&open=2&title=view_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-list"></i> View Local PO</a></li>
         </ul>
       </li>
 
