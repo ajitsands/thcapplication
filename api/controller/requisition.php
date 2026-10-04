@@ -23,7 +23,7 @@ $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
 
 // 1. getCatogory
 if ($action === 'getCatogory') {
-    $sql = "SELECT id, name FROM tbl_spare_parts_categories";
+    $sql = "SELECT category_id AS id, category_name AS name FROM tbl_category WHERE category_status = 'Active'";
     $result = $conn->query($sql);
     
     $data = [];
