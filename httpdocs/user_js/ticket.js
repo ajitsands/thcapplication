@@ -1329,6 +1329,7 @@ $(document).ready(function() {
      
                       var testEmail = /^[A-Z0-9._%+-]+@([A-Z0-9-]+\.)+[A-Z]{2,4}$/i;
                       var valueToTest=$("#txt_customer_email_id").val();
+                      if (valueToTest != "" && $("#txt_customer_email_id").is(":visible")) {
                             if (testEmail.test(valueToTest))
                             {
                             return true;
@@ -1339,6 +1340,7 @@ $(document).ready(function() {
                                 swal("Error", "Please enter valid email", "warning");
                                 return false;
                             }
+                      }
                                                  
                     });
                  

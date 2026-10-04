@@ -2711,7 +2711,7 @@ function load_asset_combo_add_entries()
                     if(typeof(leadr_emp_id) === "undefined" || leadr_emp_id=='')
                     {
                         swal("Warning", "Please specify a leader...", "warning");
-                        le.ladda( 'stop' );
+                        v_btn_ticket_entries_schedule_all_multiple.ladda( 'stop' );
                         return false;
                     }
                     else
