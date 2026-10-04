@@ -133,6 +133,90 @@ if ($action === 'bookRequestion') {
     exit;
 }
 
-echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
+// 4. getRequisitionList
+if ($action === 'getRequisitionList') {
+    $workorder_id = isset($_REQUEST['workorder_id']) ? (int)$_REQUEST['workorder_id'] : 0;
+    
+    if ($workorder_id <= 0) {
+        echo \json_encode(['status' => 'error', 'message' => 'workorder_id is required']);
+        exit;
+    }
+    
+    // Join with tbl_tickets and tbl_customers to get master details
+    $sql = "SELECT 
+                r.id AS request_id, 
+                r.workorder_id, 
+                t.ticket_ref_no AS workorder_ref, 
+                r.customer_id, 
+                c.customer_name, 
+                r.request_date, 
+                r.status, 
+                r.created_by, 
+                r.attachment_path 
+            FROM tbl_spare_parts_requests r
+            LEFT JOIN tbl_tickets t ON r.workorder_id = t.ticket_id
+            LEFT JOIN tbl_customers c ON r.customer_id = c.customer_id
+            WHERE r.workorder_id = $workorder_id
+            ORDER BY r.id DESC";
+            
+    $result = $conn->query($sql);
+    
+    $data = [];
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+    
+    echo \json_encode([
+        'status' => 'success',
+        'data' => $data
+    ]);
+    exit;
+}
+
+// 5. getRequisitionItems
+if ($action === 'getRequisitionItems') {
+    $request_id = isset($_REQUEST['request_id']) ? (int)$_REQUEST['request_id'] : 0;
+    
+    if ($request_id <= 0) {
+        echo \json_encode(['status' => 'error', 'message' => 'request_id is required']);
+        exit;
+    }
+    
+    // Join with tbl_spare_parts_master for item details
+    // Defaulting supplied_qty to 0 and balance_qty to requested_qty for now as requested
+    $sql = "SELECT 
+                i.id AS request_item_id, 
+                i.item_id, 
+                m.item_code, 
+                m.item_name, 
+                i.quantity AS requested_qty, 
+                0 AS supplied_qty, 
+                i.quantity AS balance_qty, 
+                i.unit, 
+                i.remarks,
+                'Pending' AS status
+            FROM tbl_spare_parts_request_items i
+            LEFT JOIN tbl_spare_parts_master m ON i.item_id = m.id
+            WHERE i.request_id = $request_id";
+            
+    $result = $conn->query($sql);
+    
+    $data = [];
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+    
+    echo \json_encode([
+        'status' => 'success',
+        'data' => $data
+    ]);
+    exit;
+}
+
+echo \json_encode(['status' => 'error', 'message' => 'Invalid action']);
 exit;
 ?>
