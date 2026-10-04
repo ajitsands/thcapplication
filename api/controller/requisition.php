@@ -4,11 +4,16 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-include_once(__DIR__ . '/../db_connection/connection.php');
+include_once(__DIR__ . '/../../model/db_connection/connection.php');
 include_once(__DIR__ . '/../../view/template/includes/en_de_header.inc');
 
 $DBConn = new DBConnection();
 $conn = $DBConn->ConnectToMYSQL();
+
+if (!$conn) {
+    echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
+    exit;
+}
 
 $OBJ = new URLEncription();
 $api_key_input = isset($_REQUEST['APIKEY']) ? $_REQUEST['APIKEY'] : '';
