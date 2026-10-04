@@ -12,7 +12,7 @@ class api1Controller
   
     function __construct()
 	{
-        $this->domain_path="http://thc.sianlab.com/httpdocs/";
+        $this->domain_path="https://portal.thcfm.com/httpdocs/";
         $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
         
@@ -59,6 +59,7 @@ class api1Controller
                     $this->asset_id = $_POST['asset_id'];
                     $this->emp_id = $_POST['emp_id'];
                     $this->emp_code = $_POST['emp_code'];
+                     $this->emp_name = $_POST['emp_name'];
                     $this->service_image_file_name = $_POST['service_image_file_name'];
                     $this->ticket_team_ids = $_POST['ticket_team_ids'];
                     // $this->actionevents = $_GET['action'];
@@ -113,6 +114,7 @@ class api1Controller
                     $this->asset_id = $_GET['asset_id'];
                     $this->emp_id = $_GET['emp_id'];
                     $this->emp_code = $_GET['emp_code'];
+                    $this->emp_name = $_GET['emp_name'];
                     $this->service_image_file_name = $_GET['service_image_file_name'];
                     $this->ticket_team_ids = $_GET['ticket_team_ids'];
                     
@@ -156,7 +158,7 @@ class api1Controller
         $array[16] = "delete from tbl_ticket_services where ticket_service_id=".$this->ticket_service_id;
         $array[17] = "update tbl_tickets set closed_by_id=".$this->emp_id.",closed_on='".$this->createddatetime."',closed_by_name='".$this->emp_name."',closed_reason='Closed by technician',ticket_status='Closed' where  ticket_id=".$this->amc_tkt_id." and ticket_ref_code='".$this->amc_ticket_ref_no."'";
         $array[18] = "update tbl_visits set amc_schedule_color='#4CAF50',amc_visit_status='Closed' where amc_ticket='TKT' and date_of_visits='".$this->visit_date."' and  amc_tkt_id=".$this->amc_tkt_id." and amc_tkt_ref_no='".$this->amc_ticket_ref_no."'";
-        $array[19] = "update tbl_tickets set closed_by_id=".$this->emp_id.",closed_on='".$this->createddatetime."',closed_by_name='".$this->emp_name."',completed_by_id=".$this->emp_id.",completed_date_time='".$this->createddatetime."',closed_reason='Completed by technician',ticket_status='Completed' where  ticket_id=".$this->amc_tkt_id." and ticket_ref_code='".$this->amc_ticket_ref_no."'";
+        $array[19] = "update tbl_tickets set closed_by_id='".$this->emp_id."',closed_on='".$this->createddatetime."',closed_by_name='".$this->emp_name."',completed_by_id=".$this->emp_id.",completed_date_time='".$this->createddatetime."',closed_reason='Completed by technician',ticket_status='Completed' where  ticket_id=".$this->amc_tkt_id." and ticket_ref_code='".$this->amc_ticket_ref_no."'";
         $array[20] = "update tbl_visits set amc_schedule_color='#795548',amc_visit_status='Completed' where amc_ticket='TKT' and date_of_visits='".$this->visit_date."' and  amc_tkt_id=".$this->amc_tkt_id." and amc_tkt_ref_no='".$this->amc_ticket_ref_no."'";
         $array[21] = "update tbl_tickets set closed_by_id=".$this->emp_id.",closed_on='".$this->createddatetime."',closed_by_name='".$this->emp_name."',closed_reason='Extended by technician',ticket_status='Extended' where  ticket_id=".$this->amc_tkt_id." and ticket_ref_code='".$this->amc_ticket_ref_no."'";
         $array[22] = "update tbl_visits set amc_schedule_color='#ffc107',amc_visit_status='Extended' where amc_ticket='TKT' and date_of_visits='".$this->visit_date."' and  amc_tkt_id=".$this->amc_tkt_id." and amc_tkt_ref_no='".$this->amc_ticket_ref_no."'";
@@ -164,7 +166,7 @@ class api1Controller
         $array[24] = "select ticket_service_id,service_description,tech_remarks,CONCAT('".$this->domain_path."audios/',tech_audio_file) as tech_audio_file,service_complete_cancel_date_time as completed_date,'TKT' as amc_ticket from tbl_ticket_services where ticket_service_status in ('Completed','Closed') and asset_code='".$this->asset_code."' union select amc_service_id as ticket_service_id,service_description,tech_remarks,CONCAT('".$this->domain_path."audios/',tech_audio_file) as tech_audio_file,service_complete_cancel_date_time as completed_date,'AMC' as amc_ticket from tbl_amc_services where amc_service_status in ('Completed','Closed') and asset_code='".$this->asset_code."' ";
         $array[25] = "select CONCAT('".$this->domain_path."images/service_images/',service_image_name) as service_image_name from tbl_service_images where status in ('Active') and asset_code='".$this->asset_code."' ORDER BY service_image_id DESC LIMIT 7";
         $array[26] = "select tel_no as thc_cust_care_no from tbl_thc_details";
-        $array[27] = "update tbl_ticket_services set ticket_service_status='Start' ,tech_remarks='', tech_audio_file='',service_complete_cancel_date_time='',service_complete_cancel_by_emp_code='' where  ticket_service_id=".$this->ticket_service_id;
+        $array[27] = "update tbl_ticket_services set ticket_service_status='Start' ,tech_remarks='', tech_audio_file='',service_complete_cancel_date_time='".$this->createddatetime."',service_complete_cancel_by_emp_code='' where  ticket_service_id=".$this->ticket_service_id;
         $array[28] = "select tech_remarks,CONCAT('".$this->domain_path."audios/',tech_audio_file) as tech_audio_file from tbl_ticket_services where  ticket_service_id=".$this->ticket_service_id."";
         
         $array[29] = "update tbl_ticket_teams set is_attend='Yes' ,attend_mark_by_empcode='".$this->emp_code."', attend_mark_date_time='".$this->createddatetime."' where  ticket_team_ids=".$this->ticket_team_ids;
@@ -1652,8 +1654,11 @@ class api1Controller
                                            {
                                                 $result_img_ser = mysqli_query($this->varDBConnection,"select service_image_id  from tbl_service_images where amc_ticket='TKT' and  ticket_amc_id=".$this->amc_tkt_id." and ticket_amc_ref_code='".$this->amc_ticket_ref_no."'");
                                                  if (mysqli_num_rows($result_img_ser) > 0) {
+                                                    
+                                                     
                                                     $this->varModelObj->UpdateTable($var[19]); 
-                                                    $this->varModelObj->UpdateTable($var[20]);     
+                                                    $this->varModelObj->UpdateTable($var[20]);   
+                                                    
                                                  }// Close of num rows $result_img_ser
                                              }  //Close of else 
                                             }// Close of while
@@ -1718,6 +1723,8 @@ class api1Controller
                                                     
                                                  if($this->amc_ticket=='TKT')
                                                  {
+                                                     file_put_contents("/home/thcfm/public_html/portal.thcfm.com/api/log/api_response_in_" . date("d-m-Y") . ".txt", "\n" . date("h:i a").  $var[21], FILE_APPEND | LOCK_EX);
+                                                      file_put_contents("/home/thcfm/public_html/portal.thcfm.com/api/log/api_response_in_" . date("d-m-Y") . ".txt", "\n" . date("h:i a").  $var[22], FILE_APPEND | LOCK_EX);
                                                     $this->varModelObj->UpdateTable($var[21]); 
                                                     $this->varModelObj->UpdateTable($var[22]); 
                                                     
