@@ -217,6 +217,44 @@ if ($action === 'getRequisitionItems') {
     exit;
 }
 
+// 6. getEmployeeWorkordersWithRequisitions
+if ($action === 'getEmployeeWorkordersWithRequisitions') {
+    $employee_id = isset($_REQUEST['employee_id']) ? (int)$_REQUEST['employee_id'] : 0;
+    
+    if ($employee_id <= 0) {
+        echo \json_encode(['status' => 'error', 'message' => 'employee_id is required']);
+        exit;
+    }
+    
+    // Get tickets assigned to the employee that have at least one material request
+    $sql = "SELECT DISTINCT 
+                tt.ticket_id AS workorder_id, 
+                tt.ticket_ref_no AS workorder_ref, 
+                tt.customer_id, 
+                tt.customer_name, 
+                tt.location_name,
+                tt.building_name
+            FROM tbl_ticket_teams tt
+            INNER JOIN tbl_spare_parts_requests r ON tt.ticket_id = r.workorder_id
+            WHERE tt.employee_id = $employee_id
+            ORDER BY tt.ticket_id DESC";
+            
+    $result = $conn->query($sql);
+    
+    $data = [];
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+    
+    echo \json_encode([
+        'status' => 'success',
+        'data' => $data
+    ]);
+    exit;
+}
+
 echo \json_encode(['status' => 'error', 'message' => 'Invalid action']);
 exit;
 ?>
