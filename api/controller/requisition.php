@@ -38,10 +38,7 @@ if ($action === 'getCatogory') {
         }
     }
     
-    echo \json_encode([
-        'status' => 'success',
-        'data' => $data
-    ]);
+    echo \json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -64,10 +61,7 @@ if ($action === 'getItemList') {
         }
     }
     
-    echo \json_encode([
-        'status' => 'success',
-        'data' => $data
-    ]);
+    echo \json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -168,10 +162,7 @@ if ($action === 'getRequisitionList') {
         }
     }
     
-    echo \json_encode([
-        'status' => 'success',
-        'data' => $data
-    ]);
+    echo \json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -210,10 +201,7 @@ if ($action === 'getRequisitionItems') {
         }
     }
     
-    echo \json_encode([
-        'status' => 'success',
-        'data' => $data
-    ]);
+    echo \json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -248,10 +236,7 @@ if ($action === 'getEmployeeWorkordersWithRequisitions') {
         }
     }
     
-    echo \json_encode([
-        'status' => 'success',
-        'data' => $data
-    ]);
+    echo \json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
