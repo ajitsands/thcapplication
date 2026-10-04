@@ -6,7 +6,7 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
  	$result = mysqli_query($varDBConnection,"select expertise_id,expertise_name from    tbl_expertise where expertise_status='Active'");
 	
 ?><div id="modal_check_avail" class="modal fade" data-backdrop="false" tabindex="-1">
-					<div class="modal-dialog modal-lg">
+					<div class="modal-dialog modal-xl" style="max-width: 1200px;">
 						<div class="modal-content">
 							<div class="modal-header">
 							<h5 class="modal-title"><b>Check Availability </b>
@@ -15,8 +15,9 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
 							</div>
 
 							<div class="modal-body">
-							    	<div class="row">
-							    	     <div class="col-lg-4 col-md-12 col-sm-12" >
+							    	<div class="row align-items-end">
+							    	     <div class="col-lg-4 col-md-12 col-sm-12 form-group" >
+							                <label class="font-weight-semibold">Select Expertise</label>
 							                <div style="border-bottom: 1px solid #ccc!important;">
         										<select  class="form-control select"  data-fouc id="select_tech_expertise" name="select_tech_expertise">
         										     <option value="select">Select</option>
@@ -26,14 +27,14 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
         <?PHP } ?>
         										  
             									</select>
-            									</div>
-            									<span class="form-text text-muted"> Select Expertise </span>
+            								</div>
 							        </div>
-					            	    <div class="col-lg-2 col-md-12 col-sm-12" >
+					            	    <div class="col-lg-3 col-md-12 col-sm-12 form-group" >
+        										<label class="font-weight-semibold">Date</label>
         										<input class="form-control" type="date" name="txt_search_date_check_avail" id="txt_search_date_check_avail" >
-        										<span class="form-text text-muted">Date</span>
 							        </div>
-        							 <div class="col-lg-2 col-md-12 col-sm-12" >
+        							 <div class="col-lg-3 col-md-12 col-sm-12 form-group" >
+        							     <label class="font-weight-semibold">Select Slots</label>
         							     <select  class="form-control select"  data-fouc id="select_slots_check_avail" name="select_slots_check_avail">
         							         <option value="select">Select</option>
         										      <?PHP 	for($i=1;$i<=24;$i++) { ?>
@@ -42,10 +43,9 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
                                                          <?PHP } ?>
         										  
             									</select>
-            									<span class="form-text text-muted"> Select Slots </span>
         						      </div> 
-							         <div class="col-lg-3 col-md-12 col-sm-12 pull-right" >
-							        	<button type="button" id="btn_list_techs_check_avail" class="btn bg-teal"  >List Technicians</button>
+							         <div class="col-lg-2 col-md-12 col-sm-12 form-group" >
+							        	<button type="button" id="btn_list_techs_check_avail" class="btn bg-teal btn-block"  >List</button>
 							        </div>
 					                </div>
 					                <br>
