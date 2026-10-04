@@ -11,7 +11,7 @@ $DBConn = new DBConnection();
 $conn = $DBConn->ConnectToMYSQL();
 
 if (!$conn) {
-    echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
+    echo \json_encode(['status' => 'error', 'message' => 'Database connection failed']);
     exit;
 }
 
@@ -20,7 +20,7 @@ $api_key_input = isset($_REQUEST['APIKEY']) ? $_REQUEST['APIKEY'] : '';
 $api_key = $OBJ->KEYDecode(trim($api_key_input));
 
 if(trim($api_key) != 'thcauthentication') {
-    echo json_encode(['status' => 'error', 'message' => 'api_key_error']);
+    echo \json_encode(['status' => 'error', 'message' => 'api_key_error']);
     exit;
 }
 
@@ -38,7 +38,7 @@ if ($action === 'getCatogory') {
         }
     }
     
-    echo json_encode([
+    echo \json_encode([
         'status' => 'success',
         'data' => $data
     ]);
@@ -50,7 +50,7 @@ if ($action === 'getItemList') {
     $category = isset($_REQUEST['category']) ? $conn->real_escape_string($_REQUEST['category']) : '';
     
     if (empty($category)) {
-        echo json_encode(['status' => 'error', 'message' => 'Category is required']);
+        echo \json_encode(['status' => 'error', 'message' => 'Category is required']);
         exit;
     }
     
@@ -64,7 +64,7 @@ if ($action === 'getItemList') {
         }
     }
     
-    echo json_encode([
+    echo \json_encode([
         'status' => 'success',
         'data' => $data
     ]);
@@ -89,7 +89,7 @@ if ($action === 'bookRequestion') {
     $created_by = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 1; 
 
     if ($customer_id <= 0 || $workorder_id <= 0 || empty($items)) {
-        echo json_encode(['status' => 'error', 'message' => 'customer_id, workorder_id, and items are required']);
+        echo \json_encode(['status' => 'error', 'message' => 'customer_id, workorder_id, and items are required']);
         exit;
     }
 
@@ -126,9 +126,9 @@ if ($action === 'bookRequestion') {
             }
         }
         
-        echo json_encode(['status' => 'success', 'message' => 'Requisition booked successfully', 'request_id' => $request_id]);
+        echo \json_encode(['status' => 'success', 'message' => 'Requisition booked successfully', 'request_id' => $request_id]);
     } else {
-        echo json_encode(['status' => 'error', 'message' => 'Failed to save requisition', 'error' => $conn->error]);
+        echo \json_encode(['status' => 'error', 'message' => 'Failed to save requisition', 'error' => $conn->error]);
     }
     exit;
 }
