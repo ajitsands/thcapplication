@@ -50,12 +50,12 @@ class CommonModel extends FunctionDefinitions
                         $myObj->error_code = '200';
     					$myObj->status = 'Failed';
     					$myObj->api_message ='NO DATA FOUND';
-    					echo \json_encode($myObj);
+    					echo json_encode($myObj);
     				
 		}
 		else
 		{
-		    echo \json_encode($temp);
+		    echo json_encode($temp);
 		}
 		
 		

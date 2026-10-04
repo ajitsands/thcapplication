@@ -11,7 +11,7 @@ $DBConn = new DBConnection();
 $conn = $DBConn->ConnectToMYSQL();
 
 if (!$conn) {
-    echo \json_encode(['status' => 'error', 'message' => 'Database connection failed']);
+    echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
     exit;
 }
 
@@ -20,7 +20,7 @@ $api_key_input = isset($_REQUEST['APIKEY']) ? $_REQUEST['APIKEY'] : '';
 $api_key = $OBJ->KEYDecode(trim($api_key_input));
 
 if(trim($api_key) != 'thcauthentication') {
-    echo \json_encode(['status' => 'error', 'message' => 'api_key_error']);
+    echo json_encode(['status' => 'error', 'message' => 'api_key_error']);
     exit;
 }
 
@@ -38,7 +38,7 @@ if ($action === 'getCatogory') {
         }
     }
     
-    echo \json_encode(['status' => 'success', 'data' => $data]);
+    echo json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -47,7 +47,7 @@ if ($action === 'getItemList') {
     $category = isset($_REQUEST['category']) ? $conn->real_escape_string($_REQUEST['category']) : '';
     
     if (empty($category)) {
-        echo \json_encode(['status' => 'error', 'message' => 'Category is required']);
+        echo json_encode(['status' => 'error', 'message' => 'Category is required']);
         exit;
     }
     
@@ -61,7 +61,7 @@ if ($action === 'getItemList') {
         }
     }
     
-    echo \json_encode(['status' => 'success', 'data' => $data]);
+    echo json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -83,7 +83,7 @@ if ($action === 'bookRequestion') {
     $created_by = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 1; 
 
     if ($customer_id <= 0 || $workorder_id <= 0 || empty($items)) {
-        echo \json_encode(['status' => 'error', 'message' => 'customer_id, workorder_id, and items are required']);
+        echo json_encode(['status' => 'error', 'message' => 'customer_id, workorder_id, and items are required']);
         exit;
     }
 
@@ -120,9 +120,9 @@ if ($action === 'bookRequestion') {
             }
         }
         
-        echo \json_encode(['status' => 'success', 'message' => 'Requisition booked successfully', 'request_id' => $request_id]);
+        echo json_encode(['status' => 'success', 'message' => 'Requisition booked successfully', 'request_id' => $request_id]);
     } else {
-        echo \json_encode(['status' => 'error', 'message' => 'Failed to save requisition', 'error' => $conn->error]);
+        echo json_encode(['status' => 'error', 'message' => 'Failed to save requisition', 'error' => $conn->error]);
     }
     exit;
 }
@@ -132,7 +132,7 @@ if ($action === 'getRequisitionList') {
     $workorder_id = isset($_REQUEST['workorder_id']) ? (int)$_REQUEST['workorder_id'] : 0;
     
     if ($workorder_id <= 0) {
-        echo \json_encode(['status' => 'error', 'message' => 'workorder_id is required']);
+        echo json_encode(['status' => 'error', 'message' => 'workorder_id is required']);
         exit;
     }
     
@@ -162,7 +162,7 @@ if ($action === 'getRequisitionList') {
         }
     }
     
-    echo \json_encode(['status' => 'success', 'data' => $data]);
+    echo json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -171,7 +171,7 @@ if ($action === 'getRequisitionItems') {
     $request_id = isset($_REQUEST['request_id']) ? (int)$_REQUEST['request_id'] : 0;
     
     if ($request_id <= 0) {
-        echo \json_encode(['status' => 'error', 'message' => 'request_id is required']);
+        echo json_encode(['status' => 'error', 'message' => 'request_id is required']);
         exit;
     }
     
@@ -201,7 +201,7 @@ if ($action === 'getRequisitionItems') {
         }
     }
     
-    echo \json_encode(['status' => 'success', 'data' => $data]);
+    echo json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
@@ -210,7 +210,7 @@ if ($action === 'getEmployeeWorkordersWithRequisitions') {
     $employee_id = isset($_REQUEST['employee_id']) ? (int)$_REQUEST['employee_id'] : 0;
     
     if ($employee_id <= 0) {
-        echo \json_encode(['status' => 'error', 'message' => 'employee_id is required']);
+        echo json_encode(['status' => 'error', 'message' => 'employee_id is required']);
         exit;
     }
     
@@ -236,10 +236,10 @@ if ($action === 'getEmployeeWorkordersWithRequisitions') {
         }
     }
     
-    echo \json_encode(['status' => 'success', 'data' => $data]);
+    echo json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
 
-echo \json_encode(['status' => 'error', 'message' => 'Invalid action']);
+echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
 exit;
 ?>
