@@ -4,8 +4,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-include_once(__DIR__ . '/db_connection/connection.php');
-include_once(__DIR__ . '/../view/template/includes/en_de_header.inc');
+include_once(__DIR__ . '/../db_connection/connection.php');
+include_once(__DIR__ . '/../../view/template/includes/en_de_header.inc');
 
 $DBConn = new DBConnection();
 $conn = $DBConn->ConnectToMYSQL();
@@ -90,7 +90,7 @@ if ($action === 'bookRequestion') {
 
     $attachment_path = NULL;
     if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../httpdocs/uploads/request_attachments/';
+        $uploadDir = __DIR__ . '/../../httpdocs/uploads/request_attachments/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
