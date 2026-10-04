@@ -50,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'add_spare_part') {
-            $sql = "INSERT INTO tbl_spare_parts_master (category, item_code, item_name, type_name, description) 
-                    VALUES ('$category', '$item_code', '$item_name', '$type_name', '$description')";
+            $sql = "INSERT INTO tbl_spare_parts_master (category, item_code, item_name, type_name, description, status) 
+                    VALUES ('$category', '$item_code', '$item_name', '$type_name', '$description', 'Active')";
                     
             if ($conn->query($sql) === TRUE) {
                 $new_id = $conn->insert_id;
