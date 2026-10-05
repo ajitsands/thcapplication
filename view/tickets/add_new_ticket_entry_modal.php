@@ -248,7 +248,14 @@
 					<div class="row">
 					
 							<div class="col-lg-12 col-md-12 col-sm-12">
-				        	   	<span class="form-text text-muted font-weight-bold"><font color="black">Complaints&nbsp;</font></span>
+				        	   	<span class="form-text text-muted font-weight-bold"><font color="black">Complaints&nbsp;</font>
+				        	   	    <br><span style="font-size:12px; font-weight:normal;">
+									 	        <strong>Note:</strong>
+                                                For multiple line items, please start each item with
+                                                <strong style="color: #2e2e79; font-weight: 900; font-size: 16px;">*</strong>
+                                                so the system can identify and display them separately.
+									 	    </span>
+				        	   	</span>
 									<textarea rows="2" class="form-control" id="txt_complaints_add_entries" name="txt_complaints_add_entries" placeholder="Complaints"></textarea>
 										    
 								

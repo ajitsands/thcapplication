@@ -195,18 +195,45 @@ table, th, td {
 <p></p>
 
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="800">
-	<tbody>
-		<tr bgcolor="#2e2e79" style="color: #FFFFFF">
-			<td style="color: #ffffff"><strong>Request Description</strong></td>
-		</tr>
-		<tr>
-			<td>
-			<p><?php if($row['complaints_description']==''){ echo 'NA';} else { echo $row['complaints_description'];}?></p>
+    <tbody>
+        <tr bgcolor="#2e2e79" style="color: #FFFFFF">
+            <td style="color: #ffffff; padding: 10px;">
+                <strong>Request Description</strong>
+            </td>
+        </tr>
 
-			<p></p>
-			</td>
-		</tr>
-	</tbody>
+        <tr>
+            <td style="padding: 15px; line-height: 1.6;">
+
+                <?php
+                $description = trim($row['complaints_description']);
+
+                if ($description == '') {
+                    echo '<p>NA</p>';
+                } else {
+
+                    // Split the description wherever a * appears
+                    $items = preg_split('/\s*\*\s*/', $description);
+
+                    echo '<ul style="margin: 0; padding-left: 25px;">';
+
+                    foreach ($items as $item) {
+                        $item = trim($item);
+
+                        if ($item != '') {
+                            echo '<li style="margin-bottom: 12px;">';
+                            echo nl2br(htmlspecialchars($item));
+                            echo '</li>';
+                        }
+                    }
+
+                    echo '</ul>';
+                }
+                ?>
+
+            </td>
+        </tr>
+    </tbody>
 </table>
 
 <p></p>

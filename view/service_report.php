@@ -105,15 +105,36 @@ table, th, td {
   <tbody>
     <tr>
       <td width="16%" align="left" valign="top" style="border:hidden; font-weight: bold;">Work Request Details</td>
-      <td width="19%" style="border:hidden;"><?php echo $complaints_description; ?><hr style="border-top: 1px solid;"></td>
-      <td width="11%" align="left" valign="top" style="border:hidden; font-weight: bold;">Work Order No</td>
-      <td width="16%" style="border:hidden;"><?php echo "WO-".$ticket_ref_code."-".$ticketId; ?><hr style="border-top: 1px solid;"></td>
-      <td width="5%" align="left" valign="top" style="border:hidden; font-weight: bold;">Date</td>
-      <td width="12%" style="border:hidden;"><hr style="border-top: 1px solid;">
-        </td>
-      <td width="4%" align="left" valign="top" style="border:hidden; font-weight: bold;">Time</td>
-      <td width="17%" style="border:hidden;"><hr style="border-top: 1px solid;">
-        </td>
+      <td colspan="5" valign="top" style="border:hidden;">
+        <?php
+        $description = trim($complaints_description);
+        if ($description == '') {
+            echo 'NA';
+        } else {
+            // Split the description wherever a * appears
+            $items = preg_split('/\s*\*\s*/', $description);
+            $valid_items = array_filter(array_map('trim', $items));
+            if (count($valid_items) > 1 || strpos($description, '*') !== false) {
+                echo '<ul style="margin: 0; padding-left: 20px; list-style-position: outside;">';
+                foreach ($valid_items as $item) {
+                    echo '<li style="margin-bottom: 6px;">' . nl2br(htmlspecialchars($item)) . '</li>';
+                }
+                echo '</ul>';
+            } else {
+                echo nl2br(htmlspecialchars($description));
+            }
+        }
+        ?>
+        <hr style="border-top: 1px solid;">
+      </td>
+    </tr>
+    <tr>
+      <td width="16%" align="left" valign="top" style="border:hidden; font-weight: bold;">Work Order No</td>
+      <td width="26%" valign="top" style="border:hidden;"><?php echo "WO-".$ticket_ref_code."-".$ticketId; ?><hr style="border-top: 1px solid;"></td>
+      <td width="10%" align="left" valign="top" style="border:hidden; font-weight: bold;">Date</td>
+      <td width="19%" valign="top" style="border:hidden;"><hr style="border-top: 1px solid;"></td>
+      <td width="10%" align="left" valign="top" style="border:hidden; font-weight: bold;">Time</td>
+      <td width="19%" valign="top" style="border:hidden;"><hr style="border-top: 1px solid;"></td>
     </tr>
   </tbody>
 </table>
@@ -125,24 +146,24 @@ table, th, td {
 			<td colspan="3" align="right" style="border:hidden;"><table width="100%" border="1">
   <tbody>
     <tr>
-      <td width="7%" align="left" valign="top" style="font-size:10px;border:hidden; font-weight: bold;">Asset No</td>
-      <td width="9%" style="border:hidden;"><?php if($asset_code==0){ echo"NA"; } ?><hr style="border-top: 1px solid;">
+      <td width="7%" align="left" valign="bottom" style="font-size:10px;border:hidden; font-weight: bold;">Asset No</td>
+      <td width="9%" valign="bottom" style="border:hidden;"><?php if($asset_code==0){ echo"NA"; } ?><hr style="border-top: 1px solid;">
        </td>
-      <td width="9%" align="left" valign="top" style="font-size:10px;border:hidden; font-weight: bold;">Location</td>
-      <td width="12%" style="border:hidden;">
+      <td width="9%" align="left" valign="bottom" style="font-size:10px;border:hidden; font-weight: bold;">Location</td>
+      <td width="12%" valign="bottom" style="border:hidden;">
           <?php echo $building_name.", ".$location_name; ?>
         <hr style="border-top: 1px solid;"></td>
-      <td width="28%" style="font-size:10px;border:hidden; font-weight: bold;">Type Of Work:PPM
+      <td width="28%" valign="bottom" style="font-size:10px;border:hidden; font-weight: bold;">Type Of Work:PPM
         <input type="checkbox" name="checkbox9" id="checkbox9" <?php if($job_category=="PPM"){ echo "checked"; } ?> >
         RM
         <input type="checkbox" name="checkbox13" id="checkbox13" <?php if($job_category=="Reactive"){ echo "checked"; } ?> >
         CM
         <input type="checkbox" name="checkbox14" id="checkbox14" <?php if($job_category=="Variable" || $job_category==""){ echo "checked"; } ?> ></td>
-      <td width="14%" align="left" valign="top" style="font-size:10px;border:hidden; font-weight: bold;">Work Completed Date</td>
-      <td width="8%" style="border:hidden;"><hr style="border-top: 1px solid;">
+      <td width="14%" align="left" valign="bottom" style="font-size:10px;border:hidden; font-weight: bold;">Work Completed Date</td>
+      <td width="8%" valign="bottom" style="border:hidden;"><hr style="border-top: 1px solid;">
         </td>
-      <td width="5%" align="left" valign="top" style="border:hidden; font-weight: bold;">Time</td>
-      <td width="8%" style="border:hidden;"><hr style="border-top: 1px solid;"></td>
+      <td width="5%" align="left" valign="bottom" style="border:hidden; font-weight: bold;">Time</td>
+      <td width="8%" valign="bottom" style="border:hidden;"><hr style="border-top: 1px solid;"></td>
       </tr>
   </tbody>
 </table>
