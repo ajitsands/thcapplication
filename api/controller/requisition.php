@@ -175,22 +175,34 @@ if ($action === 'getRequisitionItems') {
         exit;
     }
     
-    // Join with tbl_spare_parts_master for item details
-    // Defaulting supplied_qty to 0 and balance_qty to requested_qty for now as requested
+    // Join with tbl_spare_parts_master for item details and tbl_spare_parts_issues for supplied quantities
     $sql = "SELECT 
                 i.id AS request_item_id, 
                 i.item_id, 
                 m.item_code, 
                 m.item_name, 
                 i.quantity AS requested_qty, 
-                0 AS supplied_qty, 
-                i.quantity AS balance_qty, 
+                COALESCE(SUM(iss.issued_qty), 0) AS supplied_qty, 
+                (i.quantity - COALESCE(SUM(iss.issued_qty), 0)) AS balance_qty, 
                 i.unit, 
                 i.remarks,
-                'Pending' AS status
+                CASE 
+                    WHEN COALESCE(SUM(iss.issued_qty), 0) = 0 THEN 'Pending'
+                    WHEN COALESCE(SUM(iss.issued_qty), 0) < i.quantity THEN 'Partially Supplied'
+                    ELSE 'Fully Supplied'
+                END AS status
             FROM tbl_spare_parts_request_items i
             LEFT JOIN tbl_spare_parts_master m ON i.item_id = m.id
-            WHERE i.request_id = $request_id";
+            LEFT JOIN tbl_spare_parts_issues iss ON i.id = iss.request_item_id
+            WHERE i.request_id = $request_id
+            GROUP BY 
+                i.id, 
+                i.item_id, 
+                m.item_code, 
+                m.item_name, 
+                i.quantity, 
+                i.unit, 
+                i.remarks";
             
     $result = $conn->query($sql);
     

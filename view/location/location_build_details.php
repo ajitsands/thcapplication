@@ -111,7 +111,17 @@
     								
     									</div>
     								
+								</div>
 								
+								<div class="form-group row">
+									<div class="col-lg-6 col-md-6 col-sm-6">
+										<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Latitude</font></span>
+										<input type="text" class="form-control" id="txt_building_latitude" placeholder="e.g. 26.0667" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+									</div>
+									<div class="col-lg-6 col-md-6 col-sm-6">
+										<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Longitude</font></span>
+										<input type="text" class="form-control" id="txt_building_longitude" placeholder="e.g. 50.5577" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+									</div>
 								</div>
 									<!--<div class="form-group row">
 									   

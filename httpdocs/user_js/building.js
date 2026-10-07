@@ -47,18 +47,20 @@ $(document).ready(function(){
 							//	v_building_code=$("#txt_building_code").val();
 								v_building_address=$("#txt_building_address").val();
 								v_building_address='NA';
+                                var v_latitude = $("#txt_building_latitude").val() || '';
+                                var v_longitude = $("#txt_building_longitude").val() || '';
                                  
-                                if($.trim(v_building_name)==""||$.trim(v_building_address)=="")
+                                if($.trim(v_building_name)=="")
                                 
                                 {
                                     swal("Warning","Please provide all the details ....", "warning");
                                     v_btn_building_add.ladda( 'stop' );
                                     return false;
                                 }
-                               
+                                
                                 else
                                 {         
-                                     $.post("../controller/building/building_controller.php",{action:'add_building',v_building_name:v_building_name,v_building_address:v_building_address}
+                                     $.post("../controller/building/building_controller.php",{action:'add_building',v_building_name:v_building_name,v_building_address:v_building_address,v_latitude:v_latitude,v_longitude:v_longitude}
                                             , function(result,status)
                                             {
                                             result = $.trim(result);
@@ -303,7 +305,9 @@ $(document).ready(function(){
                         var $row = $(this).closest('tr');
                         var building_data = v_list_of_building_table.row($row).data();
                         v_building_id  = building_data.building_id;
-                         v_building_status  = building_data.building_status;
+                        v_building_status  = building_data.building_status;
+                        var v_latitude = building_data.latitude;
+                        var v_longitude = building_data.longitude;
                          if($(this).attr("name")=='name_Edit')
                          {
                          
@@ -320,6 +324,8 @@ $(document).ready(function(){
                                 $("#txt_building_name").val(building_data.building_name);
 								$("#txt_building_code").val(building_data.building_code);
 								$("#txt_building_address").val(building_data.building_address);
+                                $("#txt_building_latitude").val(building_data.latitude || '');
+                                $("#txt_building_longitude").val(building_data.longitude || '');
                                 
                             }
                             
@@ -336,7 +342,153 @@ $(document).ready(function(){
                             });
                         }
                           
+                         if($(this).attr("name")=='name_Map') {
+                             $('#map_building_id').val(v_building_id);
+                             $('#map_latitude').val(v_latitude);
+                             $('#map_longitude').val(v_longitude);
+                             
+                             $('#map_modal_title').html('Pin Facility Location - <strong class="text-warning">' + building_data.building_name + '</strong>');
+                             $('#map_modal').modal('show');
+                             
+                             setTimeout(function() {
+                                 if (window.facilityMap) {
+                                     window.facilityMap.remove();
+                                 }
+                                 
+                                 var lat = parseFloat(v_latitude) || 26.0667; 
+                                 var lng = parseFloat(v_longitude) || 50.5577; 
+                                 
+                                 window.facilityMap = L.map('facility_map', {
+                                     fullscreenControl: true,
+                                     fullscreenControlOptions: {
+                                         position: 'topleft'
+                                     }
+                                 }).setView([lat, lng], 13);
+                                 
+                                 var esriStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                                     attribution: 'Tiles &copy; Esri',
+                                     maxZoom: 18
+                                 });
+                                 
+                                 var esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                                     attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                                     maxZoom: 18
+                                 });
+                                 
+                                 var osmBuildings = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                     attribution: '&copy; OpenStreetMap contributors',
+                                     maxZoom: 19
+                                 });
+                                 
+                                 var baseMaps = {
+                                     "Street View": esriStreet,
+                                     "Satellite View": esriSatellite,
+                                     "Building Blocks (OSM)": osmBuildings
+                                 };
+                                 
+                                 // Add default layer
+                                 esriSatellite.addTo(window.facilityMap);
+                                 
+                                 // Add layer control
+                                 L.control.layers(baseMaps).addTo(window.facilityMap);
+                                 
+                                 // Plot all other existing facilities for context
+                                 var allBuildings = v_list_of_building_table.rows().data().toArray();
+                                 allBuildings.forEach(function(b) {
+                                     if (b.building_id != v_building_id && b.latitude && b.longitude) {
+                                         var bLat = parseFloat(b.latitude);
+                                         var bLng = parseFloat(b.longitude);
+                                         if (!isNaN(bLat) && !isNaN(bLng)) {
+                                             var otherMarker = L.marker([bLat, bLng], {
+                                                 opacity: 0.5
+                                             }).addTo(window.facilityMap);
+                                             otherMarker.bindPopup("<b>" + b.building_name + "</b><br><small class='text-muted'>Existing Facility</small>");
+                                             otherMarker.bindTooltip(b.building_name, {
+                                                 permanent: true,
+                                                 direction: 'top',
+                                                 opacity: 0.7
+                                             });
+                                         }
+                                     }
+                                 });
+                                 
+                                 var marker = L.marker([lat, lng], {draggable: true}).addTo(window.facilityMap);
+                                 marker.bindPopup("<b class='text-primary'>Current: " + building_data.building_name + "</b><br><small>Drag to move</small>").openPopup();
+                                 marker.bindTooltip("<b>Current: " + building_data.building_name + "</b>", {
+                                     permanent: true,
+                                     direction: 'top',
+                                     className: 'text-primary'
+                                 });
+                                 
+                                 marker.on('dragend', function (e) {
+                                     var position = marker.getLatLng();
+                                     $('#map_latitude').val(position.lat);
+                                     $('#map_longitude').val(position.lng);
+                                 });
+                                 
+                                 window.facilityMap.on('click', function(e) {
+                                     marker.setLatLng(e.latlng);
+                                     $('#map_latitude').val(e.latlng.lat);
+                                     $('#map_longitude').val(e.latlng.lng);
+                                 });
+                                 
+                                 $('#map_search_input').val('');
+                                 
+                                 function executeSearch() {
+                                     var query = $('#map_search_input').val();
+                                     if(query) {
+                                         var geocoder = L.Control.Geocoder.nominatim({
+                                             geocodingQueryParams: {
+                                                 'accept-language': 'en',
+                                                 'countrycodes': 'bh'
+                                             }
+                                         });
+                                         geocoder.geocode(query, function(results) {
+                                             if (results.length > 0) {
+                                                 var result = results[0];
+                                                 window.facilityMap.setView(result.center, 16);
+                                                 marker.setLatLng(result.center);
+                                                 $('#map_latitude').val(result.center.lat);
+                                                 $('#map_longitude').val(result.center.lng);
+                                             } else {
+                                                 swal("Not Found", "Could not find that location", "info");
+                                             }
+                                         });
+                                     }
+                                 }
+                                 
+                                 $('#map_search_input').off('keypress').on('keypress', function(e) {
+                                     if(e.which == 13) { // Enter key
+                                         e.preventDefault();
+                                         executeSearch();
+                                     }
+                                 });
+                                 
+                                 $('#btn_map_search').off('click').on('click', function(e) {
+                                     e.preventDefault();
+                                     executeSearch();
+                                 });
+                                 
+                             }, 300);
+                         }
                         
+        });
+
+        $('#btn_save_map_location').click(function() {
+            var b_id = $('#map_building_id').val();
+            var lat = $('#map_latitude').val();
+            var lng = $('#map_longitude').val();
+            
+            $.post("../controller/building/building_controller.php", {
+                action: 'update_building_location',
+                v_building_id: b_id,
+                v_latitude: lat,
+                v_longitude: lng
+            }, function(result, status) {
+                $('#map_modal').modal('hide');
+                swal("Success", "Location pinned successfully", "success");
+                load_data_to_grid_building_details_list();
+            });
         });
                      //edit click
                     v_btn_building_edit.click(function(){
@@ -344,8 +496,10 @@ $(document).ready(function(){
                             var v_building_id=$("#txt_building_id").val(); 
 							var v_building_name=$("#txt_building_name").val();
 							var v_building_code=$("#txt_building_code").val();
-							var v_building_address=$("#txt_building_address").val();
-                            if($.trim(v_building_name)==""||$.trim(v_building_address)=="")
+							var v_building_address='NA'; // Hardcoded since field is hidden
+                            var v_latitude = $("#txt_building_latitude").val() || '';
+                            var v_longitude = $("#txt_building_longitude").val() || '';
+                            if($.trim(v_building_name)=="")
                             
                             {
                                 swal("Warning","Please provide all the details ....", "warning");
@@ -355,7 +509,7 @@ $(document).ready(function(){
                            
                             else
                             {         
-                                 $.post("../controller/building/building_controller.php",{action:'edit_building',v_building_id:v_building_id,v_building_name:v_building_name,v_building_code:v_building_code,v_building_address:v_building_address}
+                                 $.post("../controller/building/building_controller.php",{action:'edit_building',v_building_id:v_building_id,v_building_name:v_building_name,v_building_code:v_building_code,v_building_address:v_building_address,v_latitude:v_latitude,v_longitude:v_longitude}
                                         , function(result,status)
                                         {
                                             result = $.trim(result);
@@ -392,6 +546,8 @@ $(document).ready(function(){
                     $("#txt_building_name").val('');
                     $("#txt_building_code").val('');
                     $("#txt_building_address").val('');
+                    $("#txt_building_latitude").val('');
+                    $("#txt_building_longitude").val('');
                  }
                   
 

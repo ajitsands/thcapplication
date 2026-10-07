@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -80,6 +80,15 @@ $OBJ->URLEncode('head=dashboard');
 	<!-- sweet alert -->
 	 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
 
+	<!-- Leaflet CSS and JS -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Leaflet Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <!-- Leaflet Fullscreen -->
+    <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
 	
 	<script src="../httpdocs/user_js/building.js"></script>
 	<script src="../httpdocs/user_js/location.js"></script>
@@ -130,6 +139,50 @@ $OBJ->URLEncode('head=dashboard');
             <?PHP 
 				include_once('template/reset_password_modal.php');
 			?>
+
+			<!-- Map Modal -->
+			<div id="map_modal" class="modal fade" tabindex="-1">
+				<div class="modal-dialog modal-xl" style="max-width: 90% !important; width: 90% !important;">
+					<div class="modal-content">
+						<div class="modal-header bg-primary text-white">
+							<h5 class="modal-title" id="map_modal_title">Pin Facility Location</h5>
+							<button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+						</div>
+						<div class="modal-body">
+                            <input type="hidden" id="map_building_id">
+                            
+                            <div class="form-group row mb-2">
+                                <div class="col-lg-6">
+                                    <label><strong>Latitude:</strong></label>
+                                    <input type="text" id="map_latitude" class="form-control" readonly>
+                                </div>
+                                <div class="col-lg-6">
+                                    <label><strong>Longitude:</strong></label>
+                                    <input type="text" id="map_longitude" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-2">
+                                <label class="col-form-label col-lg-2"><strong>Search Location:</strong></label>
+                                <div class="col-lg-10">
+                                    <div class="input-group">
+                                        <input type="text" id="map_search_input" class="form-control" placeholder="Type location, building, or address...">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button" id="btn_map_search">Search</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted">You can search for a location above, or click on the map to place/move the pin.</p>
+							<div id="facility_map" style="height: 75vh; width: 100%; z-index: 1;"></div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
+							<button type="button" id="btn_save_map_location" class="btn btn-success">Save Location</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /Map Modal -->
 
 			<!-- Footer -->
 			

@@ -26,6 +26,8 @@ class buildingController
         $this->building_address =$this->varDBConnection->real_escape_string($_POST['v_building_address']);
         $this->building_status=$_POST['v_building_status'];
 		$this->building_action=$_POST['v_building_action'];
+        $this->latitude = $this->varDBConnection->real_escape_string($_POST['v_latitude'] ?? '');
+        $this->longitude = $this->varDBConnection->real_escape_string($_POST['v_longitude'] ?? '');
 		
         date_default_timezone_set('Asia/Bahrain');
         $this->current_date = date("Y-m-d h:i:s");
@@ -38,14 +40,15 @@ class buildingController
     { 
         $array =  array();
       
-        $array[0] = "INSERT INTO `tbl_building`(`building_name`, `building_address`, `building_status`) VALUES ('".$this->building_name."','".$this->building_address."','Active')";
+        $array[0] = "INSERT INTO `tbl_building`(`building_name`, `building_address`, `building_status`, `latitude`, `longitude`) VALUES ('".$this->building_name."','".$this->building_address."','Active','".$this->latitude."','".$this->longitude."')";
         $array[1] = "select * from 	tbl_building  order by building_id desc";
-        $array[2] ="update tbl_building set `building_code`='".$this->building_code."',`building_name`='".$this->building_name."',`building_address`='".$this->building_address."' where building_id='".$this->building_id."'";
+        $array[2] ="update tbl_building set `building_code`='".$this->building_code."',`building_name`='".$this->building_name."',`building_address`='".$this->building_address."',`latitude`='".$this->latitude."',`longitude`='".$this->longitude."' where building_id='".$this->building_id."'";
         $array[3] ="update tbl_building set `building_status`='Deactive' where building_id='".$this->building_id."'";
         $array[4] ="update tbl_building set `building_status`='Active' where building_id='".$this->building_id."'";
         $array[5] = "select * from 	tbl_building where building_code='".$this->building_code."'";
 		$array[6] ="update tbl_building set `building_code`='".$this->building_code ."' where building_id='".$this->building_id."'";
 		 $array[7] = "INSERT INTO `tbl_building`( building_code,`building_name`, `building_address`, `building_status`) VALUES ('".$this->building_code."','".$this->building_name."','".$this->building_address."','Active')";
+         $array[8] = "update tbl_building set `latitude`='".$this->latitude."',`longitude`='".$this->longitude."' where building_id='".$this->building_id."'";
         return $array;
     }
     function RequestAccept($FunctionEvents)
@@ -104,6 +107,9 @@ class buildingController
             case 'update_building_code':
             
                 $this->varModelObj->UpdateTable($var[6]);
+            break;
+            case 'update_building_location':
+                $this->varModelObj->UpdateTable($var[8]);
             break;
            
             default:
