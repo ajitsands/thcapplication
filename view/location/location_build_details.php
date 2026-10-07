@@ -105,6 +105,7 @@
 										
 										<div class="col-lg-12 col-md-12 col-sm-12" >
 										     <input type="hidden" class="form-control" id="txt_building_id">
+										     <input type="hidden" class="form-control" id="txt_building_code">
 										     <span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Facility Name &nbsp;<span style="color:red;">*</span></font></span>
 								<input type="text" class="form-control" id="txt_building_name" placeholder="Building Name">
 									
