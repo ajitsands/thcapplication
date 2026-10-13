@@ -23,7 +23,10 @@ function menuActive($p, $key, $val) {
 
     <!-- Brand logo -->
     <a class="thc-topnav-brand" href="dashboard.php?wo=m&param=<?= $OBJ->URLEncode('title=dashboard') ?>">
-      <img src="../httpdocs/images/final_logo2.png" alt="THC Logo" class="brand-logo-img">
+      <img src="global_assets/images/final_logo2.png" 
+           onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='../httpdocs/images/final_logo2.png';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='global_assets/images/logo_light.png';}" 
+           alt="THC Logo" 
+           class="brand-logo-img">
     </a>
 
     <!-- Hamburger for mobile -->
