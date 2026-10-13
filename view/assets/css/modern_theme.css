@@ -88,10 +88,10 @@ body {
 .card-title a,
 .card-header .card-title a.text-white,
 .card-title a.text-white,
-.card-header .card-title span,
-.card-title span,
-.card-header .card-title b,
-.card-title b {
+.card-header .card-title span:not([style*="color"]):not([class*="calendar-legend-"]):not([class*="badge"]),
+.card-title span:not([style*="color"]):not([class*="calendar-legend-"]):not([class*="badge"]),
+.card-header .card-title b:not(:has([style*="color"])),
+.card-title b:not(:has([style*="color"])) {
     color: var(--palette-deep-navy) !important;
     text-decoration: none !important;
 }

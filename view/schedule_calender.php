@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -120,6 +120,38 @@ $OBJ->URLEncode('head=dashboard');
         {
           background-color: #E1F177 !important;
         }
+
+      /* Calendar Status Legend Colors */
+      .card-header .card-title .calendar-legend-scheduled,
+      .card-title .calendar-legend-scheduled,
+      .calendar-legend-scheduled {
+          color: #39c0ed !important;
+      }
+      .card-header .card-title .calendar-legend-assigned,
+      .card-title .calendar-legend-assigned,
+      .calendar-legend-assigned {
+          color: #3f51b5 !important;
+      }
+      .card-header .card-title .calendar-legend-completed,
+      .card-title .calendar-legend-completed,
+      .calendar-legend-completed {
+          color: #795548 !important;
+      }
+      .card-header .card-title .calendar-legend-closed,
+      .card-title .calendar-legend-closed,
+      .calendar-legend-closed {
+          color: #4caf50 !important;
+      }
+      .card-header .card-title .calendar-legend-cancelled,
+      .card-title .calendar-legend-cancelled,
+      .calendar-legend-cancelled {
+          color: #b23cfd !important;
+      }
+      .card-header .card-title .calendar-legend-extended,
+      .card-title .calendar-legend-extended,
+      .calendar-legend-extended {
+          color: #ffc107 !important;
+      }
         /*Calender Click Popup*/
         
         
@@ -667,6 +699,11 @@ var FullCalendarBasic = function() {
                 
       
       
+        // Agenda view
+        //
+        // Define element
+        var calendarAgendaViewElement = document.querySelector('.fullcalendar-agenda');
+
         // Initialize
         if(calendarAgendaViewElement) {
             var calendarAgendaViewInit = new FullCalendar.Calendar(calendarAgendaViewElement, {

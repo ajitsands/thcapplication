@@ -47,9 +47,9 @@ class ticketController
         $array[1] = "select * ,DATE_FORMAT(date_needed, '%d-%m-%Y') as date_needed, DATE_FORMAT(quote_date, '%d-%m-%Y') as quote_date,CONCAT('".$this->domain_path."images/ticket_close_image/',service_report_image) as service_report_image from  tbl_tickets where ticket_ref_code='".$this->ticket_ref_code."' and ticket_status='Completed'";
         $array[5] = "select * from   tbl_ticket_teams where ticket_id=".$this->ticket_id." and visit_id=".$this->visit_id." and amc_ticket='TKT' and ticket_team_status  in ('Active') ";
         $array[4] = "select *, DATE_FORMAT(date_of_visits,'%d-%m-%Y') as date_of_visits from   tbl_visits where amc_tkt_id=".$this->ticket_id." and amc_ticket='TKT' and amc_visit_status  in ('Completed') ";
-        $array[6] = "SELECT * FROM tbl_tickets WHERE ticket_status NOT IN ('Closed','Cancelled') AND ticket_priority='Emergency'";
-        $array[7] = "SELECT * FROM tbl_tickets WHERE ticket_status NOT IN ('Closed','Cancelled') AND ticket_priority='Urgent'";
-        $array[8] = "SELECT * FROM tbl_tickets WHERE ticket_status NOT IN ('Closed','Cancelled') AND  ticket_priority NOT IN ('Emergency','Urgent')";
+        $array[6] = "SELECT *, DATE_FORMAT(created_date_time, '%d-%m-%Y %H:%i:%s') as created_date_time FROM tbl_tickets WHERE ticket_status NOT IN ('Closed','Cancelled') AND ticket_priority='Emergency' ORDER BY ticket_id DESC";
+        $array[7] = "SELECT *, DATE_FORMAT(created_date_time, '%d-%m-%Y %H:%i:%s') as created_date_time FROM tbl_tickets WHERE ticket_status NOT IN ('Closed','Cancelled') AND ticket_priority='Urgent' ORDER BY ticket_id DESC";
+        $array[8] = "SELECT *, DATE_FORMAT(created_date_time, '%d-%m-%Y %H:%i:%s') as created_date_time FROM tbl_tickets WHERE ticket_status NOT IN ('Closed','Cancelled') AND  ticket_priority NOT IN ('Emergency','Urgent') ORDER BY ticket_id DESC";
         return $array;
     }
     function RequestAccept($FunctionEvents)

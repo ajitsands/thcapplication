@@ -1,10 +1,89 @@
+<style>
+    /* Ensure modals sit in front of FullCalendar, popovers, and sticky navbar */
+    .modal {
+        z-index: 105000 !important;
+    }
+    .modal.in,
+    .modal.show,
+    .modal[style*="display: block"] {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 105000 !important;
+    }
+    .modal.fade.in,
+    .modal.fade.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    .modal.in .modal-dialog,
+    .modal.show .modal-dialog,
+    .modal[style*="display: block"] .modal-dialog {
+        -webkit-transform: none !important;
+        -ms-transform: none !important;
+        -o-transform: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 105001 !important;
+    }
+    .modal-backdrop {
+        z-index: 104990 !important;
+    }
+    .modal-backdrop.in,
+    .modal-backdrop.show {
+        opacity: 0.5 !important;
+        filter: alpha(opacity=50) !important;
+        display: block !important;
+        z-index: 104990 !important;
+    }
+    #modal_amc_Customer_details,
+    #modal_tkt_Customer_details,
+    #modal_team_details,
+    #modal_change_status {
+        z-index: 105000 !important;
+    }
+
+    /* Calendar Status Legend Colors */
+    .card-header .card-title .calendar-legend-scheduled,
+    .card-title .calendar-legend-scheduled,
+    .calendar-legend-scheduled {
+        color: #39c0ed !important;
+    }
+    .card-header .card-title .calendar-legend-assigned,
+    .card-title .calendar-legend-assigned,
+    .calendar-legend-assigned {
+        color: #3f51b5 !important;
+    }
+    .card-header .card-title .calendar-legend-completed,
+    .card-title .calendar-legend-completed,
+    .calendar-legend-completed {
+        color: #795548 !important;
+    }
+    .card-header .card-title .calendar-legend-closed,
+    .card-title .calendar-legend-closed,
+    .calendar-legend-closed {
+        color: #4caf50 !important;
+    }
+    .card-header .card-title .calendar-legend-cancelled,
+    .card-title .calendar-legend-cancelled,
+    .calendar-legend-cancelled {
+        color: #b23cfd !important;
+    }
+    .card-header .card-title .calendar-legend-extended,
+    .card-title .calendar-legend-extended,
+    .calendar-legend-extended {
+        color: #ffc107 !important;
+    }
+</style>
+
 <div class="card">
     <div class="card-header header-elements-inline">
         <h5 class="card-title">
             VISIT CALENDER &nbsp;&nbsp;
             <b>
-                <span style="color: #39c0ed;">[Scheduled] </span> - <span style="color: #3f51b5;">[Assigned]</span> - <span style="color: #795548;">[Completed]</span> - <span style="color: #4caf50;">[Closed]</span> -
-                <span style="color: #b23cfd;">[Cancelled]</span> - <span style="color: #ffc107;">[Extended]</span>
+                <span class="calendar-legend-scheduled" style="color: #39c0ed !important;">[Scheduled] </span> - <span class="calendar-legend-assigned" style="color: #3f51b5 !important;">[Assigned]</span> - <span class="calendar-legend-completed" style="color: #795548 !important;">[Completed]</span> - <span class="calendar-legend-closed" style="color: #4caf50 !important;">[Closed]</span> -
+                <span class="calendar-legend-cancelled" style="color: #b23cfd !important;">[Cancelled]</span> - <span class="calendar-legend-extended" style="color: #ffc107 !important;">[Extended]</span>
             </b>
         </h5>
         <div class="header-elements">
@@ -58,13 +137,13 @@
                 <input type="hidden" id="txt_tkt_dt_hidden" placeholder=" " />
                 <input type="hidden" id="txt_tkt_dt_val_hidden" placeholder=" " />
 
-                <a href="#" id="btn_view_click" data-toggle="modal" data-target="#modal_change_status" class="list-group-item list-group-item-action">
+                <a href="javascript:void(0);" id="btn_view_click" class="list-group-item list-group-item-action">
                     <span class="font-weight-semibold">
                         <i class="icon-grid mr-2"></i>
                         View Details
                     </span>
                 </a>
-                <a href="#" id="btn_view_team" class="list-group-item list-group-item-action">
+                <a href="javascript:void(0);" id="btn_view_team" class="list-group-item list-group-item-action">
                     <span class="font-weight-semibold">
                         <i class="icon-people mr-2"></i>
                         View Team

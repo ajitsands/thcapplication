@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -124,9 +124,83 @@ $OBJ->URLEncode('head=dashboard');
         {
           background-color: #E1F177 !important;
         }
-        /*Calender Click Popup*/
-        
-        
+
+      /* Calendar Status Legend Colors */
+      .card-header .card-title .calendar-legend-scheduled,
+      .card-title .calendar-legend-scheduled,
+      .calendar-legend-scheduled {
+          color: #39c0ed !important;
+      }
+      .card-header .card-title .calendar-legend-assigned,
+      .card-title .calendar-legend-assigned,
+      .calendar-legend-assigned {
+          color: #3f51b5 !important;
+      }
+      .card-header .card-title .calendar-legend-completed,
+      .card-title .calendar-legend-completed,
+      .calendar-legend-completed {
+          color: #795548 !important;
+      }
+      .card-header .card-title .calendar-legend-closed,
+      .card-title .calendar-legend-closed,
+      .calendar-legend-closed {
+          color: #4caf50 !important;
+      }
+      .card-header .card-title .calendar-legend-cancelled,
+      .card-title .calendar-legend-cancelled,
+      .calendar-legend-cancelled {
+          color: #b23cfd !important;
+      }
+      .card-header .card-title .calendar-legend-extended,
+      .card-title .calendar-legend-extended,
+      .calendar-legend-extended {
+          color: #ffc107 !important;
+      }
+
+      /* Modals & Backdrops high z-index and visibility to appear in front of FullCalendar, Corner Popup, and Popovers */
+      .modal {
+          z-index: 105000 !important;
+      }
+      .modal.in,
+      .modal.show,
+      .modal[style*="display: block"] {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          z-index: 105000 !important;
+      }
+      .modal.fade.in,
+      .modal.fade.show {
+          opacity: 1 !important;
+          visibility: visible !important;
+      }
+      .modal.in .modal-dialog,
+      .modal.show .modal-dialog,
+      .modal[style*="display: block"] .modal-dialog {
+          -webkit-transform: none !important;
+          -ms-transform: none !important;
+          -o-transform: none !important;
+          transform: none !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          z-index: 105001 !important;
+      }
+      .modal-backdrop {
+          z-index: 104990 !important;
+      }
+      .modal-backdrop.in,
+      .modal-backdrop.show {
+          opacity: 0.5 !important;
+          filter: alpha(opacity=50) !important;
+          display: block !important;
+          z-index: 104990 !important;
+      }
+      #modal_amc_Customer_details,
+      #modal_tkt_Customer_details,
+      #modal_team_details,
+      #modal_change_status {
+          z-index: 105000 !important;
+      }
     </style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
@@ -157,55 +231,95 @@ $OBJ->URLEncode('head=dashboard');
    <script type="text/javascript">	
    
 $(document).ready(function(){
+     // Move modals to body so they are not trapped inside calendar card stacking context
+     $('#modal_amc_Customer_details, #modal_tkt_Customer_details, #modal_team_details, #modal_change_status').appendTo("body");
+
+     $('.modal').on('show.bs.modal', function () {
+         $(this).addClass('show in').css({'z-index': 105000, 'display': 'block', 'opacity': 1, 'visibility': 'visible'});
+         setTimeout(function() {
+             $('.modal-backdrop').not('.modal-stack').css({'z-index': 104990, 'opacity': 0.5, 'display': 'block'}).addClass('modal-stack show in');
+         }, 0);
+     });
+
+     $('.modal').on('hidden.bs.modal', function () {
+         $(this).removeClass('show in').css({'display': 'none'});
+         $('.modal-backdrop').remove();
+         $('body').removeClass('modal-open').css('padding-right', '');
+     });
+
+     $(document).on('click', '.modal [data-dismiss="modal"]', function (e) {
+         var $m = $(this).closest('.modal');
+         $m.modal('hide');
+         $m.removeClass('show in').css({'display': 'none'});
+         $('.modal-backdrop').remove();
+         $('body').removeClass('modal-open').css('padding-right', '');
+     });
+
      var team_list_table = $('#list_of_team_members').DataTable({"destroy": true});
-      var v_amc_assign_asset_list_table = $('#tbl_tkt_asset_list_display_for_schedule').DataTable({"destroy": true});
- $(document).on('click',"#btn_view_click",function () {
+     var v_amc_assign_asset_list_table = $('#tbl_tkt_asset_list_display_for_schedule').DataTable({"destroy": true});
+
+ $(document).on('click',"#btn_view_click",function (e) {
+     if(e) e.preventDefault();
     
      var amc_no=$("#txt_amc_no_hidden").val();
      var visit_id=$("#txt_visit_id_hidden").val();
      var cust_name=$("#txt_customer_name_hidden").val();
-     var amc_ticket=$("#txt_amc_ticket_hidden").val();
+     var amc_ticket=$.trim($("#txt_amc_ticket_hidden").val()).toUpperCase();
      var amc_tkt_id=$("#txt_tkt_amc_id_hidden").val();
      
      var amc_visit_date=$("#txt_tkt_amc_visit_date_hidden").val();
      var amc_visit_time=$("#txt_tkt_amc_visit_time_hidden").val();
      
-      var amc_visit_date_display=$("#txt_tkt_dt_hidden").val();
-      var amc_start_slot=$("#txt_tkt_strat_slot_hidden").val();
-      var amc_add_slots=$("#txt_tkt_add_slots_hidden").val();
-       var amc_vt_date_val=$("#txt_tkt_dt_val_hidden").val();
+     var amc_visit_date_display=$("#txt_tkt_dt_hidden").val();
+     var amc_start_slot=$("#txt_tkt_strat_slot_hidden").val();
+     var amc_add_slots=$("#txt_tkt_add_slots_hidden").val();
+     var amc_vt_date_val=$("#txt_tkt_dt_val_hidden").val();
         
-    
      $("#div_cust_name").html(cust_name+'  [ '+ amc_no +' ]');
     
       if(amc_ticket=='AMC')
       {
-         $('#modal_amc_Customer_details').modal('show');
-          $("#amc_ref_no").html(amc_no);
-           $("#date_amc").html(amc_visit_date_display);
-           $("#slots_amc").html(amc_start_slot+' ( +'+amc_add_slots+' )');
-            $("#time_amc").html(amc_visit_time);
+         var $modal = $('#modal_amc_Customer_details');
+         $modal.appendTo('body');
+         $modal.modal('show');
+         $modal.addClass('show in').css({'display': 'block', 'opacity': 1, 'visibility': 'visible'});
+         $modal.find('.modal-dialog').css({'opacity': 1, 'visibility': 'visible', 'transform': 'none'});
+
+         $("#amc_ref_no").html(amc_no);
+         $("#date_amc").html(amc_visit_date_display);
+         $("#slots_amc").html(amc_start_slot+' ( +'+amc_add_slots+' )');
+         $("#time_amc").html(amc_visit_time);
           
-         load_data_to_grid_amc_asset_details(amc_no,amc_vt_date_val,amc_visit_time);
+         try {
+             load_data_to_grid_amc_asset_details(amc_no,amc_vt_date_val,amc_visit_time);
+         } catch(err) {
+             console.error('load_data_to_grid_amc_asset_details error:', err);
+         }
       }
       else
       {
-         
-         $('#modal_tkt_Customer_details').modal('show');
+         var $modal = $('#modal_tkt_Customer_details');
+         $modal.appendTo('body');
+         $modal.modal('show');
+         $modal.addClass('show in').css({'display': 'block', 'opacity': 1, 'visibility': 'visible'});
+         $modal.find('.modal-dialog').css({'opacity': 1, 'visibility': 'visible', 'transform': 'none'});
+
          $("#tkt_ref_no").html(amc_no);
-          $("#tkt_visit_date").html(amc_visit_date_display);
-          $("#mode_of_visit").html(amc_start_slot+' ( +'+amc_add_slots+' )');
-          $("#start_date_tkt").html(amc_visit_time);
+         $("#tkt_visit_date").html(amc_visit_date_display);
+         $("#mode_of_visit").html(amc_start_slot+' ( +'+amc_add_slots+' )');
+         $("#start_date_tkt").html(amc_visit_time);
          
-         
-         load_data_to_grid_asset_details(amc_no,amc_vt_date_val,amc_visit_time);
+         try {
+             load_data_to_grid_asset_details(amc_no,amc_vt_date_val,amc_visit_time);
+         } catch(err) {
+             console.error('load_data_to_grid_asset_details error:', err);
+         }
       }
-       $('.popover').not(this).popover('hide');
-       
-      
+      $('.popover').remove();
    });
    
-    $(document).on('click',"#btn_view_team",function () {
+    $(document).on('click',"#btn_view_team",function (e) {
+     if(e) e.preventDefault();
     
      var amc_no=$("#txt_amc_no_hidden").val();
      var visit_id=$("#txt_visit_id_hidden").val();
@@ -213,14 +327,20 @@ $(document).ready(function(){
      var amc_ticket=$("#txt_amc_ticket_hidden").val();
     
      $("#div_cust_name").html(cust_name+'  [ '+ amc_no +' ]');
-    
 
-      $('#modal_team_details').modal('show');
+     var $modal = $('#modal_team_details');
+     $modal.appendTo('body');
+     $modal.modal('show');
+     $modal.addClass('show in').css({'display': 'block', 'opacity': 1, 'visibility': 'visible'});
+     $modal.find('.modal-dialog').css({'opacity': 1, 'visibility': 'visible', 'transform': 'none'});
       
-       $('.popover').not(this).popover('hide');
+     $('.popover').remove();
      
-         load_data_to_grid_team(visit_id);  
-      
+     try {
+         load_data_to_grid_team(visit_id);
+     } catch(err) {
+         console.error('load_data_to_grid_team error:', err);
+     }
    });
    
    
@@ -724,6 +844,11 @@ var FullCalendarBasic = function() {
                 
       
       
+        // Agenda view
+        //
+        // Define element
+        var calendarAgendaViewElement = document.querySelector('.fullcalendar-agenda');
+
         // Initialize
         if(calendarAgendaViewElement) {
             var calendarAgendaViewInit = new FullCalendar.Calendar(calendarAgendaViewElement, {

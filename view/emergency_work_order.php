@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
     if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
@@ -25,13 +25,88 @@ $OBJ->URLEncode('head=dashboard');
 
 	 
 	<style>
-	    	td.details-control {
-            background: url('../httpdocs/images/plus.png') no-repeat center center;
-            cursor: pointer;
-        }
-        tr.shown td.details-control {
-            background: url('../httpdocs/images/minus.png') no-repeat center center;
-        }
+/* Complaint Description & Child row styling */
+.complaint-list-items {
+    margin: 4px 0 0 0;
+    padding-left: 20px;
+    list-style-type: disc;
+    text-align: left;
+}
+.complaint-list-items li {
+    margin-bottom: 4px;
+    line-height: 1.45;
+    color: #334155;
+}
+.complaint-list-items li:last-child {
+    margin-bottom: 0;
+}
+.complaint-intro {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #0f172a;
+}
+
+tr.complaint-child-row {
+    background-color: #f8fafc !important;
+}
+tr.complaint-child-row > td {
+    padding: 6px 14px 10px 14px !important;
+    border-top: none !important;
+    background-color: #f8fafc !important;
+}
+tr.shown > td {
+    border-bottom: none !important;
+}
+.complaint-child-container {
+    padding: 0 4px;
+}
+.complaint-child-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #1e88e5;
+    border-radius: 6px;
+    padding: 9px 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.complaint-child-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.complaint-child-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e3f2fd;
+    color: #1565c0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+.complaint-child-body {
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.5;
+}
+td.details-control {
+    cursor: pointer;
+    user-select: none;
+}
+.toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: transform 0.15s ease;
+}
+.toggle-icon:hover {
+    transform: scale(1.15);
+}
 	</style>
 
 	<script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
@@ -57,7 +132,7 @@ $OBJ->URLEncode('head=dashboard');
 	 <script src="../httpdocs/spinner/spinner.js"></script>
    	 <script src="global_assets/js/fileupload_ns.js"></script>
 	 <script src="../httpdocs/user_js/login.js"></script>
-	 <script src="../httpdocs/user_js/wo_types.js"></script>
+	 <script src="../httpdocs/user_js/wo_types.js?v=<?php echo time(); ?>"></script>
 	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>
     <?PHP 

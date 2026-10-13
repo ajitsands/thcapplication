@@ -414,6 +414,32 @@ $(document).ready(function() {
     $('#btn_close_modalpie').click(function() {
         $('#modal_forall_piechart').modal("hide");
     });
+
+    $(document).on('click', '.btn-view-complaint', function(e) {
+        e.preventDefault();
+        var wo = $(this).data('wo');
+        var cust = $(this).data('customer');
+        var priority = $(this).data('priority');
+        var contentHtml = $(this).siblings('.complaint-html-source').html();
+
+        $('#modal_complaint_wo_no').text(wo);
+        $('#modal_complaint_customer').text(cust);
+
+        var badgeHtml = '<span class="badge bg-primary-400">Normal</span>';
+        if (priority === 'Emergency') {
+            badgeHtml = '<span class="badge bg-danger-400">Emergency</span>';
+        } else if (priority === 'Urgent') {
+            badgeHtml = '<span class="badge bg-warning-400">Urgent</span>';
+        }
+        $('#modal_complaint_priority_badge').html(badgeHtml);
+        $('#modal_complaint_content_container').html(contentHtml);
+
+        $('#modal_view_complaint_desc').modal('show');
+    });
+
+    $('#btn_close_modal_complaint').click(function() {
+        $('#modal_view_complaint_desc').modal('hide');
+    });
     
     if ($.isEmptyObject(permissions)) {
       $('#divDashboardCalender, #divDashboardWOStatus, #divDashboardPieChart, #divDashboardTHCEmps, #divWORaisedMonthly, #divRaisedWO, #divAMCRenewals, #divActiveClients, #divCPRExpired, #divVisaExpired, #divWOTeamWise').addClass('overlay');

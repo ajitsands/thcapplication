@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 
 if (session_status() == PHP_SESSION_NONE) {
     $savePath = session_save_path();
@@ -156,6 +156,88 @@ $OBJ->URLEncode('head=dashboard');
     vertical-align: middle;
 }
 
+.complaint-list-items {
+    margin: 4px 0 0 0;
+    padding-left: 20px;
+    list-style-type: disc;
+    text-align: left;
+}
+.complaint-list-items li {
+    margin-bottom: 4px;
+    line-height: 1.45;
+    color: #334155;
+}
+.complaint-list-items li:last-child {
+    margin-bottom: 0;
+}
+.complaint-intro {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #0f172a;
+}
+
+/* Child row styling for Complaint Description */
+tr.complaint-child-row {
+    background-color: #f8fafc !important;
+}
+tr.complaint-child-row > td {
+    padding: 6px 14px 10px 14px !important;
+    border-top: none !important;
+    background-color: #f8fafc !important;
+}
+tr.shown > td {
+    border-bottom: none !important;
+}
+.complaint-child-container {
+    padding: 0 4px;
+}
+.complaint-child-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #1e88e5;
+    border-radius: 6px;
+    padding: 9px 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.complaint-child-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.complaint-child-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e3f2fd;
+    color: #1565c0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+.complaint-child-body {
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.5;
+}
+td.details-control {
+    cursor: pointer;
+    user-select: none;
+}
+.toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: transform 0.15s ease;
+}
+.toggle-icon:hover {
+    transform: scale(1.15);
+}
 
 </style>
 
@@ -169,6 +251,51 @@ $OBJ->URLEncode('head=dashboard');
 
 
 <script type="application/javascript">
+function formatComplaintLines(data) {
+    if (!data) return '';
+    var text = String(data).trim();
+    if (text === '') return '';
+
+    if (text.indexOf('*') !== -1) {
+        var parts = text.split('*');
+        var intro = parts.shift().trim();
+        var html = '';
+        if (intro !== '') {
+            html += '<div class="complaint-intro">' + $('<div>').text(intro).html().replace(/\n/g, '<br>') + '</div>';
+        }
+        html += '<ul class="complaint-list-items">';
+        for (var idx = 0; idx < parts.length; idx++) {
+            var item = parts[idx].trim();
+            if (item !== '') {
+                html += '<li>' + $('<div>').text(item).html().replace(/\n/g, '<br>') + '</li>';
+            }
+        }
+        html += '</ul>';
+        return html;
+    } else {
+        return $('<div>').text(text).html().replace(/\n/g, '<br>');
+    }
+}
+
+function formatComplaintChildRow(data) {
+    var contentHtml = formatComplaintLines(data);
+    if (!contentHtml || $.trim(contentHtml) === '') {
+        contentHtml = '<span class="text-muted font-italic" style="font-size: 12px;"><i class="icon-info22 mr-1"></i>No complaint description provided.</span>';
+    }
+    return '<div class="complaint-child-container">' +
+               '<div class="complaint-child-card">' +
+                   '<div class="complaint-child-header">' +
+                       '<span class="complaint-child-badge">' +
+                           '<i class="icon-file-text2 mr-1"></i> Complaint Description' +
+                       '</span>' +
+                   '</div>' +
+                   '<div class="complaint-child-body">' +
+                       contentHtml +
+                   '</div>' +
+               '</div>' +
+           '</div>';
+}
+
 //$(document).ready(function(){
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -190,6 +317,35 @@ document.addEventListener("DOMContentLoaded", function () {
    
    $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
     $.fn.dataTable.tables({visible:true, api:true}).columns.adjust();
+});
+
+$(document).on('click', '#tbl_ppm_list tbody td.details-control, #tbl_reactive_list tbody td.details-control, #tbl_other_list tbody td.details-control', function (e) {
+    if ($(e.target).is('a, button, input')) return;
+
+    var tr = $(this).closest('tr');
+    var tableEl = $(this).closest('table');
+    var tableId = tableEl.attr('id');
+    var dt = (tableId === 'tbl_ppm_list') ? tbl_ppm_list : ((tableId === 'tbl_reactive_list') ? tbl_reactive_list : tbl_other_list);
+    if (!dt) return;
+    var row = dt.row(tr);
+    if (!row || !row.data()) return;
+
+    if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass('shown');
+        tr.find('.toggle-icon i')
+            .removeClass('icon-minus-circle2 text-primary')
+            .addClass('icon-plus-circle2 text-muted');
+    } else {
+        var data = row.data();
+        if (data) {
+            row.child(formatComplaintChildRow(data.complaints_description), 'complaint-child-row').show();
+            tr.addClass('shown');
+            tr.find('.toggle-icon i')
+                .removeClass('icon-plus-circle2 text-muted')
+                .addClass('icon-minus-circle2 text-primary');
+        }
+    }
 });
 $('#select_category').select2({
     width: '100%',
@@ -251,7 +407,7 @@ function load_ppm_list()
 
         destroy:true,
 
-        responsive:true,
+        responsive:false,
 
         autoWidth:false,
 
@@ -327,9 +483,18 @@ function load_ppm_list()
 
                 data:null,
 
+                orderable:false,
+
+                className:"details-control text-center",
+
                 render:function(data,type,row,meta){
 
-                    return meta.row+1;
+                    if (type === 'display') {
+                        return '<span class="toggle-icon cursor-pointer mr-1" title="Toggle complaint description">' +
+                               '<i class="icon-minus-circle2 text-primary" style="font-size: 13px; vertical-align: middle;"></i>' +
+                               '</span> ' + (meta.row + 1);
+                    }
+                    return meta.row + 1;
 
                 }
 
@@ -383,7 +548,22 @@ function load_ppm_list()
 
             {
 
-                data:"complaints_description"
+                data:"complaints_description",
+                visible:false,
+                render: function(data, type, row) {
+                    if (type === 'export' && data && String(data).indexOf('*') !== -1) {
+                        var parts = String(data).split('*');
+                        var intro = parts.shift().trim();
+                        var lines = [];
+                        if (intro) lines.push(intro);
+                        for (var i = 0; i < parts.length; i++) {
+                            var item = parts[i].trim();
+                            if (item) lines.push("• " + item);
+                        }
+                        return lines.join("\n");
+                    }
+                    return data ? data : '';
+                }
 
             },
             {
@@ -415,15 +595,30 @@ function load_ppm_list()
         ],
 
 
+        drawCallback: function (settings) {
+            var api = this.api();
+            api.rows({ page: 'current' }).every(function () {
+                var row = this;
+                var data = row.data();
+                if (data) {
+                    row.child(formatComplaintChildRow(data.complaints_description), 'complaint-child-row').show();
+                    $(row.node()).addClass('shown');
+                    $(row.node()).find('.toggle-icon i')
+                        .removeClass('icon-plus-circle2 text-muted')
+                        .addClass('icon-minus-circle2 text-primary');
+                }
+            });
+        },
+
         columnDefs:[
 
             {
 
                 targets:0,
 
-                width:"35px",
+                width:"55px",
 
-                className:"text-center"
+                className:"details-control text-center"
 
             },
 
@@ -473,7 +668,7 @@ function load_reactive_list()
 
         destroy:true,
 
-        responsive:true,
+        responsive:false,
 
         autoWidth:false,
 
@@ -549,9 +744,18 @@ function load_reactive_list()
 
                 data:null,
 
+                orderable:false,
+
+                className:"details-control text-center",
+
                 render:function(data,type,row,meta){
 
-                    return meta.row+1;
+                    if (type === 'display') {
+                        return '<span class="toggle-icon cursor-pointer mr-1" title="Toggle complaint description">' +
+                               '<i class="icon-minus-circle2 text-primary" style="font-size: 13px; vertical-align: middle;"></i>' +
+                               '</span> ' + (meta.row + 1);
+                    }
+                    return meta.row + 1;
 
                 }
 
@@ -605,7 +809,22 @@ function load_reactive_list()
 
             {
 
-                data:"complaints_description"
+                data:"complaints_description",
+                visible:false,
+                render: function(data, type, row) {
+                    if (type === 'export' && data && String(data).indexOf('*') !== -1) {
+                        var parts = String(data).split('*');
+                        var intro = parts.shift().trim();
+                        var lines = [];
+                        if (intro) lines.push(intro);
+                        for (var i = 0; i < parts.length; i++) {
+                            var item = parts[i].trim();
+                            if (item) lines.push("• " + item);
+                        }
+                        return lines.join("\n");
+                    }
+                    return data ? data : '';
+                }
 
             },
             {
@@ -636,15 +855,30 @@ function load_reactive_list()
         ],
 
 
+        drawCallback: function (settings) {
+            var api = this.api();
+            api.rows({ page: 'current' }).every(function () {
+                var row = this;
+                var data = row.data();
+                if (data) {
+                    row.child(formatComplaintChildRow(data.complaints_description), 'complaint-child-row').show();
+                    $(row.node()).addClass('shown');
+                    $(row.node()).find('.toggle-icon i')
+                        .removeClass('icon-plus-circle2 text-muted')
+                        .addClass('icon-minus-circle2 text-primary');
+                }
+            });
+        },
+
         columnDefs:[
 
             {
 
                 targets:0,
 
-                width:"35px",
+                width:"55px",
 
-                className:"text-center"
+                className:"details-control text-center"
 
             },
 
@@ -693,7 +927,7 @@ function load_other_list()
 
         destroy:true,
 
-        responsive:true,
+        responsive:false,
 
         autoWidth:false,
 
@@ -768,9 +1002,18 @@ function load_other_list()
 
                 data:null,
 
+                orderable:false,
+
+                className:"details-control text-center",
+
                 render:function(data,type,row,meta){
 
-                    return meta.row+1;
+                    if (type === 'display') {
+                        return '<span class="toggle-icon cursor-pointer mr-1" title="Toggle complaint description">' +
+                               '<i class="icon-minus-circle2 text-primary" style="font-size: 13px; vertical-align: middle;"></i>' +
+                               '</span> ' + (meta.row + 1);
+                    }
+                    return meta.row + 1;
 
                 }
 
@@ -824,7 +1067,22 @@ function load_other_list()
 
             {
 
-                data:"complaints_description"
+                data:"complaints_description",
+                visible:false,
+                render: function(data, type, row) {
+                    if (type === 'export' && data && String(data).indexOf('*') !== -1) {
+                        var parts = String(data).split('*');
+                        var intro = parts.shift().trim();
+                        var lines = [];
+                        if (intro) lines.push(intro);
+                        for (var i = 0; i < parts.length; i++) {
+                            var item = parts[i].trim();
+                            if (item) lines.push("• " + item);
+                        }
+                        return lines.join("\n");
+                    }
+                    return data ? data : '';
+                }
 
             },
             {
@@ -856,15 +1114,30 @@ function load_other_list()
         ],
 
 
+        drawCallback: function (settings) {
+            var api = this.api();
+            api.rows({ page: 'current' }).every(function () {
+                var row = this;
+                var data = row.data();
+                if (data) {
+                    row.child(formatComplaintChildRow(data.complaints_description), 'complaint-child-row').show();
+                    $(row.node()).addClass('shown');
+                    $(row.node()).find('.toggle-icon i')
+                        .removeClass('icon-plus-circle2 text-muted')
+                        .addClass('icon-minus-circle2 text-primary');
+                }
+            });
+        },
+
         columnDefs:[
 
             {
 
                 targets:0,
 
-                width:"35px",
+                width:"55px",
 
-                className:"text-center"
+                className:"details-control text-center"
 
             },
 

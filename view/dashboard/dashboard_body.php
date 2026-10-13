@@ -70,6 +70,37 @@
         $graph_month=$row_graph_month_year["graph_month"];
         $graph_year=$row_graph_month_year["graph_year"];
     }
+
+    if (!function_exists('format_dashboard_complaints')) {
+        function format_dashboard_complaints($desc) {
+            $desc = trim($desc ?? '');
+            if ($desc === '') {
+                return '<div class="text-muted font-italic"><i class="icon-info22 mr-1"></i> No complaint description provided.</div>';
+            }
+            if (strpos($desc, '*') !== false) {
+                $parts = explode('*', $desc);
+                $intro = trim(array_shift($parts));
+                $html = '';
+                if ($intro !== '') {
+                    $html .= '<div class="font-weight-semibold text-dark mb-2">' . nl2br(htmlspecialchars($intro)) . '</div>';
+                }
+                $html .= '<ul class="list-unstyled mb-0" style="padding-left: 0;">';
+                foreach ($parts as $p) {
+                    $p = trim($p);
+                    if ($p !== '') {
+                        $html .= '<li class="d-flex align-items-start mb-2" style="gap: 8px;">';
+                        $html .= '<i class="icon-primitive-dot text-primary mt-1" style="font-size: 11px; flex-shrink: 0;"></i>';
+                        $html .= '<span style="line-height: 1.5; color: #333;">' . nl2br(htmlspecialchars($p)) . '</span>';
+                        $html .= '</li>';
+                    }
+                }
+                $html .= '</ul>';
+                return $html;
+            } else {
+                return '<div style="line-height: 1.6; color: #333;">' . nl2br(htmlspecialchars($desc)) . '</div>';
+            }
+        }
+    }
 ?>
 
 <div class="content" style="padding-top:0;">
@@ -321,7 +352,19 @@
                                     $aLink = "work_order_print.php?ticket_id=".$ticketId[3];
                                 ?>
                                 <a class="font-weight-semibold text-info work-order-links" style="cursor:pointer" data-id="<?php echo $row_raised_wo['wo_ref_nos']; ?>"> <?php echo $row_raised_wo['wo_ref_nos'];?> </a><span class="font-weight-semibold"> <?php echo $row_raised_wo['customers'];?></span>
-                                <div><?php echo $row_raised_wo['complaints_description'];?></div>
+                                <div class="mt-1">
+                                    <a href="javascript:void(0);" 
+                                       class="text-primary font-size-sm font-weight-semibold btn-view-complaint" 
+                                       data-wo="<?php echo htmlspecialchars($row_raised_wo['wo_ref_nos']); ?>" 
+                                       data-customer="<?php echo htmlspecialchars($row_raised_wo['customers']); ?>" 
+                                       data-priority="<?php echo htmlspecialchars($row_raised_wo['ticket_priority']); ?>" 
+                                       style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                                        <i class="icon-file-text2 font-size-sm"></i> View Complaints
+                                    </a>
+                                    <div class="d-none complaint-html-source">
+                                        <?php echo format_dashboard_complaints($row_raised_wo['complaints_description']); ?>
+                                    </div>
+                                </div>
                                 <!--<div class="text-muted"><?php //echo $row_raised_wo['created_date_time1'];?></div>-->
                             </div>
 
@@ -524,3 +567,78 @@
 		</div>
 	</div>
 	<!-- /basic modal -->
+
+	<!-- Modal View Complaints -->
+	<div id="modal_view_complaint_desc" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 560px;">
+			<div class="modal-content" style="border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25); border: none;">
+				<div class="modal-header text-white py-2 px-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0a192f 0%, #172a45 100%) !important;">
+					<h6 class="modal-title font-weight-bold mb-0 text-white d-flex align-items-center" style="gap: 8px;">
+						<i class="icon-file-text2 text-info"></i>
+						<span>Work Order Complaints</span>
+					</h6>
+					<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.85; font-size: 22px; outline: none; margin: -10px -10px -10px auto;">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body p-3">
+					<div class="mb-3 p-2 bg-light rounded border d-flex justify-content-between align-items-center">
+						<div>
+							<div class="font-size-xs text-muted text-uppercase font-weight-bold">Work Order No.</div>
+							<span class="font-weight-semibold text-info" id="modal_complaint_wo_no"></span>
+						</div>
+						<div class="text-right">
+							<div class="font-size-xs text-muted text-uppercase font-weight-bold">Priority</div>
+							<span id="modal_complaint_priority_badge"></span>
+						</div>
+					</div>
+					<div class="mb-2">
+						<span class="font-size-xs text-muted text-uppercase font-weight-bold">Customer:</span>
+						<span class="font-weight-semibold ml-1 text-dark" id="modal_complaint_customer"></span>
+					</div>
+					<hr class="my-2" style="border-top: 1px dashed #ddd;">
+					<div class="mt-2">
+						<span class="font-size-xs text-muted text-uppercase font-weight-bold d-block mb-2">Complaint Description / Line Items:</span>
+						<div id="modal_complaint_content_container" class="p-3 border rounded bg-white" style="min-height: 80px; max-height: 350px; overflow-y: auto;">
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer py-2 px-3 bg-light d-flex justify-content-end">
+					<button type="button" class="btn btn-secondary font-weight-semibold px-3" data-dismiss="modal" id="btn_close_modal_complaint" style="border-radius: 6px;">
+						<i class="icon-cross2 mr-1"></i> Close
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /Modal View Complaints -->
+
+	<script>
+	$(document).ready(function() {
+		$(document).on('click', '.btn-view-complaint', function(e) {
+			e.preventDefault();
+			var wo = $(this).data('wo');
+			var cust = $(this).data('customer');
+			var priority = $(this).data('priority');
+			var contentHtml = $(this).siblings('.complaint-html-source').html();
+
+			$('#modal_complaint_wo_no').text(wo);
+			$('#modal_complaint_customer').text(cust);
+
+			var badgeHtml = '<span class="badge bg-primary-400">Normal</span>';
+			if (priority === 'Emergency') {
+				badgeHtml = '<span class="badge bg-danger-400">Emergency</span>';
+			} else if (priority === 'Urgent') {
+				badgeHtml = '<span class="badge bg-warning-400">Urgent</span>';
+			}
+			$('#modal_complaint_priority_badge').html(badgeHtml);
+			$('#modal_complaint_content_container').html(contentHtml);
+
+			$('#modal_view_complaint_desc').modal('show');
+		});
+
+		$('#btn_close_modal_complaint').click(function() {
+			$('#modal_view_complaint_desc').modal('hide');
+		});
+	});
+	</script>
