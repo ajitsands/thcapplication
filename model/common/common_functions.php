@@ -554,6 +554,9 @@ class CommonModel extends FunctionDefinitions
    public function ExecuteProcedure($SQL)
 	{
 			$retval = mysqli_query($this->varDBConnection, $SQL);
+			if (!$retval) {
+				error_log("ExecuteProcedure SQL Error: " . mysqli_error($this->varDBConnection) . " Query: " . $SQL);
+			}
 			while (mysqli_more_results($this->varDBConnection) && mysqli_next_result($this->varDBConnection)) {
 				// flush stored procedure multi-result sets
 			}

@@ -16,54 +16,54 @@ class apartmentController
         $this->varDBConnection = $this->varModelObj->varDBConnection;
         $this->actionevents = $_POST['action'];
        
-        $this->asset_ref_no = $_POST['v_asset_ref_no'];
-        $this->asset_category_id = $_POST['v_asset_category_id'];
-        $this->asset_category_name = $_POST['v_asset_category_name'];
-        $this->asset_type_id = $_POST['v_asset_type_id'];
-		$this->asset_type_name = $_POST['v_asset_type_name'];
-        $this->asset_cust_id = $_POST['v_cust_id'];
-        $this->asset_cust_code = $_POST['v_cust_code'];
-        $this->asset_cust_name = $_POST['v_cust_name'];
-        $this->asset_location_id = $_POST['v_location_id'];
-        $this->asset_location = $_POST['v_asset_location'];
-        $this->asset_building = $_POST['v_asset_building'];
-		$this->flat_area_code = $_POST['v_flat_area_code'];
-        $this->asset_serial_no = $_POST['v_asset_serial_no'];
-        $this->asset_brand = $_POST['v_asset_brand'];
-        $this->asset_capacity = $_POST['v_asset_capacity'];
-        $this->asset_cost = $_POST['v_asset_cost'];
+        $this->asset_ref_no = isset($_POST['v_asset_ref_no']) ? $_POST['v_asset_ref_no'] : '';
+        $this->asset_category_id = !empty($_POST['v_asset_category_id']) ? intval($_POST['v_asset_category_id']) : 0;
+        $this->asset_category_name = isset($_POST['v_asset_category_name']) ? $_POST['v_asset_category_name'] : '';
+        $this->asset_type_id = !empty($_POST['v_asset_type_id']) ? intval($_POST['v_asset_type_id']) : 0;
+		$this->asset_type_name = isset($_POST['v_asset_type_name']) ? $_POST['v_asset_type_name'] : '';
+        $this->asset_cust_id = !empty($_POST['v_cust_id']) ? intval($_POST['v_cust_id']) : 0;
+        $this->asset_cust_code = isset($_POST['v_cust_code']) ? $_POST['v_cust_code'] : '';
+        $this->asset_cust_name = isset($_POST['v_cust_name']) ? $_POST['v_cust_name'] : '';
+        $this->asset_location_id = !empty($_POST['v_location_id']) ? intval($_POST['v_location_id']) : 0;
+        $this->asset_location = isset($_POST['v_asset_location']) ? $_POST['v_asset_location'] : '';
+        $this->asset_building = isset($_POST['v_asset_building']) ? $_POST['v_asset_building'] : '';
+		$this->flat_area_code = isset($_POST['v_flat_area_code']) ? $_POST['v_flat_area_code'] : '';
+        $this->asset_serial_no = isset($_POST['v_asset_serial_no']) ? $_POST['v_asset_serial_no'] : '';
+        $this->asset_brand = isset($_POST['v_asset_brand']) ? $_POST['v_asset_brand'] : '';
+        $this->asset_capacity = isset($_POST['v_asset_capacity']) ? $_POST['v_asset_capacity'] : '';
+        $this->asset_cost = (!empty($_POST['v_asset_cost']) && is_numeric($_POST['v_asset_cost'])) ? $_POST['v_asset_cost'] : '0.000';
         $this->asset_is_warentee = isset($_POST['v_is_warentee']) ? $_POST['v_is_warentee'] : 'NA';
         $this->is_janitor_asset = isset($_POST['v_is_janitor_asset']) ? $_POST['v_is_janitor_asset'] : 'NO';
-        $this->warentee_end_date = $_POST['v_warentee_end_date'];
-		$this->asset_attachment = $_POST['assets_attachment_file'];
-        $this->asset_description = $_POST['v_asset_description'];
+        $this->warentee_end_date = (!empty($_POST['v_warentee_end_date']) && $_POST['v_warentee_end_date'] != '0000-00-00') ? $_POST['v_warentee_end_date'] : '';
+		$this->asset_attachment = isset($_POST['assets_attachment_file']) ? $_POST['assets_attachment_file'] : 'default.jpg';
+        $this->asset_description = isset($_POST['v_asset_description']) ? $_POST['v_asset_description'] : '';
         $this->asset_spgen = 'NA';
         $this->asset_sp_des = 'NA';
         
-         $this->asset_building_code = $_POST['v_asset_building_code'];
-          $this->zone_or_floor_no = $_POST['v_zone_or_floor_no'];
-		$this->asset_roon_no = $_POST['v_asset_roon_no'];
-        $this->asset_specify_description = $_POST['v_asset_specify_description'];
+        $this->asset_building_code = isset($_POST['v_asset_building_code']) ? $_POST['v_asset_building_code'] : '';
+        $this->zone_or_floor_no = isset($_POST['v_zone_or_floor_no']) ? $_POST['v_zone_or_floor_no'] : '';
+		$this->asset_roon_no = isset($_POST['v_asset_roon_no']) ? $_POST['v_asset_roon_no'] : '';
+        $this->asset_specify_description = isset($_POST['v_asset_specify_description']) ? $_POST['v_asset_specify_description'] : '';
 		
-        $this->v_location = $_POST['v_location_id'];
-    	$this->v_asset_cate_combo= $_POST['asset_cate_combo'];
-    	$this->v_assettype_combo = $_POST['assettype_combo'];
-    	$this->v_asset_building_combo = $_POST['asset_building_combo'];
-    	$this->location_code = $_POST['location_code'];
-    	$this->asset_building_id = $_POST['v_asset_building_id'];
+        $this->v_location = isset($_POST['v_location_id']) ? $_POST['v_location_id'] : '';
+    	$this->v_asset_cate_combo = isset($_POST['asset_cate_combo']) ? $_POST['asset_cate_combo'] : '';
+    	$this->v_assettype_combo = isset($_POST['assettype_combo']) ? $_POST['assettype_combo'] : '';
+    	$this->v_asset_building_combo = isset($_POST['asset_building_combo']) ? $_POST['asset_building_combo'] : '';
+    	$this->location_code = isset($_POST['location_code']) ? $_POST['location_code'] : '';
+    	$this->asset_building_id = !empty($_POST['v_asset_building_id']) ? intval($_POST['v_asset_building_id']) : 0;
     	
-    	$this->asset_status = $_POST['v_asset_status'];
-		$this->customer_assets_action = $_POST['v_customer_assets_action'];
-		$this->v_asset_id = $_POST['v_assets_id'];
-		$this->asset_location_code= $_POST['v_asset_location_code'];
+    	$this->asset_status = isset($_POST['v_asset_status']) ? $_POST['v_asset_status'] : '';
+		$this->customer_assets_action = isset($_POST['v_customer_assets_action']) ? $_POST['v_customer_assets_action'] : '';
+		$this->v_asset_id = !empty($_POST['v_assets_id']) ? intval($_POST['v_assets_id']) : 0;
+		$this->asset_location_code = isset($_POST['v_asset_location_code']) ? $_POST['v_asset_location_code'] : '';
 	
-        $this->amc_id = $_POST['v_amc_id'];
-        $this->amc_ref_no = $_POST['v_amc_ref_no'];
-		$this->amc_ed_date = $_POST['v_amc_ed_date'];
-		$this->amc_st_date= $_POST['v_amc_st_date'];
+        $this->amc_id = !empty($_POST['v_amc_id']) ? intval($_POST['v_amc_id']) : 0;
+        $this->amc_ref_no = isset($_POST['v_amc_ref_no']) ? $_POST['v_amc_ref_no'] : '';
+		$this->amc_ed_date = isset($_POST['v_amc_ed_date']) ? $_POST['v_amc_ed_date'] : '';
+		$this->amc_st_date = isset($_POST['v_amc_st_date']) ? $_POST['v_amc_st_date'] : '';
 		
      	date_default_timezone_set('Asia/Bahrain');
-        $this->current_date = date("Y-m-d h:i:s");
+        $this->current_date = date("Y-m-d");
         
     }
     
@@ -73,13 +73,16 @@ class apartmentController
     function SQLArray()
     { 
         $array =  array();
-	 $array[0]="call proc_amc_add_assets('".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."',".$this->asset_type_id.",'".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location."','".	$this->location_code."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."','".$this->asset_cost."','".$this->asset_is_warentee."','".$this->warentee_end_date."','".$this->asset_attachment."','".$this->asset_description."','Active',0,'NA','".$this->current_date."',0,'NA','".$this->current_date."','NA','0000-00-00','0000-00-00',0,'".$this->is_janitor_asset."',@msg)";
+        $v_warentee_date = (!empty($this->warentee_end_date) && $this->warentee_end_date != '0000-00-00' && strtolower($this->warentee_end_date) != 'null') ? "'".$this->warentee_end_date."'" : "NULL";
+        $v_cost = (!empty($this->asset_cost) && is_numeric($this->asset_cost)) ? "'".$this->asset_cost."'" : "'0.000'";
+
+	 $array[0]="call proc_amc_add_assets('".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."','".$this->asset_type_id."','".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location."','".	$this->location_code."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."',".$v_cost.",'".$this->asset_is_warentee."',".$v_warentee_date.",'".$this->asset_attachment."','".$this->asset_description."','Active',0,'NA','".$this->current_date."',0,'NA','".$this->current_date."','NA',NULL,NULL,0,'".$this->is_janitor_asset."',@msg)";
      $array[1]="select * from tbl_assets where (location_id='".$this->v_location."' and asset_category_id='".$this->v_asset_cate_combo."' and asset_type_id='".$this->v_assettype_combo."')";
      $array[2]="select location_id from   tbl_customer_location where customer_id=".$this->asset_cust_id;
      $array[3]="select *,REGEXP_REPLACE(asset_description, '[^ -~]', '') AS asset_description from tbl_assets order by asset_id desc"; 																										                                          
 	 $array[4] ="update tbl_assets set `asset_status`='Active' where asset_id='".$this->v_asset_id."'";   
 	 $array[5] ="update tbl_assets set `asset_status`='Deactive' where asset_id='".$this->v_asset_id."'";
-	 $array[6]="call proc_amc_edit_assets('".$this->v_asset_id."','".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."',".$this->asset_type_id.",'".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location_code."','".$this->asset_location."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."','".$this->asset_cost."','".$this->asset_is_warentee."','".$this->warentee_end_date."','".$this->asset_attachment."','".$this->asset_description."','".$this->current_date."','".$this->is_janitor_asset."',@msg)";	 
+	 $array[6]="call proc_amc_edit_assets('".$this->v_asset_id."','".$this->asset_ref_no."','".$this->asset_category_id."','".$this->asset_category_name."','".$this->asset_type_id."','".$this->asset_type_name."','".$this->asset_cust_id."','".$this->asset_cust_code."','".$this->asset_cust_name."','".$this->asset_location_id."','".$this->asset_location_code."','".$this->asset_location."','".$this->asset_building_id."','".$this->asset_building_code."','". $this->asset_building."','". $this->zone_or_floor_no."','".$this->flat_area_code."','".$this->asset_roon_no."','". $this->asset_specify_description."','". $this->asset_serial_no."','".$this->asset_brand."','".$this->asset_capacity."',".$v_cost.",'".$this->asset_is_warentee."',".$v_warentee_date.",'".$this->asset_attachment."','".$this->asset_description."','".$this->current_date."','".$this->is_janitor_asset."',@msg)";	 
      $array[7]="select asset_ref_no from tbl_assets order by asset_id desc";
  
 		 
