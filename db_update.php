@@ -44,4 +44,31 @@ if(mysqli_query($varDBConnection, $proc2)){
 } else {
     echo "Error updating proc_amc_edit_assets: " . mysqli_error($varDBConnection) . "\n";
 }
+
+// 4. Create tbl_janitor_attendance table if not exists
+$sql_attend = "CREATE TABLE IF NOT EXISTS `tbl_janitor_attendance` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `employee_id` INT NOT NULL,
+    `employee_code` VARCHAR(100) NOT NULL,
+    `assignment_id` INT DEFAULT 0,
+    `asset_id` INT NOT NULL,
+    `asset_code` VARCHAR(500) NOT NULL,
+    `building_id` INT NOT NULL,
+    `building_name` VARCHAR(500),
+    `janitor_lat` VARCHAR(100),
+    `janitor_lng` VARCHAR(100),
+    `building_lat` VARCHAR(100),
+    `building_lng` VARCHAR(100),
+    `distance_meters` DOUBLE DEFAULT 0,
+    `attendance_date` DATE NOT NULL,
+    `attendance_time` TIME NOT NULL,
+    `attendance_status` VARCHAR(50) DEFAULT 'Present',
+    `scan_status` VARCHAR(50) DEFAULT 'Verified',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+)";
+if (mysqli_query($varDBConnection, $sql_attend)) {
+    echo "Table tbl_janitor_attendance created/verified.\n";
+} else {
+    echo "Error creating tbl_janitor_attendance: " . mysqli_error($varDBConnection) . "\n";
+}
 ?>
