@@ -1,5 +1,5 @@
 # THC-FM Janitor Mobile Application API Documentation
-**Version**: 1.2  
+**Version**: 1.3 (In Development)  
 **Target Developers**: React Native / Flutter / iOS / Android Mobile Developers  
 **Base URL**:  
 - **Production**: `https://portal.thcfm.com/api/controller/janitor_react.php`  
