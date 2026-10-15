@@ -197,4 +197,17 @@ if (mysqli_query($varDBConnection, $sql_attend)) {
 } else {
     echo "Error creating tbl_janitor_attendance: " . mysqli_error($varDBConnection) . "\n";
 }
+
+// 5. Add slots_detail to tbl_janitor_assignments if not exists
+$check_col = mysqli_query($varDBConnection, "SHOW COLUMNS FROM `tbl_janitor_assignments` LIKE 'slots_detail'");
+if (mysqli_num_rows($check_col) == 0) {
+    if (mysqli_query($varDBConnection, "ALTER TABLE `tbl_janitor_assignments` ADD COLUMN `slots_detail` TEXT AFTER `slots`")) {
+        echo "Column slots_detail added to tbl_janitor_assignments.\n";
+    } else {
+        echo "Error adding slots_detail column: " . mysqli_error($varDBConnection) . "\n";
+    }
+} else {
+    echo "Column slots_detail already exists in tbl_janitor_assignments.\n";
+}
+
 ?>

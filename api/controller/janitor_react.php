@@ -77,7 +77,7 @@ class janitorApiController
         $this->assignment_id = isset($_REQUEST['assignment_id']) ? (int)$_REQUEST['assignment_id'] : 0;
         $this->checklist_id = isset($_REQUEST['checklist_id']) ? (int)$_REQUEST['checklist_id'] : 0;
         $this->execution_id = isset($_REQUEST['execution_id']) ? (int)$_REQUEST['execution_id'] : 0;
-        $this->slot = isset($_REQUEST['slot']) ? trim($_REQUEST['slot']) : '';
+        $this->slot = isset($_REQUEST['slot']) ? trim($_REQUEST['slot']) : (isset($_REQUEST['slot_name']) ? trim($_REQUEST['slot_name']) : (isset($_REQUEST['slot_time']) ? trim($_REQUEST['slot_time']) : ''));
         $this->remarks = isset($_REQUEST['remarks']) ? trim($_REQUEST['remarks']) : '';
         $this->status = isset($_REQUEST['status']) ? trim($_REQUEST['status']) : 'Completed';
         $this->points_json = isset($_REQUEST['points']) ? $_REQUEST['points'] : '';
@@ -498,6 +498,10 @@ class janitorApiController
                     loc.building_name,
                     loc.building_code,
                     loc.building_address,
+                    COALESCE(NULLIF(b.latitude, ''), NULLIF(b_ast.latitude, ''), '') as latitude,
+                    COALESCE(NULLIF(b.longitude, ''), NULLIF(b_ast.longitude, ''), '') as longitude,
+                    COALESCE(NULLIF(b.latitude, ''), NULLIF(b_ast.latitude, ''), '') as building_latitude,
+                    COALESCE(NULLIF(b.longitude, ''), NULLIF(b_ast.longitude, ''), '') as building_longitude,
                     loc.contact_person_name,
                     loc.contact_person_no,
                     a.asset_id,
@@ -514,6 +518,7 @@ class janitorApiController
                     a.amc_ref_no,
                     a.frequency,
                     a.slots,
+                    a.slots_detail,
                     a.start_date,
                     a.end_date,
                     a.status as assignment_status,
@@ -522,6 +527,9 @@ class janitorApiController
                 FROM tbl_janitor_assignments a
                 LEFT JOIN tbl_janitor_checklists c ON a.checklist_id = c.id
                 LEFT JOIN tbl_customers cust ON a.customer_id = cust.customer_id
+                LEFT JOIN tbl_building b ON a.building_id = b.building_id
+                LEFT JOIN tbl_assets ast ON a.asset_id = ast.asset_id
+                LEFT JOIN tbl_building b_ast ON ast.building_id = b_ast.building_id
                 LEFT JOIN (
                     SELECT customer_id, location_id, building_id, 
                            MAX(location_name) as location_name, 
@@ -534,7 +542,6 @@ class janitorApiController
                     FROM tbl_customer_location
                     GROUP BY customer_id, location_id, building_id
                 ) loc ON (a.customer_id = loc.customer_id AND a.location_id = loc.location_id AND a.building_id = loc.building_id)
-                LEFT JOIN tbl_assets ast ON a.asset_id = ast.asset_id
                 WHERE a.status = 'Active'
                   AND FIND_IN_SET('$emp_id_val', a.employee_id)
                   AND (a.start_date IS NULL OR a.start_date <= '$target_date' OR a.start_date = '0000-00-00')
@@ -563,6 +570,19 @@ class janitorApiController
             if (empty($slots_arr)) {
                 $slots_arr = ['Standard Slot'];
             }
+
+            // Map slots_detail if available
+            $slots_detail_map = [];
+            if (!empty($row['slots_detail'])) {
+                $decoded_slots = json_decode($row['slots_detail'], true);
+                if (is_array($decoded_slots)) {
+                    foreach ($decoded_slots as $sd) {
+                        if (isset($sd['name'])) {
+                            $slots_detail_map[$sd['name']] = $sd;
+                        }
+                    }
+                }
+            }
             
             // Query executed logs for this assignment on this target date
             $exec_sql = "SELECT id, executed_slot, status, remarks, created_at 
@@ -583,8 +603,18 @@ class janitorApiController
             $slot_details = [];
             foreach ($slots_arr as $slot_item) {
                 $is_executed = isset($executed_slots[$slot_item]);
+                $s_start = isset($slots_detail_map[$slot_item]['start_time']) ? (string)$slots_detail_map[$slot_item]['start_time'] : '0';
+                $s_end = isset($slots_detail_map[$slot_item]['end_time']) ? (string)$slots_detail_map[$slot_item]['end_time'] : '0';
+                $has_time_rule = ($s_start !== '0' && $s_start !== '' && $s_end !== '0' && $s_end !== '');
+                $time_rule = $has_time_rule ? ($s_start . ' - ' . $s_end) : 'No Rule';
+
                 $slot_details[] = [
+                    "slot_name" => $slot_item,
                     "slot_time" => $slot_item,
+                    "start_time" => $s_start,
+                    "end_time" => $s_end,
+                    "has_time_rule" => $has_time_rule,
+                    "time_rule" => $time_rule,
                     "is_completed" => $is_executed ? "Yes" : "No",
                     "execution_id" => $is_executed ? (int)$executed_slots[$slot_item]['id'] : null,
                     "execution_status" => $is_executed ? $executed_slots[$slot_item]['status'] : "Pending",
@@ -655,6 +685,10 @@ class janitorApiController
                     loc.building_name,
                     loc.building_code,
                     loc.building_address,
+                    COALESCE(NULLIF(b.latitude, ''), NULLIF(b_ast.latitude, ''), '') as latitude,
+                    COALESCE(NULLIF(b.longitude, ''), NULLIF(b_ast.longitude, ''), '') as longitude,
+                    COALESCE(NULLIF(b.latitude, ''), NULLIF(b_ast.latitude, ''), '') as building_latitude,
+                    COALESCE(NULLIF(b.longitude, ''), NULLIF(b_ast.longitude, ''), '') as building_longitude,
                     loc.contact_person_name,
                     loc.contact_person_no,
                     ast.asset_ref_no,
@@ -670,6 +704,9 @@ class janitorApiController
                 FROM tbl_janitor_assignments a
                 LEFT JOIN tbl_janitor_checklists c ON a.checklist_id = c.id
                 LEFT JOIN tbl_customers cust ON a.customer_id = cust.customer_id
+                LEFT JOIN tbl_building b ON a.building_id = b.building_id
+                LEFT JOIN tbl_assets ast ON a.asset_id = ast.asset_id
+                LEFT JOIN tbl_building b_ast ON ast.building_id = b_ast.building_id
                 LEFT JOIN (
                     SELECT customer_id, location_id, building_id, 
                            MAX(location_name) as location_name, 
@@ -682,7 +719,6 @@ class janitorApiController
                     FROM tbl_customer_location
                     GROUP BY customer_id, location_id, building_id
                 ) loc ON (a.customer_id = loc.customer_id AND a.location_id = loc.location_id AND a.building_id = loc.building_id)
-                LEFT JOIN tbl_assets ast ON a.asset_id = ast.asset_id
                 WHERE a.id = $as_id LIMIT 1";
 
         $res = mysqli_query($this->varDBConnection, $sql);
@@ -1124,7 +1160,7 @@ class janitorApiController
         $asset_ref_no = $asset_row['asset_ref_no'];
 
         // Look up assignment for this janitor
-        $assign_sql = "SELECT a.id as assignment_id, a.checklist_id, c.checklist_name, a.frequency, a.slots,
+        $assign_sql = "SELECT a.id as assignment_id, a.checklist_id, c.checklist_name, a.frequency, a.slots, a.slots_detail,
                               b.latitude as assign_bld_lat, b.longitude as assign_bld_lng, b.building_name as assign_bld_name,
                               loc.location_name as assign_loc_name
                        FROM tbl_janitor_assignments a
@@ -1251,6 +1287,7 @@ class janitorApiController
                 "checklist_id" => (int)$assign_row['checklist_id'],
                 "checklist_name" => $assign_row['checklist_name'],
                 "slots" => $assign_row['slots'],
+                "slots_detail" => !empty($assign_row['slots_detail']) ? json_decode($assign_row['slots_detail'], true) : [],
                 "frequency" => $assign_row['frequency']
             ] : null
         ]);

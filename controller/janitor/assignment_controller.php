@@ -115,17 +115,43 @@ if (isset($_POST['action'])) {
         $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : 0;
         $building_id = isset($_POST['building_id']) ? (int)$_POST['building_id'] : 0;
         
-        // Handle array of employee IDs
-        $employee_ids_arr = isset($_POST['employee_id']) && is_array($_POST['employee_id']) ? $_POST['employee_id'] : [];
-        $employee_ids_str = mysqli_real_escape_string($conn, implode(',', $employee_ids_arr));
+        // Handle single janitor selection (or array fallback if needed)
+        if (isset($_POST['employee_id']) && is_array($_POST['employee_id'])) {
+            $employee_ids_str = mysqli_real_escape_string($conn, implode(',', $_POST['employee_id']));
+        } else {
+            $employee_ids_str = isset($_POST['employee_id']) ? mysqli_real_escape_string($conn, trim($_POST['employee_id'])) : '';
+        }
         
         $asset_id = isset($_POST['asset_id']) ? (int)$_POST['asset_id'] : 0;
         $amc_ref_no = isset($_POST['amc_ref_no']) ? mysqli_real_escape_string($conn, $_POST['amc_ref_no']) : '';
         $checklist_id = isset($_POST['checklist_id']) ? (int)$_POST['checklist_id'] : 0;
         $frequency = isset($_POST['frequency']) ? mysqli_real_escape_string($conn, $_POST['frequency']) : '';
         $slots = isset($_POST['slots']) ? mysqli_real_escape_string($conn, $_POST['slots']) : '';
+        $slots_detail_raw = isset($_POST['slots_detail']) ? $_POST['slots_detail'] : '';
+        $slots_detail = mysqli_real_escape_string($conn, $slots_detail_raw);
         $start_date = isset($_POST['start_date']) ? mysqli_real_escape_string($conn, $_POST['start_date']) : '';
         $end_date = isset($_POST['end_date']) ? mysqli_real_escape_string($conn, $_POST['end_date']) : '';
+
+        // Validate time rules: End time must be greater than Start time
+        if (!empty($slots_detail_raw)) {
+            $parsed_slots = json_decode($slots_detail_raw, true);
+            if (is_array($parsed_slots)) {
+                foreach ($parsed_slots as $s) {
+                    $st = isset($s['start_time']) ? trim($s['start_time']) : '';
+                    $et = isset($s['end_time']) ? trim($s['end_time']) : '';
+                    if ($st !== '' && $st !== '0' && $et !== '' && $et !== '0') {
+                        if ($et <= $st) {
+                            $slot_label = !empty($s['name']) ? $s['name'] : 'Slot';
+                            echo json_encode([
+                                "status" => "error", 
+                                "message" => "Validation Error: End Time ($et) must be greater than Start Time ($st) for slot '$slot_label'."
+                            ]);
+                            exit;
+                        }
+                    }
+                }
+            }
+        }
 
         if ($assignment_id == 0) {
             $wo_prefix = "THC-JN-WO-";
@@ -137,13 +163,13 @@ if (isset($_POST['action'])) {
             }
             $assignment_ref_no = $wo_prefix . str_pad($next_id, 4, '0', STR_PAD_LEFT);
 
-            $sql = "INSERT INTO tbl_janitor_assignments (assignment_ref_no, customer_id, location_id, building_id, checklist_id, employee_id, asset_id, amc_ref_no, frequency, slots, start_date, end_date) 
-                    VALUES ('$assignment_ref_no', $customer_id, $location_id, $building_id, $checklist_id, '$employee_ids_str', $asset_id, '$amc_ref_no', '$frequency', '$slots', '$start_date', '$end_date')";
+            $sql = "INSERT INTO tbl_janitor_assignments (assignment_ref_no, customer_id, location_id, building_id, checklist_id, employee_id, asset_id, amc_ref_no, frequency, slots, slots_detail, start_date, end_date) 
+                    VALUES ('$assignment_ref_no', $customer_id, $location_id, $building_id, $checklist_id, '$employee_ids_str', $asset_id, '$amc_ref_no', '$frequency', '$slots', '$slots_detail', '$start_date', '$end_date')";
         } else {
             $sql = "UPDATE tbl_janitor_assignments SET 
                     customer_id=$customer_id, location_id=$location_id, building_id=$building_id,
                     checklist_id=$checklist_id, employee_id='$employee_ids_str', asset_id=$asset_id, amc_ref_no='$amc_ref_no',
-                    frequency='$frequency', slots='$slots', start_date='$start_date', end_date='$end_date'
+                    frequency='$frequency', slots='$slots', slots_detail='$slots_detail', start_date='$start_date', end_date='$end_date'
                     WHERE id=$assignment_id";
         }
 
@@ -156,10 +182,11 @@ if (isset($_POST['action'])) {
     else if ($action == 'list_assignments') {
         $data = [];
         $sql = "SELECT a.*, 
-                (SELECT GROUP_CONCAT(employee_name SEPARATOR ', ') FROM tbl_employees WHERE FIND_IN_SET(employee_id, a.employee_id)) as employee_name, 
+                COALESCE(e.employee_name, (SELECT GROUP_CONCAT(employee_name SEPARATOR ', ') FROM tbl_employees WHERE FIND_IN_SET(employee_id, a.employee_id))) as employee_name, 
                 c.checklist_name, 
                 ast.asset_ref_no 
                 FROM tbl_janitor_assignments a
+                LEFT JOIN tbl_employees e ON a.employee_id = e.employee_id
                 LEFT JOIN tbl_janitor_checklists c ON a.checklist_id = c.id
                 LEFT JOIN tbl_assets ast ON a.asset_id = ast.asset_id
                 ORDER BY a.id DESC";

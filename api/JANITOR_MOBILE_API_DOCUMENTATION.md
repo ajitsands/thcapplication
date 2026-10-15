@@ -195,6 +195,10 @@ Lists all work orders scheduled for a specific clicked date, with asset details,
       "building_name": "Tower A",
       "building_code": "F0329",
       "building_address": "Road 24, Block 328",
+      "latitude": "26.186900",
+      "longitude": "50.521030",
+      "building_latitude": "26.186900",
+      "building_longitude": "50.521030",
       "contact_person_name": "John Doe",
       "contact_person_no": "12345678",
       "asset_id": "75",
@@ -210,7 +214,7 @@ Lists all work orders scheduled for a specific clicked date, with asset details,
       "asset_attachment": "https://portal.thcfm.com/httpdocs/images/amc_attachements/default.jpg",
       "amc_ref_no": "AMC0197",
       "frequency": "Daily",
-      "slots": "08:00 - 10:00, 14:00 - 16:00",
+      "slots": "Morning, Afternoon",
       "start_date": "2026-10-01",
       "end_date": "2026-10-31",
       "work_status": "Partially Completed",
@@ -221,7 +225,12 @@ Lists all work orders scheduled for a specific clicked date, with asset details,
       "is_fully_completed": "No",
       "slots_list": [
         {
-          "slot_time": "08:00 - 10:00",
+          "slot_name": "Morning",
+          "slot_time": "Morning",
+          "start_time": "08:00",
+          "end_time": "10:00",
+          "has_time_rule": true,
+          "time_rule": "08:00 - 10:00",
           "is_completed": "Yes",
           "execution_id": 14,
           "execution_status": "Completed",
@@ -229,7 +238,12 @@ Lists all work orders scheduled for a specific clicked date, with asset details,
           "executed_at": "2026-10-13 09:45:00"
         },
         {
-          "slot_time": "14:00 - 16:00",
+          "slot_name": "Afternoon",
+          "slot_time": "Afternoon",
+          "start_time": "0",
+          "end_time": "0",
+          "has_time_rule": false,
+          "time_rule": "No Rule",
           "is_completed": "No",
           "execution_id": null,
           "execution_status": "Pending",
@@ -242,6 +256,26 @@ Lists all work orders scheduled for a specific clicked date, with asset details,
   ]
 }
 ```
+
+#### Response Fields Description
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `building_id` | String / Number | ID of the building where the asset resides |
+| `building_name` | String | Building / Facility name |
+| `building_address`| String | Physical building address |
+| `latitude` / `building_latitude` | String | Building latitude coordinates for geo-fencing & maps |
+| `longitude` / `building_longitude` | String | Building longitude coordinates for geo-fencing & maps |
+| `slots_list` | Array of Objects | Detailed list of configured service slots for this task |
+| `slots_list[].slot_name` | String | Configured name of the slot (e.g. `Morning`, `Afternoon`, `Slot 1`) |
+| `slots_list[].start_time` | String | Start time in `HH:mm` format (or `0` if no time window enforced) |
+| `slots_list[].end_time` | String | End time in `HH:mm` format (or `0` if no time window enforced) |
+| `slots_list[].has_time_rule` | Boolean | `true` if restricted by start/end window; `false` if anytime |
+| `slots_list[].time_rule` | String | Readable time rule string (e.g. `08:00 - 10:00` or `No Rule`) |
+| `slots_list[].is_completed` | String | `Yes` if slot has been executed; otherwise `No` |
+| `slots_list[].execution_id` | Number / null | ID of execution record in `tbl_janitor_execution_log` |
+| `slots_list[].execution_status`| String | `Completed` or `Pending` |
+| `slots_list[].remarks` | String | Janitor notes recorded upon execution completion |
+| `slots_list[].executed_at` | String / null | Timestamp when checklist was executed |
 
 ---
 

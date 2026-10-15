@@ -36,7 +36,7 @@ $OBJ->URLEncode('head=janitor');
     <script src="global_assets/js/plugins/forms/tags/tagsinput.min.js"></script>
 
 	<!-- Custom JS -->
-	<script src="../httpdocs/user_js/janitor_assignment.js"></script>
+	<script src="../httpdocs/user_js/janitor_assignment.js?v=<?= time() ?>"></script>
 </head>
 <body class="navbar-top">
 

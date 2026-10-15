@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card-header bg-white header-elements-inline">
-        <h6 class="card-title">Assign Janitor Checklist</h6>
+        <h6 class="card-title font-weight-semibold"><i class="icon-clipboard3 mr-2 text-primary"></i>Assign Janitor Checklist</h6>
         <div class="header-elements">
             <div class="list-icons">
                 <a class="list-icons-item" data-action="collapse"></a>
@@ -10,19 +10,42 @@
 
     <div class="card-body">
         <style>
-            /* Ensure Select2 multi-select has a visible border in Limitless */
-            .select2-container--default .select2-selection--multiple {
+            .select2-container--default .select2-selection--single {
                 border: 1px solid #ddd !important;
                 border-radius: 4px;
                 min-height: 36px;
+            }
+            .slot-table th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                vertical-align: middle;
+            }
+            .slot-table td {
+                vertical-align: middle;
+            }
+            .slot-start-time, .slot-end-time {
+                min-width: 120px;
+                cursor: pointer;
+            }
+            .slot-time-preview {
+                font-size: 10.5px;
+                margin-top: 2px;
             }
         </style>
         <form id="frmAssignment">
             <input type="hidden" name="action" value="save_assignment">
             <input type="hidden" name="assignment_id" id="assignment_id" value="0">
+            <input type="hidden" name="slots" id="slots_serialized" value="">
+            <input type="hidden" name="slots_detail" id="slots_detail_serialized" value="">
             
+            <!-- Cascading Premise Filters -->
             <fieldset class="mb-3">
-                <legend class="text-uppercase font-size-sm font-weight-bold">Cascading Filters</legend>
+                <legend class="text-uppercase font-size-sm font-weight-bold text-primary border-bottom pb-1 mb-2">
+                    <i class="icon-location4 mr-1"></i> Customer & Location Filters
+                </legend>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -51,8 +74,11 @@
                 </div>
             </fieldset>
 
+            <!-- Contract, Asset, Janitor & Schedule Details -->
             <fieldset class="mb-3">
-                <legend class="text-uppercase font-size-sm font-weight-bold">Assignment Details</legend>
+                <legend class="text-uppercase font-size-sm font-weight-bold text-primary border-bottom pb-1 mb-2">
+                    <i class="icon-calendar5 mr-1"></i> Contract, Asset & Schedule Details
+                </legend>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group mb-2">
@@ -107,7 +133,15 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row mt-2">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Select Janitor <span class="text-danger">*</span></label>
+                            <select class="form-control select2" name="employee_id" id="employee_id" required data-placeholder="-Select Janitor-">
+                                <option value="">-Select Janitor-</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Frequency (e.g. Daily)</label>
@@ -116,12 +150,6 @@
                                 <option value="Weekly">Weekly</option>
                                 <option value="Monthly">Monthly</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Service Slots <small class="text-muted">(comma separated)</small></label>
-                            <input type="text" class="form-control" name="slots" id="slots" placeholder="e.g. Morning, Evening  or  10 AM, 11 AM  or  Slot 1, Slot 2">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -139,22 +167,49 @@
                 </div>
             </fieldset>
 
+            <!-- Service Slots & Execution Time Rules Area -->
             <fieldset class="mb-3">
-                <legend class="text-uppercase font-size-sm font-weight-bold">Assign Janitors</legend>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label>Select Janitors <span class="text-danger">*</span></label>
-                            <select class="form-control select2" name="employee_id[]" id="employee_id" multiple="multiple" required data-placeholder="Select Janitor(s)...">
-                            </select>
+                <legend class="text-uppercase font-size-sm font-weight-bold text-primary border-bottom pb-1 mb-2 d-flex justify-content-between align-items-center">
+                    <span><i class="icon-alarm mr-1"></i> Service Slots & Execution Time Rules</span>
+                    <button type="button" class="btn btn-sm btn-success py-1 px-2" id="btn_add_slot" style="font-size: 11px;">
+                        <i class="icon-plus-circle2 mr-1"></i> Add Another Slot
+                    </button>
+                </legend>
+
+                <div class="alert alert-light border border-info p-2 mb-2" style="font-size: 12px; line-height: 1.5; background-color: #f7fbfe;">
+                    <div class="d-flex">
+                        <i class="icon-info22 text-info mr-2 mt-1 font-size-base"></i>
+                        <div>
+                            <strong>Slot Time Rule Configuration:</strong>
+                            Enter the Slot Name (e.g. <em>Morning</em>, <em>Afternoon</em>, <em>Slot 1</em>). For each slot, select the <strong>Start Time</strong> and <strong>End Time</strong> using the interactive time picker. The system automatically formats and displays the time window in standard 12-hour AM/PM format.
+                            <br>
+                            <span class="text-primary font-weight-semibold"><i class="icon-checkmark-circle mr-1"></i>Rule Policy:</span> Click the <strong>Anytime</strong> button (or leave blank) if <strong>no rule applies</strong>, allowing the janitor to execute that slot at any time of day.
                         </div>
                     </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped slot-table" id="tblSlotsConfig">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;" class="text-center">#</th>
+                                <th style="width: 28%;">Slot Name <span class="text-danger">*</span></th>
+                                <th style="width: 26%;">Start Time <small class="text-muted font-weight-normal d-block">Time Picker or Anytime</small></th>
+                                <th style="width: 26%;">End Time <small class="text-muted font-weight-normal d-block">Time Picker or Anytime</small></th>
+                                <th style="width: 170px;" class="text-center">Rule Status</th>
+                                <th style="width: 60px;" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slots_container">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
                 </div>
             </fieldset>
 
             <div class="text-right">
-                <button type="button" class="btn btn-light" id="btnReset">Reset</button>
-                <button type="submit" class="btn btn-primary" id="btnSaveAssignment">Submit <i class="icon-paperplane ml-2"></i></button>
+                <button type="button" class="btn btn-light" id="btnReset"><i class="icon-reload-alt mr-1"></i> Reset</button>
+                <button type="submit" class="btn btn-primary" id="btnSaveAssignment">Submit <i class="icon-paperplane ml-1"></i></button>
             </div>
         </form>
     </div>
