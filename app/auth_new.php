@@ -72,6 +72,8 @@ class loginController
                     $myObj->employee_id = $this->emp_id;
                     $myObj->employee_name = $this->emp_name;
             	    $myObj->employee_code = $this->emp_code;
+                    $myObj->employee_type = $this->emp_type;
+                    $myObj->employee_type_name = $this->emp_type;
                     $myObj->APIKEY = $this->APIKEY;
 				    echo json_encode($myObj);
                 }
@@ -116,7 +118,7 @@ class loginController
                 $this->emp_status = $row['employee_status'];
 			}
 
-			if (strcasecmp($this->emp_type, 'Technician') === 0 || strcasecmp($this->emp_type, 'Team Leader') === 0 || strcasecmp($this->emp_type, 'Supervisor') === 0)
+			if (strcasecmp($this->emp_type, 'Technician') === 0 || strcasecmp($this->emp_type, 'Team Leader') === 0 || strcasecmp($this->emp_type, 'Supervisor') === 0 || strcasecmp($this->emp_type, 'Janitor') === 0)
 			{
         		if (strcasecmp($this->emp_status, 'Active') === 0)
         		{
@@ -129,7 +131,7 @@ class loginController
 			}
 			else
 			{
-			    return 'Only Technician/Team Leader/Supervisor can login...!'; 
+			    return 'Only Technician/Team Leader/Supervisor/Janitor can login...!'; 
 			}
 		}
 		else
