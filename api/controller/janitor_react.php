@@ -230,7 +230,7 @@ if ($action === 'get_schedules_by_date' || $action === 'get_janitor_assignments'
             LEFT JOIN tbl_janitor_checklists c ON a.checklist_id = c.id
             LEFT JOIN tbl_assets ast ON a.asset_id = ast.asset_id
             LEFT JOIN tbl_building b ON a.building_id = b.building_id
-            LEFT JOIN tbl_customer cust ON a.customer_id = cust.customer_id
+            LEFT JOIN tbl_customers cust ON a.customer_id = cust.customer_id
             LEFT JOIN tbl_location loc ON a.location_id = loc.location_id
             WHERE a.status = 'Active'
               AND (FIND_IN_SET('$employee_id', a.employee_id) OR a.employee_id = '$employee_id' OR a.employee_id = '$emp_code')
@@ -742,7 +742,7 @@ if ($action === 'get_execution_history') {
             LEFT JOIN tbl_janitor_checklists c ON a.checklist_id = c.id
             LEFT JOIN tbl_assets ast ON l.asset_id = ast.asset_id
             LEFT JOIN tbl_building b ON ast.building_id = b.building_id
-            LEFT JOIN tbl_customer cust ON ast.customer_id = cust.customer_id
+            LEFT JOIN tbl_customers cust ON ast.customer_id = cust.customer_id
             LEFT JOIN tbl_location loc ON ast.location_id = loc.location_id
             WHERE $where_sql
             ORDER BY l.executed_date DESC, l.id DESC";
