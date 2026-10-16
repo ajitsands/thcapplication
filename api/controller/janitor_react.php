@@ -207,14 +207,14 @@ if ($action === 'get_schedule_dates' || $action === 'get_calendar_dates') {
 }
 
 // =========================================================================
-// ACTION 3: get_schedules_by_date / get_janitor_assignments
+// ACTION 3: get_schedules_by_date / get_janitor_assignments / get_date_slots
 // =========================================================================
-if ($action === 'get_schedules_by_date' || $action === 'get_janitor_assignments') {
+if ($action === 'get_schedules_by_date' || $action === 'get_janitor_assignments' || $action === 'get_date_slots' || $action === 'get_slots') {
     $emp_code = mysqli_real_escape_string($conn, trim($_REQUEST['emp_code'] ?? ''));
     $emp_id_res = mysqli_query($conn, "SELECT employee_id FROM tbl_employees WHERE employee_code = '$emp_code' LIMIT 1");
     $employee_id = ($emp_id_res && mysqli_num_rows($emp_id_res) > 0) ? (int)mysqli_fetch_row($emp_id_res)[0] : 0;
     
-    $date = mysqli_real_escape_string($conn, trim($_REQUEST['date'] ?? date('Y-m-d')));
+    $date = mysqli_real_escape_string($conn, trim($_REQUEST['date'] ?? $_REQUEST['visit_date'] ?? date('Y-m-d')));
 
     $sql = "SELECT a.id as assignment_id, a.assignment_ref_no, a.checklist_id, a.customer_id, 
                    a.location_id, a.building_id, a.asset_id, a.amc_ref_no, a.frequency, a.slots,
