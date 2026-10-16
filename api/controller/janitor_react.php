@@ -263,6 +263,8 @@ if ($action === 'get_schedules_by_date' || $action === 'get_janitor_assignments'
             $slots_list = [];
             $completed_slots = 0;
 
+            $total_raw_slots = count($raw_slots);
+            $s_idx = 0;
             foreach ($raw_slots as $slot_item) {
                 // Check if executed
                 $exec_sql = "SELECT id, status, remarks, created_at FROM tbl_janitor_execution_log 
@@ -275,8 +277,32 @@ if ($action === 'get_schedules_by_date' || $action === 'get_janitor_assignments'
                     $completed_slots++;
                 }
 
+                // Standard slot timings
+                $computed_start = '08:00';
+                $computed_end = '12:00';
+                if ($total_raw_slots == 1) {
+                    $computed_start = '08:00';
+                    $computed_end = '18:00';
+                } elseif ($total_raw_slots == 2) {
+                    $computed_start = ($s_idx == 0) ? '08:00' : '14:00';
+                    $computed_end = ($s_idx == 0) ? '14:00' : '20:00';
+                } elseif ($total_raw_slots == 3) {
+                    $computed_start = ($s_idx == 0) ? '08:00' : (($s_idx == 1) ? '12:00' : '16:00');
+                    $computed_end = ($s_idx == 0) ? '12:00' : (($s_idx == 1) ? '16:00' : '20:00');
+                } else {
+                    $start_h = 8 + ($s_idx * 2);
+                    $end_h = $start_h + 2;
+                    $computed_start = sprintf('%02d:00', min(22, $start_h));
+                    $computed_end = sprintf('%02d:00', min(23, $end_h));
+                }
+                $s_idx++;
+
                 $slots_list[] = [
                     "slot_time" => $slot_item,
+                    "slot_name" => $slot_item,
+                    "start_time" => $computed_start,
+                    "end_time" => $computed_end,
+                    "has_rule" => 1,
                     "is_completed" => $is_done ? "Yes" : "No",
                     "execution_id" => $exec_row ? (int)$exec_row['id'] : null,
                     "execution_status" => $exec_row ? $exec_row['status'] : "Pending",
@@ -584,6 +610,11 @@ if ($action === 'get_checklist_items') {
                     "executed_at" => $ex['created_at'],
                     "points" => $pts_map
                 ];
+                if (preg_match('/^slot\s*(\d+)$/i', $slot_key, $sm)) {
+                    $executions_by_slot[$sm[1]] = &$executions_by_slot[$slot_key];
+                } elseif (is_numeric($slot_key)) {
+                    $executions_by_slot['Slot ' . $slot_key] = &$executions_by_slot[$slot_key];
+                }
             }
         }
     }
@@ -802,6 +833,51 @@ if ($action === 'submit_checklist_execution') {
             "asset_longitude" => $asset_lng,
             "distance_meters" => $distance_meters
         ]
+    ]);
+    exit;
+}
+
+// =========================================================================
+// ACTION 7.5: get_execution_points / get_execution_details
+// =========================================================================
+if ($action === 'get_execution_points' || $action === 'get_execution_details') {
+    $execution_id = (int)($_REQUEST['execution_id'] ?? 0);
+    if ($execution_id <= 0) {
+        echo json_encode(["status" => "Failed", "api_message" => "EXECUTION ID REQUIRED"]);
+        exit;
+    }
+
+    $exec_q = mysqli_query($conn, "SELECT * FROM tbl_janitor_execution_log WHERE id = $execution_id LIMIT 1");
+    if (!$exec_q || mysqli_num_rows($exec_q) === 0) {
+        echo json_encode(["status" => "Failed", "api_message" => "Execution not found"]);
+        exit;
+    }
+    $exec = mysqli_fetch_assoc($exec_q);
+
+    $pts_q = mysqli_query($conn, "SELECT checklist_item_id, is_completed, remarks, photo_url FROM tbl_janitor_execution_points WHERE execution_id = $execution_id");
+    $pts_map = [];
+    $points_list = [];
+    if ($pts_q) {
+        while ($pt = mysqli_fetch_assoc($pts_q)) {
+            $it_id = (string)$pt['checklist_item_id'];
+            $pt_data = [
+                "item_id" => $it_id,
+                "checklist_item_id" => $it_id,
+                "is_completed" => $pt['is_completed'],
+                "remarks" => $pt['remarks'] ?? "",
+                "photo_url" => $pt['photo_url'] ?? ""
+            ];
+            $pts_map[$it_id] = $pt_data;
+            $points_list[] = $pt_data;
+        }
+    }
+
+    echo json_encode([
+        "status" => "Success",
+        "execution_id" => $execution_id,
+        "execution" => $exec,
+        "points" => $pts_map,
+        "points_list" => $points_list
     ]);
     exit;
 }
