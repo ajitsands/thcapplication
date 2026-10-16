@@ -58,12 +58,18 @@ if (!class_exists('DBConnection')) {
                 if ($is_local) {
                     $con = @mysqli_connect("127.0.0.1", "root", "S@nds1@b", "thcfm_application_db");
                     if (!$con) {
-                        $con = @mysqli_connect("localhost", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
+                        $con = @mysqli_connect("localhost", "root", "S@nds1@b", "db_thc");
+                    }
+                    if (!$con) {
+                        $con = @mysqli_connect("127.0.0.1", "root", "S@nds1@b", "db_thc");
                     }
                 } else {
                     $con = @mysqli_connect("127.0.0.1", "thcfm_application_user", "S@nds1@b", "thcfm_application_db");
                     if (!$con) {
                         $con = @mysqli_connect("localhost", "root", "S@nds1@b", "thcfm_application_db");
+                    }
+                    if (!$con) {
+                        $con = @mysqli_connect("localhost", "root", "S@nds1@b", "db_thc");
                     }
                 }
             }
