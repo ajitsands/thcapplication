@@ -517,6 +517,7 @@ if ($action === 'scan_asset_and_verify_location' || $action === 'scan_asset') {
 if ($action === 'get_checklist_items') {
     $checklist_id = (int)($_REQUEST['checklist_id'] ?? 0);
     $assignment_id = (int)($_REQUEST['assignment_id'] ?? 0);
+    $date = mysqli_real_escape_string($conn, trim($_REQUEST['date'] ?? date('Y-m-d')));
 
     if ($checklist_id <= 0 && $assignment_id > 0) {
         $c_chk = mysqli_query($conn, "SELECT checklist_id FROM tbl_janitor_assignments WHERE id = $assignment_id LIMIT 1");
@@ -554,10 +555,45 @@ if ($action === 'get_checklist_items') {
         }
     }
 
+    // Query executed points for each slot on this date
+    $executions_by_slot = [];
+    if ($assignment_id > 0) {
+        $exec_q = mysqli_query($conn, "SELECT id, executed_slot, status, remarks, created_at FROM tbl_janitor_execution_log WHERE assignment_id = $assignment_id AND executed_date = '$date' ORDER BY id ASC");
+        if ($exec_q) {
+            while ($ex = mysqli_fetch_assoc($exec_q)) {
+                $ex_id = (int)$ex['id'];
+                $slot_key = trim($ex['executed_slot']);
+                $pts_q = mysqli_query($conn, "SELECT checklist_item_id, is_completed, remarks, photo_url FROM tbl_janitor_execution_points WHERE execution_id = $ex_id");
+                $pts_map = [];
+                if ($pts_q) {
+                    while ($pt = mysqli_fetch_assoc($pts_q)) {
+                        $it_id = (string)$pt['checklist_item_id'];
+                        $pts_map[$it_id] = [
+                            "item_id" => $it_id,
+                            "is_completed" => $pt['is_completed'],
+                            "remarks" => $pt['remarks'] ?? "",
+                            "photo_url" => $pt['photo_url'] ?? ""
+                        ];
+                    }
+                }
+                $executions_by_slot[$slot_key] = [
+                    "execution_id" => $ex_id,
+                    "slot" => $slot_key,
+                    "status" => $ex['status'],
+                    "remarks" => $ex['remarks'],
+                    "executed_at" => $ex['created_at'],
+                    "points" => $pts_map
+                ];
+            }
+        }
+    }
+
     echo json_encode([
         "status" => "Success",
         "checklist" => $checklist,
         "data" => $categories_data,
+        "date" => $date,
+        "executions_by_slot" => $executions_by_slot,
         "settings" => [
             "min_radius_meters" => (float)$min_radius_setting,
             "late_time_minutes" => (int)$late_time_setting,
@@ -673,12 +709,58 @@ if ($action === 'submit_checklist_execution') {
         }
     }
 
+    // Parse checklist points & determine whether slot is Completed or Partially Completed
+    $raw_points = $_REQUEST['points'] ?? '[]';
+    $points = is_array($raw_points) ? $raw_points : json_decode($raw_points, true);
+
+    $has_issue = false;
+    $completed_points_count = 0;
+    $total_points_count = 0;
+
+    if (is_array($points)) {
+        $total_points_count = count($points);
+        foreach ($points as $pt) {
+            $is_c = trim($pt['is_completed'] ?? 'Yes');
+            if ($is_c === 'No') {
+                $has_issue = true;
+            } else {
+                $completed_points_count++;
+            }
+        }
+    }
+
+    // "IN the List Of task have Groups Each Group has to Complete all The List , Then Only That Slot cosider s Completed Else Partialy Completed"
+    $base_status = ($has_issue || ($total_points_count > 0 && $completed_points_count < $total_points_count))
+        ? 'Partially Completed'
+        : 'Completed';
+
+    $requested_status = trim($_REQUEST['status'] ?? '');
+    if (stripos($requested_status, 'Late') !== false) {
+        if (preg_match('/Late by [^)]+/', $requested_status, $m)) {
+            $final_status = $base_status . ' (' . $m[0] . ')';
+        } else {
+            $final_status = $base_status . ' (Late)';
+        }
+    } else {
+        $final_status = $base_status;
+    }
+
+    // Clean up any old duplicate execution for this assignment, slot, and date
+    $old_exec = mysqli_query($conn, "SELECT id FROM tbl_janitor_execution_log WHERE assignment_id = $assignment_id AND executed_date = '$date' AND executed_slot = '$slot'");
+    if ($old_exec && mysqli_num_rows($old_exec) > 0) {
+        while ($o = mysqli_fetch_assoc($old_exec)) {
+            $old_id = (int)$o['id'];
+            mysqli_query($conn, "DELETE FROM tbl_janitor_execution_points WHERE execution_id = $old_id");
+            mysqli_query($conn, "DELETE FROM tbl_janitor_execution_log WHERE id = $old_id");
+        }
+    }
+
     // Insert Execution Header
     $sql_hdr = "INSERT INTO tbl_janitor_execution_log (
         assignment_id, employee_id, asset_id, amc_ref_no, executed_date, executed_slot, status, remarks,
         scan_lat, scan_lng, asset_lat, asset_lng, distance_meters, created_at
     ) VALUES (
-        '$assignment_id', '$emp_id', '$asset_id', '$amc_ref_no', '$date', '$slot', '$status', '$remarks',
+        '$assignment_id', '$emp_id', '$asset_id', '$amc_ref_no', '$date', '$slot', '$final_status', '$remarks',
         " . ($scan_lat !== null ? "'$scan_lat'" : "NULL") . ",
         " . ($scan_lng !== null ? "'$scan_lng'" : "NULL") . ",
         " . ($asset_lat !== null ? "'$asset_lat'" : "NULL") . ",
@@ -694,9 +776,6 @@ if ($action === 'submit_checklist_execution') {
     $execution_id = mysqli_insert_id($conn);
 
     // Insert checklist points
-    $raw_points = $_REQUEST['points'] ?? '[]';
-    $points = is_array($raw_points) ? $raw_points : json_decode($raw_points, true);
-
     if (is_array($points)) {
         foreach ($points as $pt) {
             $item_id = (int)($pt['checklist_item_id'] ?? 0);
