@@ -70,8 +70,19 @@ if ($res_set && mysqli_num_rows($res_set) > 0) {
 $action = $_REQUEST['action'] ?? '';
 
 // =========================================================================
-// ACTION 1: janitor_login / get_janitor_profile
+// ACTION 0: get_janitor_settings
 // =========================================================================
+if ($action === 'get_janitor_settings' || $action === 'get_settings') {
+    echo json_encode([
+        "status" => "Success",
+        "settings" => [
+            "min_radius_meters" => (float)$min_radius_setting,
+            "late_time_minutes" => (int)$late_time_setting,
+            "allow_gps_bypass" => $allow_gps_bypass_setting
+        ]
+    ]);
+    exit;
+}
 if ($action === 'janitor_login' || $action === 'get_janitor_profile') {
     $emp_code = mysqli_real_escape_string($conn, trim($_REQUEST['emp_code'] ?? ''));
     if (empty($emp_code)) {
@@ -285,7 +296,12 @@ if ($action === 'get_schedules_by_date' || $action === 'get_janitor_assignments'
         "status" => "Success",
         "date" => $date,
         "total_schedules" => count($data),
-        "data" => $data
+        "data" => $data,
+        "settings" => [
+            "min_radius_meters" => (float)$min_radius_setting,
+            "late_time_minutes" => (int)$late_time_setting,
+            "allow_gps_bypass" => $allow_gps_bypass_setting
+        ]
     ]);
     exit;
 }
@@ -419,7 +435,12 @@ if ($action === 'scan_asset_and_verify_location' || $action === 'scan_asset') {
             "asset_ref_no" => $asset_code,
             "janitor_coordinates" => ["latitude" => $scan_lat, "longitude" => $scan_lng],
             "asset_coordinates" => ["latitude" => $target_lat, "longitude" => $target_lng],
-            "building_coordinates" => ["latitude" => (float)($asset['building_lat'] ?? $target_lat), "longitude" => (float)($asset['building_lng'] ?? $target_lng)]
+            "building_coordinates" => ["latitude" => (float)($asset['building_lat'] ?? $target_lat), "longitude" => (float)($asset['building_lng'] ?? $target_lng)],
+            "settings" => [
+                "min_radius_meters" => (float)$min_radius_setting,
+                "late_time_minutes" => (int)$late_time_setting,
+                "allow_gps_bypass" => $allow_gps_bypass_setting
+            ]
         ]);
         exit;
     }
@@ -434,6 +455,11 @@ if ($action === 'scan_asset_and_verify_location' || $action === 'scan_asset') {
         "api_message" => "Location verified successfully! Attendance marked as Present. You may now proceed with cleaning.",
         "distance_meters" => $distance,
         "allowed_radius_meters" => $allowed_radius,
+        "settings" => [
+            "min_radius_meters" => (float)$min_radius_setting,
+            "late_time_minutes" => (int)$late_time_setting,
+            "allow_gps_bypass" => $allow_gps_bypass_setting
+        ],
         "attendance" => [
             "attendance_id" => $attendance_id,
             "attendance_date" => $today_date,
@@ -516,7 +542,12 @@ if ($action === 'get_checklist_items') {
     echo json_encode([
         "status" => "Success",
         "checklist" => $checklist,
-        "data" => $categories_data
+        "data" => $categories_data,
+        "settings" => [
+            "min_radius_meters" => (float)$min_radius_setting,
+            "late_time_minutes" => (int)$late_time_setting,
+            "allow_gps_bypass" => $allow_gps_bypass_setting
+        ]
     ]);
     exit;
 }
