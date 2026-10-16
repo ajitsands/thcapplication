@@ -155,23 +155,38 @@ if ($action === 'get_schedule_dates' || $action === 'get_calendar_dates') {
                      AND a.start_date <= '$to_date' AND a.end_date >= '$from_date'";
     
     $assign_res = mysqli_query($conn, $assign_sql);
+    $assignments = [];
+    if ($assign_res) {
+        while ($a_row = mysqli_fetch_assoc($assign_res)) {
+            $assignments[] = $a_row;
+        }
+    }
+
     $data = [];
     $marked_dates = [];
 
-    // Simple schedule projection for dates in range
+    // Schedule projection for dates in range
     $cur = strtotime($from_date);
     $end = strtotime($to_date);
     while ($cur <= $end) {
         $d_str = date('Y-m-d', $cur);
         
-        // Count tasks scheduled for this day
-        $exec_cnt = 0;
-        $exec_chk = mysqli_query($conn, "SELECT COUNT(*) FROM tbl_janitor_execution_log WHERE (employee_id = '$employee_id' OR employee_id = '$emp_code') AND executed_date = '$d_str'");
-        if ($exec_chk) {
-            $exec_cnt = (int)mysqli_fetch_row($exec_chk)[0];
+        // Count assignments active on this specific day
+        $tasks_on_day = 0;
+        foreach ($assignments as $a_item) {
+            if ($d_str >= $a_item['start_date'] && $d_str <= $a_item['end_date']) {
+                $tasks_on_day++;
+            }
         }
 
-        if (mysqli_num_rows($assign_res) > 0) {
+        if ($tasks_on_day > 0) {
+            // Count executions for this day
+            $exec_cnt = 0;
+            $exec_chk = mysqli_query($conn, "SELECT COUNT(*) FROM tbl_janitor_execution_log WHERE (employee_id = '$employee_id' OR employee_id = '$emp_code') AND executed_date = '$d_str'");
+            if ($exec_chk) {
+                $exec_cnt = (int)mysqli_fetch_row($exec_chk)[0];
+            }
+
             $status = ($exec_cnt > 0) ? 'Completed' : ($d_str === date('Y-m-d') ? 'Scheduled' : ($d_str < date('Y-m-d') ? 'Pending' : 'Scheduled'));
             $color = ($status === 'Completed') ? '#4CAF50' : (($status === 'Scheduled') ? '#39C0ED' : '#F44336');
 
@@ -180,7 +195,7 @@ if ($action === 'get_schedule_dates' || $action === 'get_calendar_dates') {
                 "date" => $d_str,
                 "status" => $status,
                 "status_color" => $color,
-                "total_tasks" => mysqli_num_rows($assign_res),
+                "total_tasks" => $tasks_on_day,
                 "is_fully_completed" => ($status === 'Completed') ? 'Yes' : 'No'
             ];
 
