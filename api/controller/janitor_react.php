@@ -361,6 +361,18 @@ if ($action === 'scan_asset_and_verify_location' || $action === 'scan_asset') {
         ? (float)$_REQUEST['allowed_radius_meters'] 
         : $min_radius_setting;
 
+    // Strict Date Restriction: Janitors can only scan tasks for today's current date
+    $req_date = trim($_REQUEST['date'] ?? $_REQUEST['visit_date'] ?? $_REQUEST['selected_date'] ?? '');
+    if (!empty($req_date) && $req_date !== date('Y-m-d')) {
+        echo json_encode([
+            "status" => "Failed",
+            "error_code" => "405",
+            "rule_status" => "FAILED",
+            "api_message" => "DATE RESTRICTION: Janitors are only permitted to scan tasks for the current date (" . date('Y-m-d') . "). Scanning for past or future dates (" . $req_date . ") is not allowed."
+        ]);
+        exit;
+    }
+
     if (empty($asset_code)) {
         echo json_encode(["status" => "Failed", "error_code" => "109", "api_message" => "ASSET CODE REQUIRED"]);
         exit;
@@ -700,6 +712,17 @@ if ($action === 'submit_checklist_execution') {
     }
     if (empty($slot)) {
         echo json_encode(["status" => "Failed", "error_code" => "107", "api_message" => "SLOT REQUIRED"]);
+        exit;
+    }
+
+    // Strict Date Restriction: Submissions are only permitted for today's date
+    if ($date !== date('Y-m-d')) {
+        echo json_encode([
+            "status" => "Failed",
+            "error_code" => "405",
+            "rule_status" => "FAILED",
+            "api_message" => "DATE RESTRICTION: Janitors can only execute and submit tasks for today's current date (" . date('Y-m-d') . "). Submissions for past or upcoming dates (" . $date . ") are not permitted."
+        ]);
         exit;
     }
 
