@@ -7,6 +7,14 @@ var JanitorCalendarApp = (function() {
     var calendar = null;
     var currentJanitorId = null;
 
+    function showLoader() {
+        $('#calendar_loader').addClass('is-loading').show();
+    }
+
+    function hideLoader() {
+        $('#calendar_loader').removeClass('is-loading').hide();
+    }
+
     // Initialize Select2 and load Janitors
     function initJanitorDropdown() {
         $('#select_janitor').select2({
@@ -146,7 +154,7 @@ var JanitorCalendarApp = (function() {
                     return;
                 }
 
-                $('#calendar_loader').show();
+                showLoader();
 
                 $.ajax({
                     url: '../controller/janitor/calendar_controller.php',
@@ -159,7 +167,7 @@ var JanitorCalendarApp = (function() {
                     },
                     dataType: 'json',
                     success: function(response) {
-                        $('#calendar_loader').hide();
+                        hideLoader();
                         if (response.status === 'success') {
                             updateKpis(response.kpis);
                             successCallback(response.events || []);
@@ -168,7 +176,7 @@ var JanitorCalendarApp = (function() {
                         }
                     },
                     error: function(xhr, status, error) {
-                        $('#calendar_loader').hide();
+                        hideLoader();
                         console.error('Error fetching calendar events:', error);
                         failureCallback(error);
                     }

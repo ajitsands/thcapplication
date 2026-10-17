@@ -195,10 +195,28 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] == true) {
             font-weight: 600;
             color: #1e293b;
         }
+
+        /* Calendar Loader Overlay */
+        .calendar-loader-overlay {
+            display: none !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.75);
+            z-index: 100;
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        .calendar-loader-overlay.is-loading {
+            display: flex !important;
+        }
     </style>
 
     <!-- Calendar Frontend Script -->
-    <script src="../httpdocs/user_js/janitor_schedule_calendar.js"></script>
+    <script src="../httpdocs/user_js/janitor_schedule_calendar.js?v=<?= time() ?>"></script>
 </head>
 <body class="navbar-top">
 
@@ -365,7 +383,7 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] == true) {
                 <div class="calendar-card position-relative mb-4">
 
                     <!-- Loading overlay -->
-                    <div id="calendar_loader" style="display: none; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.7); z-index: 100; border-radius: 12px;" class="d-flex align-items-center justify-content-center">
+                    <div id="calendar_loader" class="calendar-loader-overlay">
                         <div class="text-center">
                             <i class="icon-spinner2 spinner text-primary icon-2x mb-2"></i>
                             <div class="font-weight-semibold text-muted">Updating Janitor Schedule...</div>
