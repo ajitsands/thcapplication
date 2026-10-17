@@ -741,6 +741,82 @@ if ($action === 'submit_checklist_execution') {
     $asset_id = (int)$assign['asset_id'];
     $amc_ref_no = mysqli_real_escape_string($conn, $assign['amc_ref_no'] ?? '');
 
+    // Slot Window Timing Enforcement
+    // A janitor cannot submit upcoming windows (before start_time) or late slots past end_time + late_time_setting
+    $req_start = trim($_REQUEST['start_time'] ?? '');
+    $req_end = trim($_REQUEST['end_time'] ?? '');
+
+    $slot_start = $req_start;
+    $slot_end = $req_end;
+
+    if (empty($slot_start) || empty($slot_end) || $slot_end === '0') {
+        $raw_slots = array_values(array_filter(array_map('trim', explode(',', $assign['slots'] ?? ''))));
+        $total_raw_slots = count($raw_slots);
+        $found_idx = -1;
+        foreach ($raw_slots as $idx => $r_slot) {
+            if (strcasecmp($r_slot, $slot) === 0 || 
+                strcasecmp("Slot " . $r_slot, $slot) === 0 || 
+                strcasecmp($r_slot, str_replace('Slot ', '', $slot)) === 0) {
+                $found_idx = $idx;
+                break;
+            }
+        }
+        if ($found_idx === -1 && preg_match('/(\d+)/', $slot, $m)) {
+            $slot_num = (int)$m[1];
+            if ($slot_num >= 1 && $slot_num <= $total_raw_slots) {
+                $found_idx = $slot_num - 1;
+            }
+        }
+        if ($found_idx === -1) {
+            $found_idx = 0;
+        }
+
+        if ($total_raw_slots == 1) {
+            $slot_start = '08:00';
+            $slot_end = '18:00';
+        } elseif ($total_raw_slots == 2) {
+            $slot_start = ($found_idx == 0) ? '08:00' : '14:00';
+            $slot_end = ($found_idx == 0) ? '14:00' : '20:00';
+        } elseif ($total_raw_slots == 3) {
+            $slot_start = ($found_idx == 0) ? '08:00' : (($found_idx == 1) ? '12:00' : '16:00');
+            $slot_end = ($found_idx == 0) ? '12:00' : (($found_idx == 1) ? '16:00' : '20:00');
+        } else {
+            $start_h = 8 + ($found_idx * 2);
+            $end_h = $start_h + 2;
+            $slot_start = sprintf('%02d:00', min(22, $start_h));
+            $slot_end = sprintf('%02d:00', min(23, $end_h));
+        }
+    }
+
+    $now_ts = time();
+    $start_ts = strtotime(date('Y-m-d') . ' ' . $slot_start);
+    $end_ts = strtotime(date('Y-m-d') . ' ' . $slot_end);
+    $late_grace_secs = ($late_time_setting > 0 ? $late_time_setting : 15) * 60;
+    $deadline_ts = $end_ts ? ($end_ts + $late_grace_secs) : 0;
+
+    // Rule 1: Upcoming Window Check (cannot submit before start_time)
+    if ($start_ts && $now_ts < $start_ts) {
+        echo json_encode([
+            "status" => "Failed",
+            "error_code" => "406",
+            "rule_status" => "UPCOMING_WINDOW",
+            "api_message" => "SLOT WINDOW RESTRICTION: Upcoming time slot (" . htmlspecialchars($slot) . ") cannot be submitted yet. Scheduled window is " . $slot_start . " - " . $slot_end . ". Submissions open at " . $slot_start . "."
+        ]);
+        exit;
+    }
+
+    // Rule 2: Late Expired Check (cannot submit after end_time + late_time_setting allowed by administrator)
+    if ($deadline_ts && $now_ts > $deadline_ts) {
+        $deadline_str = date('H:i', $deadline_ts);
+        echo json_encode([
+            "status" => "Failed",
+            "error_code" => "407",
+            "rule_status" => "SLOT_EXPIRED",
+            "api_message" => "SLOT WINDOW EXPIRED: This slot (" . htmlspecialchars($slot) . ") ended at " . $slot_end . " (+" . $late_time_setting . "m late allowance). The deadline was " . $deadline_str . ". Submissions beyond the allowed late threshold are strictly prohibited."
+        ]);
+        exit;
+    }
+
     $emp_id = 0;
     $emp_chk = mysqli_query($conn, "SELECT employee_id FROM tbl_employees WHERE employee_code = '$emp_code' LIMIT 1");
     if ($emp_chk && mysqli_num_rows($emp_chk) > 0) {
