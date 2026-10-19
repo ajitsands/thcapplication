@@ -14,6 +14,9 @@ if ($_param !== '') {
 function menuActive($p, $key, $val) {
     return (isset($p[$key]) && $p[$key] == $val);
 }
+
+/* Include THC Brand Logo Resolver */
+require_once(__DIR__ . '/thc_logo.php');
 ?>
 <!-- ======================================================
      HORIZONTAL MAIN NAVIGATION BAR
@@ -23,8 +26,8 @@ function menuActive($p, $key, $val) {
 
     <!-- Brand logo -->
     <a class="thc-topnav-brand" href="dashboard.php?wo=m&param=<?= $OBJ->URLEncode('title=dashboard') ?>">
-      <img src="global_assets/images/final_logo2.png" 
-           onerror="if(!this.dataset.retry){this.dataset.retry=1;this.src='../httpdocs/images/final_logo2.png';}else if(this.dataset.retry==1){this.dataset.retry=2;this.src='global_assets/images/logo_light.png';}" 
+      <img src="<?= $thc_logo_src ?>" 
+           onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='global_assets/images/backgrounds/final_logo2.png';}else if(this.dataset.fb==1){this.dataset.fb=2;this.src='../httpdocs/images/final_logo2.png';}else if(this.dataset.fb==2){this.dataset.fb=3;this.src='<?= $thc_logo_base64 ?>';}" 
            alt="THC Logo" 
            class="brand-logo-img">
     </a>
