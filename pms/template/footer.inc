@@ -18,5 +18,24 @@
 						<li class="nav-item"><a href="" class="navbar-nav-link font-weight-semibold"><span class="text-pink-400"><i class="icon-cart2 mr-2"></i> Purchase</span></a></li> -->
 					</ul>
 				</div>
-			</div>
-			
+			<script type="text/javascript">
+			// THC-FM Persistent Session Heartbeat: Keeps session active while browser tab is open
+			(function() {
+				var heartbeatInterval = 300000; // 5 minutes
+				setInterval(function() {
+					if (typeof $ !== 'undefined') {
+						$.ajax({
+							url: '../controller/login/session_heartbeat.php',
+							type: 'GET',
+							cache: false,
+							dataType: 'json',
+							success: function(res) {
+								if (res && res.status === 'expired') {
+									window.location.href = 'login.php';
+								}
+							}
+						});
+					}
+				}, heartbeatInterval);
+			})();
+			</script>

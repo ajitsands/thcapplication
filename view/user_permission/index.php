@@ -1,5 +1,5 @@
 <?php 
-session_start();
+require_once __DIR__ . '/../../model/common/session_init.php';
 //$_SESSION['USERROLLID'] = 2; // For V1 you have to Pass RoleId from the User Table , for V2 You have to pass User ID to this Session
 
 include_once('permission_class/class_permission.php');

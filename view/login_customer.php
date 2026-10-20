@@ -1,4 +1,15 @@
+<?php
+require_once __DIR__ . '/../model/common/session_init.php';
+thc_session_start();
 
+if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === "true") {
+    require_once __DIR__ . '/template/includes/en_de_header.inc';
+    $OBJ = new URLEncription();
+    $varEncode = $OBJ->URLEncode('title=dashboard');
+    header("Location: dashboard_customer.php?param=" . $varEncode);
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

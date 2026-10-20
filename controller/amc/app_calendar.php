@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../model/common/session_init.php';
 //load.php
 
 $is_local = (stripos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || stripos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false);

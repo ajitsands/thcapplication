@@ -7,6 +7,16 @@ DirectoryIndex index.php index.html
     RewriteBase /
 </IfModule>
 
+# THC-FM Persistent Sessions (30 days)
+<IfModule mod_php7.c>
+    php_value session.gc_maxlifetime 2592000
+    php_value session.cookie_lifetime 2592000
+</IfModule>
+<IfModule mod_php.c>
+    php_value session.gc_maxlifetime 2592000
+    php_value session.cookie_lifetime 2592000
+</IfModule>
+
 # Prevent viewing sensitive files
 <FilesMatch "^\.">
     Order allow,deny

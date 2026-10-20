@@ -1,11 +1,5 @@
 <?php
-if (session_status() == PHP_SESSION_NONE) {
-    $savePath = session_save_path();
-    if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
-        session_save_path(sys_get_temp_dir());
-    }
-    session_start();
-}
+require_once __DIR__ . '/session_init.php';
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
 
 include_once __DIR__ . "/../db_connection/connection.php" ;
@@ -279,13 +273,7 @@ class CommonModel extends FunctionDefinitions
 			   
 				if($password==$user_password)
 				{
-					if (session_status() == PHP_SESSION_NONE) {
-						$savePath = session_save_path();
-						if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
-							session_save_path(sys_get_temp_dir());
-						}
-						session_start();
-					}
+					thc_session_start();
 			  	  
 									
 									$_SESSION["loggedin"] = "true";
@@ -367,13 +355,7 @@ class CommonModel extends FunctionDefinitions
 			   
 				if($password==$user_password)
 				{
-					if (session_status() == PHP_SESSION_NONE) {
-						$savePath = session_save_path();
-						if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
-							session_save_path(sys_get_temp_dir());
-						}
-						session_start();
-					}
+					thc_session_start();
 					
 					//$permissionSql = "SELECT id FROM users WHERE username='".$userName."' AND password='".$password."'";
 					$permissionSql = "SELECT id FROM users WHERE username='".$userName."' ";
@@ -455,13 +437,7 @@ class CommonModel extends FunctionDefinitions
 			   
 				if($password==$user_password)
 				{
-					if (session_status() == PHP_SESSION_NONE) {
-						$savePath = session_save_path();
-						if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
-							session_save_path(sys_get_temp_dir());
-						}
-						session_start();
-					}
+					thc_session_start();
 									
 									$_SESSION["loggedin"] = "true";
 								    $_SESSION["username"] = $username;
@@ -545,10 +521,16 @@ class CommonModel extends FunctionDefinitions
     
 	public function SignOut()
 	{
-	
-		session_start();
+		thc_session_start();
 		$_SESSION = array();
-		session_destroy();
+		if (ini_get("session.use_cookies")) {
+			$params = session_get_cookie_params();
+			setcookie(session_name(), '', time() - 42000,
+				$params["path"], $params["domain"],
+				$params["secure"], $params["httponly"]
+			);
+		}
+		@session_destroy();
 	}
 
    public function ExecuteProcedure($SQL)

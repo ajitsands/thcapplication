@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 echo "<h2>PHP " . phpversion() . " - Dashboard Diagnostic</h2>";
 
 // Simulate session (fake login)
-if (session_status() == PHP_SESSION_NONE) session_start();
+if (session_status() == PHP_SESSION_NONE) require_once __DIR__ . '/../model/common/session_init.php';
 $_SESSION['loggedin'] = true;
 $_SESSION['username'] = 'TEST';
 $_SESSION['user_id'] = 1;

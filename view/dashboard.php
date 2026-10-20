@@ -3,13 +3,7 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
 
-if (session_status() == PHP_SESSION_NONE) {
-    $savePath = session_save_path();
-    if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
-        session_save_path(sys_get_temp_dir());
-    }
-    session_start();
-}
+require_once __DIR__ . '/../model/common/session_init.php';
 if (!empty($_SESSION["loggedin"]) && $_SESSION["loggedin"] == "true")
 {
 

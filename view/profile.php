@@ -1,5 +1,5 @@
 <?PHP
-session_start();
+require_once __DIR__ . '/../model/common/session_init.php';
 include('template/includes/en_de_header.inc');
 $OBJ = new URLEncription();
 $OBJ->URLEncode('head=dashboard');

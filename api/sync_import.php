@@ -38,9 +38,7 @@ $is_cli = (php_sapi_name() === 'cli');
 $provided_token = $_GET['token'] ?? $_POST['token'] ?? '';
 $is_admin_session = false;
 
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../model/common/session_init.php';
 if (!empty($_SESSION['username']) || !empty($_SESSION['loggedin'])) {
     $is_admin_session = true;
 }

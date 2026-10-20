@@ -1,7 +1,5 @@
 <?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../model/common/session_init.php';
 require_once __DIR__ . '/../../model/common/common_functions.php';
 
 

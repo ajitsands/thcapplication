@@ -2,7 +2,7 @@
 
 require ('../../model/common/common_functions.php');
 
-session_start();
+require_once __DIR__ . '/../../model/common/session_init.php';
 
 
 class apartmentController

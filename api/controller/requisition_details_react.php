@@ -1,4 +1,4 @@
-<?PHP session_start(); ?>
+<?PHP require_once __DIR__ . '/../../model/common/session_init.php'; ?>
 <?php
 require ('../common/common_functions.php');
 include('../../view/template/includes/en_de_header.inc');

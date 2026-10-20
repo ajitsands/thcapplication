@@ -1,5 +1,5 @@
 <?PHP
-session_start();
+require_once __DIR__ . '/../../model/common/session_init.php';
 include(__DIR__ . '/../../model/db_connection/connection.php');
 $DBConn = new DBConnection();
 $varDBConnection = $DBConn->ConnectToMYSQL();
