@@ -169,5 +169,10 @@ class loginController
 
 }
 
-$obj = new loginController();
-$obj->RequestAccept($obj->actionevents);
+try {
+    $obj = new loginController();
+    $obj->RequestAccept($obj->actionevents);
+} catch (Throwable $e) {
+    echo "Login Error: " . $e->getMessage();
+}
+

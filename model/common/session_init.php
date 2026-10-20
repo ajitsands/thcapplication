@@ -7,6 +7,8 @@
  * explicitly click Logout or session values are purposefully destroyed.
  */
 
+require_once __DIR__ . '/json_polyfill.php';
+
 if (!function_exists('thc_session_start')) {
     function thc_session_start() {
         // 30 days session lifetime in seconds (30 * 24 * 60 * 60)

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/json_polyfill.php';
 require_once __DIR__ . '/session_init.php';
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
 
