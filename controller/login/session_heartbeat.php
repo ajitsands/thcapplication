@@ -12,7 +12,13 @@ if (!headers_sent()) {
 
 require_once __DIR__ . '/../../model/common/session_init.php';
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== 'true') {
+$isLoggedIn = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === 'true';
+$username = $_SESSION['username'] ?? '';
+
+// Close session explicitly before sending response
+@session_write_close();
+
+if (!$isLoggedIn) {
     echo json_encode([
         'status'  => 'expired',
         'message' => 'Session has expired or was terminated.'
@@ -22,6 +28,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== 'true') {
 
 echo json_encode([
     'status'   => 'active',
-    'username' => $_SESSION['username'] ?? '',
+    'username' => $username,
     'time'     => date('Y-m-d H:i:s')
 ]);
+

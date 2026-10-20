@@ -20,16 +20,35 @@ if (!function_exists('thc_session_start')) {
 
                 // Dedicated session directory in project root to prevent OS temp cleanup
                 $sessionDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'sessions';
+                $useProjectSessionDir = false;
+
                 if (!is_dir($sessionDir)) {
                     @mkdir($sessionDir, 0777, true);
+                    @chmod($sessionDir, 0777);
                 }
 
-                if (is_dir($sessionDir) && is_writable($sessionDir)) {
+                if (is_dir($sessionDir)) {
+                    // Physical write test to verify Apache/PHP user can create files here
+                    $testFile = $sessionDir . DIRECTORY_SEPARATOR . '.test_' . uniqid('', true);
+                    if (@file_put_contents($testFile, '1') !== false) {
+                        @unlink($testFile);
+                        $useProjectSessionDir = true;
+                    }
+                }
+
+                if ($useProjectSessionDir) {
                     session_save_path($sessionDir);
                 } else {
-                    $savePath = session_save_path();
-                    if (empty($savePath) || !is_dir($savePath) || !is_writable($savePath)) {
-                        session_save_path(sys_get_temp_dir());
+                    // Keep server's configured session_save_path if it is already valid and writable
+                    $currentPath = session_save_path();
+                    $isCurrentValid = !empty($currentPath) && @is_dir($currentPath);
+                    if (!$isCurrentValid) {
+                        $tempDir = sys_get_temp_dir();
+                        $testTemp = $tempDir . DIRECTORY_SEPARATOR . '.test_' . uniqid('', true);
+                        if (@file_put_contents($testTemp, '1') !== false) {
+                            @unlink($testTemp);
+                            session_save_path($tempDir);
+                        }
                     }
                 }
 
@@ -53,8 +72,10 @@ if (!function_exists('thc_session_start')) {
             @session_start();
         }
 
-        // Rolling renewal: refresh cookie expiration on each active request
-        if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
+        // Rolling renewal: refresh cookie expiration once per active request
+        static $cookieRenewed = false;
+        if (!$cookieRenewed && session_status() === PHP_SESSION_ACTIVE && !headers_sent() && session_id() !== '') {
+            $cookieRenewed = true;
             $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                 || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
 
@@ -76,3 +97,14 @@ if (!function_exists('thc_session_start')) {
 
 // Auto-initialize persistent session
 thc_session_start();
+
+// Ensure clean session shutdown without unhandled fatal errors
+if (!defined('THC_SESSION_SHUTDOWN_REGISTERED')) {
+    define('THC_SESSION_SHUTDOWN_REGISTERED', true);
+    register_shutdown_function(function() {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            @session_write_close();
+        }
+    });
+}
+
