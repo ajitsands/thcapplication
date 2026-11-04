@@ -218,7 +218,7 @@ if ($isLoggedIn) {
         }
 
         /* Modernized Form Inputs & Selects */
-        input, select, textarea {
+        input:not([type="checkbox"]):not([type="radio"]), select, textarea {
             font-family: 'Outfit', sans-serif !important;
             border-radius: 10px !important;
             border: 1.5px solid #c2daeb !important;
@@ -228,27 +228,78 @@ if ($isLoggedIn) {
             color: var(--q-text-dark) !important;
             transition: all 0.2s ease !important;
         }
-        input:focus, select:focus, textarea:focus {
+        input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
             border-color: var(--q-navy-main) !important;
             box-shadow: 0 0 0 4px rgba(123, 189, 232, 0.3) !important;
             outline: none !important;
         }
 
-        /* Filter Toolbar Card */
-        .card.bar {
+        /* Filter Toolbar Card - Enforced Single Horizontal Row */
+        .card.bar,
+        .filter-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            gap: 10px !important;
+            padding: 12px 18px !important;
             background: #ffffff !important;
             border: 1px solid var(--q-border) !important;
-            border-radius: 14px !important;
-            padding: 16px 20px !important;
-            box-shadow: 0 4px 16px rgba(0, 29, 57, 0.05) !important;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
+            border-radius: 12px !important;
+            box-shadow: 0 3px 12px rgba(0, 29, 57, 0.05) !important;
             margin-bottom: 22px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
-        .card.bar input { flex: 1.5; min-width: 220px; }
-        .card.bar select { flex: 1; min-width: 160px; max-width: 210px; }
+        .card.bar input#fq,
+        .filter-toolbar input#fq {
+            flex: 2 1 200px !important;
+            min-width: 180px !important;
+            max-width: 320px !important;
+            height: 38px !important;
+            margin: 0 !important;
+            padding: 7px 14px !important;
+            font-size: 13.5px !important;
+        }
+        .card.bar select,
+        .filter-toolbar select {
+            flex: 1 1 135px !important;
+            min-width: 125px !important;
+            max-width: 175px !important;
+            height: 38px !important;
+            margin: 0 !important;
+            padding: 7px 12px !important;
+            font-size: 13px !important;
+            background-color: #ffffff !important;
+        }
+        .card.bar label,
+        .filter-toolbar label {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 7px !important;
+            margin: 0 0 0 auto !important;
+            padding: 0 4px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: var(--q-text-muted) !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            height: 38px !important;
+        }
+        .card.bar label input[type="checkbox"],
+        .filter-toolbar label input[type="checkbox"] {
+            width: 16px !important;
+            height: 16px !important;
+            min-width: 16px !important;
+            max-width: 16px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            accent-color: var(--q-navy-main) !important;
+            cursor: pointer !important;
+            flex: none !important;
+        }
 
         /* KPI Metric Cards matching THC Dashboard Aesthetic */
         .kpis {
@@ -635,8 +686,22 @@ if ($isLoggedIn) {
         @media (max-width: 991px) {
             .two { grid-template-columns: 1fr; }
             #pv { position: static; max-height: none; }
-            .card.bar { flex-direction: column; align-items: stretch; }
-            .card.bar input, .card.bar select { max-width: 100%; width: 100%; }
+        }
+        @media (max-width: 767px) {
+            .card.bar label, .filter-toolbar label {
+                margin: 0 !important;
+            }
+        }
+        @media (max-width: 575px) {
+            .card.bar, .filter-toolbar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+            .card.bar input#fq, .card.bar select,
+            .filter-toolbar input#fq, .filter-toolbar select {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
         }
     </style>
 </head>
@@ -687,6 +752,13 @@ if ($isLoggedIn) {
         <!-- /content -->
 
         <?PHP include_once('template/reset_password_modal.php'); ?>
+
+        <!-- Global permissions fallback to prevent permission.js ReferenceError -->
+        <script>
+            if (typeof permissions === 'undefined') {
+                var permissions = [];
+            }
+        </script>
 
         <!-- Footer -->
         <?PHP include_once('template/footer.inc'); ?>

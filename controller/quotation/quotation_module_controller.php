@@ -390,7 +390,22 @@ class QuotationModuleController
 
     public function handleRequest()
     {
-        $action = isset($_REQUEST['action']) ? trim($_REQUEST['action']) : '';
+        $action = '';
+        if (!empty($_GET['action'])) {
+            $action = trim($_GET['action']);
+        } elseif (!empty($_POST['action'])) {
+            $action = trim($_POST['action']);
+        } elseif (!empty($_REQUEST['action'])) {
+            $action = trim($_REQUEST['action']);
+        } else {
+            $rawInput = @file_get_contents('php://input');
+            if (!empty($rawInput)) {
+                $jsonInput = @json_decode($rawInput, true);
+                if (!empty($jsonInput['action'])) {
+                    $action = trim($jsonInput['action']);
+                }
+            }
+        }
 
         try {
             switch ($action) {
