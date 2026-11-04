@@ -412,12 +412,13 @@ if ($isLoggedIn) {
         .lh {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
-            color: #2a2a72;
-            font-size: 11px;
+            margin-bottom: 16px;
         }
-        .logo { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
+        .lh img {
+            max-height: 70px;
+            height: auto;
+            display: block;
+        }
         .sheet ol { padding-left: 20px; margin: 6px 0; }
         .sheet ol li { margin-bottom: 2px; }
         .sg {
