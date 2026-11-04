@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../../model/common/session_init.php';
 require_once __DIR__ . '/../../model/db_connection/connection.php';
+require_once __DIR__ . '/../template/thc_logo.php';
 
 $quoteId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $refNo = isset($_GET['ref_no']) ? trim($_GET['ref_no']) : '';
@@ -193,8 +194,10 @@ $total = (float)$q['total_incl_vat'];
 
     <div class="container">
         <div class="lh">
-            <b class="logo">thc.</b>
-            <span>FACILITY<br>MANAGEMENT</span>
+            <img src="<?= $thc_logo_src ?>" 
+                 onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='../global_assets/images/backgrounds/final_logo2.png';}else if(this.dataset.fb==1){this.dataset.fb=2;this.src='../../httpdocs/images/final_logo2.png';}else if(this.dataset.fb==2){this.dataset.fb=3;this.src='<?= $thc_logo_base64 ?>';}" 
+                 alt="THC Facility Management" 
+                 style="height:48px;max-width:230px;object-fit:contain;border-radius:3px;display:block;">
         </div>
 
         <p>
@@ -303,3 +306,4 @@ $total = (float)$q['total_incl_vat'];
 
 </body>
 </html>
+

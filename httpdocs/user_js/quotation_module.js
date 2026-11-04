@@ -107,8 +107,10 @@
         return `
         <div class="sheet">
             <div class="lh">
-                <b class="logo">thc.</b>
-                <span>FACILITY<br>MANAGEMENT</span>
+                <img src="global_assets/images/backgrounds/final_logo2.png" 
+                     onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='../httpdocs/images/final_logo2.png';}" 
+                     alt="THC Facility Management" 
+                     style="height:46px;max-width:220px;object-fit:contain;border-radius:3px;display:block;">
             </div>
             
             <p>
@@ -1126,3 +1128,4 @@
         loadInitialData();
     }
 })();
+

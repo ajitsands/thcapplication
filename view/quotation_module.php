@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../model/common/session_init.php';
+require_once __DIR__ . '/template/thc_logo.php';
 
 // Check user session
 $isLoggedIn = isset($_SESSION["loggedin"]) && ($_SESSION["loggedin"] === "true" || $_SESSION["loggedin"] === true);
@@ -125,14 +126,26 @@ if ($isLoggedIn) {
             flex-direction: column;
             border-right: 1px solid var(--line);
         }
-        aside b.brand-title {
-            color: #fff;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-            margin: 0 8px 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .brand-logo-container {
+            margin: 2px 2px 14px 2px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .brand-logo-container a {
+            display: block;
+            text-decoration: none;
+        }
+        .app-logo-img {
+            width: 100%;
+            max-width: 196px;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .app-logo-img:hover {
+            opacity: 0.94;
+            transform: scale(1.01);
         }
         aside a[data-v] {
             padding: 9px 12px;
@@ -467,7 +480,8 @@ if ($isLoggedIn) {
                 align-items: center;
             }
             .portal-bar { display: none; }
-            aside b.brand-title { width: 100%; margin: 0 4px 6px; }
+            .brand-logo-container { width: 100%; margin: 0 4px 8px; border-bottom: none; }
+            .app-logo-img { max-width: 160px; }
             aside small { display: none; }
             #us { width: 100%; }
             main { padding: 14px; }
@@ -485,10 +499,14 @@ if ($isLoggedIn) {
             <span style="font-size:10px;color:#6b7c9f;">v2.0</span>
         </div>
 
-        <b class="brand-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            THC Facility Mgmt
-        </b>
+        <div class="brand-logo-container">
+            <a href="dashboard.php" title="THC Facility Management Portal">
+                <img src="<?= $thc_logo_src ?>" 
+                     onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='global_assets/images/backgrounds/final_logo2.png';}else if(this.dataset.fb==1){this.dataset.fb=2;this.src='../httpdocs/images/final_logo2.png';}else if(this.dataset.fb==2){this.dataset.fb=3;this.src='<?= $thc_logo_base64 ?>';}" 
+                     alt="THC Facility Management" 
+                     class="app-logo-img">
+            </a>
+        </div>
 
         <a data-v="log" class="on">Quotation log</a>
         <a data-v="A">+ New quote · AMC</a>
@@ -529,3 +547,4 @@ if ($isLoggedIn) {
 
 </body>
 </html>
+
