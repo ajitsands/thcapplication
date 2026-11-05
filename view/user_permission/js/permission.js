@@ -621,6 +621,12 @@ $(document).ready(function() {
 	var eventJanitorExecutionReport = document.querySelectorAll(".classJanitorExecutionReport");
 	eventJanitorExecutionReport.forEach(function(obj) {if (!hasPermission("JanitorExecutionReport")) {obj.style.display = "none";}});
 	
+	var eventJanitorSettings = document.querySelectorAll(".classJanitorSettings");
+	eventJanitorSettings.forEach(function(obj) {if (!hasPermission("JanitorModule") && !hasPermission("JanitorSettings")) {obj.style.display = "none";}});
+	
+	var eventJanitorCalendar = document.querySelectorAll(".classJanitorCalendar");
+	eventJanitorCalendar.forEach(function(obj) {if (!hasPermission("JanitorModule") && !hasPermission("JanitorCalendar")) {obj.style.display = "none";}});
+	
 	// adding_new_permission
 	
 		// Donot Remove The above line 
