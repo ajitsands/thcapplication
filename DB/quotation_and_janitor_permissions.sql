@@ -22,6 +22,9 @@ UPDATE `module_permissions`
 SET `module_status` = 'No'
 WHERE `module_id` = 16 AND `module_permission_name` IN ('CreateQuotation', 'ViewQuotation', 'ViewQuotationRevision', 'QuotationModule');
 
+DELETE FROM `role_permissions_v1`
+WHERE `module_id` = 16 AND `sub_module_name` = 'QuotationModule';
+
 -- Ensure Janitor Settings & Calendar are hidden from permission settings
 UPDATE `module_permissions`
 SET `module_status` = 'No'

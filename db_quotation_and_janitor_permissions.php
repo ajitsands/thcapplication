@@ -35,8 +35,9 @@ if ($chk && mysqli_num_rows($chk) > 0) {
 }
 
 // 2. Hide old/unneeded Quotation sub-permissions so only 1 permission shows in tree
-mysqli_query($conn, "UPDATE module_permissions SET module_status = 'No' WHERE module_id = 16 AND module_permission_name IN ('CreateQuotation', 'ViewQuotation', 'ViewQuotationRevision')");
-echo "[+] module_permissions: Cleaned up old sub-menus (CreateQuotation, ViewQuotation, ViewQuotationRevision set to No)\n";
+mysqli_query($conn, "UPDATE module_permissions SET module_status = 'No' WHERE module_id = 16 AND module_permission_name IN ('CreateQuotation', 'ViewQuotation', 'ViewQuotationRevision', 'QuotationModule')");
+mysqli_query($conn, "DELETE FROM role_permissions_v1 WHERE module_id = 16 AND sub_module_name = 'QuotationModule'");
+echo "[+] module_permissions: Cleaned up old sub-menus (CreateQuotation, ViewQuotation, ViewQuotationRevision, QuotationModule set to No)\n";
 
 // Hide Janitor Settings and Janitor Calendar from permission tree
 mysqli_query($conn, "UPDATE module_permissions SET module_status = 'No' WHERE module_id = 21 AND module_permission_name IN ('JanitorSettings', 'JanitorCalendar')");
