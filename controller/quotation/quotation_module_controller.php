@@ -136,12 +136,8 @@ class QuotationModuleController
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             @mysqli_query($this->db, $itemsSql);
 
-            // Check if seeded
-            $checkRes = @mysqli_query($this->db, "SELECT COUNT(*) as cnt FROM tbl_quotations_v2");
-            $row = $checkRes ? mysqli_fetch_assoc($checkRes) : null;
-            if (!$row || (int)$row['cnt'] === 0) {
-                $this->seedInitialData();
-            }
+            // Do not automatically re-seed demo data if the administrator clears the table.
+            // Demo data can be manually seeded by visiting with ?action=seed_demo_data if needed.
         } else {
             if (!file_exists($this->jsonFallbackFile)) {
                 $this->seedInitialDataJson();
@@ -451,6 +447,11 @@ class QuotationModuleController
 
                 case 'get_performance':
                     $this->getPerformance();
+                    break;
+
+                case 'seed_demo_data':
+                    $this->seedInitialData();
+                    echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
                     break;
 
                 default:
