@@ -336,15 +336,24 @@ if ($isLoggedIn) {
             background: #f8fafc !important;
             border-bottom: 1px solid #e2eef7 !important;
         }
+        .select2-search--dropdown:after,
+        .select2-search--dropdown:before,
+        .select2-search:after,
+        .select2-search:before {
+            content: none !important;
+            display: none !important;
+        }
         .select2-container--default .select2-search--dropdown .select2-search__field {
             border: 1.5px solid #c2daeb !important;
             border-radius: 8px !important;
             padding: 7px 12px !important;
+            padding-left: 12px !important;
+            background-image: none !important;
             font-size: 13.5px !important;
             font-family: 'Outfit', sans-serif !important;
             outline: none !important;
             width: 100% !important;
-            background: #ffffff !important;
+            background-color: #ffffff !important;
             box-sizing: border-box !important;
         }
         .select2-container--default .select2-search--dropdown .select2-search__field:focus {
