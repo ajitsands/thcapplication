@@ -11,10 +11,11 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
 require_once __DIR__ . '/../model/common/session_init.php';
 require_once __DIR__ . '/template/thc_logo.php';
 include_once __DIR__ . '/template/includes/en_de_header.inc';
+include_once __DIR__ . '/user_permission/permission_class/class_permission.php';
 
 if (class_exists('URLEncription')) {
     $OBJ = new URLEncription();
-    $OBJ->URLEncode('head=quotations');
+    $OBJ->URLEncode('head=quotation');
 }
 
 // User session handling
@@ -22,6 +23,8 @@ $isLoggedIn = isset($_SESSION["loggedin"]) && ($_SESSION["loggedin"] === "true" 
 $currentUserCode = "MA";
 $currentUserName = "Mohammed Ali";
 $currentUserType = "Operations Manager";
+
+$hasQuotationAccess = true;
 
 if ($isLoggedIn) {
     if (!empty($_SESSION["username"])) {
@@ -32,6 +35,21 @@ if ($isLoggedIn) {
     }
     if (!empty($_SESSION["user_type"])) {
         $currentUserType = $_SESSION["user_type"];
+    }
+
+    // Role-based quotation permission check
+    if (isset($_SESSION['USERROLLID'])) {
+        $userRoleId = (int)$_SESSION['USERROLLID'];
+        // Administrator (Role 1) always has full privilege
+        if ($userRoleId !== 1 && isset($obj) && method_exists($obj, 'getUserPermissionsByUserID')) {
+            $userPerms = $obj->getUserPermissionsByUserID($userRoleId);
+            if (is_array($userPerms) && !empty($userPerms)) {
+                $hasQuotationAccess = in_array('Quotation', $userPerms) ||
+                                      in_array('QuotationModule', $userPerms) ||
+                                      in_array('ViewQuotation', $userPerms) ||
+                                      in_array('CreateQuotation', $userPerms);
+            }
+        }
     }
 }
 ?>
@@ -718,35 +736,51 @@ if ($isLoggedIn) {
         <!-- Content Area -->
         <div class="content pt-0">
 
-            <!-- Quotation Sub-Navigation Header Bar -->
-            <div class="card thc-quotation-nav-card p-2 mb-3">
-                <aside class="thc-subnav-aside">
-                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
-                        <a data-v="log" class="thc-subnav-btn on">
-                            <i class="icon-list3"></i> Quotation Log
-                        </a>
-                        <a data-v="A" class="thc-subnav-btn">
-                            <i class="icon-plus2"></i> New Quote · AMC
-                        </a>
-                        <a data-v="N" class="thc-subnav-btn">
-                            <i class="icon-plus2"></i> New Quote · Non-AMC
-                        </a>
-                        <a data-v="perf" class="thc-subnav-btn">
-                            <i class="icon-stats-growth"></i> Performance
+            <?php if (!$hasQuotationAccess): ?>
+                <!-- Access Restricted Notice -->
+                <div class="card p-4 text-center mt-4" style="max-width:540px;margin:40px auto;border-radius:14px;border:1px solid #d4e4f0;box-shadow:0 4px 18px rgba(0,29,57,0.06);">
+                    <div style="width:68px;height:68px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:30px;">
+                        <i class="icon-lock5"></i>
+                    </div>
+                    <h3 class="font-weight-bold" style="color:var(--q-navy-dark);margin-bottom:8px;">Access Restricted</h3>
+                    <p class="text-muted" style="font-size:13.5px;line-height:1.6;">You do not have the required permissions to access the Quotation Module. Please contact your system administrator to assign the Quotation privilege.</p>
+                    <div class="mt-3">
+                        <a href="dashboard.php" class="btn" style="background:var(--q-navy-main);color:#ffffff;border-radius:8px;font-weight:600;padding:8px 20px;">
+                            <i class="icon-home2 mr-1"></i> Return to Dashboard
                         </a>
                     </div>
+                </div>
+            <?php else: ?>
+                <!-- Quotation Sub-Navigation Header Bar -->
+                <div class="card thc-quotation-nav-card p-2 mb-3">
+                    <aside class="thc-subnav-aside">
+                        <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                            <a data-v="log" class="thc-subnav-btn on">
+                                <i class="icon-list3"></i> Quotation Log
+                            </a>
+                            <a data-v="A" class="thc-subnav-btn">
+                                <i class="icon-plus2"></i> New Quote · AMC
+                            </a>
+                            <a data-v="N" class="thc-subnav-btn">
+                                <i class="icon-plus2"></i> New Quote · Non-AMC
+                            </a>
+                            <a data-v="perf" class="thc-subnav-btn">
+                                <i class="icon-stats-growth"></i> Performance
+                            </a>
+                        </div>
 
-                    <div class="d-flex align-items-center ml-auto flex-wrap" style="gap:10px;">
-                        <span class="text-muted font-size-sm font-weight-semibold" style="letter-spacing:0.3px;">
-                            <i class="icon-user mr-1"></i> Estimator:
-                        </span>
-                        <select id="us" class="form-control form-control-sm" style="width:auto;min-width:190px;" title="Select active user profile"></select>
-                    </div>
-                </aside>
-            </div>
+                        <div class="d-flex align-items-center ml-auto flex-wrap" style="gap:10px;">
+                            <span class="text-muted font-size-sm font-weight-semibold" style="letter-spacing:0.3px;">
+                                <i class="icon-user mr-1"></i> Estimator:
+                            </span>
+                            <select id="us" class="form-control form-control-sm" style="width:auto;min-width:190px;" title="Select active user profile"></select>
+                        </div>
+                    </aside>
+                </div>
 
-            <!-- Dynamic Workspace View Container -->
-            <main id="v" style="padding:0;min-height:70vh;"></main>
+                <!-- Dynamic Workspace View Container -->
+                <main id="v" style="padding:0;min-height:70vh;"></main>
+            <?php endif; ?>
 
         </div>
         <!-- /content -->

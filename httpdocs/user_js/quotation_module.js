@@ -1177,8 +1177,14 @@
             a.onclick = () => go(a.dataset.v);
         });
 
-        // Initialize at quotation log
-        go("log");
+        // Initialize view based on URL query parameter ?v= (log, A, N, perf)
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialView = urlParams.get("v");
+        if (initialView && ["log", "A", "N", "perf"].includes(initialView)) {
+            go(initialView);
+        } else {
+            go("log");
+        }
     }
 
     function saveQuotationApi(isIssue) {

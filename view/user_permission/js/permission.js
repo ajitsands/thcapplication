@@ -592,16 +592,29 @@ $(document).ready(function() {
 
 
 
-	eventQuotation.forEach(function(obj) {if (!hasPermission("QuotationModule")) {obj.style.display = "none";}});
+	eventQuotation.forEach(function(obj) {
+		if (!hasPermission("QuotationModule") && !hasPermission("Quotation") && !hasPermission("ViewQuotation") && !hasPermission("CreateQuotation")) {
+			obj.style.display = "none";
+		}
+	});
 
-	eventCreateQuotation.forEach(function(obj) {if (!hasPermission("CreateQuotation")) {obj.style.display = "none";}});
+	eventCreateQuotation.forEach(function(obj) {
+		if (!hasPermission("CreateQuotation") && !hasPermission("QuotationModule") && !hasPermission("Quotation")) {
+			obj.style.display = "none";
+		}
+	});
 
+	eventViewQuotation.forEach(function(obj) {
+		if (!hasPermission("ViewQuotation") && !hasPermission("QuotationModule") && !hasPermission("Quotation")) {
+			obj.style.display = "none";
+		}
+	});
 
-
-
-	eventViewQuotation.forEach(function(obj) {if (!hasPermission("ViewQuotation")) {obj.style.display = "none";}});
-
-	eventViewQuotationRevision.forEach(function(obj) {if (!hasPermission("ViewQuotationRevision")) {obj.style.display = "none";}});
+	eventViewQuotationRevision.forEach(function(obj) {
+		if (!hasPermission("ViewQuotationRevision") && !hasPermission("QuotationModule") && !hasPermission("Quotation")) {
+			obj.style.display = "none";
+		}
+	});
 
 
 
