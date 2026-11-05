@@ -285,7 +285,7 @@ if ($isLoggedIn) {
         }
 
         /* Select2 Searchable Dropdown Styling */
-        .select2-container {
+        .card.pad .select2-container {
             width: 100% !important;
         }
         .select2-container--default .select2-selection--single {
@@ -416,6 +416,38 @@ if ($isLoggedIn) {
             padding: 7px 12px !important;
             font-size: 13px !important;
             background-color: #ffffff !important;
+        }
+        .card.bar .select2-container,
+        .filter-toolbar .select2-container {
+            flex: 1 1 155px !important;
+            min-width: 135px !important;
+            max-width: 210px !important;
+            width: auto !important;
+            margin: 0 !important;
+        }
+        .card.bar .select2-container--default .select2-selection--single,
+        .filter-toolbar .select2-container--default .select2-selection--single {
+            height: 38px !important;
+            padding: 2px 10px !important;
+            border-radius: 10px !important;
+            background: #ffffff !important;
+        }
+        .card.bar .select2-container--default .select2-selection--single .select2-selection__rendered,
+        .filter-toolbar .select2-container--default .select2-selection--single .select2-selection__rendered {
+            font-size: 13px !important;
+            line-height: normal !important;
+            padding-right: 18px !important;
+        }
+        .card.bar .select2-container--default .select2-selection--single .select2-selection__arrow,
+        .filter-toolbar .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
+            right: 6px !important;
+        }
+        .card.bar .select2-container--default .select2-selection--single .select2-selection__clear,
+        .filter-toolbar .select2-container--default .select2-selection--single .select2-selection__clear {
+            margin-right: 18px !important;
+            color: #889bb0 !important;
+            font-size: 16px !important;
         }
         .card.bar label,
         .filter-toolbar label {

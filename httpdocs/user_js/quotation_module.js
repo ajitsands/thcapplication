@@ -264,9 +264,12 @@
     // Main Router
     function go(v) {
         if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
-            if (window.jQuery('#cl').data('select2')) {
-                window.jQuery('#cl').select2('destroy');
-            }
+            ['#cl', '#fc', '#fu'].forEach(selId => {
+                const $s = window.jQuery(selId);
+                if ($s.length && $s.data('select2')) {
+                    $s.select2('destroy');
+                }
+            });
             window.jQuery('.select2-container--open').remove();
         }
         $$("aside a[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === v));
@@ -314,7 +317,10 @@
                 ${M(options, x => `<option value="${H(x[0])}" ${F[{ fc: "client", fs: "st", ft: "type", fu: "user" }[id]] == x[0] ? "selected" : ""}>${H(x[1])}</option>`)}
             </select>`;
 
-        const uniqueClients = [...new Set(Q.map(x => x.client_name || x.client).filter(Boolean))].sort();
+        const uniqueClients = [...new Set([
+            ...Q.map(x => x.client_name || x.client).filter(Boolean),
+            ...AMC.map(c => c.name).filter(Boolean)
+        ])].sort((a, b) => a.localeCompare(b));
         const userList = Object.keys(USERS).map(u => [u, Array.isArray(USERS[u]) ? USERS[u][0] : USERS[u].name]);
 
         $("#v").innerHTML = `
@@ -340,13 +346,41 @@
         $("#nA").onclick = () => go("A");
         $("#nN").onclick = () => go("N");
 
-        [["fq", "q"], ["fc", "client"], ["fs", "st"], ["ft", "type"], ["fu", "user"]].forEach(([i, k]) => {
+        [["fq", "q"], ["fs", "st"], ["ft", "type"]].forEach(([i, k]) => {
             const el = $("#" + i);
             if (el) {
                 el.oninput = e => { F[k] = e.target.value; res(); };
                 el.onchange = e => { F[k] = e.target.value; res(); };
             }
         });
+
+        const setupToolbarSelect2 = function (selId, filterKey, placeholderText) {
+            const el = $("#" + selId);
+            if (!el) return;
+
+            el.onchange = e => {
+                F[filterKey] = e.target.value;
+                res();
+            };
+
+            if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
+                const $el = window.jQuery(el);
+                if ($el.data('select2')) {
+                    $el.select2('destroy');
+                }
+                $el.select2({
+                    width: 'style',
+                    placeholder: placeholderText,
+                    allowClear: true
+                }).on('change', function () {
+                    F[filterKey] = this.value;
+                    res();
+                });
+            }
+        };
+
+        setupToolbarSelect2("fc", "client", "All clients");
+        setupToolbarSelect2("fu", "user", "All users");
 
         const fx = $("#fx");
         if (fx) fx.onchange = e => { F.sup = e.target.checked; res(); };
