@@ -208,6 +208,7 @@ require_once(__DIR__ . '/thc_logo.php');
     <!-- Right side: Date/Time + User info dropdown -->
     <div class="d-flex align-items-center ml-auto">
       <span class="badge badge-pill mr-3 d-none d-md-inline-flex align-items-center" id="div_date_time" style="background: rgba(255,255,255,0.18); color: #ffffff; padding: 6px 14px; font-weight: 500; font-size: 12px; letter-spacing: 0.3px; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></span>
+      <?php include_once(__DIR__ . '/date_time.inc'); ?>
 
       <ul class="thc-nav thc-nav-right">
         <li class="thc-nav-item thc-has-dropdown">

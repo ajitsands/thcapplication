@@ -1,10 +1,22 @@
   <script type="text/javascript">  
-        // datetime make using jquery  
-        $(document).ready(function () {  
-            ShowTime();  
-        });  
+        // datetime make using jquery & native DOMContentLoaded
+        if (typeof jQuery !== 'undefined') {
+            $(document).ready(function () {  
+                ShowTime();  
+            });
+        }
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            ShowTime();
+        } else {
+            document.addEventListener('DOMContentLoaded', ShowTime);
+        }
   
+        var _showTimeTimeout = null;
         function ShowTime() {  
+            if (_showTimeTimeout) {
+                clearTimeout(_showTimeTimeout);
+                _showTimeTimeout = null;
+            }
             var dt = new Date();  
             var el = document.getElementById("div_date_time");  
             if (el) {  
@@ -13,7 +25,7 @@
                 var dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });  
                 el.innerHTML = '<i class="icon-alarm mr-1" style="font-size: 13px; vertical-align: -1px;"></i> ' + dateStr + ' ' + timeStr;  
             }  
-            window.setTimeout(ShowTime, 1000);  
+            _showTimeTimeout = window.setTimeout(ShowTime, 1000);  
         }  
         </script>  
         <script>  

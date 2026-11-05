@@ -61,6 +61,7 @@ if ($isLoggedIn) {
 
     <!-- Main Application Core & Theme CSS Stack -->
     <?PHP include_once('template/head.inc'); ?>
+    <?PHP include_once('template/date_time.inc'); ?>
 
     <!-- Main Navigation Topnav & Icons -->
     <link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
