@@ -50,6 +50,7 @@ class QuotationModuleController
 
     // Default Fallback Users
     private $defaultUsers = [
+        "ADM" => ["name" => "Administrator", "title" => "Administrator"],
         "MA" => ["name" => "Mohammed Ali", "title" => "Operations Manager"],
         "FY" => ["name" => "Fatima Yusuf", "title" => "Senior Estimator"],
         "SH" => ["name" => "Sayed Hasan", "title" => "Projects Engineer"]
@@ -398,9 +399,6 @@ class QuotationModuleController
 
         $data = $_REQUEST;
         $raw = @file_get_contents('php://input');
-        if (empty($raw) && php_sapi_name() === 'cli') {
-            $raw = @file_get_contents('php://stdin');
-        }
         if (!empty($raw)) {
             $json = @json_decode($raw, true);
             if (is_array($json)) {
@@ -464,6 +462,25 @@ class QuotationModuleController
         }
     }
 
+    private function deriveUserInitials(string $userName, string $empCode = ''): string
+    {
+        $norm = strtolower(trim($userName));
+        if ($norm === 'adminstrator' || $norm === 'administrator' || $norm === 'admin' || strtoupper($empCode) === 'CGTHCFM') {
+            return 'ADM';
+        }
+        $words = preg_split('/[\s\-_]+/', trim($userName));
+        $initials = '';
+        foreach ($words as $w) {
+            if ($w !== '') {
+                $initials .= strtoupper(substr($w, 0, 1));
+            }
+        }
+        if (strlen($initials) >= 2 && strlen($initials) <= 4) {
+            return $initials;
+        }
+        return !empty($initials) ? $initials : 'ADM';
+    }
+
     private function getCurrentSessionUser()
     {
         $userCode = "MA";
@@ -472,8 +489,12 @@ class QuotationModuleController
         $userId = 1;
 
         if (!empty($_SESSION['username'])) {
-            $userCode = strtoupper(substr($_SESSION['username'], 0, 4));
+            $empCode = $_SESSION['username'];
             $userName = !empty($_SESSION['user_name']) ? $_SESSION['user_name'] : $_SESSION['username'];
+            if (strtolower(trim($userName)) === 'adminstrator') {
+                $userName = 'Administrator';
+            }
+            $userCode = $this->deriveUserInitials($userName, $empCode);
             $userTitle = !empty($_SESSION['user_type']) ? $_SESSION['user_type'] : "Operations Manager";
             $userId = !empty($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 1;
         }
@@ -516,9 +537,10 @@ class QuotationModuleController
             $uRes = @mysqli_query($this->db, "SELECT employee_id, employee_code, employee_name, employee_type_name FROM tbl_employees WHERE employee_status='Active' ORDER BY employee_name ASC");
             if ($uRes && mysqli_num_rows($uRes) > 0) {
                 while ($u = mysqli_fetch_assoc($uRes)) {
-                    $code = strtoupper(!empty($u['employee_code']) && $u['employee_code'] !== 'NA' ? $u['employee_code'] : 'EMP' . $u['employee_id']);
-                    $users[$code] = [
-                        "name" => $u['employee_name'],
+                    $initials = $this->deriveUserInitials($u['employee_name'], $u['employee_code'] ?? '');
+                    $cleanName = (strtolower(trim($u['employee_name'])) === 'adminstrator') ? 'Administrator' : $u['employee_name'];
+                    $users[$initials] = [
+                        "name" => $cleanName,
                         "title" => !empty($u['employee_type_name']) && $u['employee_type_name'] !== 'NA' ? $u['employee_type_name'] : "Estimator"
                     ];
                 }

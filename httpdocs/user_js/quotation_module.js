@@ -58,6 +58,7 @@
 
     // State Variables with default seed data
     let USERS = {
+        "ADM": ["Administrator", "Administrator"],
         "MA": ["Mohammed Ali", "Operations Manager"],
         "FY": ["Fatima Yusuf", "Senior Estimator"],
         "SH": ["Sayed Hasan", "Projects Engineer"]
@@ -219,8 +220,9 @@
 
         const uCode = q.user_code || q.user || CU;
         const uInfo = USERS[uCode] || [q.user_name || "Authorized Signatory", q.user_designation || "THC Facility Management"];
-        const uName = Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || "Authorized Signatory");
-        const uTitle = Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC Facility Management");
+        let uName = q.user_name || (Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || "Authorized Signatory"));
+        if (uName === "Adminstrator") uName = "Administrator";
+        const uTitle = q.user_designation || (Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC Facility Management"));
 
         const qNo = q.quotation_no || q.no;
         const qRev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
@@ -500,7 +502,9 @@
                             const isAmc = x.is_amc !== undefined ? !!x.is_amc : !!x.amc;
                             const subj = x.subject || x.subj || "—";
                             const date = x.quotation_date || x.date || "—";
-                            const user = x.user_code || x.user || "—";
+                            const userCode = x.user_code || x.user || "—";
+                            let userName = x.user_name || (USERS[userCode] ? (Array.isArray(USERS[userCode]) ? USERS[userCode][0] : USERS[userCode].name) : "") || userCode;
+                            if (userName === "Adminstrator") userName = "Administrator";
                             const remark = x.remark || "";
                             return `
                             <tr data-id="${x.id}">
@@ -514,7 +518,7 @@
                                 </td>
                                 <td class="w">${H(subj)}</td>
                                 <td>${date}</td>
-                                <td>${H(user)}</td>
+                                <td>${H(userName)}</td>
                                 <td>${f3(amt(x))}</td>
                                 <td><b>${f3(tot(x))}</b></td>
                                 <td class="w">
@@ -570,8 +574,9 @@
 
         const uCode = q.user_code || q.user;
         const uInfo = USERS[uCode] || [q.user_name || "Authorized User", q.user_designation || "THC"];
-        const uName = Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || "Authorized User");
-        const uTitle = Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC");
+        let uName = q.user_name || (Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || "Authorized User"));
+        if (uName === "Adminstrator") uName = "Administrator";
+        const uTitle = q.user_designation || (Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC"));
 
         const clientName = q.client_name || q.client;
         const clientCode = q.client_code || q.code;

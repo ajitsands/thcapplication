@@ -27,14 +27,28 @@ $currentUserType = "Operations Manager";
 $hasQuotationAccess = true;
 
 if ($isLoggedIn) {
-    if (!empty($_SESSION["username"])) {
-        $currentUserCode = strtoupper(substr($_SESSION["username"], 0, 4));
-    }
     if (!empty($_SESSION["user_name"])) {
         $currentUserName = $_SESSION["user_name"];
     }
+    if (strtolower(trim($currentUserName)) === 'adminstrator') {
+        $currentUserName = 'Administrator';
+    }
     if (!empty($_SESSION["user_type"])) {
         $currentUserType = $_SESSION["user_type"];
+    }
+    if (!empty($_SESSION["username"])) {
+        $empCode = $_SESSION["username"];
+        $norm = strtolower(trim($currentUserName));
+        if ($norm === 'adminstrator' || $norm === 'administrator' || $norm === 'admin' || strtoupper($empCode) === 'CGTHCFM') {
+            $currentUserCode = 'ADM';
+        } else {
+            $words = preg_split('/[\s\-_]+/', trim($currentUserName));
+            $inits = '';
+            foreach ($words as $w) {
+                if ($w !== '') $inits .= strtoupper(substr($w, 0, 1));
+            }
+            $currentUserCode = (strlen($inits) >= 2 && strlen($inits) <= 4) ? $inits : 'ADM';
+        }
     }
 
     // Role-based quotation permission check: Access the Quotation
