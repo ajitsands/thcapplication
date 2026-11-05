@@ -52,8 +52,8 @@ class QuotationModuleController
     private $defaultUsers = [
         "ADM" => ["name" => "Administrator", "title" => "Administrator"],
         "MA" => ["name" => "Mohammed Ali", "title" => "Operations Manager"],
-        "FY" => ["name" => "Fatima Yusuf", "title" => "Senior Estimator"],
-        "SH" => ["name" => "Sayed Hasan", "title" => "Projects Engineer"]
+        "RM" => ["name" => "Reghilal Munambeth", "title" => "Operation Coordinator"],
+        "SKP" => ["name" => "Satish Kumar Palanimuthu", "title" => "Operation Coordinator"]
     ];
 
     // Default Fallback AMC Clients
@@ -186,11 +186,11 @@ class QuotationModuleController
                 ]
             ],
             [
-                "seq" => 7067, "rev" => 0, "no" => "CG/THC/FY/QTN/7067/1026", "client" => "Black Fortune",
+                "seq" => 7067, "rev" => 0, "no" => "CG/THC/RM/QTN/7067/1026", "client" => "Black Fortune",
                 "code" => "C0178", "amc" => 1, "addr" => "Bldg 12, Road 3815, Seef, Kingdom of Bahrain",
                 "contact" => "+973 3728 3293", "attn" => "Restaurant Manager",
                 "subj" => "Kitchen hood & duct cleaning",
-                "date" => "2026-10-12", "user" => "FY", "user_name" => "Fatima Yusuf", "user_designation" => "Senior Estimator",
+                "date" => "2026-10-12", "user" => "RM", "user_name" => "Reghilal Munambeth", "user_designation" => "Operation Coordinator",
                 "vat" => 10.0, "st" => "Not approved", "remark" => "Price too high – client asked for a re-quote with reduced scope",
                 "items" => [
                     ["desc" => "Kitchen hood degreasing", "qty" => 4, "unit" => "No.", "price" => 85.0],
@@ -198,22 +198,22 @@ class QuotationModuleController
                 ]
             ],
             [
-                "seq" => 7068, "rev" => 0, "no" => "CG/THC/SH/QTN/7068/1026", "client" => "UAE Embassy",
+                "seq" => 7068, "rev" => 0, "no" => "CG/THC/SKP/QTN/7068/1026", "client" => "UAE Embassy",
                 "code" => "C0173", "amc" => 1, "addr" => "Block 321, Road 2108, Juffair, Kingdom of Bahrain",
                 "contact" => "17748333", "attn" => "Admin Dept",
                 "subj" => "Replacement of split AC units",
-                "date" => "2026-10-14", "user" => "SH", "user_name" => "Sayed Hasan", "user_designation" => "Projects Engineer",
+                "date" => "2026-10-14", "user" => "SKP", "user_name" => "Satish Kumar Palanimuthu", "user_designation" => "Operation Coordinator",
                 "vat" => 10.0, "st" => "Pending", "remark" => "",
                 "items" => [
                     ["desc" => "Supply & install 2TR split AC unit", "qty" => 3, "unit" => "Set", "price" => 410.0]
                 ]
             ],
             [
-                "seq" => 7069, "rev" => 0, "no" => "CG/THC/FY/QTN/7069/1026", "client" => "AK Venture",
+                "seq" => 7069, "rev" => 0, "no" => "CG/THC/RM/QTN/7069/1026", "client" => "AK Venture",
                 "code" => "C0175", "amc" => 1, "addr" => "Office 21, Bldg 5, Road 1702, Diplomatic Area, Manama",
                 "contact" => "17212130", "attn" => "Operations Head",
                 "subj" => "Repainting of reception area",
-                "date" => "2026-10-20", "user" => "FY", "user_name" => "Fatima Yusuf", "user_designation" => "Senior Estimator",
+                "date" => "2026-10-20", "user" => "RM", "user_name" => "Reghilal Munambeth", "user_designation" => "Operation Coordinator",
                 "vat" => 10.0, "st" => "Pending", "remark" => "",
                 "items" => [
                     ["desc" => "Repainting of walls, two coats", "qty" => 85, "unit" => "m²", "price" => 3.2],
@@ -221,11 +221,11 @@ class QuotationModuleController
                 ]
             ],
             [
-                "seq" => 7070, "rev" => 0, "no" => "CG/THC/SH/QTN/7070/1026", "client" => "Mr. Rashid Thamer Al Dossary",
+                "seq" => 7070, "rev" => 0, "no" => "CG/THC/SKP/QTN/7070/1026", "client" => "Mr. Rashid Thamer Al Dossary",
                 "code" => "NA-0002", "amc" => 0, "addr" => "Villa 45, Saar, Kingdom of Bahrain",
                 "contact" => "+973 3999 8888", "attn" => "Mr. Rashid",
                 "subj" => "Water pump replacement – villa",
-                "date" => "2026-10-02", "user" => "SH", "user_name" => "Sayed Hasan", "user_designation" => "Projects Engineer",
+                "date" => "2026-10-02", "user" => "SKP", "user_name" => "Satish Kumar Palanimuthu", "user_designation" => "Operation Coordinator",
                 "vat" => 10.0, "st" => "Approved", "remark" => "",
                 "items" => [
                     ["desc" => "Supply & install booster pump", "qty" => 1, "unit" => "Lumpsum", "price" => 260.0]
@@ -531,17 +531,49 @@ class QuotationModuleController
             $amcClients = $this->defaultAmcClients;
         }
 
-        // 2. Fetch Users / Estimators
+        // 2. Fetch Users / Estimators (strictly users with Quotation permissions: Administrator, Operation Manager, Operation Coordinator)
         $users = [];
         if ($this->isDbConnected) {
-            $uRes = @mysqli_query($this->db, "SELECT employee_id, employee_code, employee_name, employee_type_name FROM tbl_employees WHERE employee_status='Active' ORDER BY employee_name ASC");
+            $uSql = "SELECT DISTINCT e.employee_id, e.employee_code, e.employee_name, e.employee_type_name 
+                     FROM tbl_employees e 
+                     WHERE e.employee_status='Active' 
+                     AND (
+                         LOWER(TRIM(e.employee_type_name)) IN (
+                             'administrator', 
+                             'operation manager', 
+                             'operations manager', 
+                             'operations manager (maintenance)', 
+                             'operation coordinator', 
+                             'operations coordinator'
+                         )
+                         OR e.employee_type_name LIKE 'Operation%Manager%'
+                         OR e.employee_type_name LIKE 'Operation%Coordinator%'
+                         OR EXISTS (
+                             SELECT 1 FROM users u
+                             INNER JOIN user_roles_v1 ur ON ur.user_id = u.id
+                             INNER JOIN role_permissions_v1 rp ON rp.role_id = ur.role_id
+                             WHERE u.username = e.employee_code AND rp.sub_module_name = 'Quotation'
+                         )
+                     )
+                     ORDER BY e.employee_name ASC";
+            $uRes = @mysqli_query($this->db, $uSql);
             if ($uRes && mysqli_num_rows($uRes) > 0) {
                 while ($u = mysqli_fetch_assoc($uRes)) {
                     $initials = $this->deriveUserInitials($u['employee_name'], $u['employee_code'] ?? '');
                     $cleanName = (strtolower(trim($u['employee_name'])) === 'adminstrator') ? 'Administrator' : $u['employee_name'];
+                    $title = $u['employee_type_name'] ?? '';
+                    if (stripos($title, 'Operations Manager') !== false || stripos($title, 'Operation Manager') !== false) {
+                        $title = 'Operations Manager';
+                    } elseif (stripos($title, 'Coordinator') !== false) {
+                        $title = 'Operation Coordinator';
+                    } elseif (stripos($title, 'Admin') !== false) {
+                        $title = 'Administrator';
+                    } elseif (empty($title) || $title === 'NA') {
+                        $title = 'Estimator';
+                    }
                     $users[$initials] = [
                         "name" => $cleanName,
-                        "title" => !empty($u['employee_type_name']) && $u['employee_type_name'] !== 'NA' ? $u['employee_type_name'] : "Estimator"
+                        "title" => $title
                     ];
                 }
             }

@@ -60,8 +60,8 @@
     let USERS = {
         "ADM": ["Administrator", "Administrator"],
         "MA": ["Mohammed Ali", "Operations Manager"],
-        "FY": ["Fatima Yusuf", "Senior Estimator"],
-        "SH": ["Sayed Hasan", "Projects Engineer"]
+        "RM": ["Reghilal Munambeth", "Operation Coordinator"],
+        "SKP": ["Satish Kumar Palanimuthu", "Operation Coordinator"]
     };
     let AMC = [
         { code: "C0179", name: "Zayani Motors", address: "P.O. Box 2399, Manama, Kingdom of Bahrain", contact: "+973 3944 1015" },
@@ -127,11 +127,11 @@
             items: [{ item_id: 1, description: "Chiller coil replacement incl. gas charging", quantity: 1, unit: "Lumpsum", unit_price: 1320, total_price: 1320 }]
         },
         {
-            id: 4, seq_no: 7067, rev_no: 0, quotation_no: "CG/THC/FY/QTN/7067/1026",
+            id: 4, seq_no: 7067, rev_no: 0, quotation_no: "CG/THC/RM/QTN/7067/1026",
             client_name: "Black Fortune", client_code: "C0178", is_amc: 1,
             client_address: "Bldg 12, Road 3815, Seef, Kingdom of Bahrain", contact_no: "+973 3728 3293",
             attention: "Operations Manager", subject: "Kitchen hood & duct cleaning",
-            quotation_date: "2026-10-12", user_code: "FY", user_name: "Fatima Yusuf", user_designation: "Senior Estimator",
+            quotation_date: "2026-10-12", user_code: "RM", user_name: "Reghilal Munambeth", user_designation: "Operation Coordinator",
             vat_rate: 10, subtotal_excl_vat: 1120, vat_amount: 112, total_incl_vat: 1232,
             terms: T0.slice(), status: "Not approved", remark: "Price too high – client asked for a re-quote with reduced scope",
             items: [
@@ -140,21 +140,21 @@
             ]
         },
         {
-            id: 5, seq_no: 7068, rev_no: 0, quotation_no: "CG/THC/SH/QTN/7068/1026",
+            id: 5, seq_no: 7068, rev_no: 0, quotation_no: "CG/THC/SKP/QTN/7068/1026",
             client_name: "UAE Embassy", client_code: "C0173", is_amc: 1,
             client_address: "Block 321, Road 2108, Juffair, Kingdom of Bahrain", contact_no: "17748333",
             attention: "Admin Attaché", subject: "Replacement of split AC units",
-            quotation_date: "2026-10-14", user_code: "SH", user_name: "Sayed Hasan", user_designation: "Projects Engineer",
+            quotation_date: "2026-10-14", user_code: "SKP", user_name: "Satish Kumar Palanimuthu", user_designation: "Operation Coordinator",
             vat_rate: 10, subtotal_excl_vat: 1230, vat_amount: 123, total_incl_vat: 1353,
             terms: T0.slice(), status: "Pending", remark: "",
             items: [{ item_id: 1, description: "Supply & install 2TR split AC unit", quantity: 3, unit: "Set", unit_price: 410, total_price: 1230 }]
         },
         {
-            id: 6, seq_no: 7069, rev_no: 0, quotation_no: "CG/THC/FY/QTN/7069/1026",
+            id: 6, seq_no: 7069, rev_no: 0, quotation_no: "CG/THC/RM/QTN/7069/1026",
             client_name: "AK Venture", client_code: "C0175", is_amc: 1,
             client_address: "Office 21, Bldg 5, Road 1702, Diplomatic Area, Manama", contact_no: "17212130",
             attention: "Operations Head", subject: "Repainting of reception area",
-            quotation_date: "2026-10-20", user_code: "FY", user_name: "Fatima Yusuf", user_designation: "Senior Estimator",
+            quotation_date: "2026-10-20", user_code: "RM", user_name: "Reghilal Munambeth", user_designation: "Operation Coordinator",
             vat_rate: 10, subtotal_excl_vat: 392, vat_amount: 39.2, total_incl_vat: 431.2,
             terms: T0.slice(), status: "Pending", remark: "",
             items: [
@@ -163,11 +163,11 @@
             ]
         },
         {
-            id: 7, seq_no: 7070, rev_no: 0, quotation_no: "CG/THC/SH/QTN/7070/1026",
+            id: 7, seq_no: 7070, rev_no: 0, quotation_no: "CG/THC/SKP/QTN/7070/1026",
             client_name: "Mr. Rashid Thamer Al Dossary", client_code: "NA-0002", is_amc: 0,
             client_address: "Villa 45, Saar, Kingdom of Bahrain", contact_no: "+973 3999 8888",
             attention: "Mr. Rashid", subject: "Water pump replacement – villa",
-            quotation_date: "2026-10-02", user_code: "SH", user_name: "Sayed Hasan", user_designation: "Projects Engineer",
+            quotation_date: "2026-10-02", user_code: "SKP", user_name: "Satish Kumar Palanimuthu", user_designation: "Operation Coordinator",
             vat_rate: 10, subtotal_excl_vat: 260, vat_amount: 26, total_incl_vat: 286,
             terms: T0.slice(), status: "Approved", remark: "",
             items: [{ item_id: 1, description: "Supply & install booster pump", quantity: 1, unit: "Lumpsum", unit_price: 260, total_price: 260 }]
