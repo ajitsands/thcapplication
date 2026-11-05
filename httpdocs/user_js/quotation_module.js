@@ -333,6 +333,15 @@
 
     // Direct High-Resolution Print / PDF Generation
     function pdf(q) {
+        if (q && q.id) {
+            const url = `print/print_quotation_module.php?id=${encodeURIComponent(q.id)}&autoprint=1`;
+            const win = window.open(url, "_blank");
+            if (win) {
+                win.focus();
+                return;
+            }
+        }
+
         const fn = fnm(q);
         const ph = $("#ph");
         if (ph) {

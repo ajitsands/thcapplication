@@ -689,23 +689,42 @@ if ($isLoggedIn) {
         /* Printable Sheet Container */
         #ph { display: none; }
         @media print {
-            body { background: #ffffff !important; padding: 0 !important; }
-            .thc-topnav, .thc-quotation-nav-card, .content-wrapper, footer, .navbar-top {
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+            body.navbar-top {
+                padding-top: 0 !important;
+            }
+            .thc-topnav,
+            .thc-quotation-nav-card,
+            .content-wrapper,
+            footer,
+            .navbar,
+            .modal,
+            .swal2-container,
+            #toast,
+            datalist {
                 display: none !important;
             }
             #ph {
                 display: block !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
+                position: static !important;
                 width: 100% !important;
                 background: #ffffff !important;
-                z-index: 9999999 !important;
-            }
-            .sheet {
-                border: 0 !important;
+                margin: 0 !important;
                 padding: 0 !important;
+            }
+            #ph .sheet {
+                border: 0 !important;
+                padding: 16px 20px !important;
                 box-shadow: none !important;
+                background: #ffffff !important;
+                color: #111111 !important;
+                display: block !important;
             }
             body, table, td, th {
                 -webkit-print-color-adjust: exact !important;

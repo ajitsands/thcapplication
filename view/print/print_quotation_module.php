@@ -405,7 +405,13 @@ $total = (float)$q['total_incl_vat'];
             <b>Thanking you,<br><br>
             Yours sincerely,<br>
             THC Facility Management W.L.L<br><br>
-            <?= htmlspecialchars($q['user_name']) ?><br>
+            <?php
+            $signer = $q['user_name'] ?? '';
+            if (strtolower(trim($signer)) === 'adminstrator') {
+                $signer = 'Administrator';
+            }
+            ?>
+            <?= htmlspecialchars($signer) ?><br>
             <span style="font-weight: 400; color: #475569;"><?= htmlspecialchars($q['user_designation']) ?></span></b>
         </div>
         <div class="ap">
@@ -424,9 +430,16 @@ $total = (float)$q['total_incl_vat'];
 
 <?php if ($autoPrint): ?>
 <script>
-    window.onload = function() {
-        window.print();
-    };
+    function triggerPrint() {
+        setTimeout(function() {
+            window.print();
+        }, 250);
+    }
+    if (document.readyState === 'complete') {
+        triggerPrint();
+    } else {
+        window.addEventListener('load', triggerPrint);
+    }
 </script>
 <?php endif; ?>
 
