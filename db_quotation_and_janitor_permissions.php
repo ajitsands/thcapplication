@@ -34,10 +34,10 @@ if ($chk && mysqli_num_rows($chk) > 0) {
     echo "[+] tbl_app_modules: Inserted Quotation module (ID 16)\n";
 }
 
-// 2. Hide old/unneeded Quotation sub-permissions so only 1 permission shows in tree
+// 37-40: Clean up legacy and redundant sub-permissions from module_permissions & role_permissions_v1
 mysqli_query($conn, "UPDATE module_permissions SET module_status = 'No' WHERE module_id = 16 AND module_permission_name IN ('CreateQuotation', 'ViewQuotation', 'ViewQuotationRevision', 'QuotationModule')");
-mysqli_query($conn, "DELETE FROM role_permissions_v1 WHERE module_id = 16 AND sub_module_name = 'QuotationModule'");
-echo "[+] module_permissions: Cleaned up old sub-menus (CreateQuotation, ViewQuotation, ViewQuotationRevision, QuotationModule set to No)\n";
+mysqli_query($conn, "DELETE FROM role_permissions_v1 WHERE module_id = 16 AND sub_module_name IN ('CreateQuotation', 'ViewQuotation', 'ViewQuotationRevision', 'QuotationModule')");
+echo "[+] module_permissions & role_permissions_v1: Cleaned up legacy sub-menus\n";
 
 // Hide Janitor Settings and Janitor Calendar from permission tree
 mysqli_query($conn, "UPDATE module_permissions SET module_status = 'No' WHERE module_id = 21 AND module_permission_name IN ('JanitorSettings', 'JanitorCalendar')");
@@ -62,11 +62,41 @@ if ($qRes && mysqli_num_rows($qRes) > 0) {
 mysqli_query($conn, "INSERT IGNORE INTO permissions (name, class_name, module_id) VALUES ('Quotation', 'classQuotation', 16)");
 mysqli_query($conn, "INSERT IGNORE INTO permissions (name, class_name, module_id) VALUES ('QuotationModule', 'classQuotationModule', 16)");
 
-// 4. Assign Quotation permission to Administrator (Role 1), Operation Manager (Role 5), etc.
-$default_roles = [1, 5, 11, 13, 15];
-foreach ($default_roles as $roleId) {
+// 4. Assign Quotation permission STRICTLY to: Administrator, Operation Manager, Operations Manager, and Operation Coordinator ONLY
+$targetRoleNames = [
+    'Administrator',
+    'Operation Coordinator',
+    'Operations Coordinator',
+    'Operation Manager',
+    'Operations Manager',
+    'Operations Manager (Maintenance)'
+];
+
+$allowedRoleIds = [];
+$escNames = "'" . implode("','", array_map(function($n) use ($conn) { return mysqli_real_escape_string($conn, $n); }, $targetRoleNames)) . "'";
+
+// Query roles table for exact IDs
+$roleRes = mysqli_query($conn, "SELECT id, name FROM roles WHERE name IN ($escNames)");
+if ($roleRes) {
+    while ($r = mysqli_fetch_assoc($roleRes)) {
+        $allowedRoleIds[] = (int)$r['id'];
+        echo "[+] Found role in 'roles': {$r['name']} (ID: {$r['id']})\n";
+    }
+}
+
+// Fallback known IDs in THC FM: 1 (Administrator), 2 (Operation Coordinator), 5 (Operation Manager), 11 (Operations Manager Maintenance)
+$allowedRoleIds = array_values(array_unique(array_merge($allowedRoleIds, [1, 2, 5, 11])));
+$allowedIdsStr = implode(',', $allowedRoleIds);
+
+// 4a. Revoke Quotation permission from ALL other roles (so it is accessible ONLY to the allowed roles)
+mysqli_query($conn, "DELETE FROM role_permissions_v1 WHERE (module_id = 16 OR sub_module_name IN ('Quotation', 'QuotationModule')) AND role_id NOT IN ($allowedIdsStr)");
+mysqli_query($conn, "DELETE FROM role_permissions WHERE module_id = 16 AND role_id NOT IN ($allowedIdsStr)");
+echo "[+] Revoked Quotation permission from all other roles (strictly restricted to Roles: $allowedIdsStr)\n";
+
+// 4b. Grant Quotation permission strictly to the allowed roles
+foreach ($allowedRoleIds as $roleId) {
     // role_permissions_v1
-    $rChk = mysqli_query($conn, "SELECT ids FROM role_permissions_v1 WHERE role_id = $roleId AND permission_id = $qPermId");
+    $rChk = mysqli_query($conn, "SELECT ids FROM role_permissions_v1 WHERE role_id = $roleId AND permission_id = $qPermId AND sub_module_name = 'Quotation'");
     if (!$rChk || mysqli_num_rows($rChk) == 0) {
         mysqli_query($conn, "INSERT INTO role_permissions_v1 (role_id, permission_id, module_id, sub_module_name, module_name) VALUES ('$roleId', '$qPermId', 16, 'Quotation', 'Quotation')");
     }
@@ -76,6 +106,6 @@ foreach ($default_roles as $roleId) {
         mysqli_query($conn, "INSERT INTO role_permissions (role_id, permission_id, module_id) VALUES ($roleId, $qPermId, 16)");
     }
 }
-echo "[+] role_permissions_v1: Granted Quotation access to Administrator and Managers\n";
+echo "[+] role_permissions_v1: Granted Quotation access strictly to Administrator, Operation Manager, Operations Manager, and Operation Coordinator (Roles: " . implode(', ', $allowedRoleIds) . ")\n";
 
 echo "=== Permission setup completed successfully! ===\n";

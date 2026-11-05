@@ -24,7 +24,7 @@ $currentUserCode = "MA";
 $currentUserName = "Mohammed Ali";
 $currentUserType = "Operations Manager";
 
-$hasQuotationAccess = true;
+$hasQuotationAccess = !$isLoggedIn; // Default true in dev without session; strictly enforced when logged in
 
 if ($isLoggedIn) {
     if (!empty($_SESSION["user_name"])) {
@@ -51,15 +51,34 @@ if ($isLoggedIn) {
         }
     }
 
-    // Role-based quotation permission check: Access the Quotation
-    if (isset($_SESSION['USERROLLID'])) {
-        $userRoleId = (int)$_SESSION['USERROLLID'];
-        // Administrator (Role 1) always has full privilege
-        if ($userRoleId !== 1 && isset($obj) && method_exists($obj, 'getUserPermissionsByUserID')) {
-            $userPerms = $obj->getUserPermissionsByUserID($userRoleId);
+    // Role-based quotation permission check:
+    // Only accessible to: Administrator, Operation Manager, Operations Manager, and Operation Coordinator
+    $allowedUserTypes = [
+        'administrator',
+        'operation manager',
+        'operations manager',
+        'operations manager (maintenance)',
+        'operations manager (maint)',
+        'operation coordinator',
+        'operations coordinator',
+        'operations cordinator'
+    ];
+    $normUserType = strtolower(trim($currentUserType));
+
+    $hasQuotationAccess = in_array($normUserType, $allowedUserTypes);
+
+    // Also check dynamic database permissions via UserPermisssion if assigned
+    if (!$hasQuotationAccess && isset($_SESSION['USERROLLID'])) {
+        $userId = (int)$_SESSION['USERROLLID'];
+        if (!isset($obj) && class_exists('UserPermisssion')) {
+            $obj = new UserPermisssion($userId);
+        }
+        if (isset($obj) && method_exists($obj, 'getUserPermissionsByUserID')) {
+            $userPerms = $obj->getUserPermissionsByUserID($userId);
             if (is_array($userPerms)) {
-                $hasQuotationAccess = in_array('Quotation', $userPerms) ||
-                                      in_array('QuotationModule', $userPerms);
+                if (in_array('Quotation', $userPerms) || in_array('QuotationModule', $userPerms)) {
+                    $hasQuotationAccess = true;
+                }
             }
         }
     }
