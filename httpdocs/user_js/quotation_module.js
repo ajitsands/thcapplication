@@ -263,6 +263,12 @@
 
     // Main Router
     function go(v) {
+        if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
+            if (window.jQuery('#cl').data('select2')) {
+                window.jQuery('#cl').select2('destroy');
+            }
+            window.jQuery('.select2-container--open').remove();
+        }
         $$("aside a[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === v));
         ED = null;
         if (v === "log") vlog();
@@ -691,10 +697,10 @@
                     <div class="card pad">
                         <h2>Client</h2>
                         ${isAmc ? `
-                            <select id="cl">
+                            <select id="cl" class="form-control select-search" data-placeholder="Select active AMC client…">
                                 <option value="">Select active AMC client…</option>
                                 ${M(AMC, c => `
-                                    <option value="${H(c.code)}" ${clientCode == c.code ? "selected" : ""}>
+                                    <option value="${H(c.code)}" ${clientCode == c.code ? "selected" : ""} data-contact="${H(c.contact || '')}" data-address="${H(c.address || '')}">
                                         ${H(c.code)} · ${H(c.name)}
                                     </option>`
                                 )}
@@ -793,22 +799,54 @@
             renderLivePreview();
         };
 
-        if ($("#cl")) {
-            $("#cl").onchange = ev => {
-                const selCode = ev.target.value;
-                const found = AMC.find(x => x.code === selCode);
-                ED.client_code = found ? found.code : "";
-                ED.code = ED.client_code;
-                ED.client_name = found ? found.name : "";
-                ED.client = ED.client_name;
-                ED.client_address = found ? found.address : "";
-                ED.addr = ED.client_address;
-                ED.contact_no = found ? found.contact : "";
-                ED.contact = ED.contact_no;
-                const adField = $("#ad");
-                if (adField) adField.value = ED.client_address;
-                renderLivePreview();
-            };
+        const handleClientSelection = function (selCode) {
+            const found = AMC.find(x => x.code === selCode);
+            ED.client_code = found ? found.code : "";
+            ED.code = ED.client_code;
+            ED.client_name = found ? found.name : "";
+            ED.client = ED.client_name;
+            ED.client_address = found ? found.address : "";
+            ED.addr = ED.client_address;
+            ED.contact_no = found ? found.contact : "";
+            ED.contact = ED.contact_no;
+            const adField = $("#ad");
+            if (adField) adField.value = ED.client_address;
+            renderLivePreview();
+        };
+
+        const clEl = $("#cl");
+        if (clEl) {
+            clEl.onchange = ev => handleClientSelection(ev.target.value);
+
+            if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
+                const $cl = window.jQuery(clEl);
+                if ($cl.data('select2')) {
+                    $cl.select2('destroy');
+                }
+                $cl.select2({
+                    width: '100%',
+                    placeholder: 'Select active AMC client…',
+                    allowClear: true,
+                    matcher: function (params, data) {
+                        if (!params.term || window.jQuery.trim(params.term) === '') {
+                            return data;
+                        }
+                        if (typeof data.text === 'undefined') {
+                            return null;
+                        }
+                        const term = params.term.toLowerCase();
+                        const text = data.text.toLowerCase();
+                        const contact = (data.element && data.element.dataset.contact) ? data.element.dataset.contact.toLowerCase() : '';
+                        const address = (data.element && data.element.dataset.address) ? data.element.dataset.address.toLowerCase() : '';
+                        if (text.indexOf(term) > -1 || contact.indexOf(term) > -1 || address.indexOf(term) > -1) {
+                            return data;
+                        }
+                        return null;
+                    }
+                }).on('change', function () {
+                    handleClientSelection(this.value);
+                });
+            }
         }
 
         $("#lib").onchange = ev => {

@@ -284,6 +284,91 @@ if ($isLoggedIn) {
             outline: none !important;
         }
 
+        /* Select2 Searchable Dropdown Styling */
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-container--default .select2-selection--single {
+            font-family: 'Outfit', sans-serif !important;
+            border-radius: 10px !important;
+            border: 1.5px solid #c2daeb !important;
+            height: 42px !important;
+            background: #ffffff !important;
+            padding: 5px 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: all 0.2s ease !important;
+        }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: var(--q-navy-main) !important;
+            box-shadow: 0 0 0 4px rgba(123, 189, 232, 0.3) !important;
+            outline: none !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            font-size: 13.5px !important;
+            color: var(--q-text-dark) !important;
+            line-height: normal !important;
+            padding-left: 0 !important;
+            font-weight: 500 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #889bb0 !important;
+            font-weight: 400 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+            right: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        .select2-dropdown {
+            border: 1.5px solid #c2daeb !important;
+            border-radius: 10px !important;
+            box-shadow: 0 10px 30px rgba(0, 29, 57, 0.15) !important;
+            background: #ffffff !important;
+            z-index: 10050 !important;
+            overflow: hidden !important;
+        }
+        .select2-container--default .select2-search--dropdown {
+            padding: 8px 10px !important;
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2eef7 !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1.5px solid #c2daeb !important;
+            border-radius: 8px !important;
+            padding: 7px 12px !important;
+            font-size: 13.5px !important;
+            font-family: 'Outfit', sans-serif !important;
+            outline: none !important;
+            width: 100% !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: var(--q-navy-main) !important;
+            box-shadow: 0 0 0 3px rgba(123, 189, 232, 0.3) !important;
+        }
+        .select2-results__option {
+            padding: 9px 14px !important;
+            font-size: 13.5px !important;
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--q-text-dark) !important;
+            transition: background 0.15s ease !important;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #eaf3fb !important;
+            color: var(--q-navy-dark) !important;
+            font-weight: 600 !important;
+        }
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: #0A4174 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
         /* Filter Toolbar Card - Enforced Single Horizontal Row */
         .card.bar,
         .filter-toolbar {
@@ -873,6 +958,9 @@ if ($isLoggedIn) {
         <option>Kg</option>
         <option>Ltr</option>
     </datalist>
+
+    <!-- Select2 (Ensured for Searchable Dropdowns) -->
+    <script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
 
     <!-- Client-side Application Script -->
     <script src="../httpdocs/user_js/quotation_module.js"></script>
