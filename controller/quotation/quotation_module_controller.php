@@ -388,23 +388,41 @@ class QuotationModuleController
         file_put_contents($this->jsonFallbackFile, json_encode($quotes, JSON_PRETTY_PRINT));
     }
 
+    private $parsedInput = null;
+
+    private function getInputData(): array
+    {
+        if ($this->parsedInput !== null) {
+            return $this->parsedInput;
+        }
+
+        $data = $_REQUEST;
+        $raw = @file_get_contents('php://input');
+        if (empty($raw) && php_sapi_name() === 'cli') {
+            $raw = @file_get_contents('php://stdin');
+        }
+        if (!empty($raw)) {
+            $json = @json_decode($raw, true);
+            if (is_array($json)) {
+                $data = array_merge($data, $json);
+            }
+        }
+        $this->parsedInput = $data;
+        return $this->parsedInput;
+    }
+
+    private function getInputParam($key, $default = null)
+    {
+        $data = $this->getInputData();
+        return isset($data[$key]) ? $data[$key] : $default;
+    }
+
     public function handleRequest()
     {
-        $action = '';
-        if (!empty($_GET['action'])) {
+        $data = $this->getInputData();
+        $action = isset($data['action']) ? trim((string)$data['action']) : '';
+        if ($action === '' && !empty($_GET['action'])) {
             $action = trim($_GET['action']);
-        } elseif (!empty($_POST['action'])) {
-            $action = trim($_POST['action']);
-        } elseif (!empty($_REQUEST['action'])) {
-            $action = trim($_REQUEST['action']);
-        } else {
-            $rawInput = @file_get_contents('php://input');
-            if (!empty($rawInput)) {
-                $jsonInput = @json_decode($rawInput, true);
-                if (!empty($jsonInput['action'])) {
-                    $action = trim($jsonInput['action']);
-                }
-            }
         }
 
         try {
@@ -601,7 +619,7 @@ class QuotationModuleController
 
     private function getQuotation()
     {
-        $id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : 0;
+        $id = (int)$this->getInputParam('id', 0);
         $quotes = $this->fetchQuotationsList();
         $target = null;
         $revisions = [];
@@ -638,10 +656,7 @@ class QuotationModuleController
 
     private function saveQuotation()
     {
-        $input = json_decode(file_get_contents('php://input'), true);
-        if (!$input) {
-            $input = $_POST;
-        }
+        $input = $this->getInputData();
 
         $id = isset($input['id']) ? (int)$input['id'] : 0;
         $isIssue = !empty($input['is_issue']);
@@ -894,13 +909,28 @@ class QuotationModuleController
 
     private function updateStatus()
     {
-        $id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : 0;
-        $status = isset($_REQUEST['status']) ? trim($_REQUEST['status']) : '';
-        $reason = isset($_REQUEST['reason']) ? trim($_REQUEST['reason']) : '';
-        $remark = isset($_REQUEST['remark']) ? trim($_REQUEST['remark']) : '';
+        $id = (int)$this->getInputParam('id', 0);
+        $status = trim((string)$this->getInputParam('status', ''));
+        $reason = trim((string)$this->getInputParam('reason', ''));
+        $remark = trim((string)$this->getInputParam('remark', ''));
 
-        if (!in_array($status, ['Approved', 'Not approved'])) {
-            echo json_encode(["status" => "error", "message" => "Invalid status"]);
+        // Normalize status
+        $stLower = strtolower($status);
+        if ($stLower === 'approved') {
+            $status = 'Approved';
+        } elseif ($stLower === 'not approved' || $stLower === 'rejected' || $stLower === 'notapproved') {
+            $status = 'Not approved';
+        } elseif ($stLower === 'pending') {
+            $status = 'Pending';
+        } elseif ($stLower === 'draft') {
+            $status = 'Draft';
+        } else {
+            echo json_encode(["status" => "error", "message" => "Invalid status" . ($status !== '' ? ": " . htmlspecialchars($status) : '')]);
+            return;
+        }
+
+        if ($id <= 0) {
+            echo json_encode(["status" => "error", "message" => "Invalid quotation ID"]);
             return;
         }
 
@@ -909,7 +939,7 @@ class QuotationModuleController
             return;
         }
 
-        $fullRemark = $status === 'Not approved' ? ($reason . ($remark ? " – " . $remark : "")) : "";
+        $fullRemark = $status === 'Not approved' ? ($reason . ($remark ? " – " . $remark : "")) : $remark;
 
         if ($this->isDbConnected) {
             $escSt = mysqli_real_escape_string($this->db, $status);
@@ -920,7 +950,11 @@ class QuotationModuleController
                 rejection_reason = '$escReason',
                 remark = '$escRem'
                 WHERE id = $id";
-            mysqli_query($this->db, $sql);
+            $res = mysqli_query($this->db, $sql);
+            if (!$res) {
+                echo json_encode(["status" => "error", "message" => "Database update failed: " . mysqli_error($this->db)]);
+                return;
+            }
         } else {
             $quotes = $this->getJsonQuotations();
             foreach ($quotes as &$q) {
@@ -946,7 +980,11 @@ class QuotationModuleController
 
     private function deleteDraft()
     {
-        $id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : 0;
+        $id = (int)$this->getInputParam('id', 0);
+        if ($id <= 0) {
+            echo json_encode(["status" => "error", "message" => "Invalid draft ID"]);
+            return;
+        }
         if ($this->isDbConnected) {
             mysqli_query($this->db, "DELETE FROM tbl_quotation_items_v2 WHERE quotation_id = $id");
             mysqli_query($this->db, "DELETE FROM tbl_quotations_v2 WHERE id = $id AND status = 'Draft'");
