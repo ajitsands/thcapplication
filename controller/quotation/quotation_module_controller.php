@@ -609,28 +609,30 @@ class QuotationModuleController
     private function fetchQuotationsList()
     {
         if ($this->isDbConnected) {
-            $sql = "SELECT q.*, 
-                    COALESCE((SELECT JSON_ARRAYAGG(
-                        JSON_OBJECT(
-                            'item_id', i.item_id,
-                            'description', i.description,
-                            'quantity', i.quantity,
-                            'unit', i.unit,
-                            'unit_price', i.unit_price,
-                            'total_price', i.total_price
-                        )
-                    ) FROM tbl_quotation_items_v2 i WHERE i.quotation_id = q.id), '[]') as items_json
-                    FROM tbl_quotations_v2 q
-                    ORDER BY q.id DESC";
-            
-            $res = @mysqli_query($this->db, $sql);
-            if ($res) {
-                $list = [];
-                while ($r = mysqli_fetch_assoc($res)) {
-                    $terms = json_decode($r['terms_json'], true);
-                    $items = json_decode($r['items_json'], true);
+            $list = [];
+            $qRes = @mysqli_query($this->db, "SELECT * FROM tbl_quotations_v2 ORDER BY id DESC");
+            if ($qRes) {
+                $itemsByQuote = [];
+                $iRes = @mysqli_query($this->db, "SELECT * FROM tbl_quotation_items_v2 ORDER BY quotation_id ASC, sort_order ASC, item_id ASC");
+                if ($iRes) {
+                    while ($it = mysqli_fetch_assoc($iRes)) {
+                        $qId = (int)$it['quotation_id'];
+                        $itemsByQuote[$qId][] = [
+                            "item_id" => (int)$it['item_id'],
+                            "description" => $it['description'],
+                            "quantity" => (float)$it['quantity'],
+                            "unit" => $it['unit'],
+                            "unit_price" => (float)$it['unit_price'],
+                            "total_price" => (float)$it['total_price']
+                        ];
+                    }
+                }
+
+                while ($r = mysqli_fetch_assoc($qRes)) {
+                    $qId = (int)$r['id'];
+                    $terms = json_decode($r['terms_json'] ?? '', true);
                     if (!is_array($terms)) $terms = $this->defaultTerms;
-                    if (!is_array($items)) $items = [];
+                    $items = $itemsByQuote[$qId] ?? [];
 
                     $list[] = [
                         "id" => (int)$r['id'],
@@ -659,8 +661,8 @@ class QuotationModuleController
                         "items" => $items
                     ];
                 }
-                return $list;
             }
+            return $list;
         }
 
         return $this->getJsonQuotations();
