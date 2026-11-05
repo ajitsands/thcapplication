@@ -593,25 +593,7 @@ $(document).ready(function() {
 
 
 	eventQuotation.forEach(function(obj) {
-		if (!hasPermission("QuotationModule") && !hasPermission("Quotation") && !hasPermission("ViewQuotation") && !hasPermission("CreateQuotation")) {
-			obj.style.display = "none";
-		}
-	});
-
-	eventCreateQuotation.forEach(function(obj) {
-		if (!hasPermission("CreateQuotation") && !hasPermission("QuotationModule") && !hasPermission("Quotation")) {
-			obj.style.display = "none";
-		}
-	});
-
-	eventViewQuotation.forEach(function(obj) {
-		if (!hasPermission("ViewQuotation") && !hasPermission("QuotationModule") && !hasPermission("Quotation")) {
-			obj.style.display = "none";
-		}
-	});
-
-	eventViewQuotationRevision.forEach(function(obj) {
-		if (!hasPermission("ViewQuotationRevision") && !hasPermission("QuotationModule") && !hasPermission("Quotation")) {
+		if (!hasPermission("Quotation") && !hasPermission("QuotationModule")) {
 			obj.style.display = "none";
 		}
 	});
@@ -633,12 +615,6 @@ $(document).ready(function() {
 	
 	var eventJanitorExecutionReport = document.querySelectorAll(".classJanitorExecutionReport");
 	eventJanitorExecutionReport.forEach(function(obj) {if (!hasPermission("JanitorExecutionReport")) {obj.style.display = "none";}});
-	
-	var eventJanitorSettings = document.querySelectorAll(".classJanitorSettings");
-	eventJanitorSettings.forEach(function(obj) {if (!hasPermission("JanitorModule") && !hasPermission("JanitorSettings")) {obj.style.display = "none";}});
-	
-	var eventJanitorCalendar = document.querySelectorAll(".classJanitorCalendar");
-	eventJanitorCalendar.forEach(function(obj) {if (!hasPermission("JanitorModule") && !hasPermission("JanitorCalendar")) {obj.style.display = "none";}});
 	
 	// adding_new_permission
 	

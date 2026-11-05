@@ -37,17 +37,15 @@ if ($isLoggedIn) {
         $currentUserType = $_SESSION["user_type"];
     }
 
-    // Role-based quotation permission check
+    // Role-based quotation permission check: Access the Quotation
     if (isset($_SESSION['USERROLLID'])) {
         $userRoleId = (int)$_SESSION['USERROLLID'];
         // Administrator (Role 1) always has full privilege
         if ($userRoleId !== 1 && isset($obj) && method_exists($obj, 'getUserPermissionsByUserID')) {
             $userPerms = $obj->getUserPermissionsByUserID($userRoleId);
-            if (is_array($userPerms) && !empty($userPerms)) {
+            if (is_array($userPerms)) {
                 $hasQuotationAccess = in_array('Quotation', $userPerms) ||
-                                      in_array('QuotationModule', $userPerms) ||
-                                      in_array('ViewQuotation', $userPerms) ||
-                                      in_array('CreateQuotation', $userPerms);
+                                      in_array('QuotationModule', $userPerms);
             }
         }
     }
