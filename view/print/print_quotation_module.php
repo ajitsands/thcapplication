@@ -311,12 +311,7 @@ $total = (float)$q['total_incl_vat'];
                  alt="THC Facility Management" 
                  style="max-height: 65px; height: auto;">
         </div>
-        <div style="text-align: right;">
-            <div style="font-size: 18px; font-weight: 700; color: #2e2e79; letter-spacing: 0.5px;">OFFICIAL QUOTATION</div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-                <b>Generated:</b> <?= date("d-m-Y h:i A") ?>
-            </div>
-        </div>
+
     </div>
 
     <!-- Quotation Reference & Date -->
