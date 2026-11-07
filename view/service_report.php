@@ -107,22 +107,25 @@ table, th, td {
       <td width="16%" align="left" valign="top" style="border:hidden; font-weight: bold;">Work Request Details</td>
       <td colspan="5" valign="top" style="border:hidden;">
         <?php
-        $description = trim($complaints_description);
-        if ($description == '') {
+        $description = trim($complaints_description ?? '');
+        if ($description == '' || $description == '0' || $description == 'NA') {
             echo 'NA';
-        } else {
-            // Split the description wherever a * appears
-            $items = preg_split('/\s*\*\s*/', $description);
-            $valid_items = array_filter(array_map('trim', $items));
-            if (count($valid_items) > 1 || strpos($description, '*') !== false) {
-                echo '<ul style="margin: 0; padding-left: 20px; list-style-position: outside;">';
-                foreach ($valid_items as $item) {
-                    echo '<li style="margin-bottom: 6px;">' . nl2br(htmlspecialchars($item)) . '</li>';
-                }
-                echo '</ul>';
-            } else {
-                echo nl2br(htmlspecialchars($description));
+        } else if (strpos($description, '*') !== false) {
+            $parts = explode('*', $description);
+            $intro = trim(array_shift($parts));
+            if ($intro !== '') {
+                echo '<div style="margin-bottom: 4px; font-weight: 500;">' . nl2br(htmlspecialchars($intro)) . '</div>';
             }
+            echo '<ul style="margin: 0; padding-left: 20px; list-style-position: outside;">';
+            foreach ($parts as $item) {
+                $item = trim($item);
+                if ($item !== '') {
+                    echo '<li style="margin-bottom: 4px;">' . nl2br(htmlspecialchars($item)) . '</li>';
+                }
+            }
+            echo '</ul>';
+        } else {
+            echo nl2br(htmlspecialchars($description));
         }
         ?>
         <hr style="border-top: 1px solid;">

@@ -270,7 +270,7 @@
 					
 							<div class="col-lg-12 col-md-12 col-sm-12">
 				        	   	<span class="form-text text-muted font-weight-bold"><font color="black">Complaints&nbsp;</font></span>
-									<textarea rows="2" class="form-control" id="txt_complaints1" name="txt_complaints1" placeholder="Complaints"></textarea>
+									<textarea rows="5" class="form-control" id="txt_complaints1" name="txt_complaints1" placeholder="Complaints" style="resize: vertical;"></textarea>
 										    
 								
 				        	</div>

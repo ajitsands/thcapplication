@@ -1,3 +1,35 @@
+if (typeof formatComplaintHtmlBullets !== 'function') {
+    function formatComplaintHtmlBullets(text) {
+        if (!text) return '<div align="center">NA</div>';
+        var str = String(text);
+        if ($.trim(str) === '' || $.trim(str) === '0' || $.trim(str) === 'NA') {
+            return '<div align="center">NA</div>';
+        }
+
+        if (str.indexOf('*') !== -1) {
+            var parts = str.split('*');
+            var intro = $.trim(parts.shift());
+            var html = '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">';
+            if (intro !== '') {
+                html += '<div style="margin-bottom: 4px; font-weight: 500;">' + $('<div>').text(intro).html().replace(/\n/g, '<br>') + '</div>';
+            }
+            html += '<ul style="margin: 0; padding-left: 20px; list-style-type: disc; text-align: left;">';
+            for (var i = 0; i < parts.length; i++) {
+                var item = $.trim(parts[i]);
+                if (item !== '') {
+                    html += '<li style="margin-bottom: 3px;">' + $('<div>').text(item).html().replace(/\n/g, '<br>') + '</li>';
+                }
+            }
+            html += '</ul></div>';
+            return html;
+        } else {
+            var escaped = $('<div>').text(str).html().replace(/\n/g, '<br>');
+            return '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">' + escaped + '</div>';
+        }
+    }
+}
+window.formatComplaintHtmlBullets = formatComplaintHtmlBullets;
+
 $(document).ready(function(){
                  
        $('.modal').on("hidden.bs.modal", function (e) { //fire on closing modal box
@@ -125,12 +157,12 @@ $(document).ready(function(){
                                           if(filteredOptions=="WoCompletedModify")
                                           {
                                              dropdownHTML += ' <a href="#" class="dropdown-item" name="view_ticket" data-toggle="modal" data-target="#modal_view_complaints" style="color: black;"><i class="icon-eye"></i> View Tickets</a>'; 
-                                             dropdownHTML += '<div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequisitionModal(\''+data+'\')" style="color: black;"><i class="icon-cube"></i> Material Requisition</a>';
                                           }
                                           else
                                           {
                                               dropdownHTML += '<label class="dropdown-item text-danger">You have no Privilege</label>';
                                           }
+                                          dropdownHTML += '<div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequisitionModal(\''+data+'\')" style="color: black;"><i class="icon-cube"></i> Material Requisition</a>';
                                         
                                         dropdownHTML += '</div></div></div>';
                                         return dropdownHTML;
@@ -315,7 +347,7 @@ $(document).ready(function(){
                                       render: function ( data, type, rows, meta ) {
                                           
                                          
-                                          str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="view_visits" data-toggle="modal" data-target="#modal_view_visits" style="color:black"><i class="icon-calendar3"></i> View Visits</a>	<a href="#" class="dropdown-item" name="view_services" data-toggle="modal" data-target="#modal_view_services" style="color:black"><i class="icon-hammer-wrench"></i> View Services</a><div class="dropdown-divider"></div></div></div></div>';
+                                          str_active_status_edit = '<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown" style="color:black">	<i class="icon-menu9"></i>	</a>	<div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" name="view_visits" data-toggle="modal" data-target="#modal_view_visits" style="color:black"><i class="icon-calendar3"></i> View Visits</a>	<a href="#" class="dropdown-item" name="view_services" data-toggle="modal" data-target="#modal_view_services" style="color:black"><i class="icon-hammer-wrench"></i> View Services</a><div class="dropdown-divider"></div><a href="javascript:void(0);" class="dropdown-item" onclick="openMaterialRequisitionModal(\''+data+'\')" style="color:black"><i class="icon-cube"></i> Material Requisition</a></div></div></div>';
                                           return str_active_status_edit;
                                           
                                       }   
@@ -424,7 +456,7 @@ $(document).ready(function(){
             			
             			  '</tr>'+
             			  '<tr>'+
-            			  	'<td><div align="center">'+d.complaints_description+'</div></td>'+
+            			  	'<td valign="top">'+formatComplaintHtmlBullets(d.complaints_description)+'</td>'+
             				'<td><div align="center">'+d.date_needed+'</div></td>'+
             				'<td><div align="center">'+d.additional_info+'</div></td>'+
 							

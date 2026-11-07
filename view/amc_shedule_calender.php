@@ -224,6 +224,38 @@ $OBJ->URLEncode('head=dashboard');
     
    <script type="text/javascript">	
    
+if (typeof formatComplaintHtmlBullets !== 'function') {
+    function formatComplaintHtmlBullets(text) {
+        if (!text) return '<div align="center">NA</div>';
+        var str = String(text);
+        if ($.trim(str) === '' || $.trim(str) === '0' || $.trim(str) === 'NA') {
+            return '<div align="center">NA</div>';
+        }
+
+        if (str.indexOf('*') !== -1) {
+            var parts = str.split('*');
+            var intro = $.trim(parts.shift());
+            var html = '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">';
+            if (intro !== '') {
+                html += '<div style="margin-bottom: 4px; font-weight: 500;">' + $('<div>').text(intro).html().replace(/\n/g, '<br>') + '</div>';
+            }
+            html += '<ul style="margin: 0; padding-left: 20px; list-style-type: disc; text-align: left;">';
+            for (var i = 0; i < parts.length; i++) {
+                var item = $.trim(parts[i]);
+                if (item !== '') {
+                    html += '<li style="margin-bottom: 3px;">' + $('<div>').text(item).html().replace(/\n/g, '<br>') + '</li>';
+                }
+            }
+            html += '</ul></div>';
+            return html;
+        } else {
+            var escaped = $('<div>').text(str).html().replace(/\n/g, '<br>');
+            return '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">' + escaped + '</div>';
+        }
+    }
+}
+window.formatComplaintHtmlBullets = formatComplaintHtmlBullets;
+
 $(document).ready(function(){
      // Move modals to body so they are not trapped inside calendar card stacking context
      $('#modal_amc_Customer_details, #modal_tkt_Customer_details, #modal_team_details, #modal_change_status').appendTo("body");
@@ -397,6 +429,7 @@ $(document).ready(function(){
                               
                               "fnRowCallback": function (nRow, aData, iDisplayIndex) {
                                  $("td:eq(0)", nRow).html(iDisplayIndex + 1);
+                                 $("td", nRow).css("vertical-align", "top");
                                  return nRow;
                              } ,
                              
@@ -438,7 +471,12 @@ $(document).ready(function(){
                                  
                                  { "data": "category_name" },
                                  { "data": "type_name"},
-                                 { "data": "complaints_description"},
+                                 { 
+                                     "data": "complaints_description",
+                                     render: function ( data, type, rows, meta ) {
+                                         return formatComplaintHtmlBullets(data);
+                                     }
+                                 },
                                  { "data": "additional_info"},
                                  { "data": "asset_code" },
                                  { "data": "ticket_status"},
@@ -455,6 +493,7 @@ $(document).ready(function(){
                               
                               "fnRowCallback": function (nRow, aData, iDisplayIndex) {
                                  $("td:eq(0)", nRow).html(iDisplayIndex + 1);
+                                 $("td", nRow).css("vertical-align", "top");
                                  return nRow;
                              } ,
                              
@@ -508,6 +547,7 @@ $(document).ready(function(){
                               
                               "fnRowCallback": function (nRow, aData, iDisplayIndex) {
                                  $("td:eq(0)", nRow).html(iDisplayIndex + 1);
+                                 $("td", nRow).css("vertical-align", "top");
                                  return nRow;
                              } ,
                              

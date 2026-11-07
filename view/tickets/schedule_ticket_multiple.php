@@ -36,7 +36,6 @@
                         							    <th>Category</th>
                         								<th>Type</th>
                         								<th>Priority</th>
-                        								<th >Complaint</th>
                         								<th >Actions</th>
                         							</tr>
                         						</thead>

@@ -19,6 +19,7 @@
 <?php include('view_services_modal_multiple.php');?>
 <?php include('view_tech_expertise_modal_multiple.php');?>
 <?php include('technician_schedules_modal_multiple.php');?>
+<?php include_once('view_ticket_material_requests_modal.php');?>
 
 	<div class="card">
 				<div class="card-header header-elements-inline">

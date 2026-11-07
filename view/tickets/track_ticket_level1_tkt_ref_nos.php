@@ -67,7 +67,33 @@ $varDBConnection = $DBConn->ConnectToMYSQL();
 							<div class="card-body">
 								        <div class="row"> 
         										<div class="col-lg-12 col-md-12 col-sm-12">
-										<span class="form-text text-muted"><font color="purple">Request : </font><font color="black"><?php echo $row_ticket_entries['complaints_description'];?> &nbsp;</font></span>
+										<div class="form-text text-muted" style="display: flex; align-items: flex-start; gap: 8px;">
+											<span style="color: purple; font-weight: 600; white-space: nowrap;">Request :</span>
+											<div style="color: black; flex: 1;">
+												<?php
+												$desc = trim($row_ticket_entries['complaints_description'] ?? '');
+												if ($desc === '' || $desc === '0' || $desc === 'NA') {
+													echo 'NA';
+												} else if (strpos($desc, '*') !== false) {
+													$parts = explode('*', $desc);
+													$intro = trim(array_shift($parts));
+													if ($intro !== '') {
+														echo '<div style="margin-bottom: 4px; font-weight: 500;">' . nl2br(htmlspecialchars($intro)) . '</div>';
+													}
+													echo '<ul style="margin: 0; padding-left: 20px; list-style-type: disc;">';
+													foreach ($parts as $item) {
+														$item = trim($item);
+														if ($item !== '') {
+															echo '<li style="margin-bottom: 3px;">' . nl2br(htmlspecialchars($item)) . '</li>';
+														}
+													}
+													echo '</ul>';
+												} else {
+													echo nl2br(htmlspecialchars($desc));
+												}
+												?>
+											</div>
+										</div>
 										        </div>
 										       
 										</div>

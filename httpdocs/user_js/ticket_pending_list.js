@@ -1,8 +1,145 @@
+function formatComplaintsBullets(text) {
+    if (!text) return '';
+    var str = String(text);
+    if ($.trim(str) === '') return '';
+
+    // If it doesn't contain '*', nothing to convert from asterisk format
+    if (str.indexOf('*') === -1) {
+        return str;
+    }
+
+    var parts = str.split('*');
+    var intro = $.trim(parts.shift());
+    var lines = [];
+
+    if (intro !== '') {
+        lines.push(intro);
+    }
+
+    for (var i = 0; i < parts.length; i++) {
+        var item = $.trim(parts[i]);
+        if (item !== '') {
+            if (item.indexOf('•') !== 0) {
+                item = '• ' + item;
+            }
+            lines.push(item);
+        }
+    }
+
+    return lines.join('\n');
+}
+
+function parseBulletsToComplaints(text) {
+    if (!text) return '';
+    var str = String(text);
+    if ($.trim(str) === '') return '';
+
+    var lines = str.split(/\r?\n/);
+    var hasBulletsOrAsterisk = false;
+    for (var i = 0; i < lines.length; i++) {
+        if (/^\s*[•*]\s*/.test(lines[i])) {
+            hasBulletsOrAsterisk = true;
+            break;
+        }
+    }
+
+    if (!hasBulletsOrAsterisk) {
+        return str;
+    }
+
+    var resultParts = [];
+    for (var j = 0; j < lines.length; j++) {
+        var rawLine = lines[j];
+        var trimmed = $.trim(rawLine);
+        if (trimmed === '') continue;
+
+        if (/^\s*[•*]\s*/.test(rawLine)) {
+            var cleaned = $.trim(rawLine.replace(/^\s*[•*]\s*/, ''));
+            if (cleaned !== '') {
+                resultParts.push('* ' + cleaned);
+            }
+        } else {
+            resultParts.push(trimmed);
+        }
+    }
+
+    var result = '';
+    for (var k = 0; k < resultParts.length; k++) {
+        var part = resultParts[k];
+        if (k === 0) {
+            result = part;
+        } else {
+            if (part.indexOf('*') === 0) {
+                result += (result !== '' ? ' ' : '') + part;
+            } else {
+                result += (result !== '' ? '\n' : '') + part;
+            }
+        }
+    }
+    return result;
+}
+window.formatComplaintsBullets = formatComplaintsBullets;
+window.parseBulletsToComplaints = parseBulletsToComplaints;
+
+function formatComplaintHtmlBullets(text) {
+    if (!text) return '<div align="center">NA</div>';
+    var str = String(text);
+    if ($.trim(str) === '' || $.trim(str) === '0' || $.trim(str) === 'NA') {
+        return '<div align="center">NA</div>';
+    }
+
+    if (str.indexOf('*') !== -1) {
+        var parts = str.split('*');
+        var intro = $.trim(parts.shift());
+        var html = '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">';
+        if (intro !== '') {
+            html += '<div style="margin-bottom: 4px; font-weight: 500;">' + $('<div>').text(intro).html().replace(/\n/g, '<br>') + '</div>';
+        }
+        html += '<ul style="margin: 0; padding-left: 20px; list-style-type: disc; text-align: left;">';
+        for (var i = 0; i < parts.length; i++) {
+            var item = $.trim(parts[i]);
+            if (item !== '') {
+                html += '<li style="margin-bottom: 3px;">' + $('<div>').text(item).html().replace(/\n/g, '<br>') + '</li>';
+            }
+        }
+        html += '</ul></div>';
+        return html;
+    } else {
+        var escaped = $('<div>').text(str).html().replace(/\n/g, '<br>');
+        return '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">' + escaped + '</div>';
+    }
+}
+window.formatComplaintHtmlBullets = formatComplaintHtmlBullets;
+
 $(document).ready(function(){
                  
        $('.modal').on("hidden.bs.modal", function (e) { //fire on closing modal box
         if ($('.modal:visible').length) { // check whether parent modal is opend after child modal close
             $('body').addClass('modal-open'); // if open mean length is 1 then add a bootstrap css class to body of the page
+        }
+    });
+
+    $(document).on('keydown', '#txt_complaints1, #txt_complaints_add_entries, #txt_complaints', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            var el = this;
+            var cursorPos = el.selectionStart;
+            var val = el.value;
+            var lineStart = val.lastIndexOf('\n', cursorPos - 1) + 1;
+            var currentLine = val.substring(lineStart, cursorPos);
+            if (/^\s*[•*]\s*/.test(currentLine)) {
+                if (/^\s*[•*]\s*$/.test(currentLine)) {
+                    e.preventDefault();
+                    el.value = val.substring(0, lineStart) + val.substring(cursorPos);
+                    el.setSelectionRange(lineStart, lineStart);
+                    return;
+                }
+                e.preventDefault();
+                var bullet = '• ';
+                var nextText = '\n' + bullet;
+                el.value = val.substring(0, cursorPos) + nextText + val.substring(el.selectionEnd);
+                var newPos = cursorPos + nextText.length;
+                el.setSelectionRange(newPos, newPos);
+            }
         }
     });          
                     var v_list_of_open_tickets = $('#tbl_of_open_tickets').DataTable({});
@@ -594,7 +731,7 @@ if (filteredOptions != "") { dropdownHTML += '<div class="dropdown-divider"></di
             var data = v_list_ticket_entries.row($row).data();
           
              $('#txt_additional_info1').val(data.additional_info);
-             $('#txt_complaints1').val(data.complaints_description);
+             $('#txt_complaints1').val(formatComplaintsBullets(data.complaints_description));
             $('#txt_hidden_ticket_id_view_ticket').val(data.ticket_id);
             $('#txt_hidden_category_id_view_ticket').val(data.category_id);
              $('#txt_hidden_type_id_view_ticket').val(data.type_id);
@@ -896,7 +1033,7 @@ if (filteredOptions != "") { dropdownHTML += '<div class="dropdown-divider"></di
 		var job_category = $("input[name='radio_job_category1']:checked").val();
 		var quote_date = $('#txt_quote_date1').val();
 		var date_needed = $('#txt_ticket_book_date_needed1').val();
-        var complaint_description=$("#txt_complaints1").val();
+        var complaint_description = parseBulletsToComplaints($("#txt_complaints1").val());
         var v_session_image1=$('#txt_hidden_ticket_image').val();
         var v_session_image3=$('#txt_hidden_ticket_image3').val();
         var quote_ref_no=$('#txt_quote_ref_no1').val();
@@ -1150,41 +1287,30 @@ if (filteredOptions != "") { dropdownHTML += '<div class="dropdown-divider"></di
                 } );
         
                function format_schedule_category(d)
-	               	{
-		
-            			return '<table style="table-layout: fixed; width: 100%; word-wrap: break-word;">'+
-            			 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Complaint </div></td>'+
-            				'<td ><div align="center">Asset Code </div></td>'+
-            				'<td ><div align="center">Additional Info </div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.complaints_description+'</div></td>'+
-            				'<td><div align="center">'+d.asset_code+'</div></td>'+
-            				'<td><div align="center">'+d.additional_info+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			  '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Service Request </div></td>'+
-            				'<td ><div align="center">Job Category</div></td>'+
-            				'<td ><div align="center">Quote Details</div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.service_request+'</div></td>'+
-            				'<td><div align="center">'+d.job_category+'</div></td>'+
-            				'<td><div align="center">'+d.quote_date+' - '+d.quote_required+'</div></td>'+
-            				
-            			  '</tr>'+
-            			'</table>' ;
-                        			
-		
-		
-	            }
+{
+    return '<table style="table-layout: fixed; width: 100%; word-wrap: break-word;">'+
+     '<tr style="background: #989898;color:#ffffff;">'+
+        '<td style="width: 40%;"><div align="center">Complaint </div></td>'+
+        '<td style="width: 30%;"><div align="center">Asset Code </div></td>'+
+        '<td style="width: 30%;"><div align="center">Additional Info </div></td>'+
+      '</tr>'+
+      '<tr>'+
+        '<td valign="top">'+formatComplaintHtmlBullets(d.complaints_description)+'</td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.asset_code || 'NA')+'</div></td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.additional_info || 'NA')+'</div></td>'+
+      '</tr>'+
+      '<tr style="background: #989898;color:#ffffff;">'+
+        '<td ><div align="center">Service Request </div></td>'+
+        '<td ><div align="center">Job Category</div></td>'+
+        '<td ><div align="center">Quote Details</div></td>'+
+      '</tr>'+
+      '<tr>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.service_request || 'NA')+'</div></td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.job_category || 'NA')+'</div></td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.quote_date || 'NA')+' - '+(d.quote_required || 'NA')+'</div></td>'+
+      '</tr>'+
+    '</table>' ;
+}
 	            
 //  $('#select_slots').on('change', function(){
   
@@ -2051,7 +2177,7 @@ function load_asset_combo_add_entries()
 		var date_needed = $('#txt_ticket_book_date_needed_add_entries').val();
 		//var date_scheduled = $('#txt_ticket_book_visit_date').val();
        // var complaint_description=$(".summernote-height").summernote('code');
-        var complaint_description=$("#txt_complaints_add_entries").val();
+        var complaint_description = parseBulletsToComplaints($("#txt_complaints_add_entries").val());
 
 		var service_table_selected_count = list_of_services_add_entries.rows('.selected').data().length;
 		
@@ -2241,17 +2367,7 @@ function load_asset_combo_add_entries()
             
             							 },
                                  },
-								  { "data": "complaints_description",
-                                      render: function ( data, type, rows, meta ) {
-                                          
-                                          str_active_status=data;
-                                          
-                                     	return str_active_status;
-            
-            							 },
-                                 },
-                               
-                                { "data": "ticket_id",
+								  { "data": "ticket_id",
                                      render: function ( data, type, rows, meta ) {
                                         
                                         return str_actions='<div class="list-icons"><div class="dropdown"><a href="#" class="list-icons-item" data-toggle="dropdown"><i class="icon-menu9"></i></a><div class="dropdown-menu dropdown-menu-right"><a href="#" class="dropdown-item" data-toggle="modal" data-target="#modal_view_services_schedule_multiple" name="view_services_schedule_multiple" ><i class="icon-pencil5"></i> View Services</a></div></div></div>';
@@ -2326,41 +2442,30 @@ function load_asset_combo_add_entries()
                 } );
         
                function format_schedule_category_multiple(d)
-	               	{
-		
-            			return '<table style="table-layout: fixed; width: 100%; word-wrap: break-word;">'+
-            			 '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Complaint </div></td>'+
-            				'<td ><div align="center">Asset Code </div></td>'+
-            				'<td ><div align="center">Additional Info </div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.complaints_description+'</div></td>'+
-            				'<td><div align="center">'+d.asset_code+'</div></td>'+
-            				'<td><div align="center">'+d.additional_info+'</div></td>'+
-							
-            				
-            			  '</tr>'+
-            			  '<tr style="background: #989898;color:#ffffff;">'+
-            			    '<td ><div align="center">Service Request </div></td>'+
-            				'<td ><div align="center">Job Category</div></td>'+
-            				'<td ><div align="center">Quote Required</div></td>'+
-						
-            			
-            			  '</tr>'+
-            			  '<tr>'+
-            			  	'<td><div align="center">'+d.service_request+'</div></td>'+
-            				'<td><div align="center">'+d.job_category+'</div></td>'+
-            				'<td><div align="center">'+d.quote_required+'</div></td>'+
-            				
-            			  '</tr>'+
-            			'</table>' ;
-                        			
-		
-		
-	            }
+{
+    return '<table style="table-layout: fixed; width: 100%; word-wrap: break-word;">'+
+     '<tr style="background: #989898;color:#ffffff;">'+
+        '<td style="width: 40%;"><div align="center">Complaint </div></td>'+
+        '<td style="width: 30%;"><div align="center">Asset Code </div></td>'+
+        '<td style="width: 30%;"><div align="center">Additional Info </div></td>'+
+      '</tr>'+
+      '<tr>'+
+        '<td valign="top">'+formatComplaintHtmlBullets(d.complaints_description)+'</td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.asset_code || 'NA')+'</div></td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.additional_info || 'NA')+'</div></td>'+
+      '</tr>'+
+      '<tr style="background: #989898;color:#ffffff;">'+
+        '<td ><div align="center">Service Request </div></td>'+
+        '<td ><div align="center">Job Category</div></td>'+
+        '<td ><div align="center">Quote Required</div></td>'+
+      '</tr>'+
+      '<tr>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.service_request || 'NA')+'</div></td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.job_category || 'NA')+'</div></td>'+
+        '<td valign="top"><div align="center" style="padding: 6px;">'+(d.quote_required || 'NA')+'</div></td>'+
+      '</tr>'+
+    '</table>' ;
+}
 	            
     $('#txt_date_multiple, #select_slots_multiple, #duration_multiple').on('change', function(){
          var visit_date=$("#txt_date_multiple").val();

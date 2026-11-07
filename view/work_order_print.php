@@ -206,28 +206,26 @@ table, th, td {
             <td style="padding: 15px; line-height: 1.6;">
 
                 <?php
-                $description = trim($row['complaints_description']);
+                $description = trim($row['complaints_description'] ?? '');
 
-                if ($description == '') {
+                if ($description == '' || $description == '0' || $description == 'NA') {
                     echo '<p>NA</p>';
-                } else {
-
-                    // Split the description wherever a * appears
-                    $items = preg_split('/\s*\*\s*/', $description);
-
+                } else if (strpos($description, '*') !== false) {
+                    $parts = explode('*', $description);
+                    $intro = trim(array_shift($parts));
+                    if ($intro !== '') {
+                        echo '<div style="margin-bottom: 8px; font-weight: 500;">' . nl2br(htmlspecialchars($intro)) . '</div>';
+                    }
                     echo '<ul style="margin: 0; padding-left: 25px;">';
-
-                    foreach ($items as $item) {
+                    foreach ($parts as $item) {
                         $item = trim($item);
-
-                        if ($item != '') {
-                            echo '<li style="margin-bottom: 12px;">';
-                            echo nl2br(htmlspecialchars($item));
-                            echo '</li>';
+                        if ($item !== '') {
+                            echo '<li style="margin-bottom: 10px;">' . nl2br(htmlspecialchars($item)) . '</li>';
                         }
                     }
-
                     echo '</ul>';
+                } else {
+                    echo '<p style="margin: 0;">' . nl2br(htmlspecialchars($description)) . '</p>';
                 }
                 ?>
 

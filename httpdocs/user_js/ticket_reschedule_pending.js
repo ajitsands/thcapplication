@@ -1,3 +1,99 @@
+﻿if (typeof formatComplaintHtmlBullets !== 'function') {
+    function formatComplaintHtmlBullets(text) {
+        if (!text) return '<div align="center">NA</div>';
+        var str = String(text);
+        if ($.trim(str) === '' || $.trim(str) === '0' || $.trim(str) === 'NA') {
+            return '<div align="center">NA</div>';
+        }
+
+        if (str.indexOf('*') !== -1) {
+            var parts = str.split('*');
+            var intro = $.trim(parts.shift());
+            var html = '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">';
+            if (intro !== '') {
+                html += '<div style="margin-bottom: 4px; font-weight: 500;">' + $('<div>').text(intro).html().replace(/\n/g, '<br>') + '</div>';
+            }
+            html += '<ul style="margin: 0; padding-left: 20px; list-style-type: disc; text-align: left;">';
+            for (var i = 0; i < parts.length; i++) {
+                var item = $.trim(parts[i]);
+                if (item !== '') {
+                    html += '<li style="margin-bottom: 3px;">' + $('<div>').text(item).html().replace(/\n/g, '<br>') + '</li>';
+                }
+            }
+            html += '</ul></div>';
+            return html;
+        } else {
+            var escaped = $('<div>').text(str).html().replace(/\n/g, '<br>');
+            return '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">' + escaped + '</div>';
+        }
+    }
+}
+window.formatComplaintHtmlBullets = formatComplaintHtmlBullets;
+
+if (typeof formatComplaintsBullets !== 'function') {
+    function formatComplaintsBullets(text) {
+        if (!text) return '';
+        var str = String(text);
+        if ($.trim(str) === '') return '';
+        if (str.indexOf('*') === -1) return str;
+        var parts = str.split('*');
+        var intro = $.trim(parts.shift());
+        var lines = [];
+        if (intro !== '') lines.push(intro);
+        for (var i = 0; i < parts.length; i++) {
+            var item = $.trim(parts[i]);
+            if (item !== '') {
+                if (item.indexOf('•') !== 0) item = '• ' + item;
+                lines.push(item);
+            }
+        }
+        return lines.join('\n');
+    }
+}
+
+if (typeof parseBulletsToComplaints !== 'function') {
+    function parseBulletsToComplaints(text) {
+        if (!text) return '';
+        var str = String(text);
+        if ($.trim(str) === '') return '';
+        var lines = str.split(/\r?\n/);
+        var hasBulletsOrAsterisk = false;
+        for (var i = 0; i < lines.length; i++) {
+            if (/^\s*[•*]\s*/.test(lines[i])) {
+                hasBulletsOrAsterisk = true;
+                break;
+            }
+        }
+        if (!hasBulletsOrAsterisk) return str;
+        var resultParts = [];
+        for (var j = 0; j < lines.length; j++) {
+            var rawLine = lines[j];
+            var trimmed = $.trim(rawLine);
+            if (trimmed === '') continue;
+            if (/^\s*[•*]\s*/.test(rawLine)) {
+                var cleaned = $.trim(rawLine.replace(/^\s*[•*]\s*/, ''));
+                if (cleaned !== '') resultParts.push('* ' + cleaned);
+            } else {
+                resultParts.push(trimmed);
+            }
+        }
+        var result = '';
+        for (var k = 0; k < resultParts.length; k++) {
+            var part = resultParts[k];
+            if (k === 0) {
+                result = part;
+            } else {
+                if (part.indexOf('*') === 0) {
+                    result += (result !== '' ? ' ' : '') + part;
+                } else {
+                    result += (result !== '' ? '\n' : '') + part;
+                }
+            }
+        }
+        return result;
+    }
+}
+
 $(document).ready(function(){
                  
        $('.modal').on("hidden.bs.modal", function (e) { //fire on closing modal box
@@ -509,7 +605,7 @@ $(document).ready(function(){
             var data = v_list_ticket_entries.row($row).data();
           
              $('#txt_additional_info1').val(data.additional_info);
-             $('#txt_complaints1').val(data.complaints_description);
+             $('#txt_complaints1').val(formatComplaintsBullets(data.complaints_description));
             $('#txt_hidden_ticket_id_view_ticket').val(data.ticket_id);
             $('#txt_hidden_category_id_view_ticket').val(data.category_id);
              $('#txt_hidden_type_id_view_ticket').val(data.type_id);
@@ -809,7 +905,7 @@ $(document).ready(function(){
 		var job_category = $("input[name='radio_job_category1']:checked").val();
 		var quote_date = $('#txt_quote_date1').val();
 		var date_needed = $('#txt_ticket_book_date_needed1').val();
-        var complaint_description=$("#txt_complaints1").val();
+        var complaint_description = parseBulletsToComplaints($("#txt_complaints1").val());
         var v_session_image1=$('#txt_hidden_ticket_image').val();
         var v_session_image2=$('#txt_hidden_ticket_image2').val();
         
@@ -1065,7 +1161,7 @@ $(document).ready(function(){
             			
             			  '</tr>'+
             			  '<tr>'+
-            			  	'<td><div align="center">'+d.complaints_description+'</div></td>'+
+            			  	'<td valign="top">'+formatComplaintHtmlBullets(d.complaints_description)+'</td>'+
             				'<td><div align="center">'+d.asset_code+'</div></td>'+
             				'<td><div align="center">'+d.additional_info+'</div></td>'+
 							

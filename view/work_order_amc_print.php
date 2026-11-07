@@ -176,10 +176,29 @@ table, th, td {
 			<td style="color: #daa505"><strong>REQUEST DESCRIPTION</strong></td>
 		</tr>
 		<tr>
-			<td>
-			<p><?php if($row['complaints_description']==''){ echo 'NA';} else { echo $row['complaints_description'];}?></p>
-
-			<p></p>
+			<td style="padding: 10px 0; line-height: 1.5;">
+			<?php 
+			$description = trim($row['complaints_description'] ?? '');
+			if ($description == '' || $description == '0' || $description == 'NA') {
+				echo '<p>NA</p>';
+			} else if (strpos($description, '*') !== false) {
+				$parts = explode('*', $description);
+				$intro = trim(array_shift($parts));
+				if ($intro !== '') {
+					echo '<div style="margin-bottom: 6px; font-weight: 500;">' . nl2br(htmlspecialchars($intro)) . '</div>';
+				}
+				echo '<ul style="margin: 0; padding-left: 25px;">';
+				foreach ($parts as $item) {
+					$item = trim($item);
+					if ($item !== '') {
+						echo '<li style="margin-bottom: 6px;">' . nl2br(htmlspecialchars($item)) . '</li>';
+					}
+				}
+				echo '</ul>';
+			} else {
+				echo '<p style="margin: 0;">' . nl2br(htmlspecialchars($description)) . '</p>';
+			}
+			?>
 			</td>
 		</tr>
 	</tbody>

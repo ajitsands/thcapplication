@@ -105,7 +105,31 @@ table, th, td {
   <tbody>
     <tr>
       <td width="16%" align="left" valign="top" style="border:hidden; font-weight: bold;">Work Request Details</td>
-      <td width="19%" style="border:hidden;"><?php echo $complaints_description; ?><hr style="border-top: 1px solid;"></td>
+      <td width="19%" style="border:hidden;">
+        <?php
+        $desc = trim($complaints_description ?? '');
+        if ($desc == '' || $desc == '0' || $desc == 'NA') {
+            echo 'NA';
+        } else if (strpos($desc, '*') !== false) {
+            $parts = explode('*', $desc);
+            $intro = trim(array_shift($parts));
+            if ($intro !== '') {
+                echo '<div style="margin-bottom: 4px; font-weight: 500;">' . nl2br(htmlspecialchars($intro)) . '</div>';
+            }
+            echo '<ul style="margin: 0; padding-left: 20px; list-style-position: outside;">';
+            foreach ($parts as $item) {
+                $item = trim($item);
+                if ($item !== '') {
+                    echo '<li style="margin-bottom: 4px;">' . nl2br(htmlspecialchars($item)) . '</li>';
+                }
+            }
+            echo '</ul>';
+        } else {
+            echo nl2br(htmlspecialchars($desc));
+        }
+        ?>
+        <hr style="border-top: 1px solid;">
+      </td>
       <td width="11%" align="left" valign="top" style="border:hidden; font-weight: bold;">Work Order No</td>
       <td width="16%" style="border:hidden;"><?php echo "WO-".$ticket_ref_code."-".$ticketId; ?><hr style="border-top: 1px solid;"></td>
       <td width="5%" align="left" valign="top" style="border:hidden; font-weight: bold;">Date</td>

@@ -151,6 +151,7 @@ $OBJ->URLEncode('head=dashboard');
     <script src="../httpdocs/user_js/ticket.js?v=<?= time() ?>"></script>
 	<script src="../httpdocs/user_js/login.js"></script>
 	<script src="../httpdocs/user_js/ticket_pending_list.js?v=<?= time() ?>"></script>
+	<script src="../httpdocs/user_js/view_material_requests_ticket_modal.js?v=<?= time() ?>"></script>
 	
 	
 	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
@@ -308,6 +309,7 @@ $OBJ->URLEncode('head=dashboard');
 			</div>
 			<!-- /content area -->
             <?PHP 
+				include_once('tickets/view_ticket_material_requests_modal.php');
 				include_once('template/reset_password_modal.php');
 				//include("amc/amc_location_building_modal.php");
 			?>

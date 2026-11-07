@@ -1,3 +1,35 @@
+if (typeof formatComplaintHtmlBullets !== 'function') {
+    function formatComplaintHtmlBullets(text) {
+        if (!text) return '<div align="center">NA</div>';
+        var str = String(text);
+        if ($.trim(str) === '' || $.trim(str) === '0' || $.trim(str) === 'NA') {
+            return '<div align="center">NA</div>';
+        }
+
+        if (str.indexOf('*') !== -1) {
+            var parts = str.split('*');
+            var intro = $.trim(parts.shift());
+            var html = '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">';
+            if (intro !== '') {
+                html += '<div style="margin-bottom: 4px; font-weight: 500;">' + $('<div>').text(intro).html().replace(/\n/g, '<br>') + '</div>';
+            }
+            html += '<ul style="margin: 0; padding-left: 20px; list-style-type: disc; text-align: left;">';
+            for (var i = 0; i < parts.length; i++) {
+                var item = $.trim(parts[i]);
+                if (item !== '') {
+                    html += '<li style="margin-bottom: 3px;">' + $('<div>').text(item).html().replace(/\n/g, '<br>') + '</li>';
+                }
+            }
+            html += '</ul></div>';
+            return html;
+        } else {
+            var escaped = $('<div>').text(str).html().replace(/\n/g, '<br>');
+            return '<div style="text-align: left; padding: 4px 8px; line-height: 1.45;">' + escaped + '</div>';
+        }
+    }
+}
+window.formatComplaintHtmlBullets = formatComplaintHtmlBullets;
+
 $(document).ready(function(){
     
     var v_list_of_customer_facility = $('#tbl_customer_facility').DataTable({});
@@ -733,7 +765,7 @@ $(document).ready(function(){
 			  '<tr>'+
 			  '<td><div align="center">'+d.category_name+'</div></td>'+
 				'<td><div align="center">'+d.type_name+'</div></td>'+
-				'<td colspan="2"><div align="center">'+d.complaints_description+'</div></td>'+
+				'<td colspan="2" valign="top">'+formatComplaintHtmlBullets(d.complaints_description)+'</td>'+
 			  '</tr>'+
 			  	 '<tr style="background: #989898;color:#ffffff;">'+
 			  	 

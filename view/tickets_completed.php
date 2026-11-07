@@ -56,8 +56,8 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="../httpdocs/spinner/spinner.js"></script>
 	<script src="global_assets/js/demo_pages/editor_summernote.js"></script>
 	<script src="global_assets/js/fileupload_ns.js"></script>
-	<script src="../httpdocs/user_js/ticket_completed.js"></script>
-	<script src="../httpdocs/user_js/view_material_requests_ticket_modal.js"></script>
+	<script src="../httpdocs/user_js/ticket_completed.js?v=<?= time() ?>"></script>
+	<script src="../httpdocs/user_js/view_material_requests_ticket_modal.js?v=<?= time() ?>"></script>
 	<script src="../httpdocs/user_js/login.js"></script>
 	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>

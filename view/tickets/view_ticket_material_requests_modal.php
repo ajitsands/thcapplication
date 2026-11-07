@@ -1,5 +1,5 @@
 <!-- Material Requests for Ticket Modal - 3-Column Layout -->
-<div id="modal_view_material_requests_ticket" class="modal fade" tabindex="-1">
+<div id="modal_view_material_requests_ticket" class="modal fade" tabindex="-1" style="z-index: 1070;">
     <div class="modal-dialog modal-xl" style="max-width: 95%; width: 95%;">
         <div class="modal-content">
             <div class="modal-header bg-slate">

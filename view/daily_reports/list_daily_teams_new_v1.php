@@ -231,7 +231,30 @@ $result_date = mysqli_query($varDBConnection,"SELECT visit_date,DATE_FORMAT(visi
                                             			$strslot1 = rtrim($strslot, ' -');
                                             		echo $strslot1; }?></td>
                                             	
-                									<td><?php echo isset($row_details['complaints_description']) ? $row_details['complaints_description'] : '';?></td>
+                									<td valign="top">
+<?php 
+$desc = trim(isset($row_details['complaints_description']) ? $row_details['complaints_description'] : '');
+if ($desc === '' || $desc === '0' || $desc === 'NA') {
+	echo 'NA';
+} else if (strpos($desc, '*') !== false) {
+	$parts = explode('*', $desc);
+	$intro = trim(array_shift($parts));
+	if ($intro !== '') {
+		echo '<div style="margin-bottom: 4px; font-weight: 500;">' . nl2br(htmlspecialchars($intro)) . '</div>';
+	}
+	echo '<ul style="margin: 0; padding-left: 20px; list-style-type: disc;">';
+	foreach ($parts as $item) {
+		$item = trim($item);
+		if ($item !== '') {
+			echo '<li style="margin-bottom: 3px;">' . nl2br(htmlspecialchars($item)) . '</li>';
+		}
+	}
+	echo '</ul>';
+} else {
+	echo nl2br(htmlspecialchars($desc));
+}
+?>
+</td>
                 										<td><?php echo (isset($row_details['asset_code']) ? $row_details['asset_code'] : '') . ((isset($row_details['additional_info']) && $row_details['additional_info'] != '') ? ' - '.$row_details['additional_info'] : '');?></td>
                 								<td><?php echo (isset($row_details['category_name']) ? $row_details['category_name'] : '') . ' - ' . (isset($row_details['type_name']) ? $row_details['type_name'] : '');?></td>
                 								</tr>       			
