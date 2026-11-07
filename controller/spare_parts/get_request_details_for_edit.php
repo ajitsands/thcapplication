@@ -9,13 +9,9 @@ if(isset($_GET['request_id'])) {
     $conn = (new DBConnection())->ConnectToMYSQL();
     
     // Fetch Header
-    $sqlHeader = "SELECT id, customer_id, workorder_id, attachment_path, status FROM tbl_spare_parts_requests WHERE id = ?";
-    $stmtH = $conn->prepare($sqlHeader);
-    $stmtH->bind_param("i", $request_id);
-    $stmtH->execute();
-    $resH = $stmtH->get_result();
-    $header = $resH->fetch_assoc();
-    $stmtH->close();
+    $sqlHeader = "SELECT id, customer_id, workorder_id, attachment_path, status FROM tbl_spare_parts_requests WHERE id = " . $request_id;
+    $resH = $conn->query($sqlHeader);
+    $header = ($resH) ? $resH->fetch_assoc() : null;
     
     if (!$header) {
         echo json_encode(['success' => false, 'message' => 'Request not found.']);
@@ -29,19 +25,17 @@ if(isset($_GET['request_id'])) {
             FROM tbl_spare_parts_request_items ri
             LEFT JOIN tbl_spare_parts_master m ON ri.item_id = m.id
             LEFT JOIN tbl_spare_parts_issues i ON ri.id = i.request_item_id
-            WHERE ri.request_id = ?
+            WHERE ri.request_id = " . $request_id . "
             GROUP BY ri.id";
             
-    $stmtI = $conn->prepare($sqlItems);
-    $stmtI->bind_param("i", $request_id);
-    $stmtI->execute();
-    $resI = $stmtI->get_result();
+    $resI = $conn->query($sqlItems);
     
     $items = [];
-    while($row = $resI->fetch_assoc()) {
-        $items[] = $row;
+    if($resI) {
+        while($row = $resI->fetch_assoc()) {
+            $items[] = $row;
+        }
     }
-    $stmtI->close();
     
     $conn->close();
     

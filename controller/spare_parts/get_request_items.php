@@ -15,22 +15,20 @@ if(isset($_GET['request_id'])) {
             FROM tbl_spare_parts_request_items ri
             LEFT JOIN tbl_spare_parts_master m ON ri.item_id = m.id
             LEFT JOIN tbl_spare_parts_issues i ON ri.id = i.request_item_id
-            WHERE ri.request_id = ?
+            WHERE ri.request_id = " . $request_id . "
             GROUP BY ri.id";
             
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $request_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $conn->query($sql);
     
     $items = [];
-    while($row = $result->fetch_assoc()) {
-        $items[] = $row;
+    if($result) {
+        while($row = $result->fetch_assoc()) {
+            $items[] = $row;
+        }
     }
     
     echo json_encode($items);
     
-    $stmt->close();
     $conn->close();
 }
 ?>

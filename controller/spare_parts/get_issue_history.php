@@ -12,22 +12,20 @@ if(isset($_GET['request_id'])) {
             FROM tbl_spare_parts_request_items ri 
             JOIN tbl_spare_parts_master m ON ri.item_id = m.id 
             LEFT JOIN tbl_spare_parts_issues i ON ri.id = i.request_item_id 
-            WHERE ri.request_id = ? 
+            WHERE ri.request_id = " . $request_id . " 
             ORDER BY ri.id ASC, i.issued_date DESC";
             
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $request_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $conn->query($sql);
     
     $history = [];
-    while($row = $result->fetch_assoc()) {
-        $history[] = $row;
+    if($result) {
+        while($row = $result->fetch_assoc()) {
+            $history[] = $row;
+        }
     }
     
     echo json_encode($history);
     
-    $stmt->close();
     $conn->close();
 }
 ?>

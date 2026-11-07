@@ -1,7 +1,5 @@
 <?php 
-		ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
 include('db_variables.php');
 class UserPermisssion
 {
@@ -9,6 +7,7 @@ class UserPermisssion
 			function __construct($roll_id_from_user_table)
 			{
 				if ($roll_id_from_user_table != null) {
+				    
 					//$arr =  json_encode($this->getUserPermissions($roll_id_from_user_table)); // V1 Function Call 
 				    $arr =  json_encode($this->getUserPermissionsByUserID($roll_id_from_user_table)); //V2 Function Call
 					echo "<script>var permissions = $arr;</script>";
@@ -16,74 +15,60 @@ class UserPermisssion
 			}
             function DatabaseConnection()
             {
-                global  $servername ,$username ,$password ,	$database ;
-				$conn = new mysqli($servername, $username, $password, $database);
-				// Check connection
-				if ($conn->connect_error) {
-					die("Connection failed: " . $conn->connect_error);
-				}
-				return $conn;
+                global $servername, $username, $password, $database;
+                mysqli_report(MYSQLI_REPORT_OFF);
+                $conn = @new mysqli($servername, $username, $password, $database);
+                if ($conn->connect_error) {
+                    $conn = @new mysqli("127.0.0.1", $username, $password, $database);
+                }
+                if ($conn->connect_error) {
+                    die("Database Connection failed: " . $conn->connect_error);
+                }
+                return $conn;
             }
             
             function getUserPermissionsByUserID($userId) { // This function for V2 Application
-			
                 $connection = $this->DatabaseConnection();
-				// Prepare SQL statement to fetch permissions based on role ID
-				$sql = "SELECT DISTINCT p.name
-                            FROM permissions p
-                            INNER JOIN role_permissions rp ON p.id = rp.permission_id
-                            INNER JOIN user_roles ur ON rp.role_id = ur.role_id
-                            WHERE ur.user_id = ?";
+                $userId = intval($userId);
+                $sql = "select sub_module_name as name from role_permissions_v1 rp 
+                INNER JOIN user_roles_v1 ur ON rp.role_id = ur.role_id where ur.user_id = $userId";
 
-				// Prepare and execute the query
-				$stmt = $connection->prepare($sql);
-				$stmt->bind_param("i", $userId);
-				$stmt->execute();
-
-				// Fetch the permissions
-				$permissions = [];
-				$result = $stmt->get_result();
-				while ($row = $result->fetch_assoc()) {
-					$permissions[] = $row['name'];
-				}
-				// Close the statement and database connection
-				$stmt->close();
-				$connection->close();
-
-				// Return the permissions
-				
-				return $permissions;
-			}// Close of Function
+                $permissions = [];
+                $result = $connection->query($sql);
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        if (!empty($row['name'])) {
+                            $permissions[] = $row['name'];
+                        }
+                    }
+                    $result->free();
+                }
+                $connection->close();
+                return $permissions;
+            }// Close of Function
             
             
-			function getUserPermissions($roleId) { // This function Works only in V1 Application 
-			
+            function getUserPermissions($roleId) { // This function Works only in V1 Application 
                 $connection = $this->DatabaseConnection();
-				// Prepare SQL statement to fetch permissions based on role ID
-				$sql = "SELECT p.name
-						FROM permissions p
-						INNER JOIN role_permissions rp ON p.id = rp.permission_id
-						WHERE rp.role_id = ?";
+                $roleId = intval($roleId);
+                $sql = "SELECT p.name
+                        FROM permissions p
+                        INNER JOIN role_permissions rp ON p.id = rp.permission_id
+                        WHERE rp.role_id = $roleId";
 
-				// Prepare and execute the query
-				$stmt = $connection->prepare($sql);
-				$stmt->bind_param("i", $roleId);
-				$stmt->execute();
-
-				// Fetch the permissions
-				$permissions = [];
-				$result = $stmt->get_result();
-				while ($row = $result->fetch_assoc()) {
-					$permissions[] = $row['name'];
-				}
-				// Close the statement and database connection
-				$stmt->close();
-				$connection->close();
-
-				// Return the permissions
-				
-				return $permissions;
-			}// Close of Function
+                $permissions = [];
+                $result = $connection->query($sql);
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        if (!empty($row['name'])) {
+                            $permissions[] = $row['name'];
+                        }
+                    }
+                    $result->free();
+                }
+                $connection->close();
+                return $permissions;
+            }// Close of Function
 			
 			function ActionRequest($action)
 			{
@@ -93,16 +78,23 @@ class UserPermisssion
 						$this->addNewEventToJS($_POST['dbValue']);
 					break;
 					case 'listData':
-						$this->getAllControlNameAndClass();
+						$this->getAllControlNameAndClass($_POST['moduleId']);
+					break;
+					case 'listData_developer_view':  
+						$this->getAllControlNameAndClassOnly();
 					break;
 					case 'listOfRolls':
 						$this->getListOfRolls();
 					break;
 					case 'listOfPermissionBasedOnRolls':
 						$this->getListOfRollsBasedonRolls($_POST['rollId']);
+						//$this->getListOfRollsBasedonRolls($_POST['moduleId']);
 					break;
+					case 'listOfPermissionBasedOnRolls_1':
+					    $this->getListOfRollsBasedonRolls($_POST['moduleId']);
+					break;    
 					case 'save_privilages':
-					    $this->SavePrivilages($_POST['privilage_data'],$_POST['rollId']);
+					    $this->SavePrivilages($_POST['privilage_data'],$_POST['rollId'],$_POST['module_id']);
 					break;
 					case 'listOfUsers':
 					    $this->getListOfUsers();
@@ -124,55 +116,129 @@ class UserPermisssion
 					    $this->listOfSelectedUserRolls($_POST['userId']);
 					break;
 					
-				// 	case 'listOfAllModules':
-				// 	    echo "inside case";
-				// 	     //$this->getListOfModules();
-				// 	break;    
+					case 'listOfAllModules':
+					     $this->getListOfModules();
+					break; 
+					case 'listOfAvlModules':
+					     $this->listOfAvlModules();
+					break; 
+					case 'checkModuleOn':
+					     $this->checkModuleOn();
+					break; 
+						case 'checkModuleOff':
+					     $this->checkModuleOff();
+					break; 
 					
-					
+			
 				}
 			}
 			
-			function getAllControlNameAndClass()
+			
+
+
+
+		
+			function checkModuleOn()
+			{
+			    $connection = $this->DatabaseConnection();
+			    $roleID = intval($_POST['v_roleID'] ?? 0);
+			    $classviewID = intval($_POST['v_module_classview_id'] ?? 0);
+			    $moduleID = intval($_POST['v_module_id'] ?? 0);
+				$sql = "insert into role_permissions(role_id,permission_id,module_id,parent_status) values($roleID,$classviewID,$moduleID,'Yes')";
+			    $connection->query($sql);
+                $connection->close();
+			}
+			function checkModuleOff()
+			{
+			    $connection = $this->DatabaseConnection();
+			    $roleID = intval($_POST['v_roleID'] ?? 0);
+			    $classviewID = intval($_POST['v_module_classview_id'] ?? 0);
+			    $moduleID = intval($_POST['v_module_id'] ?? 0);
+				$sql = "delete from role_permissions where role_id=$roleID and permission_id=$classviewID and module_id=$moduleID";
+			    $connection->query($sql);
+                $connection->close();
+			}
+			
+			
+			function getAllControlNameAndClass($moduleId)
+			{
+			    $connection = $this->DatabaseConnection();
+			    $safeModuleId = $connection->real_escape_string($moduleId);
+				$sql = "select * from permissions where module_id='".$safeModuleId."'";
+                $result = $connection->query($sql);
+                $data = [];
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
+                }
+                echo json_encode($data);
+                $connection->close();
+			}
+			
+			function getAllControlNameAndClassOnly()
 			{
 			    $connection = $this->DatabaseConnection();
 				$sql = "select * from permissions";
-			    $stmt = $connection->prepare($sql);
-			    $stmt->execute();
-                $result = $stmt->get_result();
-                
-                // Fetch data as associative array
+                $result = $connection->query($sql);
                 $data = [];
-                while ($row = $result->fetch_assoc()) {
-                    $data['data'][] = $row;
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
                 }
-                
-                // Return data as JSON
                 echo json_encode($data);
-                
-                // Close connection
-                $stmt->close();
                 $connection->close();
 			}
+			
+			function getListOfModules()
+			{
+			    $connection = $this->DatabaseConnection();
+				$sql = "SELECT * FROM tbl_app_modules WHERE status='Active'";
+                $result = $connection->query($sql);
+                $data = [];
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
+                }
+                echo json_encode($data);
+                $connection->close();
+			}
+			function listOfAvlModules()
+			{
+			    $connection = $this->DatabaseConnection();
+			    $roleId = intval($_POST['selectedRoleID'] ?? 0);
+				$sql = "SELECT DISTINCT module_name,ids from tbl_app_modules Join role_permissions on role_permissions.`module_id` = tbl_app_modules.ids where role_permissions.role_id=".$roleId;
+                $result = $connection->query($sql);
+                $data = [];
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
+                }
+                echo json_encode($data);
+                $connection->close();
+			}
+			
 			function listOfSelectedUserRolls($UserID)
 			{
 			    $connection = $this->DatabaseConnection();
-				$sql = "SELECT r.name FROM users u JOIN user_roles ur ON u.id = ur.user_id JOIN roles r ON ur.role_id = r.id WHERE u.id =".$UserID;
-			    $stmt = $connection->prepare($sql);
-			    $stmt->execute();
-                $result = $stmt->get_result();
-                
-                // Fetch data as associative array
+			    $userId = intval($UserID);
+				$sql = "SELECT r.name FROM users u JOIN user_roles ur ON u.id = ur.user_id JOIN roles r ON ur.role_id = r.id WHERE u.id =".$userId;
+                $result = $connection->query($sql);
                 $data = [];
-                while ($row = $result->fetch_assoc()) {
-                    $data['data'][] = $row;
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
                 }
-                
-                // Return data as JSON
                 echo json_encode($data);
-                
-                // Close connection
-                $stmt->close();
                 $connection->close();
 			}
 			
@@ -182,84 +248,52 @@ class UserPermisssion
 			{
 			    $connection = $this->DatabaseConnection();
 				$sql = "select * from  roles";
-			    $stmt = $connection->prepare($sql);
-			    $stmt->execute();
-                $result = $stmt->get_result();
-                
-                // Fetch data as associative array
+                $result = $connection->query($sql);
                 $data = [];
-                while ($row = $result->fetch_assoc()) {
-                    $data['data'][] = $row;
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
                 }
-                
-                // Return data as JSON
                 echo json_encode($data);
-                
-                // Close connection
-                $stmt->close();
                 $connection->close();
 			}
 			function getListOfRollsBasedonRolls($rollID)
 			{
 			    $connection = $this->DatabaseConnection();
-				$sql = "SELECT * FROM `permissions` WHERE id in(select permission_id from role_permissions where role_id = $rollID)";
-			    $stmt = $connection->prepare($sql);
-			    $stmt->execute();
-                $result = $stmt->get_result();
-                
-                // Fetch data as associative array
+			    $rollID = intval($rollID);
+				$sql = "select DISTINCT permissions.id, permissions.name,role_permissions.module_id from role_permissions join permissions
+on role_permissions.permission_id = permissions.id
+where  role_permissions.role_id = $rollID and parent_status='No'";
+
+                $result = $connection->query($sql);
                 $data = [];
-                while ($row = $result->fetch_assoc()) {
-                    $data['data'][] = $row;
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
                 }
-                
-                // Return data as JSON
                 echo json_encode($data);
-                
-                // Close connection
-                $stmt->close();
                 $connection->close();
 			}
 			
 			function getListOfUsers()
 			{
 			    $connection = $this->DatabaseConnection();
-				//$sql = "SELECT users.id, users.username, roles.name as role_name FROM users LEFT JOIN roles ON roles.id = users.role_id";
 				$sql = "SELECT users.id, users.username, roles.name as role_name, tbl_employees.employee_name FROM users LEFT JOIN roles ON roles.id = users.role_id LEFT JOIN tbl_employees ON tbl_employees.employee_code = users.username";
-			    $stmt = $connection->prepare($sql);
-			    $stmt->execute();
-                $result = $stmt->get_result();
-                
-                // Fetch data as associative array
+                $result = $connection->query($sql);
                 $data = [];
-                while ($row = $result->fetch_assoc()) {
-                    $data['data'][] = $row;
-                }
-                
-                // Return data as JSON
-                echo json_encode($data);
-                
-                // Close connection
-                $stmt->close();
-                $connection->close();
-			}
-			
-			function getListOfModules()
-			{
-			    $connection = $this->DatabaseConnection();
-				$sql = "SELECT * FROM tbl_app_modules WHERE status='Active'";
-			    $stmt = $connection->prepare($sql);
-			    $stmt->execute();
-                $result = $stmt->get_result();
-                $data = [];
-                while ($row = $result->fetch_assoc()) {
-                    $data['data'][] = $row;
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $data['data'][] = $row;
+                    }
+                    $result->free();
                 }
                 echo json_encode($data);
-                $stmt->close();
                 $connection->close();
 			}
-			
 			function updateUserPrivilageByUserID($privilageID,$userID) // For V1 Application
 			{
 			        //echo var_dump($privilageID).'---'.$userID;
@@ -321,25 +355,28 @@ class UserPermisssion
 			function addRolesOrGroups($rollName) 
 			{
 			    $connection = $this->DatabaseConnection();
-				// Prepare SQL statement to fetch permissions based on role ID
-				$sql = "insert into roles(name) values('".$rollName."')";
-				$sqlCheck = "SELECT user_type_name FROM tbl_user_types WHERE user_type_name LIKE '%" . $rollName . "%'";
-                $stmt = $connection->prepare($sqlCheck);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $numRows = $result->num_rows;
+			
+				$safeRollName = $connection->real_escape_string($rollName);
+				$sqlCheck = "SELECT user_type_name FROM tbl_user_types WHERE user_type_name LIKE '%" . $safeRollName . "%'";
+                $result = $connection->query($sqlCheck);
+                $numRows = ($result) ? $result->num_rows : 0;
                 if($numRows==0)
                 {
                     $sqlCheckInsert = "insert into tbl_user_types(`user_type_name`) VALUES('".$rollName."')";
                     $connection->query($sqlCheckInsert);
+                    $sql = "insert into roles(name) values('".$rollName."')";
+    				if ($connection->query($sql) === TRUE) {
+                      echo "New record created successfully";
+                    } else {
+                      echo "Error: " . $sql . "<br>" . $connection->error;
+                    }
                 }
-
-				// Prepare and execute the query
-				if ($connection->query($sql) === TRUE) {
-                  echo "New record created successfully";
-                } else {
-                  echo "Error: " . $sql . "<br>" . $connection->error;
+                else
+                {
+                    echo "User Type - Name Already Exist !";
                 }
+                
+				
                 
                 $connection->close();
 			}
@@ -352,8 +389,9 @@ class UserPermisssion
 				// Prepare and execute the query
 				if ($connection->query($sql) === TRUE) {
 				$this->deleteALineFromTheFile($moduleName);
+				$sqlDel = "DELETE FROM module_permissions WHERE module_permission_name='".$moduleName."'";
+				$connection->query($sqlDel);
                   echo "Permission removed successfully";
-                  
                 } else {
                   echo "Error: " . $sql . "<br>" . $connection->error;
                 }
@@ -395,13 +433,15 @@ class UserPermisssion
 			
 			function addNewEventToJS($dbValue)
 			{
-			     $connection = $this->DatabaseConnection();
+			    $connection = $this->DatabaseConnection();
 				// Prepare SQL statement to fetch permissions based on role ID
 				$sql = "insert into permissions(name,class_name) values('".$dbValue."','class".$dbValue."')";
-
+                $sqlModuleApp = "INSERT INTO module_permissions(module_permission_name,module_id) VALUES('".$dbValue."','".$_POST['selectModuleId']."')";
 				// Prepare and execute the query
-				if ($connection->query($sql) === TRUE) {
-                  echo "New record created successfully";
+				if ($connection->query($sql) === TRUE)
+				{
+				   $connection->query($sqlModuleApp); 
+                   echo "New record created successfully";
                 } else {
                   echo "Error: " . $sql . "<br>" . $connection->error;
                 }
@@ -450,24 +490,36 @@ class UserPermisssion
 
 			}
 			
-			function SavePrivilages($permissionIds,$roleId)
+			function SavePrivilages($permissionIds,$roleId,$moduleID)
 			{
-			       // Initialize an empty string to store the values part of the query
-                    $values = "";
+			       // Fixed value for the first part of each pair
+                    $fixedValue = $roleId;
                     
-                    // Iterate through the permission IDs
-                    foreach ($permissionIds as $permissionId) {
-                        // Concatenate each permission ID with the role ID into the values string
-                        $values .= "($roleId, $permissionId),";
+                    // Check if both arrays have the same length
+                    if (count($permissionIds) !== count($moduleID)) {
+                        // Arrays don't have the same length, handle the error here
+                        echo "Arrays don't have the same length.";
+                    } else {
+                        // Initialize an empty string to store the values part of the query
+                        $values = "";
+                    
+                        // Iterate through the arrays and construct the values string
+                        for ($i = 0; $i < count($permissionIds); $i++) {
+                            // Concatenate each pair with the role ID into the values string
+                            $values .= "($fixedValue, {$permissionIds[$i]}, {$moduleID[$i]}),";
+                        }
+                    
+                        // Remove the trailing comma from the values string
+                        $values = rtrim($values, ",");
+                    
+                        // Construct the insert query
+                        $insertQuery = "INSERT INTO role_permissions (role_id, permission_id, module_id) VALUES $values;";
+                        //echo $insertQuery; // For testing purposes
+                        // Execute the insert query here
                     }
-                    
-                    // Remove the trailing comma from the values string
-                    $values = rtrim($values, ",");
-                    
-                    // Construct the insert query
-                    $insertQuery = "INSERT INTO role_permissions (role_id, permission_id) VALUES $values;";
-                    
-                    $deleteQuery = "delete from role_permissions where role_id=".$roleId;
+
+    
+                    $deleteQuery = "delete from role_permissions where role_id=".$roleId." and parent_status='No'";
                     
                     $connection = $this->DatabaseConnection();
     				
