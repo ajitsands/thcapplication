@@ -3,6 +3,13 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
 
+register_shutdown_function(function() {
+    $err = error_get_last();
+    if ($err !== null && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
+        error_log("[THCFM Dashboard Fatal] " . $err['message'] . " in " . $err['file'] . " on line " . $err['line']);
+    }
+});
+
 require_once __DIR__ . '/../model/common/session_init.php';
 if (!empty($_SESSION["loggedin"]) && $_SESSION["loggedin"] == "true")
 {
@@ -228,12 +235,14 @@ $OBJ->URLEncode('head=dashboard');
                         GROUP BY 
                             name";
                                 
-                    $result_sq_emp = mysqli_query($varDBConnection,$sq_emp);
+                    $result_sq_emp = ($varDBConnection && $varDBConnection instanceof mysqli) ? @mysqli_query($varDBConnection,$sq_emp) : false;
                      
-                    while($row_emp =mysqli_fetch_assoc($result_sq_emp)){
-                        $emparray[] = $row_emp;
+                    if ($result_sq_emp && $result_sq_emp instanceof mysqli_result) {
+                        while($row_emp = mysqli_fetch_assoc($result_sq_emp)){
+                            $emparray[] = $row_emp;
+                        }
                     }
-                    $emparray= json_encode($emparray); 
+                    $emparray = json_encode($emparray); 
                     
            
             ?>

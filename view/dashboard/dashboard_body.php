@@ -3,72 +3,125 @@
     include_once(__DIR__ . '/../../model/db_connection/connection.php');
     $DBConn = new DBConnection();
     $varDBConnection = $DBConn->ConnectToMYSQL();
-    $result_active_clients = mysqli_query($varDBConnection,"SELECT count(`customer_id`) as count_active_clients FROM `tbl_customers` WHERE  customer_status ='Active'");
-    while($row_active_clients=mysqli_fetch_assoc($result_active_clients)) {
-        $active_clients_count=$row_active_clients["count_active_clients"];
-    } 
-    $result_active_employees = mysqli_query($varDBConnection,"SELECT count(`employee_id`) as count_active_employee FROM `tbl_employees` WHERE  employee_status ='Active'");
-    while($row_active_employees=mysqli_fetch_assoc($result_active_employees)) {
-        $active_employees_count=$row_active_employees["count_active_employee"];
-    } 
-    $result_wo_today = mysqli_query($varDBConnection,"SELECT count(`amc_visit_id`) as wo_today FROM `tbl_visits` WHERE `date_of_visits`=DATE_FORMAT(now(),'%Y-%m-%d') and amc_visit_status !='Cancelled'");
-    while($row_wo_today=mysqli_fetch_assoc($result_wo_today)) {
-        $wo_today_count=$row_wo_today["wo_today"];
-    }                     
-    $result_wo_today_hp = mysqli_query($varDBConnection,"SELECT count(`amc_visit_id`) as wo_today_hp FROM `tbl_visits` WHERE `date_of_visits`=DATE_FORMAT(now(),'%Y-%m-%d') and amc_visit_status !='Cancelled' and amc_tkt_id in (select ticket_id from tbl_tickets where ticket_priority='Emergency')");
-    while($row_wo_today_hp=mysqli_fetch_assoc($result_wo_today_hp)) {
-        $wo_today_hp_count=$row_wo_today_hp["wo_today_hp"];
-    }  
-                         
-    $result_raised_wo_emergency = mysqli_query($varDBConnection,"select count(ticket_id) as emergency_wo_count from tbl_tickets where    ticket_status not in ('Closed','Cancelled') and ticket_priority='Emergency'");
-     while($row_raised_wo_emergency=mysqli_fetch_assoc($result_raised_wo_emergency)) {
-        $wo_raised_wo_emergency=$row_raised_wo_emergency["emergency_wo_count"];
-    } 
-    $result_raised_wo_urgent = mysqli_query($varDBConnection,"select count(ticket_id) as urgent_wo_count from tbl_tickets where    ticket_status not in ('Closed','Cancelled') and ticket_priority='Urgent'");
-     while($row_raised_wo_urgent=mysqli_fetch_assoc($result_raised_wo_urgent)) {
-        $wo_raised_wo_urgent=$row_raised_wo_urgent["urgent_wo_count"];
-    } 
-    $result_raised_wo_normal = mysqli_query($varDBConnection,"select count(ticket_id) as normal_wo_count from tbl_tickets where    ticket_status not in ('Closed','Cancelled') and ticket_priority not in ('Emergency','Urgent')");
-     while($row_raised_wo_normal=mysqli_fetch_assoc($result_raised_wo_normal)) {
-        $wo_raised_wo_normal=$row_raised_wo_normal["normal_wo_count"];
-    } 
-    $result_cpr_expired = mysqli_query($varDBConnection,"select count(employee_id) as cpr_expiry_nos from tbl_employees where    employee_status='Active' and `cpr_expiry_date`!='0000-00-00' and `cpr_expiry_date` < DATE_FORMAT(now(),'%Y-%m-%d')");
-     while($row_cpr_expired=mysqli_fetch_assoc($result_cpr_expired)) {
-        $cpr_expiry_nos=$row_cpr_expired["cpr_expiry_nos"];
-    } 
-    $result_visa_expired = mysqli_query($varDBConnection,"select count(employee_id) as visa_expiry_nos from tbl_employees where    employee_status='Active' and `visa_validity_on`!='0000-00-00' and `visa_validity_on` < DATE_FORMAT(now(),'%Y-%m-%d')");
-     while($row_visa_expired=mysqli_fetch_assoc($result_visa_expired)) {
-        $visa_expiry_nos=$row_visa_expired["visa_expiry_nos"];
-    } 
-    $result_amc_renewals_count = mysqli_query($varDBConnection,"select count(amc_id) as amc_renewal_count from tbl_amc_master where    amc_status='Active' and  DATE_FORMAT(amc_end_date,'%Y-%m-%d') < DATE_FORMAT(date_add(now(), interval 1 month),'%Y-%m-%d')");
-     while($row_amc_renewals_count=mysqli_fetch_assoc($result_amc_renewals_count)) {
-        $amc_renewals_count=$row_amc_renewals_count["amc_renewal_count"];
-    }
-    $result_amc_renewals_date = mysqli_query($varDBConnection,"select DATE_FORMAT(date_add(now(), interval 1 month),'%d-%m-%Y') as amc_renewal_upto");
-     while($row_amc_renewals_date=mysqli_fetch_assoc($result_amc_renewals_date)) {
-        $amc_renewals_date=$row_amc_renewals_date["amc_renewal_upto"];
-    }
-    $result_opened_wo_today = mysqli_query($varDBConnection,"select count(ticket_id) as today_wo_opened from tbl_tickets where    ticket_status!='Cancelled' and DATE_FORMAT(created_date_time,'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d')");
-     while($row_opened_wo_today=mysqli_fetch_assoc($result_opened_wo_today)) {
-        $wo_opened_today=$row_opened_wo_today["today_wo_opened"];
-    } 
-     $result_closed_wo_today = mysqli_query($varDBConnection,"select count(ticket_id) as today_wo_closed from tbl_tickets where    ticket_status='Closed' and DATE_FORMAT(closed_on,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d')");
-     while($row_closed_wo_today=mysqli_fetch_assoc($result_closed_wo_today)) {
-        $wo_closed_today=$row_closed_wo_today["today_wo_closed"];
-    } 
-     $result_pending_wo_today = mysqli_query($varDBConnection,"select count(amc_visit_id) as today_wo_pending from tbl_visits where    amc_visit_status not in ('Closed','Opened','Cancelled','Completed') and `date_of_visits` = DATE_FORMAT(now(),'%Y-%m-%d')");
-     while($row_pending_wo_today=mysqli_fetch_assoc($result_pending_wo_today)) {
-        $wo_pending_today=$row_pending_wo_today["today_wo_pending"];
-    } 
-     $result_completed_wo_today = mysqli_query($varDBConnection,"select count(ticket_id ) as today_wo_completed from tbl_tickets where    ticket_status  in ('Completed','Closed') and DATE_FORMAT(completed_date_time,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d')");
-     while($row_completed_wo_today=mysqli_fetch_assoc($result_completed_wo_today)) {
-        $wo_completed_today=$row_completed_wo_today["today_wo_completed"];
-    }
-    
-     $result_graph_month_year = mysqli_query($varDBConnection,"select DATE_FORMAT(now(),'%M') as graph_month,DATE_FORMAT(now(),'%Y') as graph_year");
-     while($row_graph_month_year=mysqli_fetch_assoc($result_graph_month_year)) {
-        $graph_month=$row_graph_month_year["graph_month"];
-        $graph_year=$row_graph_month_year["graph_year"];
+
+    $active_clients_count = 0;
+    $active_employees_count = 0;
+    $wo_today_count = 0;
+    $wo_today_hp_count = 0;
+    $wo_raised_wo_emergency = 0;
+    $wo_raised_wo_urgent = 0;
+    $wo_raised_wo_normal = 0;
+    $cpr_expiry_nos = 0;
+    $visa_expiry_nos = 0;
+    $amc_renewals_count = 0;
+    $amc_renewals_date = date('d-m-Y', strtotime('+1 month'));
+    $wo_opened_today = 0;
+    $wo_closed_today = 0;
+    $wo_pending_today = 0;
+    $wo_completed_today = 0;
+    $graph_month = date('F');
+    $graph_year = date('Y');
+
+    if ($varDBConnection && $varDBConnection instanceof mysqli) {
+        $result_active_clients = @mysqli_query($varDBConnection,"SELECT count(`customer_id`) as count_active_clients FROM `tbl_customers` WHERE  customer_status ='Active'");
+        if ($result_active_clients && $result_active_clients instanceof mysqli_result) {
+            while($row_active_clients=mysqli_fetch_assoc($result_active_clients)) {
+                $active_clients_count=$row_active_clients["count_active_clients"];
+            }
+        } 
+        $result_active_employees = @mysqli_query($varDBConnection,"SELECT count(`employee_id`) as count_active_employee FROM `tbl_employees` WHERE  employee_status ='Active'");
+        if ($result_active_employees && $result_active_employees instanceof mysqli_result) {
+            while($row_active_employees=mysqli_fetch_assoc($result_active_employees)) {
+                $active_employees_count=$row_active_employees["count_active_employee"];
+            } 
+        }
+        $result_wo_today = @mysqli_query($varDBConnection,"SELECT count(`amc_visit_id`) as wo_today FROM `tbl_visits` WHERE `date_of_visits`=DATE_FORMAT(now(),'%Y-%m-%d') and amc_visit_status !='Cancelled'");
+        if ($result_wo_today && $result_wo_today instanceof mysqli_result) {
+            while($row_wo_today=mysqli_fetch_assoc($result_wo_today)) {
+                $wo_today_count=$row_wo_today["wo_today"];
+            }
+        }                     
+        $result_wo_today_hp = @mysqli_query($varDBConnection,"SELECT count(`amc_visit_id`) as wo_today_hp FROM `tbl_visits` WHERE `date_of_visits`=DATE_FORMAT(now(),'%Y-%m-%d') and amc_visit_status !='Cancelled' and amc_tkt_id in (select ticket_id from tbl_tickets where ticket_priority='Emergency')");
+        if ($result_wo_today_hp && $result_wo_today_hp instanceof mysqli_result) {
+            while($row_wo_today_hp=mysqli_fetch_assoc($result_wo_today_hp)) {
+                $wo_today_hp_count=$row_wo_today_hp["wo_today_hp"];
+            }  
+        }
+                             
+        $result_raised_wo_emergency = @mysqli_query($varDBConnection,"select count(ticket_id) as emergency_wo_count from tbl_tickets where    ticket_status not in ('Closed','Cancelled') and ticket_priority='Emergency'");
+        if ($result_raised_wo_emergency && $result_raised_wo_emergency instanceof mysqli_result) {
+            while($row_raised_wo_emergency=mysqli_fetch_assoc($result_raised_wo_emergency)) {
+                $wo_raised_wo_emergency=$row_raised_wo_emergency["emergency_wo_count"];
+            } 
+        }
+        $result_raised_wo_urgent = @mysqli_query($varDBConnection,"select count(ticket_id) as urgent_wo_count from tbl_tickets where    ticket_status not in ('Closed','Cancelled') and ticket_priority='Urgent'");
+        if ($result_raised_wo_urgent && $result_raised_wo_urgent instanceof mysqli_result) {
+            while($row_raised_wo_urgent=mysqli_fetch_assoc($result_raised_wo_urgent)) {
+                $wo_raised_wo_urgent=$row_raised_wo_urgent["urgent_wo_count"];
+            } 
+        }
+        $result_raised_wo_normal = @mysqli_query($varDBConnection,"select count(ticket_id) as normal_wo_count from tbl_tickets where    ticket_status not in ('Closed','Cancelled') and ticket_priority not in ('Emergency','Urgent')");
+        if ($result_raised_wo_normal && $result_raised_wo_normal instanceof mysqli_result) {
+            while($row_raised_wo_normal=mysqli_fetch_assoc($result_raised_wo_normal)) {
+                $wo_raised_wo_normal=$row_raised_wo_normal["normal_wo_count"];
+            } 
+        }
+        $result_cpr_expired = @mysqli_query($varDBConnection,"select count(employee_id) as cpr_expiry_nos from tbl_employees where    employee_status='Active' and `cpr_expiry_date`!='0000-00-00' and `cpr_expiry_date` < DATE_FORMAT(now(),'%Y-%m-%d')");
+        if ($result_cpr_expired && $result_cpr_expired instanceof mysqli_result) {
+            while($row_cpr_expired=mysqli_fetch_assoc($result_cpr_expired)) {
+                $cpr_expiry_nos=$row_cpr_expired["cpr_expiry_nos"];
+            } 
+        }
+        $result_visa_expired = @mysqli_query($varDBConnection,"select count(employee_id) as visa_expiry_nos from tbl_employees where    employee_status='Active' and `visa_validity_on`!='0000-00-00' and `visa_validity_on` < DATE_FORMAT(now(),'%Y-%m-%d')");
+        if ($result_visa_expired && $result_visa_expired instanceof mysqli_result) {
+            while($row_visa_expired=mysqli_fetch_assoc($result_visa_expired)) {
+                $visa_expiry_nos=$row_visa_expired["visa_expiry_nos"];
+            } 
+        }
+        $result_amc_renewals_count = @mysqli_query($varDBConnection,"select count(amc_id) as amc_renewal_count from tbl_amc_master where    amc_status='Active' and  DATE_FORMAT(amc_end_date,'%Y-%m-%d') < DATE_FORMAT(date_add(now(), interval 1 month),'%Y-%m-%d')");
+        if ($result_amc_renewals_count && $result_amc_renewals_count instanceof mysqli_result) {
+            while($row_amc_renewals_count=mysqli_fetch_assoc($result_amc_renewals_count)) {
+                $amc_renewals_count=$row_amc_renewals_count["amc_renewal_count"];
+            }
+        }
+        $result_amc_renewals_date = @mysqli_query($varDBConnection,"select DATE_FORMAT(date_add(now(), interval 1 month),'%d-%m-%Y') as amc_renewal_upto");
+        if ($result_amc_renewals_date && $result_amc_renewals_date instanceof mysqli_result) {
+            while($row_amc_renewals_date=mysqli_fetch_assoc($result_amc_renewals_date)) {
+                $amc_renewals_date=$row_amc_renewals_date["amc_renewal_upto"];
+            }
+        }
+        $result_opened_wo_today = @mysqli_query($varDBConnection,"select count(ticket_id) as today_wo_opened from tbl_tickets where    ticket_status!='Cancelled' and DATE_FORMAT(created_date_time,'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d')");
+        if ($result_opened_wo_today && $result_opened_wo_today instanceof mysqli_result) {
+            while($row_opened_wo_today=mysqli_fetch_assoc($result_opened_wo_today)) {
+                $wo_opened_today=$row_opened_wo_today["today_wo_opened"];
+            } 
+        }
+        $result_closed_wo_today = @mysqli_query($varDBConnection,"select count(ticket_id) as today_wo_closed from tbl_tickets where    ticket_status='Closed' and DATE_FORMAT(closed_on,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d')");
+        if ($result_closed_wo_today && $result_closed_wo_today instanceof mysqli_result) {
+            while($row_closed_wo_today=mysqli_fetch_assoc($result_closed_wo_today)) {
+                $wo_closed_today=$row_closed_wo_today["today_wo_closed"];
+            } 
+        }
+        $result_pending_wo_today = @mysqli_query($varDBConnection,"select count(amc_visit_id) as today_wo_pending from tbl_visits where    amc_visit_status not in ('Closed','Opened','Cancelled','Completed') and `date_of_visits` = DATE_FORMAT(now(),'%Y-%m-%d')");
+        if ($result_pending_wo_today && $result_pending_wo_today instanceof mysqli_result) {
+            while($row_pending_wo_today=mysqli_fetch_assoc($result_pending_wo_today)) {
+                $wo_pending_today=$row_pending_wo_today["today_wo_pending"];
+            } 
+        }
+        $result_completed_wo_today = @mysqli_query($varDBConnection,"select count(ticket_id ) as today_wo_completed from tbl_tickets where    ticket_status  in ('Completed','Closed') and DATE_FORMAT(completed_date_time,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d')");
+        if ($result_completed_wo_today && $result_completed_wo_today instanceof mysqli_result) {
+            while($row_completed_wo_today=mysqli_fetch_assoc($result_completed_wo_today)) {
+                $wo_completed_today=$row_completed_wo_today["today_wo_completed"];
+            }
+        }
+        
+        $result_graph_month_year = @mysqli_query($varDBConnection,"select DATE_FORMAT(now(),'%M') as graph_month,DATE_FORMAT(now(),'%Y') as graph_year");
+        if ($result_graph_month_year && $result_graph_month_year instanceof mysqli_result) {
+            while($row_graph_month_year=mysqli_fetch_assoc($result_graph_month_year)) {
+                $graph_month=$row_graph_month_year["graph_month"];
+                $graph_year=$row_graph_month_year["graph_year"];
+            }
+        }
     }
 
     if (!function_exists('format_dashboard_complaints')) {
@@ -221,10 +274,11 @@
                                     <option value="" selected>Select</option>
                                     <option value="all">All</option>
                                     <?php   
-                                    	$resultCategoriess = mysqli_query($varDBConnection,"SELECT category_id, category_name FROM tbl_category WHERE category_status='Active'");
-                                        while($rowsCategories=mysqli_fetch_assoc($resultCategoriess)) { ?>
-                                        <option value="<?php echo $rowsCategories['category_id']; ?>"><?php echo $rowsCategories['category_name']; ?></option>
-                                    <?php } ?>
+                                    	$resultCategoriess = ($varDBConnection && $varDBConnection instanceof mysqli) ? @mysqli_query($varDBConnection,"SELECT category_id, category_name FROM tbl_category WHERE category_status='Active'") : false;
+                                        if ($resultCategoriess && $resultCategoriess instanceof mysqli_result) {
+                                            while($rowsCategories=mysqli_fetch_assoc($resultCategoriess)) { ?>
+                                            <option value="<?php echo $rowsCategories['category_id']; ?>"><?php echo $rowsCategories['category_name']; ?></option>
+                                        <?php } } ?>
                                 </select>
                             </div>
                         </div>
@@ -329,8 +383,8 @@
 
                     <ul class="media-list">
                         <?php	    
-							$result_raised_wo = mysqli_query($varDBConnection,"select concat('WO-',ticket_ref_code,'-',ticket_id) as wo_ref_nos,DATE_FORMAT(created_date_time,'%d/%m/%Y %H:%i:%s') as created_date_time1,concat(customer_code,' - ',customer_name) as customers,complaints_description,ticket_priority from tbl_tickets where    ticket_status not in ('Cancelled','Closed') order by ticket_id desc limit 5");
-							 $rowcount = mysqli_num_rows($result_raised_wo);
+							$result_raised_wo = ($varDBConnection && $varDBConnection instanceof mysqli) ? @mysqli_query($varDBConnection,"select concat('WO-',ticket_ref_code,'-',ticket_id) as wo_ref_nos,DATE_FORMAT(created_date_time,'%d/%m/%Y %H:%i:%s') as created_date_time1,concat(customer_code,' - ',customer_name) as customers,complaints_description,ticket_priority from tbl_tickets where    ticket_status not in ('Cancelled','Closed') order by ticket_id desc limit 5") : false;
+							 $rowcount = ($result_raised_wo && $result_raised_wo instanceof mysqli_result) ? mysqli_num_rows($result_raised_wo) : 0;
 							 if($rowcount==0)
 							 { ?>
                         <li class="media">
@@ -418,8 +472,8 @@
 
                     <ul class="media-list">
                         <?php	    
-							$result_amc_renewals = mysqli_query($varDBConnection,"select contract_type_name,amc_ref_no,concat(customer_code,' - ',customer_name) as customers,concat(DATE_FORMAT(amc_start_date,'%d/%m/%Y'),'  - ',DATE_FORMAT(amc_end_date,'%d/%m/%Y')) as amc_dates,DATEDIFF(amc_end_date,now()) as expiry_days from tbl_amc_master where renewal_status='No' and amc_status='Active' and  DATE_FORMAT(amc_end_date,'%Y-%m-%d') < DATE_FORMAT(date_add(now(), interval 1 month),'%Y-%m-%d')order by YEAR(amc_end_date) DESC, MONTH(amc_end_date) DESC, DAY(amc_end_date) desc limit 4");
-							 $rowcount_amc_renewals = mysqli_num_rows($result_amc_renewals);
+							$result_amc_renewals = ($varDBConnection && $varDBConnection instanceof mysqli) ? @mysqli_query($varDBConnection,"select contract_type_name,amc_ref_no,concat(customer_code,' - ',customer_name) as customers,concat(DATE_FORMAT(amc_start_date,'%d/%m/%Y'),'  - ',DATE_FORMAT(amc_end_date,'%d/%m/%Y')) as amc_dates,DATEDIFF(amc_end_date,now()) as expiry_days from tbl_amc_master where renewal_status='No' and amc_status='Active' and  DATE_FORMAT(amc_end_date,'%Y-%m-%d') < DATE_FORMAT(date_add(now(), interval 1 month),'%Y-%m-%d')order by YEAR(amc_end_date) DESC, MONTH(amc_end_date) DESC, DAY(amc_end_date) desc limit 4") : false;
+							 $rowcount_amc_renewals = ($result_amc_renewals && $result_amc_renewals instanceof mysqli_result) ? mysqli_num_rows($result_amc_renewals) : 0;
 							 if($rowcount_amc_renewals==0)
 							 { ?>
                         <li class="media">

@@ -1,5 +1,6 @@
 <?PHP
 
+if (!class_exists('URLEncription')) {
 class URLEncription
 {
     public $iv_size, $key;
@@ -61,4 +62,5 @@ class URLEncription
         return base64_decode(str_replace(['-', '_'], ['+', '/'], $data));
     }
 
+}
 }

@@ -11,8 +11,10 @@ if ($_param !== '') {
 }
 
 /* Helper: is a specific section active? */
-function menuActive($p, $key, $val) {
-    return (isset($p[$key]) && $p[$key] == $val);
+if (!function_exists('menuActive')) {
+    function menuActive($p, $key, $val) {
+        return (isset($p[$key]) && $p[$key] == $val);
+    }
 }
 
 /* Include THC Brand Logo Resolver */
