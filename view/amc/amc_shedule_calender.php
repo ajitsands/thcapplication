@@ -43,6 +43,12 @@
     #modal_change_status {
         z-index: 105000 !important;
     }
+    #modal_tkt_Customer_details .modal-dialog,
+    #modal_amc_Customer_details .modal-dialog {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 20px auto !important;
+    }
 
     /* Calendar Status Legend Colors */
     .card-header .card-title .calendar-legend-scheduled,
@@ -164,7 +170,7 @@
 </div>
 <!--AMC Customer modal -->
 <div id="modal_amc_Customer_details" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-full" style="width: 95% !important; max-width: 95% !important;">
         <div class="modal-content">
             <div class="modal-header bg-success" id="div_modal_color">
                 <h5 class="modal-title">View Details [<span id="amc_ref_no"></span>]</h5>
@@ -243,7 +249,7 @@
 
 <!--TKT Customer modal -->
 <div id="modal_tkt_Customer_details" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-full" style="width: 95% !important; max-width: 95% !important;">
         <div class="modal-content">
             <div class="modal-header bg-success" id="div_modal_color">
                 <h5 class="modal-title">View Details [ <span id="tkt_ref_no"></span> ]</h5>

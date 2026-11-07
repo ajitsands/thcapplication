@@ -195,6 +195,12 @@ $OBJ->URLEncode('head=dashboard');
       #modal_change_status {
           z-index: 105000 !important;
       }
+      #modal_tkt_Customer_details .modal-dialog,
+      #modal_amc_Customer_details .modal-dialog {
+          width: 95% !important;
+          max-width: 95% !important;
+          margin: 20px auto !important;
+      }
     </style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
@@ -467,19 +473,20 @@ $(document).ready(function(){
             				"bInfo": false,
             				"autoWidth": false,
                              "columns": [
-                                 { "data": null},
+                                 { "data": null, "width": "4%" },
                                  
-                                 { "data": "category_name" },
-                                 { "data": "type_name"},
+                                 { "data": "category_name", "width": "12%" },
+                                 { "data": "type_name", "width": "12%" },
                                  { 
                                      "data": "complaints_description",
+                                     "width": "36%",
                                      render: function ( data, type, rows, meta ) {
                                          return formatComplaintHtmlBullets(data);
                                      }
                                  },
-                                 { "data": "additional_info"},
-                                 { "data": "asset_code" },
-                                 { "data": "ticket_status"},
+                                 { "data": "additional_info", "width": "16%" },
+                                 { "data": "asset_code", "width": "10%" },
+                                 { "data": "ticket_status", "width": "10%" },
                                  
                                
                              ],
