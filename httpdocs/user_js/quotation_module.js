@@ -28,7 +28,22 @@
     // Amount calculation helpers
     const itemTotal = it => (+it.quantity || +it[1] || 0) * (+it.unit_price || +it[3] || 0);
     const amt = q => (q.items || []).reduce((t, r) => t + itemTotal(r), 0);
-    const tot = q => amt(q) * (1 + (q.vat_rate || q.vat || 10) / 100);
+    const discAmount = q => {
+        const sub = amt(q);
+        const dVal = q.discount_value !== undefined ? +q.discount_value : (q.discount !== undefined ? +q.discount : 0);
+        const dType = q.discount_type || "amount";
+        if (dVal <= 0) return 0;
+        if (dType === "percent") {
+            return Math.min(sub, (sub * dVal) / 100);
+        }
+        return Math.min(sub, dVal);
+    };
+    const netAmt = q => Math.max(0, amt(q) - discAmount(q));
+    const tot = q => {
+        const net = netAmt(q);
+        const rate = q.vat_rate !== undefined ? +q.vat_rate : (q.vat !== undefined ? +q.vat : 10);
+        return net * (1 + rate / 100);
+    };
     const SENT = ["Pending", "Approved", "Not approved"];
     const sm = (a, f) => a.reduce((t, x) => t + f(x), 0);
 
@@ -141,9 +156,13 @@
     // Official THC Facility Management Letterhead Preview Sheet
     function sheet(q) {
         const sub = amt(q);
+        const discVal = q.discount_value !== undefined ? +q.discount_value : (q.discount !== undefined ? +q.discount : 0);
+        const discType = q.discount_type || "amount";
+        const discAmt = discAmount(q);
+        const netSub = netAmt(q);
         const vatRate = q.vat_rate !== undefined ? q.vat_rate : (q.vat !== undefined ? q.vat : 10);
-        const vatVal = (sub * vatRate) / 100;
-        const grandTot = sub + vatVal;
+        const vatVal = (netSub * vatRate) / 100;
+        const grandTot = netSub + vatVal;
 
         const uCode = q.user_code || q.user || CU;
         const uInfo = USERS[uCode] || [q.user_name || "Authorized Signatory", q.user_designation || "THC Facility Management"];
@@ -215,10 +234,25 @@
                     })}
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <td colspan="4" class="c"><b>Amount Excluding VAT</b></td>
-                        <td class="r"><b>${f3(sub)}</b></td>
-                    </tr>
+                    ${discAmt > 0 ? `
+                        <tr>
+                            <td colspan="4" class="c"><b>Gross Amount Excluding VAT</b></td>
+                            <td class="r"><b>${f3(sub)}</b></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="c" style="color:#b91c1c;"><b>Discount ${discType === "percent" ? `(${discVal}%)` : ""}</b></td>
+                            <td class="r" style="color:#b91c1c;"><b>-${f3(discAmt)}</b></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="c"><b>Net Amount Excluding VAT</b></td>
+                            <td class="r"><b>${f3(netSub)}</b></td>
+                        </tr>
+                    ` : `
+                        <tr>
+                            <td colspan="4" class="c"><b>Amount Excluding VAT</b></td>
+                            <td class="r"><b>${f3(sub)}</b></td>
+                        </tr>
+                    `}
                     <tr>
                         <td colspan="4" class="c"><b>VAT ${vatRate}%</b></td>
                         <td class="r"><b>${f3(vatVal)}</b></td>
@@ -320,6 +354,8 @@
                 user_designation: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title,
                 items: [{ description: "", quantity: 1, unit: "Lumpsum", unit_price: 0, total_price: 0 }],
                 vat_rate: 10,
+                discount_type: "amount",
+                discount_value: 0,
                 terms: T0.slice(),
                 status: "Draft",
                 remark: ""
@@ -586,7 +622,10 @@
                             <div>${H(uName)}, ${H(uTitle)}</div>
                             
                             <span>Amount</span>
-                            <div>${f3(amt(q))} excl. · <b>${f3(tot(q))}</b> incl. VAT</div>
+                            <div>
+                                ${discAmount(q) > 0 ? `<span style="text-decoration:line-through;color:var(--mut);margin-right:4px;">${f3(amt(q))}</span> <span style="color:#b91c1c;font-weight:600;margin-right:4px;">(-${f3(discAmount(q))} disc)</span>` : ""}
+                                ${f3(netAmt(q))} excl. · <b>${f3(tot(q))}</b> incl. VAT
+                            </div>
                             
                             <span>PDF file name</span>
                             <div>${fnm(q)}.pdf</div>
@@ -738,6 +777,8 @@
         const date = e.quotation_date || e.date || TODAY;
         const subj = e.subject || e.subj || "";
         const vat = e.vat_rate !== undefined ? e.vat_rate : (e.vat !== undefined ? e.vat : 10);
+        const discVal = e.discount_value !== undefined ? e.discount_value : (e.discount !== undefined ? e.discount : "");
+        const discType = e.discount_type || "amount";
 
         $("#v").innerHTML = `
             <div class="top">
@@ -782,9 +823,24 @@
                         
                         <input data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" autocorrect="on" autocapitalize="sentences">
                         
-                        <select data-k="vat_rate">
-                            ${M([10, 5, 0], v => `<option value="${v}" ${vat == v ? "selected" : ""}>VAT ${v}%</option>`)}
-                        </select>
+                        <div class="g2" style="margin-top:8px;">
+                            <div>
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">VAT Rate</label>
+                                <select data-k="vat_rate" style="width:100%;height:38px;">
+                                    ${M([10, 5, 0], v => `<option value="${v}" ${vat == v ? "selected" : ""}>VAT ${v}%</option>`)}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Discount (Optional)</label>
+                                <div style="display:flex;gap:4px;">
+                                    <input type="number" min="0" step="0.001" data-k="discount_value" placeholder="0.000" value="${discVal}" style="flex:1;height:38px;margin:0;">
+                                    <select data-k="discount_type" style="width:75px;height:38px;padding:0 6px;margin:0;">
+                                        <option value="amount" ${discType === "amount" ? "selected" : ""}>BD</option>
+                                        <option value="percent" ${discType === "percent" ? "selected" : ""}>%</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         
                         <p style="color:var(--mut);margin:8px 0 0;font-size:12px;">
                             Signed as <b>${H(uName)}</b>, ${H(uTitle)} (from the logged-in profile)
@@ -812,7 +868,10 @@
                             <span></span>
                         </div>
                         <div id="its"></div>
-                        <button id="ai">+ Add item</button>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px;">
+                            <button id="ai">+ Add item</button>
+                            <div id="quote_editor_calc_summary" style="font-size:12px;color:#475569;text-align:right;"></div>
+                        </div>
                     </div>
                     
                     <!-- Terms and Conditions Card -->
@@ -847,14 +906,23 @@
             const t = ev.target;
             const k = t.dataset.k;
             if (k) {
-                ED[k] = k === "vat_rate" ? +t.value : t.value;
+                if (k === "vat_rate") {
+                    ED.vat_rate = +t.value;
+                    ED.vat = +t.value;
+                } else if (k === "discount_value") {
+                    ED.discount_value = +t.value || 0;
+                    ED.discount = ED.discount_value;
+                } else if (k === "discount_type") {
+                    ED.discount_type = t.value;
+                } else {
+                    ED[k] = t.value;
+                }
                 if (k === "client_name") ED.client = t.value;
                 if (k === "contact_no") ED.contact = t.value;
                 if (k === "client_address") ED.addr = t.value;
                 if (k === "attention") ED.attn = t.value;
                 if (k === "quotation_date") ED.date = t.value;
                 if (k === "subject") ED.subj = t.value;
-                if (k === "vat_rate") ED.vat = +t.value;
             } else if (t.dataset.f !== undefined) {
                 const idx = +t.dataset.i;
                 const field = t.dataset.f;
@@ -1031,6 +1099,19 @@
         const pv = $("#pv");
         if (pv && ED) {
             pv.innerHTML = sheet(ED);
+        }
+        const sumEl = $("#quote_editor_calc_summary");
+        if (sumEl && ED) {
+            const sSub = amt(ED);
+            const sDiscAmt = discAmount(ED);
+            const sNet = netAmt(ED);
+            const sTot = tot(ED);
+            const sVat = (ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10));
+            if (sDiscAmt > 0) {
+                sumEl.innerHTML = `Subtotal: <b>${f3(sSub)} BD</b> &nbsp;|&nbsp; Discount: <b style="color:#b91c1c;">-${f3(sDiscAmt)} BD</b> &nbsp;|&nbsp; Net: <b>${f3(sNet)} BD</b> &nbsp;|&nbsp; Total (incl. ${sVat}% VAT): <b style="color:var(--q-navy-main);font-size:13px;">${f3(sTot)} BD</b>`;
+            } else {
+                sumEl.innerHTML = `Subtotal: <b>${f3(sSub)} BD</b> &nbsp;|&nbsp; Total (incl. ${sVat}% VAT): <b style="color:var(--q-navy-main);font-size:13px;">${f3(sTot)} BD</b>`;
+            }
         }
     }
 
@@ -1894,6 +1975,8 @@
             user_name: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name,
             user_designation: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title,
             vat_rate: ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10),
+            discount_type: ED.discount_type || "amount",
+            discount_value: ED.discount_value !== undefined ? +ED.discount_value : (ED.discount !== undefined ? +ED.discount : 0),
             terms: ED.terms || T0,
             items: ED.items || []
         };

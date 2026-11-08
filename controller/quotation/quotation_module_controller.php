@@ -115,6 +115,9 @@ class QuotationModuleController
                 `user_name` VARCHAR(255) NOT NULL,
                 `user_designation` VARCHAR(255) DEFAULT '',
                 `vat_rate` DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+                `discount_type` VARCHAR(20) NOT NULL DEFAULT 'amount',
+                `discount_value` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
+                `discount_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `subtotal_excl_vat` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `vat_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `total_incl_vat` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
@@ -130,6 +133,15 @@ class QuotationModuleController
                 KEY `idx_status` (`status`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             @mysqli_query($this->db, $tableSql);
+
+            // Migration check: Add discount columns if missing
+            $chkDisc = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'discount_amount'");
+            if ($chkDisc && mysqli_num_rows($chkDisc) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
+                    ADD COLUMN `discount_type` VARCHAR(20) NOT NULL DEFAULT 'amount' AFTER `vat_rate`,
+                    ADD COLUMN `discount_value` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_type`,
+                    ADD COLUMN `discount_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_value`");
+            }
 
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
                 `item_id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -698,6 +710,9 @@ class QuotationModuleController
                         "user_name" => $r['user_name'],
                         "user_designation" => $r['user_designation'],
                         "vat_rate" => (float)$r['vat_rate'],
+                        "discount_type" => isset($r['discount_type']) ? $r['discount_type'] : 'amount',
+                        "discount_value" => isset($r['discount_value']) ? (float)$r['discount_value'] : 0.0,
+                        "discount_amount" => isset($r['discount_amount']) ? (float)$r['discount_amount'] : 0.0,
                         "subtotal_excl_vat" => (float)$r['subtotal_excl_vat'],
                         "vat_amount" => (float)$r['vat_amount'],
                         "total_incl_vat" => (float)$r['total_incl_vat'],
@@ -997,8 +1012,22 @@ class QuotationModuleController
             ];
         }
 
-        $vatAmount = ($subtotal * $vatRate) / 100.0;
-        $totalInclVat = $subtotal + $vatAmount;
+        $discountType = isset($data['discount_type']) && $data['discount_type'] === 'percent' ? 'percent' : 'amount';
+        $discountValue = isset($data['discount_value']) ? max(0, (float)$data['discount_value']) : 0.0;
+
+        $discountAmount = 0.0;
+        if ($discountType === 'percent') {
+            $discountAmount = ($subtotal * $discountValue) / 100.0;
+        } else {
+            $discountAmount = $discountValue;
+        }
+        if ($discountAmount > $subtotal) {
+            $discountAmount = $subtotal;
+        }
+
+        $netSubtotal = max(0, $subtotal - $discountAmount);
+        $vatAmount = ($netSubtotal * $vatRate) / 100.0;
+        $totalInclVat = $netSubtotal + $vatAmount;
 
         // Quotation Number & Status Logic
         $status = $isIssue ? 'Pending' : 'Draft';
@@ -1063,6 +1092,9 @@ class QuotationModuleController
                     user_name = '$escUserName',
                     user_designation = '$escUserDesig',
                     vat_rate = $vatRate,
+                    discount_type = '$discountType',
+                    discount_value = $discountValue,
+                    discount_amount = $discountAmount,
                     subtotal_excl_vat = $subtotal,
                     vat_amount = $vatAmount,
                     total_incl_vat = $totalInclVat,
@@ -1076,11 +1108,11 @@ class QuotationModuleController
                 $ins = "INSERT INTO tbl_quotations_v2 
                     (seq_no, rev_no, quotation_no, is_amc, client_code, client_name, client_address,
                      contact_no, attention, subject, quotation_date, user_code, user_name, user_designation,
-                     vat_rate, subtotal_excl_vat, vat_amount, total_incl_vat, terms_json, status)
+                     vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat, terms_json, status)
                     VALUES 
                     ($seqVal, $revNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
                      '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig',
-                     $vatRate, $subtotal, $vatAmount, $totalInclVat, '$termsJson', '$status')";
+                     $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat, '$termsJson', '$status')";
                 mysqli_query($this->db, $ins);
                 $savedId = mysqli_insert_id($this->db);
             }
@@ -1154,6 +1186,9 @@ class QuotationModuleController
                 "user_name" => $userName,
                 "user_designation" => $userDesignation,
                 "vat_rate" => $vatRate,
+                "discount_type" => $discountType,
+                "discount_value" => $discountValue,
+                "discount_amount" => $discountAmount,
                 "subtotal_excl_vat" => $subtotal,
                 "vat_amount" => $vatAmount,
                 "total_incl_vat" => $totalInclVat,
@@ -1310,7 +1345,8 @@ class QuotationModuleController
 
             if (in_array($q['status'], ['Pending', 'Approved', 'Not approved'])) {
                 $users[$u]['sent']++;
-                $users[$u]['sent_excl_vat'] += (float)$q['subtotal_excl_vat'];
+                $sentExcl = max(0, (float)$q['subtotal_excl_vat'] - (float)($q['discount_amount'] ?? 0));
+                $users[$u]['sent_excl_vat'] += $sentExcl;
                 $users[$u]['sent_incl_vat'] += (float)$q['total_incl_vat'];
 
                 if ($q['status'] === 'Approved') {

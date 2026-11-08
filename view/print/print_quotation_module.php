@@ -71,6 +71,9 @@ if (!$q) {
                         'user_name' => $item['user_name'],
                         'user_designation' => $item['user_designation'],
                         'vat_rate' => $item['vat_rate'],
+                        'discount_type' => $item['discount_type'] ?? 'amount',
+                        'discount_value' => $item['discount_value'] ?? 0,
+                        'discount_amount' => $item['discount_amount'] ?? 0,
                         'subtotal_excl_vat' => $item['subtotal_excl_vat'],
                         'vat_amount' => $item['vat_amount'],
                         'total_incl_vat' => $item['total_incl_vat']
@@ -104,8 +107,19 @@ $rev = (int)$q['rev_no'];
 $qNo = !empty($q['quotation_no']) ? $q['quotation_no'] . ($rev > 0 ? "/R" . $rev : "") : "(Draft)";
 $vatRate = (float)$q['vat_rate'];
 $subtotal = (float)$q['subtotal_excl_vat'];
-$vatAmt = (float)$q['vat_amount'];
-$total = (float)$q['total_incl_vat'];
+$discountType = isset($q['discount_type']) && $q['discount_type'] === 'percent' ? 'percent' : 'amount';
+$discountVal = isset($q['discount_value']) ? (float)$q['discount_value'] : (isset($q['discount']) ? (float)$q['discount'] : 0.0);
+$discountAmt = isset($q['discount_amount']) ? (float)$q['discount_amount'] : 0.0;
+if ($discountAmt <= 0 && $discountVal > 0) {
+    if ($discountType === 'percent') {
+        $discountAmt = ($subtotal * $discountVal) / 100.0;
+    } else {
+        $discountAmt = $discountVal;
+    }
+}
+$netSubtotal = max(0, $subtotal - $discountAmt);
+$vatAmt = isset($q['vat_amount']) && (float)$q['vat_amount'] > 0 ? (float)$q['vat_amount'] : (($netSubtotal * $vatRate) / 100.0);
+$total = isset($q['total_incl_vat']) && (float)$q['total_incl_vat'] > 0 ? (float)$q['total_incl_vat'] : ($netSubtotal + $vatAmt);
 ?>
 <!doctype html>
 <html lang="en">
@@ -367,10 +381,25 @@ $total = (float)$q['total_incl_vat'];
             <?php endforeach; ?>
         </tbody>
         <tfoot>
+            <?php if ($discountAmt > 0): ?>
+            <tr style="background: #ffffff;">
+                <td colspan="4" class="c"><b>Gross Amount Excluding VAT</b></td>
+                <td class="r"><b><?= number_format($subtotal, 3) ?></b></td>
+            </tr>
+            <tr style="background: #ffffff; color: #b91c1c;">
+                <td colspan="4" class="c"><b>Discount <?= $discountType === 'percent' ? "({$discountVal}%)" : "" ?></b></td>
+                <td class="r"><b>-<?= number_format($discountAmt, 3) ?></b></td>
+            </tr>
+            <tr style="background: #ffffff;">
+                <td colspan="4" class="c"><b>Net Amount Excluding VAT</b></td>
+                <td class="r"><b><?= number_format($netSubtotal, 3) ?></b></td>
+            </tr>
+            <?php else: ?>
             <tr style="background: #ffffff;">
                 <td colspan="4" class="c"><b>Amount Excluding VAT</b></td>
                 <td class="r"><b><?= number_format($subtotal, 3) ?></b></td>
             </tr>
+            <?php endif; ?>
             <tr style="background: #ffffff;">
                 <td colspan="4" class="c"><b>VAT <?= $vatRate ?>%</b></td>
                 <td class="r"><b><?= number_format($vatAmt, 3) ?></b></td>
