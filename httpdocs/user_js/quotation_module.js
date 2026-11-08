@@ -95,6 +95,29 @@
         "No response / expired",
         "Other"
     ];
+    const UNITS = [
+        "Lumpsum",
+        "No.",
+        "Nos",
+        "Set",
+        "Lot",
+        "Job",
+        "Pcs",
+        "Trip",
+        "Visit",
+        "Hr",
+        "Day",
+        "Month",
+        "m",
+        "m²",
+        "m³",
+        "Kg",
+        "Ltr",
+        "Box",
+        "Roll",
+        "Pack",
+        "Pair"
+    ];
     let Q = [];
     let CU = "MA";
     let ED = null;
@@ -769,7 +792,7 @@
                         <h2>Scope of works</h2>
                         <div class="it h">
                             <span>Qty</span>
-                            <span>Unit (editable)</span>
+                            <span>Unit</span>
                             <span>Unit price (BD)</span>
                             <span>Total (BD)</span>
                             <span></span>
@@ -800,8 +823,8 @@
         renderTerms();
         renderLivePreview();
 
-        // Reactive input handler
-        $("#v").oninput = ev => {
+        // Reactive input and change handler
+        const handleFormInput = ev => {
             const t = ev.target;
             const k = t.dataset.k;
             if (k) {
@@ -832,6 +855,9 @@
             }
             renderLivePreview();
         };
+
+        $("#v").oninput = handleFormInput;
+        $("#v").onchange = handleFormInput;
 
         const handleClientSelection = function (selCode) {
             const found = AMC.find(x => x.code === selCode);
@@ -979,11 +1005,18 @@
             const price = r.unit_price !== undefined ? r.unit_price : (r[3] || 0);
             const lineTot = itemTotal(r);
 
+            const unitOptions = [...UNITS];
+            if (unit && !unitOptions.includes(unit)) {
+                unitOptions.unshift(unit);
+            }
+
             return `
             <div class="it">
                 <input data-i="${i}" data-f="desc" placeholder="Description of work" value="${H(desc)}" style="grid-column:1/-1;">
                 <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}">
-                <input list="uom" data-i="${i}" data-f="unit" value="${H(unit)}">
+                <select data-i="${i}" data-f="unit">
+                    ${M(unitOptions, u => `<option value="${H(u)}"${u === unit ? " selected" : ""}>${H(u)}</option>`)}
+                </select>
                 <input type="number" min="0" step="0.001" data-i="${i}" data-f="price" value="${price}">
                 <b id="rt${i}">${f3(lineTot)}</b>
                 <button data-rm="${i}" title="Remove">✕</button>

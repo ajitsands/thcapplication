@@ -696,7 +696,15 @@ if ($isLoggedIn) {
             margin-bottom: 10px;
             align-items: center;
         }
-        .it input { margin: 0 !important; }
+        .it input, .it select {
+            margin: 0 !important;
+        }
+        .it select {
+            height: 38px !important;
+            padding: 6px 10px !important;
+            cursor: pointer;
+            background-color: #ffffff !important;
+        }
         .it.h {
             color: var(--q-navy-dark);
             font-size: 11.5px;
@@ -1004,7 +1012,7 @@ if ($isLoggedIn) {
     <script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
 
     <!-- Client-side Application Script -->
-    <script src="../httpdocs/user_js/quotation_module.js"></script>
+    <script src="../httpdocs/user_js/quotation_module.js?v=<?= @filemtime(__DIR__ . '/../httpdocs/user_js/quotation_module.js') ?: time() ?>"></script>
 
 </body>
 </html>
