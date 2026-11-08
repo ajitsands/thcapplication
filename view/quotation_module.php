@@ -1024,6 +1024,48 @@ if ($isLoggedIn) {
             </div>
         </div>
 
+        <!-- Spelling & Grammar Review Modal -->
+        <div id="modal_grammar_check" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="grammarCheckModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:720px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #001D39 0%, #0A4174 100%);color:#ffffff;padding:16px 22px;border:none;display:flex;align-items:center;justify-content:space-between;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="grammarCheckModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-spell-check mr-2" style="font-size:20px;color:#7BBDE8;"></i> Spelling & Grammar Review
+                        </h5>
+                        <div class="d-flex align-items-center">
+                            <span id="grammar_issue_badge" class="badge badge-warning mr-3" style="font-size:12px;padding:5px 11px;border-radius:12px;font-weight:600;background:#ffc107;color:#212529;">0 Issues</span>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;margin:0;padding:0;line-height:1;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;max-height:68vh;overflow-y:auto;">
+                        <div id="grammar_check_intro" class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between" style="border-radius:8px;font-size:13px;border:1.5px solid #b8daff;background:#eef6fc;color:#0c5460;">
+                            <div>
+                                <i class="icon-info22 mr-1"></i> Review suggestions below. Click a suggested word to apply it, or click <b>Accept All</b>.
+                            </div>
+                            <button type="button" id="btn_grammar_accept_all" class="btn btn-sm btn-success ml-2 font-weight-bold text-nowrap" style="border-radius:6px;box-shadow:0 2px 4px rgba(40,167,69,0.25);padding:4px 12px;font-size:12px;">
+                                <i class="icon-checkmark3 mr-1"></i> Accept All
+                            </button>
+                        </div>
+
+                        <!-- Issues list container -->
+                        <div id="grammar_issues_list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between align-items-center" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:10px 20px;">
+                        <small class="text-muted" style="font-size:11.5px;">
+                            <i class="icon-shield-check mr-1 text-success"></i> Checks spelling, grammar, punctuation & agreement
+                        </small>
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:6px;padding:6px 16px;">
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Global permissions fallback to prevent permission.js ReferenceError -->
         <script>
             if (typeof permissions === 'undefined') {

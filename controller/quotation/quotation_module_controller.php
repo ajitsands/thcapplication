@@ -491,6 +491,10 @@ class QuotationModuleController
                     $this->deleteUnit();
                     break;
 
+                case 'check_grammar':
+                    $this->checkGrammar();
+                    break;
+
                 case 'seed_demo_data':
                     $this->seedInitialData();
                     echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
@@ -1324,6 +1328,56 @@ class QuotationModuleController
             "status" => "success",
             "current_user" => $curUser,
             "team" => array_values($users)
+        ]);
+    }
+
+    private function checkGrammar()
+    {
+        $raw = file_get_contents('php://input');
+        $data = json_decode($raw, true) ?: [];
+        $text = isset($data['text']) ? trim((string)$data['text']) : '';
+        $language = isset($data['language']) ? trim((string)$data['language']) : 'en-US';
+
+        if ($text === '') {
+            echo json_encode([
+                "status" => "success",
+                "matches" => []
+            ]);
+            return;
+        }
+
+        $apiUrl = 'https://api.languagetool.org/v2/check';
+        $postData = http_build_query([
+            'text' => $text,
+            'language' => $language
+        ]);
+
+        $ch = curl_init($apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 12);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'THCFM-Quotation-Module/1.0');
+
+        $response = curl_exec($ch);
+        $curlError = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($response === false || $httpCode >= 400) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Grammar check service temporarily unavailable" . ($curlError ? ": " . $curlError : ""),
+                "matches" => []
+            ]);
+            return;
+        }
+
+        $result = json_decode($response, true);
+        echo json_encode([
+            "status" => "success",
+            "matches" => isset($result['matches']) && is_array($result['matches']) ? $result['matches'] : []
         ]);
     }
 }

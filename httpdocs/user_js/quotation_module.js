@@ -742,8 +742,11 @@
         $("#v").innerHTML = `
             <div class="top">
                 <h1>${seq ? "Revise quotation" : "New quotation"} <span class="tag">${isAmc ? "AMC client" : "Non-AMC client"}</span></h1>
-                <div>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
                     <button id="cn">Cancel</button>
+                    <button type="button" id="btn_check_grammar_top" style="background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;">
+                        <i class="icon-spell-check" style="font-size:13px;color:#0A4174;"></i> Check Grammar
+                    </button>
                     <button id="sd">Save draft</button>
                     <button class="p" id="is">Issue quote</button>
                 </div>
@@ -792,9 +795,14 @@
                     <div class="card pad">
                         <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:2px solid var(--q-blue-ice);">
                             <h2 style="margin:0;border:none;padding:0;">Scope of works</h2>
-                            <button type="button" id="btn_manage_units" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#f0f7fc;border:1.5px solid #c2daeb;color:var(--q-navy-main);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
-                                <i class="icon-stack2" style="font-size:13px;color:#0A4174;"></i> Manage Units
-                            </button>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <button type="button" id="btn_check_grammar_items" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                                    <i class="icon-spell-check" style="font-size:13px;color:#0A4174;"></i> Spell & Grammar Check
+                                </button>
+                                <button type="button" id="btn_manage_units" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#f0f7fc;border:1.5px solid #c2daeb;color:var(--q-navy-main);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                                    <i class="icon-stack2" style="font-size:13px;color:#0A4174;"></i> Manage Units
+                                </button>
+                            </div>
                         </div>
                         <div class="it h">
                             <span>Qty</span>
@@ -809,7 +817,12 @@
                     
                     <!-- Terms and Conditions Card -->
                     <div class="card pad">
-                        <h2>Terms and conditions <small style="color:var(--mut);font-weight:400;">edit freely for this quote</small></h2>
+                        <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:2px solid var(--q-blue-ice);">
+                            <h2 style="margin:0;border:none;padding:0;">Terms and conditions <small style="color:var(--mut);font-weight:400;">edit freely for this quote</small></h2>
+                            <button type="button" id="btn_check_grammar_terms" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                                <i class="icon-spell-check" style="font-size:13px;color:#0A4174;"></i> Check Terms
+                            </button>
+                        </div>
                         <div id="tm"></div>
                         <div class="g2">
                             <select id="lib">
@@ -945,6 +958,21 @@
         const btnManageUnits = $("#btn_manage_units");
         if (btnManageUnits) {
             btnManageUnits.onclick = () => openUnitMasterModal();
+        }
+
+        const btnCheckTop = $("#btn_check_grammar_top");
+        if (btnCheckTop) {
+            btnCheckTop.onclick = () => runQuotationGrammarCheck("all");
+        }
+
+        const btnCheckItems = $("#btn_check_grammar_items");
+        if (btnCheckItems) {
+            btnCheckItems.onclick = () => runQuotationGrammarCheck("items");
+        }
+
+        const btnCheckTerms = $("#btn_check_grammar_terms");
+        if (btnCheckTerms) {
+            btnCheckTerms.onclick = () => runQuotationGrammarCheck("terms");
         }
 
         $("#its").onclick = ev => {
@@ -1440,6 +1468,350 @@
         });
     }
 
+    // ==========================================
+    // SPELLING & GRAMMAR CHECK ENGINE (LanguageTool)
+    // ==========================================
+    let currentGrammarIssues = [];
+
+    function checkGrammarAPI(text) {
+        if (!text || !text.trim()) {
+            return Promise.resolve({ status: "success", matches: [] });
+        }
+        const trimmed = text.trim();
+        const postBody = new URLSearchParams({ text: trimmed, language: "en-US" });
+
+        // First attempt direct browser fetch to LanguageTool API
+        return fetch("https://api.languagetool.org/v2/check", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: postBody.toString()
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Direct LanguageTool status " + res.status);
+            return res.json();
+        })
+        .then(data => ({
+            status: "success",
+            matches: Array.isArray(data.matches) ? data.matches : []
+        }))
+        .catch(err => {
+            // Fallback to backend proxy controller if direct fetch is blocked
+            return apiCall("check_grammar", { text: trimmed, language: "en-US" }, "POST")
+                .then(res => {
+                    if (res && res.matches && Array.isArray(res.matches)) return res;
+                    return { status: "success", matches: [] };
+                })
+                .catch(() => ({ status: "success", matches: [] }));
+        });
+    }
+
+    function replaceTextAt(str, offset, length, replacement) {
+        if (typeof str !== "string") str = String(str || "");
+        return str.substring(0, offset) + replacement + str.substring(offset + length);
+    }
+
+    function runQuotationGrammarCheck(scope = "all") {
+        if (!ED) return;
+
+        // Collect fields to check
+        const tasks = [];
+
+        // Subject
+        if (scope === "all") {
+            const subj = ED.subject || ED.subj || "";
+            if (subj.trim()) {
+                tasks.push({
+                    section: "subject",
+                    index: 0,
+                    fieldLabel: "Quotation Subject",
+                    text: subj
+                });
+            }
+        }
+
+        // Scope of works items
+        if (scope === "all" || scope === "items") {
+            if (Array.isArray(ED.items)) {
+                ED.items.forEach((item, idx) => {
+                    const desc = item.description !== undefined ? item.description : (item[0] || "");
+                    if (desc && desc.trim()) {
+                        tasks.push({
+                            section: "item",
+                            index: idx,
+                            fieldLabel: `Scope of Works — Item #${idx + 1}`,
+                            text: desc
+                        });
+                    }
+                });
+            }
+        }
+
+        // Terms and conditions
+        if (scope === "all" || scope === "terms") {
+            if (Array.isArray(ED.terms)) {
+                ED.terms.forEach((term, idx) => {
+                    if (term && term.trim()) {
+                        tasks.push({
+                            section: "term",
+                            index: idx,
+                            fieldLabel: `Terms & Conditions — Line #${idx + 1}`,
+                            text: term
+                        });
+                    }
+                });
+            }
+        }
+
+        if (tasks.length === 0) {
+            toast("No text entered in quotation items or terms yet.");
+            return;
+        }
+
+        toast("Checking spelling & grammar…");
+
+        // Execute checks concurrently
+        Promise.all(tasks.map(t => checkGrammarAPI(t.text).then(res => ({ task: t, matches: res.matches || [] }))))
+            .then(results => {
+                const issues = [];
+                let issueId = 1;
+
+                results.forEach(r => {
+                    r.matches.forEach(m => {
+                        // Skip if no suggestion replacement
+                        if (!m.replacements || m.replacements.length === 0) return;
+
+                        issues.push({
+                            id: issueId++,
+                            section: r.task.section,
+                            index: r.task.index,
+                            fieldLabel: r.task.fieldLabel,
+                            fullText: r.task.text,
+                            offset: m.offset,
+                            length: m.length,
+                            message: m.message || "Grammar/spelling suggestion",
+                            shortMessage: m.shortMessage || "",
+                            issueType: (m.rule && m.rule.issueType) || (m.category && m.category.id) || "spelling",
+                            ruleId: (m.rule && m.rule.id) || "",
+                            context: m.context || { text: r.task.text, offset: m.offset, length: m.length },
+                            replacements: m.replacements.slice(0, 4),
+                            fixed: false,
+                            appliedVal: ""
+                        });
+                    });
+                });
+
+                if (issues.length === 0) {
+                    if (typeof window.swal === "function") {
+                        window.swal({
+                            title: "All Clear! ✓",
+                            text: "No spelling or grammatical issues were detected in this quotation.",
+                            type: "success",
+                            confirmButtonColor: "#0A4174"
+                        });
+                    } else {
+                        toast("All Clear! ✓ No spelling or grammar issues found.");
+                    }
+                    return;
+                }
+
+                currentGrammarIssues = issues;
+                renderGrammarIssuesModal();
+                showModal("#modal_grammar_check");
+            })
+            .catch(err => {
+                console.error("Grammar check error:", err);
+                toast("Could not complete grammar check. Please try again.");
+            });
+    }
+
+    function renderGrammarIssuesModal() {
+        const badge = $("#grammar_issue_badge");
+        const list = $("#grammar_issues_list");
+        if (!list) return;
+
+        const remaining = currentGrammarIssues.filter(x => !x.fixed);
+        if (badge) {
+            if (remaining.length === 0) {
+                badge.className = "badge badge-success mr-3";
+                badge.style.background = "#28a745";
+                badge.style.color = "#ffffff";
+                badge.textContent = "All Issues Resolved ✓";
+            } else {
+                badge.className = "badge badge-warning mr-3";
+                badge.style.background = "#ffc107";
+                badge.style.color = "#212529";
+                badge.textContent = `${remaining.length} ${remaining.length === 1 ? "Issue" : "Issues"} Remaining`;
+            }
+        }
+
+        if (currentGrammarIssues.length === 0) {
+            list.innerHTML = `<div class="text-center p-4 text-muted">No issues found.</div>`;
+            return;
+        }
+
+        list.innerHTML = M(currentGrammarIssues, issue => {
+            const isMisspelling = issue.issueType === "misspelling" || (issue.ruleId && issue.ruleId.indexOf("MORFOLOGIK") > -1);
+            const badgeClass = isMisspelling ? "badge-danger" : "badge-warning";
+            const badgeBg = isMisspelling ? "#ef4444" : "#f59e0b";
+            const badgeLabel = isMisspelling ? "Spelling Typo" : "Grammar / Phrasing";
+            const borderCol = issue.fixed ? "#86efac" : (isMisspelling ? "#fca5a5" : "#fcd34d");
+            const cardBg = issue.fixed ? "#f0fdf4" : "#ffffff";
+
+            let snippetHtml = "";
+            if (issue.context && issue.context.text) {
+                const cText = issue.context.text;
+                const cOff = Math.max(0, issue.context.offset || 0);
+                const cLen = Math.max(1, issue.context.length || 1);
+                const before = H(cText.substring(0, cOff));
+                const word = H(cText.substring(cOff, cOff + cLen));
+                const after = H(cText.substring(cOff + cLen));
+                if (issue.fixed) {
+                    snippetHtml = `${before}<span style="background:#bbf7d0;color:#166534;padding:1px 5px;border-radius:4px;font-weight:700;">${H(issue.appliedVal)}</span>${after}`;
+                } else if (isMisspelling) {
+                    snippetHtml = `${before}<mark style="background:#fee2e2;color:#b91c1c;padding:1px 5px;border-radius:4px;font-weight:700;border-bottom:2px solid #ef4444;">${word}</mark>${after}`;
+                } else {
+                    snippetHtml = `${before}<mark style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;font-weight:700;border-bottom:2px solid #f59e0b;">${word}</mark>${after}`;
+                }
+            } else {
+                snippetHtml = H(issue.fullText);
+            }
+
+            return `
+            <div class="grammar-card mb-3 p-3" id="grammar_card_${issue.id}" style="background:${cardBg};border-radius:10px;border:1.5px solid ${borderCol};box-shadow:0 2px 6px rgba(0,29,57,0.04);transition:all 0.2s;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="font-weight-bold text-dark" style="font-size:13px;">
+                        <i class="icon-file-text2 mr-1" style="color:#0A4174;"></i> ${H(issue.fieldLabel)}
+                    </span>
+                    <span class="badge ${badgeClass}" style="font-size:11px;padding:4px 8px;border-radius:5px;background:${badgeBg};color:#fff;font-weight:600;">
+                        ${badgeLabel}
+                    </span>
+                </div>
+                <div class="p-2 mb-2" style="background:#f8fafc;border-left:3.5px solid ${isMisspelling ? '#ef4444' : '#f59e0b'};border-radius:5px;font-size:13px;line-height:1.5;color:#222;">
+                    ${snippetHtml}
+                </div>
+                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:8px;">
+                    <div style="font-size:12px;color:#555;max-width:340px;">
+                        <i class="icon-info22 mr-1 text-muted"></i> ${H(issue.message)}
+                    </div>
+                    <div class="d-flex align-items-center flex-wrap" style="gap:6px;">
+                        ${issue.fixed ? `
+                            <span class="badge badge-success" style="font-size:12px;padding:5px 10px;background:#28a745;color:#fff;border-radius:6px;">
+                                <i class="icon-checkmark2 mr-1"></i> Fixed: <b>${H(issue.appliedVal)}</b>
+                            </span>
+                        ` : `
+                            <span class="text-muted" style="font-size:11.5px;font-weight:600;">Apply:</span>
+                            ${M(issue.replacements, rep => `
+                                <button type="button" class="btn btn-xs btn-outline-primary btn-apply-grammar" data-issue-id="${issue.id}" data-val="${H(rep.value)}" style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:6px;border:1.5px solid #0A4174;color:#0A4174;background:#ffffff;cursor:pointer;">
+                                    ${H(rep.value)}
+                                </button>
+                            `)}
+                        `}
+                    </div>
+                </div>
+            </div>`;
+        });
+    }
+
+    function applySingleGrammarFix(issueId, replacementVal) {
+        const issue = currentGrammarIssues.find(x => x.id === issueId);
+        if (!issue || issue.fixed) return;
+
+        applyReplacementToField(issue.section, issue.index, issue.offset, issue.length, replacementVal);
+        issue.fixed = true;
+        issue.appliedVal = replacementVal;
+        renderGrammarIssuesModal();
+        toast(`Applied: "${replacementVal}"`);
+    }
+
+    function applyAllGrammarFixes() {
+        const unfixed = currentGrammarIssues.filter(x => !x.fixed && x.replacements && x.replacements.length > 0);
+        if (unfixed.length === 0) {
+            toast("No pending suggestions to apply.");
+            return;
+        }
+
+        // Group by field & index
+        const groups = {};
+        unfixed.forEach(issue => {
+            const key = issue.section + "_" + issue.index;
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(issue);
+        });
+
+        // Apply replacements from right to left (offset descending)
+        Object.keys(groups).forEach(key => {
+            const items = groups[key];
+            items.sort((a, b) => b.offset - a.offset);
+
+            items.forEach(issue => {
+                const repVal = issue.replacements[0].value;
+                applyReplacementToField(issue.section, issue.index, issue.offset, issue.length, repVal);
+                issue.fixed = true;
+                issue.appliedVal = repVal;
+            });
+        });
+
+        renderGrammarIssuesModal();
+        toast("All spelling & grammar suggestions applied!");
+    }
+
+    function applyReplacementToField(section, index, offset, length, replacement) {
+        if (!ED) return;
+
+        if (section === "subject") {
+            const cur = ED.subject || ED.subj || "";
+            const updated = replaceTextAt(cur, offset, length, replacement);
+            ED.subject = updated;
+            ED.subj = updated;
+            const inp = $('input[data-k="subject"]');
+            if (inp) inp.value = updated;
+        } else if (section === "item") {
+            if (Array.isArray(ED.items) && ED.items[index]) {
+                const r = ED.items[index];
+                const cur = r.description !== undefined ? r.description : (r[0] || "");
+                const updated = replaceTextAt(cur, offset, length, replacement);
+                if (r.description !== undefined) r.description = updated;
+                if (r[0] !== undefined) r[0] = updated;
+                const inp = $(`input[data-i="${index}"][data-f="desc"]`);
+                if (inp) inp.value = updated;
+            }
+        } else if (section === "term") {
+            if (Array.isArray(ED.terms) && ED.terms[index] !== undefined) {
+                const cur = ED.terms[index] || "";
+                const updated = replaceTextAt(cur, offset, length, replacement);
+                ED.terms[index] = updated;
+                const inp = $(`textarea[data-t="${index}"]`);
+                if (inp) inp.value = updated;
+            }
+        }
+
+        renderLivePreview();
+    }
+
+    function initGrammarCheckModalListeners() {
+        const acceptAllBtn = $("#btn_grammar_accept_all");
+        if (acceptAllBtn) {
+            acceptAllBtn.onclick = () => applyAllGrammarFixes();
+        }
+
+        const issuesList = $("#grammar_issues_list");
+        if (issuesList) {
+            issuesList.onclick = ev => {
+                const btn = ev.target.closest(".btn-apply-grammar");
+                if (!btn) return;
+                const issueId = +btn.dataset.issueId;
+                const val = btn.dataset.val;
+                if (issueId && val) {
+                    applySingleGrammarFix(issueId, val);
+                }
+            };
+        }
+
+        $$("#modal_grammar_check [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_grammar_check");
+        });
+    }
+
     function loadInitialData() {
         apiCall("get_initial_data", {}, "GET").then(res => {
             if (res && res.status === "success") {
@@ -1465,6 +1837,7 @@
 
     function initAppUi() {
         setupUnitMasterEvents();
+        initGrammarCheckModalListeners();
         // Build user switcher options
         const us = $("#us");
         if (us) {
