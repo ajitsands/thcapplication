@@ -787,7 +787,7 @@
         const date = e.quotation_date || e.date || TODAY;
         const subj = e.subject || e.subj || "";
         const vat = e.vat_rate !== undefined ? e.vat_rate : (e.vat !== undefined ? e.vat : 10);
-        const discVal = e.discount_value !== undefined ? e.discount_value : (e.discount !== undefined ? e.discount : "");
+        const discVal = (e.discount_value !== undefined && +e.discount_value > 0) ? e.discount_value : ((e.discount !== undefined && +e.discount > 0) ? e.discount : "");
         const discType = e.discount_type || "amount";
 
         $("#v").innerHTML = `
@@ -1968,6 +1968,24 @@
     }
 
     function saveQuotationApi(isIssue) {
+        if (!ED) return;
+
+        // Ensure latest values from input fields are synced
+        const discValEl = $('[data-k="discount_value"]');
+        if (discValEl) {
+            ED.discount_value = +discValEl.value || 0;
+            ED.discount = ED.discount_value;
+        }
+        const discTypeEl = $('[data-k="discount_type"]');
+        if (discTypeEl) {
+            ED.discount_type = discTypeEl.value || "amount";
+        }
+        const vatEl = $('[data-k="vat_rate"]');
+        if (vatEl) {
+            ED.vat_rate = +vatEl.value || 10;
+            ED.vat = ED.vat_rate;
+        }
+
         const payload = {
             id: ED.id || null,
             is_issue: isIssue,

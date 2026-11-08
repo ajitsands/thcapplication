@@ -1012,14 +1012,16 @@ class QuotationModuleController
             ];
         }
 
-        $discountType = isset($data['discount_type']) && $data['discount_type'] === 'percent' ? 'percent' : 'amount';
-        $discountValue = isset($data['discount_value']) ? max(0, (float)$data['discount_value']) : 0.0;
+        $discountType = isset($input['discount_type']) && $input['discount_type'] === 'percent' ? 'percent' : 'amount';
+        $discountValue = isset($input['discount_value']) ? max(0, (float)$input['discount_value']) : (isset($input['discount']) ? max(0, (float)$input['discount']) : 0.0);
+        $discountAmount = isset($input['discount_amount']) ? max(0, (float)$input['discount_amount']) : 0.0;
 
-        $discountAmount = 0.0;
-        if ($discountType === 'percent') {
-            $discountAmount = ($subtotal * $discountValue) / 100.0;
-        } else {
-            $discountAmount = $discountValue;
+        if ($discountAmount <= 0 && $discountValue > 0) {
+            if ($discountType === 'percent') {
+                $discountAmount = ($subtotal * $discountValue) / 100.0;
+            } else {
+                $discountAmount = $discountValue;
+            }
         }
         if ($discountAmount > $subtotal) {
             $discountAmount = $subtotal;
