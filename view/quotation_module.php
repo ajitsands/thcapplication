@@ -992,7 +992,7 @@ if ($isLoggedIn) {
                         <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);margin-bottom:14px !important;">
                             <label class="font-weight-bold text-dark mb-1" style="font-size:12.5px;">Add New Unit</label>
                             <div class="input-group">
-                                <input type="text" id="input_new_unit" class="form-control" placeholder="e.g. Coil, Drum, Sq.ft, Bundle" maxlength="50" style="border-radius:8px 0 0 8px !important;font-size:13.5px;height:38px;border:1.5px solid #c2daeb;margin:0 !important;">
+                                <input type="text" id="input_new_unit" class="form-control" placeholder="e.g. Coil, Drum, Sq.ft, Bundle" maxlength="50" style="border-radius:8px 0 0 8px !important;font-size:13.5px;height:38px;border:1.5px solid #c2daeb;margin:0 !important;" spellcheck="true" autocorrect="on">
                                 <div class="input-group-append">
                                     <button type="button" id="btn_save_unit" class="btn btn-primary" style="border-radius:0 8px 8px 0 !important;background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);font-weight:600;padding:0 16px;height:38px;margin:0 !important;border:none;">
                                         <i class="icon-plus2 mr-1"></i> Add Unit
@@ -1008,7 +1008,7 @@ if ($isLoggedIn) {
                                 <span class="font-weight-bold text-dark" style="font-size:12.5px;">
                                     Available Units (<span id="unit_count_badge">0</span>)
                                 </span>
-                                <input type="text" id="filter_unit_list" class="form-control form-control-sm" placeholder="Search units…" style="width:150px;height:28px;font-size:12px;border-radius:6px;border:1px solid #c2daeb;margin:0 !important;padding:4px 8px;">
+                                <input type="text" id="filter_unit_list" class="form-control form-control-sm" placeholder="Search units…" style="width:150px;height:28px;font-size:12px;border-radius:6px;border:1px solid #c2daeb;margin:0 !important;padding:4px 8px;" spellcheck="true" autocorrect="on">
                             </div>
                             <div id="unit_master_list_container" style="max-height:280px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;background:#ffffff;">
                                 <!-- Dynamically populated unit list -->

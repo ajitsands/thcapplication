@@ -356,7 +356,7 @@
                 </div>
             </div>
             <div class="card bar filter-toolbar">
-                <input id="fq" placeholder="Search number, client or subject" value="${H(F.q)}">
+                <input id="fq" placeholder="Search number, client or subject" value="${H(F.q)}" spellcheck="true" autocorrect="on">
                 ${sel("fc", "All clients", uniqueClients.map(c => [c, c]))}
                 ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved"].map(c => [c, c]))}
                 ${sel("ft", "AMC & non-AMC", [["AMC", "AMC clients"], ["Non-AMC", "Non-AMC clients"]])}
@@ -622,7 +622,7 @@
                                 <option value="">Select reason (required)</option>
                                 ${M(REASONS, r => `<option>${H(r)}</option>`)}
                             </select>
-                            <textarea id="rt" rows="2" placeholder="Additional remark (optional)" style="width:100%;margin-bottom:8px;"></textarea>
+                            <textarea id="rt" rows="2" placeholder="Additional remark (optional)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
                             <button class="d" id="cf">Confirm not approved</button>
                         </div>
                     </div>` : ""}
@@ -765,19 +765,19 @@
                             </select>
                         ` : `
                             <div class="g2">
-                                <input data-k="client_name" placeholder="Client name" value="${H(clientName)}">
+                                <input data-k="client_name" placeholder="Client name" value="${H(clientName)}" spellcheck="true" autocorrect="on" autocapitalize="words">
                                 <input data-k="contact_no" placeholder="Contact number" value="${H(contact)}">
                             </div>
                         `}
                         
-                        <textarea id="ad" data-k="client_address" rows="2" ${isAmc ? "readonly" : ""} placeholder="${isAmc ? "Address is pulled from the AMC client record" : "Client address"}">${H(clientAddr)}</textarea>
+                        <textarea id="ad" data-k="client_address" rows="2" ${isAmc ? "readonly" : ""} placeholder="${isAmc ? "Address is pulled from the AMC client record" : "Client address"}" spellcheck="true" autocorrect="on" autocapitalize="sentences">${H(clientAddr)}</textarea>
                         
                         <div class="g2">
-                            <input data-k="attention" placeholder="Kind attention" value="${H(attn)}">
+                            <input data-k="attention" placeholder="Kind attention" value="${H(attn)}" spellcheck="true" autocorrect="on" autocapitalize="words">
                             <input type="date" data-k="quotation_date" value="${date}">
                         </div>
                         
-                        <input data-k="subject" placeholder="Subject" value="${H(subj)}">
+                        <input data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" autocorrect="on" autocapitalize="sentences">
                         
                         <select data-k="vat_rate">
                             ${M([10, 5, 0], v => `<option value="${v}" ${vat == v ? "selected" : ""}>VAT ${v}%</option>`)}
@@ -1023,7 +1023,7 @@
 
             return `
             <div class="it">
-                <input data-i="${i}" data-f="desc" placeholder="Description of work" value="${H(desc)}" style="grid-column:1/-1;">
+                <input data-i="${i}" data-f="desc" placeholder="Description of work" value="${H(desc)}" style="grid-column:1/-1;" spellcheck="true" autocorrect="on" autocapitalize="sentences">
                 <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}">
                 <select data-i="${i}" data-f="unit">
                     ${M(unitOptions, u => `<option value="${H(u)}"${u === unit ? " selected" : ""}>${H(u)}</option>`)}
@@ -1040,7 +1040,7 @@
         if (!el || !ED) return;
         el.innerHTML = M(ED.terms, (t, i) => `
             <div class="tr">
-                <textarea rows="2" data-t="${i}">${H(t)}</textarea>
+                <textarea rows="2" data-t="${i}" spellcheck="true" autocorrect="on" autocapitalize="sentences">${H(t)}</textarea>
                 <button data-x="${i}" title="Remove">✕</button>
             </div>`
         );
@@ -1574,6 +1574,22 @@
             }
         });
     }
+
+    // Global spellcheck enforcer for all user input areas and textareas
+    document.addEventListener("focusin", function(e) {
+        const el = e.target;
+        if (!el) return;
+        const tag = el.tagName;
+        if (tag === "TEXTAREA" || (tag === "INPUT" && !["number", "date", "checkbox", "radio", "submit", "button", "hidden", "file", "password"].includes(el.type))) {
+            el.spellcheck = true;
+            if (el.getAttribute("spellcheck") !== "true") {
+                el.setAttribute("spellcheck", "true");
+            }
+            if (!el.hasAttribute("autocorrect")) {
+                el.setAttribute("autocorrect", "on");
+            }
+        }
+    });
 
     // Start on DOM ready
     if (document.readyState === "loading") {
