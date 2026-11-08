@@ -32,11 +32,16 @@
         const sub = amt(q);
         const dVal = q.discount_value !== undefined ? +q.discount_value : (q.discount !== undefined ? +q.discount : 0);
         const dType = q.discount_type || "amount";
-        if (dVal <= 0) return 0;
-        if (dType === "percent") {
-            return Math.min(sub, (sub * dVal) / 100);
+        if (dVal > 0) {
+            if (dType === "percent") {
+                return Math.min(sub, (sub * dVal) / 100);
+            }
+            return Math.min(sub, dVal);
         }
-        return Math.min(sub, dVal);
+        if (q.discount_amount !== undefined && +q.discount_amount > 0) {
+            return Math.min(sub, +q.discount_amount);
+        }
+        return 0;
     };
     const netAmt = q => Math.max(0, amt(q) - discAmount(q));
     const tot = q => {
@@ -156,9 +161,9 @@
     // Official THC Facility Management Letterhead Preview Sheet
     function sheet(q) {
         const sub = amt(q);
-        const discVal = q.discount_value !== undefined ? +q.discount_value : (q.discount !== undefined ? +q.discount : 0);
-        const discType = q.discount_type || "amount";
         const discAmt = discAmount(q);
+        const discVal = q.discount_value !== undefined ? +q.discount_value : (q.discount !== undefined ? +q.discount : (discAmt > 0 ? discAmt : 0));
+        const discType = q.discount_type || "amount";
         const netSub = netAmt(q);
         const vatRate = q.vat_rate !== undefined ? q.vat_rate : (q.vat !== undefined ? q.vat : 10);
         const vatVal = (netSub * vatRate) / 100;
@@ -477,10 +482,10 @@
             <div class="kpis">
                 ${M([
                     ["Quotes sent", S.length],
-                    ["Value sent · excl. VAT", f3(sm(S, amt))],
+                    ["Value sent · excl. VAT", f3(sm(S, netAmt))],
                     ["Value sent · incl. VAT", f3(sm(S, tot))],
                     ["Approved quotes", A.length],
-                    ["Approved · excl. VAT", f3(sm(A, amt))],
+                    ["Approved · excl. VAT", f3(sm(A, netAmt))],
                     ["Approved · incl. VAT", f3(sm(A, tot))]
                 ], k => `
                     <div class="card kpi">
@@ -531,7 +536,12 @@
                                 <td class="w">${H(subj)}</td>
                                 <td>${date}</td>
                                 <td>${H(userName)}</td>
-                                <td>${f3(amt(x))}</td>
+                                <td>
+                                    ${discAmount(x) > 0 ? `
+                                        <b>${f3(netAmt(x))}</b><br>
+                                        <small style="color:#b91c1c;font-weight:600;">(-${f3(discAmount(x))} disc)</small>
+                                    ` : f3(netAmt(x))}
+                                </td>
                                 <td><b>${f3(tot(x))}</b></td>
                                 <td class="w">
                                     ${tg(x)}
@@ -1177,7 +1187,7 @@
                 a: A.length,
                 r: NA.length,
                 p: P.length,
-                ve: sm(S, amt),
+                ve: sm(S, netAmt),
                 vi: sm(S, tot),
                 av: sm(A, tot)
             };
@@ -1977,6 +1987,7 @@
             vat_rate: ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10),
             discount_type: ED.discount_type || "amount",
             discount_value: ED.discount_value !== undefined ? +ED.discount_value : (ED.discount !== undefined ? +ED.discount : 0),
+            discount_amount: discAmount(ED),
             terms: ED.terms || T0,
             items: ED.items || []
         };

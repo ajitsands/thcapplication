@@ -26,6 +26,15 @@ try {
     $db = $dbConn->ConnectToMYSQL();
     if ($db && !mysqli_connect_errno()) {
         mysqli_set_charset($db, 'utf8mb4');
+
+        // Safety check: Ensure discount columns exist if accessed directly
+        $chkDisc = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'discount_amount'");
+        if ($chkDisc && mysqli_num_rows($chkDisc) === 0) {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` 
+                ADD COLUMN `discount_type` VARCHAR(20) NOT NULL DEFAULT 'amount' AFTER `vat_rate`,
+                ADD COLUMN `discount_value` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_type`,
+                ADD COLUMN `discount_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_value`");
+        }
         if ($quoteId > 0) {
             $qRes = mysqli_query($db, "SELECT * FROM tbl_quotations_v2 WHERE id = {$quoteId}");
         } elseif ($refNo !== '') {
@@ -103,10 +112,22 @@ function fDate($str) {
     return "{$day}{$suffix} {$month} {$year}";
 }
 
+$calcSubtotal = 0.0;
+foreach ($items as $it) {
+    $itQty = isset($it['quantity']) ? (float)$it['quantity'] : (isset($it[1]) ? (float)$it[1] : 0.0);
+    $itPrice = isset($it['unit_price']) ? (float)$it['unit_price'] : (isset($it[3]) ? (float)$it[3] : 0.0);
+    $itTotal = isset($it['total_price']) && (float)$it['total_price'] > 0 ? (float)$it['total_price'] : ($itQty * $itPrice);
+    $calcSubtotal += $itTotal;
+}
+
 $rev = (int)$q['rev_no'];
 $qNo = !empty($q['quotation_no']) ? $q['quotation_no'] . ($rev > 0 ? "/R" . $rev : "") : "(Draft)";
 $vatRate = (float)$q['vat_rate'];
 $subtotal = (float)$q['subtotal_excl_vat'];
+if ($subtotal <= 0 && $calcSubtotal > 0) {
+    $subtotal = $calcSubtotal;
+}
+
 $discountType = isset($q['discount_type']) && $q['discount_type'] === 'percent' ? 'percent' : 'amount';
 $discountVal = isset($q['discount_value']) ? (float)$q['discount_value'] : (isset($q['discount']) ? (float)$q['discount'] : 0.0);
 $discountAmt = isset($q['discount_amount']) ? (float)$q['discount_amount'] : 0.0;
@@ -117,9 +138,13 @@ if ($discountAmt <= 0 && $discountVal > 0) {
         $discountAmt = $discountVal;
     }
 }
+if ($discountAmt > $subtotal) {
+    $discountAmt = $subtotal;
+}
+
 $netSubtotal = max(0, $subtotal - $discountAmt);
-$vatAmt = isset($q['vat_amount']) && (float)$q['vat_amount'] > 0 ? (float)$q['vat_amount'] : (($netSubtotal * $vatRate) / 100.0);
-$total = isset($q['total_incl_vat']) && (float)$q['total_incl_vat'] > 0 ? (float)$q['total_incl_vat'] : ($netSubtotal + $vatAmt);
+$vatAmt = ($netSubtotal * $vatRate) / 100.0;
+$total = $netSubtotal + $vatAmt;
 ?>
 <!doctype html>
 <html lang="en">
