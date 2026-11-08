@@ -1093,7 +1093,7 @@ if ($isLoggedIn) {
                                 </div>
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer Code</label>
-                                    <input type="text" id="cust_modal_code" class="form-control" placeholder="Auto-generated upon save" readonly style="height:36px;font-size:13px;border-radius:6px;background:#eef3f7;border:1.5px solid #d4e4f0;color:#0A4174;font-weight:600;">
+                                    <input type="text" id="cust_modal_code" class="form-control" readonly style="height:36px;font-size:13px;border-radius:6px;background:#eef3f7;border:1.5px solid #d4e4f0;color:#0A4174;font-weight:600;">
                                 </div>
                             </div>
 
@@ -1101,11 +1101,11 @@ if ($isLoggedIn) {
                             <div class="row">
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer / Company Name <span class="text-danger">*</span></label>
-                                    <input type="text" id="cust_modal_name" class="form-control" placeholder="e.g. Al Futtaim Group" required style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true">
+                                    <input type="text" id="cust_modal_name" class="form-control" required style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true">
                                 </div>
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Contact Number <span class="text-danger">*</span></label>
-                                    <input type="text" id="cust_modal_contact" class="form-control" placeholder="e.g. +973 1712 3456" required style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                    <input type="text" id="cust_modal_contact" class="form-control" required style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
                                 </div>
                             </div>
 
@@ -1113,11 +1113,11 @@ if ($isLoggedIn) {
                             <div class="row">
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Email Address</label>
-                                    <input type="email" id="cust_modal_email" class="form-control" placeholder="e.g. info@alfuttaim.com" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                    <input type="email" id="cust_modal_email" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
                                 </div>
                                 <div class="col-md-6 form-md form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Alternate Contact / Location</label>
-                                    <input type="text" id="cust_modal_alt_contact" class="form-control" placeholder="e.g. +973 3944 1234 or Seef" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                    <input type="text" id="cust_modal_alt_contact" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
                                 </div>
                             </div>
 
@@ -1125,11 +1125,11 @@ if ($isLoggedIn) {
                             <div class="row">
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Attention / Contact Person</label>
-                                    <input type="text" id="cust_modal_person" class="form-control" placeholder="e.g. John Doe / Facilities Manager" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true">
+                                    <input type="text" id="cust_modal_person" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true">
                                 </div>
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Contact Person Mobile</label>
-                                    <input type="text" id="cust_modal_person_no" class="form-control" placeholder="e.g. +973 3311 2233" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                    <input type="text" id="cust_modal_person_no" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
                                 </div>
                             </div>
 
@@ -1137,24 +1137,24 @@ if ($isLoggedIn) {
                             <div class="row">
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">CPR / CR Number</label>
-                                    <input type="text" id="cust_modal_cpr" class="form-control" placeholder="e.g. 123456-1" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                    <input type="text" id="cust_modal_cpr" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
                                 </div>
                                 <div class="col-md-6 form-group mb-2">
                                     <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">VAT Number</label>
-                                    <input type="text" id="cust_modal_vat" class="form-control" placeholder="e.g. 200001234500002" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                    <input type="text" id="cust_modal_vat" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
                                 </div>
                             </div>
 
                             <!-- Customer Address -->
                             <div class="form-group mb-2">
                                 <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer Address</label>
-                                <textarea id="cust_modal_address" rows="2" class="form-control" placeholder="Building, Road, Block, City, Kingdom of Bahrain" style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
+                                <textarea id="cust_modal_address" rows="2" class="form-control" style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
                             </div>
 
                             <!-- Description / Notes -->
                             <div class="form-group mb-0">
                                 <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Description / Notes</label>
-                                <textarea id="cust_modal_description" rows="2" class="form-control" placeholder="Optional notes or customer requirements" style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
+                                <textarea id="cust_modal_description" rows="2" class="form-control" style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
                             </div>
                         </form>
                     </div>
