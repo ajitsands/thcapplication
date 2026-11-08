@@ -99,18 +99,26 @@
                   <button class="btn bg-teal-400 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Select Users
                   </button>
-                  <ul class="dropdown-menu container_menu" style="height:300px;overflow-y: scroll;">
+                  <ul class="dropdown-menu container_menu" style="height:300px;overflow-y: scroll;min-width:320px;">
                     <li class="px-2 pb-2"><input type="text" class="form-control form-control-sm dropdown-search" placeholder="Search..."></li>
                      <li><a class="dropdown-item clear-all-user-items clear-user-all" href="#">Clear All </a></li>
                      <li><hr class="dropdown-divider"></li>
                      <?php
-                     // Your SQL query
-                     $sql = "select * from  users order by username asc";
+                     // SQL query to join users with tbl_employees to get employee name
+                     $sql = "SELECT users.id, users.username, tbl_employees.employee_name 
+                             FROM users 
+                             LEFT JOIN tbl_employees ON (LOWER(TRIM(tbl_employees.employee_code)) = LOWER(TRIM(users.username))) 
+                             ORDER BY users.username ASC";
                      // Execute the query
                      $result = $permmison_conn->query($sql);
 
-                     while ($row = $result->fetch_assoc()) { ?>
-                    <li><a class="dropdown-item user_dropdown" href="#" data-user="<?php echo $row['id']; ?>"><?php echo $row['username']; ?></a></li>
+                     while ($row = $result->fetch_assoc()) { 
+                         $displayName = $row['username'];
+                         if (!empty($row['employee_name']) && $row['employee_name'] !== 'NA') {
+                             $displayName .= ' - ' . $row['employee_name'];
+                         }
+                     ?>
+                    <li><a class="dropdown-item user_dropdown" href="#" data-user="<?php echo $row['id']; ?>"><?php echo htmlspecialchars($displayName); ?></a></li>
                     <?php }
                      ?>
                      <li><hr class="dropdown-divider"></li>
