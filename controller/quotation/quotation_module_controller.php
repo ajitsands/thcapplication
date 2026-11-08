@@ -573,7 +573,7 @@ class QuotationModuleController
         // 1. Fetch AMC Customers
         $amcClients = [];
         if ($this->isDbConnected) {
-            $cRes = @mysqli_query($this->db, "SELECT customer_id, customer_code, customer_name, customer_address, customer_contact_no FROM tbl_customers WHERE customer_status='Active' ORDER BY customer_name ASC");
+            $cRes = @mysqli_query($this->db, "SELECT customer_id, customer_code, customer_name, customer_address, customer_contact_no FROM tbl_customers WHERE customer_status='Active' AND (is_amc = 1 OR customer_type = 'AMC') ORDER BY customer_name ASC");
             if ($cRes && mysqli_num_rows($cRes) > 0) {
                 while ($c = mysqli_fetch_assoc($cRes)) {
                     $code = !empty($c['customer_code']) && $c['customer_code'] !== 'NA' ? $c['customer_code'] : 'C' . str_pad($c['customer_id'], 4, '0', STR_PAD_LEFT);

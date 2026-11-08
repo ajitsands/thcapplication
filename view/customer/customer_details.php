@@ -105,6 +105,15 @@
     										
     									</div>
 								
+									<div class="col-lg-6 col-md-6 col-sm-12 mt-2">
+										<span class="form-text text-muted font-weight-bold" style="color:black;"><font color="black">Customer Category (AMC / Non AMC) &nbsp;<span style="color:red;">*</span></font></span>
+										<select class="form-control font-weight-semibold" id="sel_customer_type" style="height:38px;">
+											<option value="AMC" selected>AMC Customer</option>
+											<option value="Non AMC">Non AMC Customer</option>
+										</select>
+										<small class="text-muted">Select whether this client is an active AMC customer or a Non-AMC customer.</small>
+									</div>
+								
 								</div>
 								
 							
@@ -165,6 +174,7 @@
 				                <th>Contact No.</th>
 				                <th>CPR/CR No.</th>
 				                <th>Email</th>
+				                <th>Category</th>
 				                <th>Status</th>
 				                <th>Action</th>
 				                <th style="display:none">Alternative Contact No.</th>
@@ -194,8 +204,7 @@
                                 <th></th>
                                 <th></th>
                                 <th></th>
-                               
-                                
+                                <th></th>
                             </tr>
                         </tfoot>
 					</table>

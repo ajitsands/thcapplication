@@ -53,7 +53,7 @@ $OBJ->URLEncode('head=dashboard');
 	<!-- sweet alert -->
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
     <script src="global_assets/js/fileupload_ns.js"></script>
-	<script src="../httpdocs/user_js/customer.js"></script>
+	<script src="../httpdocs/user_js/customer.js?v=<?= @filemtime(__DIR__ . '/../httpdocs/user_js/customer.js') ?: time() ?>"></script>
 	<script src="../httpdocs/user_js/login.js"></script>
 	<link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
 </head>

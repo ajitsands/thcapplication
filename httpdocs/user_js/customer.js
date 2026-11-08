@@ -114,6 +114,8 @@ $(document).ready(function(){
                     var v_vat_number=$("#txt_vat_number").val();					
                     var v_customer_address=$("#txt_customer_address").val();
 					var v_description=$("#txt_description").val();
+					var v_customer_type=$("#sel_customer_type").val() || 'AMC';
+					var v_is_amc=(v_customer_type === 'AMC') ? 1 : 0;
 					//var v_customer_pwd=$("#txt_customer_pwd").val();
 					//var v_customer_cpwd=$("#txt_customer_cpwd").val();
                 
@@ -147,7 +149,7 @@ $(document).ready(function(){
                    
                     else
                     {         
-                         $.post("../controller/customer/customer_controller.php",{action:'add_customer',v_customer_name:v_customer_name,v_customer_contact_no:v_customer_contact_no,v_customer_email_id:v_customer_email_id,v_contact_person:v_contact_person,v_contact_person_number:v_contact_person_number,v_cpr_cr_number:v_cpr_cr_number,v_vat_number:v_vat_number,v_customer_address:v_customer_address,v_description:v_description,v_alternate_contact_no:v_alternate_contact_no}
+                         $.post("../controller/customer/customer_controller.php",{action:'add_customer',v_customer_name:v_customer_name,v_customer_contact_no:v_customer_contact_no,v_customer_email_id:v_customer_email_id,v_contact_person:v_contact_person,v_contact_person_number:v_contact_person_number,v_cpr_cr_number:v_cpr_cr_number,v_vat_number:v_vat_number,v_customer_address:v_customer_address,v_description:v_description,v_alternate_contact_no:v_alternate_contact_no,v_customer_type:v_customer_type,v_is_amc:v_is_amc}
                                 , function(result,status)
                                 {                     
                                 result = $.trim(result);
@@ -266,13 +268,13 @@ $(document).ready(function(){
                                         text: 'Export Excel', 
                                         className: 'excel-button',
                                         exportOptions: {
-                                            columns: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13] 
+                                            columns: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] 
                                         },
 										filename: 'THC Customers',
 									},
 								],
             			"columnDefs": [
-                            { "visible": false, "targets": [9, 10, 11, 12, 13] }
+                            { "visible": false, "targets": [10, 11, 12, 13, 14] }
                           ],
                             "columns": [
                                 {
@@ -304,7 +306,20 @@ $(document).ready(function(){
                                  { "data": "customer_contact_no"},
                                  { "data": "customer_cpr_cr_no"},
                                  { "data": "customer_email_id"},
-								 
+                                 { 
+                                     "data": "customer_type",
+                                     render: function ( data, type, rows, meta ) {
+                                         var isAmc = (rows['is_amc'] !== undefined && rows['is_amc'] !== null && rows['is_amc'] !== '') ? (+rows['is_amc'] === 1) : (data === 'AMC');
+                                         if(isAmc)
+                                         {
+                                             return '<span class="badge font-weight-semibold" style="background-color:#0A4174;color:#ffffff;padding:5px 9px;border-radius:4px;font-size:11px;letter-spacing:0.3px;"><i class="icon-shield-check mr-1" style="font-size:11px;"></i>AMC</span>';
+                                         }
+                                         else
+                                         {
+                                             return '<span class="badge font-weight-semibold" style="background-color:#64748b;color:#ffffff;padding:5px 9px;border-radius:4px;font-size:11px;letter-spacing:0.3px;"><i class="icon-user mr-1" style="font-size:11px;"></i>Non AMC</span>';
+                                         }
+                                     }
+                                 },
                                  
                                  { "data": "customer_status",
                                       render: function ( data, type, rows, meta ) {
@@ -339,7 +354,14 @@ $(document).ready(function(){
                                        
                                         if(filteredOptions=="CustomerModify")
                                         {
-                                             dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a><a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a><a href="#" class="dropdown-item" name="name_Delete" style="color: red;"><i class="icon-trash"></i>Delete</a><a href="#" class="dropdown-item" name="name_Password" style="color: orange;"><i class="icon-lock"></i>Password Settings</a>';
+                                             var isAmc = (rows['is_amc'] !== undefined && rows['is_amc'] !== null && rows['is_amc'] !== '') ? (+rows['is_amc'] === 1) : (rows['customer_type'] === 'AMC');
+                                             var toggleAmcItem = isAmc 
+                                                 ? '<a href="#" class="dropdown-item" name="name_MarkNonAmc" style="color: #64748b;"><i class="icon-user-minus"></i>Mark as Non AMC</a>'
+                                                 : '<a href="#" class="dropdown-item" name="name_MarkAmc" style="color: #0A4174;"><i class="icon-shield-check"></i>Mark as AMC</a>';
+
+                                             dropdownHTML += '<a href="#" class="dropdown-item" name="name_Edit" style="color: orange;"><i class="icon-database-edit2"></i>Edit</a>' +
+                                                             toggleAmcItem +
+                                                             '<a href="#" class="dropdown-item" name="name_Active" style="color: green;"><i class="icon-checkmark2"></i>Active</a><a href="#" class="dropdown-item" name="name_Deactive" style="color: red;"><i class="icon-cross3"></i>Deactive</a><a href="#" class="dropdown-item" name="name_Delete" style="color: red;"><i class="icon-trash"></i>Delete</a><a href="#" class="dropdown-item" name="name_Password" style="color: orange;"><i class="icon-lock"></i>Password Settings</a>';
                                         }
                                         else
                                         {
@@ -517,7 +539,35 @@ $(document).ready(function(){
                                 $("#txt_vat_number").val(custmr_data.customer_vat_no);
                                 $("#txt_customer_address").val(custmr_data.customer_address);
 								$("#txt_description").val(custmr_data.customer_description);
+								var custType = custmr_data.customer_type || ((custmr_data.is_amc !== undefined && +custmr_data.is_amc === 0) ? 'Non AMC' : 'AMC');
+								$("#sel_customer_type").val(custType);
            
+                            }
+
+                            if($(this).attr("name")=='name_MarkAmc' || $(this).attr("name")=='name_MarkNonAmc')
+                            {
+                                var targetType = $(this).attr("name") === 'name_MarkAmc' ? 'AMC' : 'Non AMC';
+                                var targetIsAmc = (targetType === 'AMC') ? 1 : 0;
+                                var custName = custmr_data.customer_name || 'Customer';
+                                swal({
+                                    title: "Mark as " + targetType + "?",
+                                    text: "Do you want to mark '" + custName + "' as " + targetType + " Customer?",
+                                    icon: "info",
+                                    buttons: ["Cancel", "Yes, update"],
+                                    dangerMode: (targetType === 'Non AMC')
+                                }).then(function(confirmed) {
+                                    if (confirmed) {
+                                        $.post("../controller/customer/customer_controller.php", {
+                                            action: 'change_customer_type',
+                                            v_customer_id: v_customer_id,
+                                            v_customer_type: targetType,
+                                            v_is_amc: targetIsAmc
+                                        }, function(result, status) {
+                                            swal("Success", custName + " has been marked as " + targetType + " Customer.", "success");
+                                            load_data_to_grid_customer_details_list();
+                                        });
+                                    }
+                                });
                             }
                             
                              if($(this).attr("name")=='name_Active' || $(this).attr("name")=='name_Deactive')
@@ -682,6 +732,7 @@ $(document).ready(function(){
             				
             				//'<td ><div align="center">PO Box </div></td>'+
 							'<td ><div align="center">Alternate Contact Number </div></td>'+
+							'<td ><div align="center">Category </div></td>'+
             				'<td ><div align="center">VAT No. </div></td>'+
             				'<td ><div align="center">Contact Point </div></td>'+
             				'<td ><div align="center">Address </div></td>'+
@@ -695,6 +746,7 @@ $(document).ready(function(){
             			  '<tr>'+
             			
 							'<td><div align="center">'+d.customer_location+'</div></td>'+
+							'<td><div align="center"><b>'+(d.customer_type || ((d.is_amc !== undefined && +d.is_amc === 0) ? 'Non AMC' : 'AMC'))+'</b></div></td>'+
             				'<td><div align="center">'+d.customer_vat_no+' </div></td>'+
             				'<td><div align="center">'+d.customer_contact_person_name+' - '+d.customer_contact_person_no+' </div></td>'+
             				'<td><div align="center">'+d.customer_address+'</div></td>'+
@@ -732,6 +784,8 @@ $(document).ready(function(){
 					
                     var v_customer_address=$("#txt_customer_address").val();
 					var v_description=$("#txt_description").val();
+					var v_customer_type=$("#sel_customer_type").val() || 'AMC';
+					var v_is_amc=(v_customer_type === 'AMC') ? 1 : 0;
 					  if(v_customer_email_id!="")
                     {
                       var testEmail = /^[A-Z0-9._%+-]+@([A-Z0-9-]+\.)+[A-Z]{2,4}$/i;
@@ -761,7 +815,7 @@ $(document).ready(function(){
                    
                     else
                     {         
-                         $.post("../controller/customer/customer_controller.php",{action:'update_customer',v_customer_id:v_customer_id,v_customer_name:v_customer_name,v_customer_contact_no:v_customer_contact_no,v_customer_email_id:v_customer_email_id,v_contact_person:v_contact_person,v_contact_person_number:v_contact_person_number,v_cpr_cr_number:v_cpr_cr_number,v_vat_number:v_vat_number,v_customer_address:v_customer_address,v_description:v_description,v_alternate_contact_no:v_alternate_contact_no}
+                         $.post("../controller/customer/customer_controller.php",{action:'update_customer',v_customer_id:v_customer_id,v_customer_name:v_customer_name,v_customer_contact_no:v_customer_contact_no,v_customer_email_id:v_customer_email_id,v_contact_person:v_contact_person,v_contact_person_number:v_contact_person_number,v_cpr_cr_number:v_cpr_cr_number,v_vat_number:v_vat_number,v_customer_address:v_customer_address,v_description:v_description,v_alternate_contact_no:v_alternate_contact_no,v_customer_type:v_customer_type,v_is_amc:v_is_amc}
                                 , function(result,status)
                                 {
                                     console.log(result);
@@ -840,6 +894,7 @@ $(document).ready(function(){
 								
                     $("#txt_customer_address").val('');
 				    $("#txt_description").val('');
+				    $("#sel_customer_type").val('AMC');
     
                  }
                  

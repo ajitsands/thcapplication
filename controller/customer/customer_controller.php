@@ -1,13 +1,13 @@
 <?php
 
-require ('../../model/common/common_functions.php');
+require_once (__DIR__ . '/../../model/common/common_functions.php');
 
 
 
 class customerController
 {
        var $varModelObj,$varDBConnection;
-	   public $actionevents,$ctrl_name,$customer_id, $customer_name,$customer_password, $customer_number,$customer_email_id,$customer_po_box,$customer_location,$contact_person,$contact_person_number,$cpr_cr_number,$vat_number,$customer_address,$customer_description,$customer_status,$customer_action,$customer_code,$customer_code_new;
+	   public $actionevents,$ctrl_name,$customer_id, $customer_name,$customer_password, $customer_number,$customer_email_id,$customer_po_box,$customer_location,$contact_person,$contact_person_number,$cpr_cr_number,$vat_number,$customer_address,$customer_description,$customer_status,$customer_action,$customer_code,$customer_code_new,$is_amc,$customer_type;
        public $expertise_id=array();
         
     function __construct()
@@ -15,6 +15,17 @@ class customerController
 	  
         $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
+
+        // Auto-migration: Ensure is_amc and customer_type exist
+        if ($this->varDBConnection) {
+            $chkAmc = @mysqli_query($this->varDBConnection, "SHOW COLUMNS FROM `tbl_customers` LIKE 'is_amc'");
+            if ($chkAmc && mysqli_num_rows($chkAmc) === 0) {
+                @mysqli_query($this->varDBConnection, "ALTER TABLE `tbl_customers` 
+                    ADD COLUMN `is_amc` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 = AMC, 0 = Non AMC' AFTER `customer_status`,
+                    ADD COLUMN `customer_type` VARCHAR(20) NOT NULL DEFAULT 'AMC' AFTER `is_amc`");
+            }
+        }
+
         $this->actionevents = $_POST['action'];
         $this->ctrl_name = $_POST['v_ctrl_name'];
 		
@@ -39,6 +50,13 @@ class customerController
            $this->customer_code = $_POST['customer_code'];
             $this->customer_password = $_POST['customer_password'];
           
+        $this->customer_type = (isset($_POST['v_customer_type']) && trim($_POST['v_customer_type']) === 'Non AMC') ? 'Non AMC' : 'AMC';
+        if (isset($_POST['v_is_amc'])) {
+            $this->is_amc = ((int)$_POST['v_is_amc'] === 0 || $_POST['v_is_amc'] === '0') ? 0 : 1;
+            $this->customer_type = ($this->is_amc === 1) ? 'AMC' : 'Non AMC';
+        } else {
+            $this->is_amc = ($this->customer_type === 'AMC') ? 1 : 0;
+        }
             
         date_default_timezone_set('Asia/Bahrain');
         $this->current_date = date("Y-m-d h:i:s");
@@ -54,11 +72,11 @@ class customerController
         
 		//$array[1] = "INSERT INTO `tbl_customers`(`customer_name`, `customer_contact_no`, `customer_email_id`, `customer_po_box`, `customer_location`, `customer_contact_person_name`, `customer_contact_person_no`, `customer_cpr_cr_no`, `customer_vat_no`, `customer_address`, `customer_description`, `customer_status`) VALUES('".$this->customer_name."','".$this->customer_number."','".$this->customer_email_id."','".$this->customer_po_box."','".$this->customer_location."','".$this->contact_person."','".$this->contact_person_number."','".$this->cpr_cr_number."','".$this->vat_number."','".$this->customer_address."','".$this->customer_description."','Active')";
 		
-		$array[1] = "INSERT INTO `tbl_customers`(`customer_name`, `customer_contact_no`, `customer_email_id`, `customer_location`, `customer_contact_person_name`, `customer_contact_person_no`, `customer_cpr_cr_no`, `customer_vat_no`, `customer_address`, `customer_description`, `customer_status`,date_active) VALUES('".$this->customer_name."','".$this->customer_number."','".$this->customer_email_id."','".$this->alternate_contact_no."','".$this->contact_person."','".$this->contact_person_number."','".$this->cpr_cr_number."','".$this->vat_number."','".$this->customer_address."','".$this->customer_description."','Active','".$this->current_date."')";
+		$array[1] = "INSERT INTO `tbl_customers`(`customer_name`, `customer_contact_no`, `customer_email_id`, `customer_location`, `customer_contact_person_name`, `customer_contact_person_no`, `customer_cpr_cr_no`, `customer_vat_no`, `customer_address`, `customer_description`, `customer_status`, `is_amc`, `customer_type`, date_active) VALUES('".$this->customer_name."','".$this->customer_number."','".$this->customer_email_id."','".$this->alternate_contact_no."','".$this->contact_person."','".$this->contact_person_number."','".$this->cpr_cr_number."','".$this->vat_number."','".$this->customer_address."','".$this->customer_description."','Active', ".$this->is_amc.", '".$this->customer_type."', '".$this->current_date."')";
 		
         $array[2] = "select *,DATE_FORMAT(date_active, '%d-%m-%Y') as date_active1,DATE_FORMAT(date_deactive, '%d-%m-%Y') as date_deactive1 from tbl_customers order by customer_id desc";
         
-		$array[3] = "UPDATE `tbl_customers` SET `customer_name`='".$this->customer_name."',`customer_contact_no`='".$this->customer_number."',`customer_email_id`='".$this->customer_email_id."',`customer_location`='".$this->alternate_contact_no."',`customer_contact_person_name`='".$this->contact_person."',`customer_contact_person_no`='".$this->contact_person_number."',`customer_cpr_cr_no`='".$this->cpr_cr_number."',`customer_vat_no`='".$this->vat_number."',`customer_address`='".$this->customer_address."',`customer_description`='".$this->customer_description."' WHERE `customer_id`='".$this->customer_id."'";
+		$array[3] = "UPDATE `tbl_customers` SET `customer_name`='".$this->customer_name."',`customer_contact_no`='".$this->customer_number."',`customer_email_id`='".$this->customer_email_id."',`customer_location`='".$this->alternate_contact_no."',`customer_contact_person_name`='".$this->contact_person."',`customer_contact_person_no`='".$this->contact_person_number."',`customer_cpr_cr_no`='".$this->cpr_cr_number."',`customer_vat_no`='".$this->vat_number."',`customer_address`='".$this->customer_address."',`customer_description`='".$this->customer_description."', `is_amc`=".$this->is_amc.", `customer_type`='".$this->customer_type."' WHERE `customer_id`='".$this->customer_id."'";
         
 		$array[4] ="update tbl_customers set `customer_status`='Active',date_active='".$this->current_date."' where customer_id='".$this->customer_id."'";
         
@@ -203,6 +221,15 @@ class customerController
                 {
                   $this->varModelObj->UpdateTable($var[5]);  
                 }
+            break;
+
+            case 'change_customer_type':
+                $newType = (isset($_POST['v_customer_type']) && trim($_POST['v_customer_type']) === 'Non AMC') ? 'Non AMC' : 'AMC';
+                $newIsAmc = ($newType === 'AMC') ? 1 : 0;
+                $escCustId = $this->varDBConnection->real_escape_string($this->customer_id);
+                $updSql = "UPDATE `tbl_customers` SET `is_amc` = $newIsAmc, `customer_type` = '$newType' WHERE `customer_id` = '$escCustId'";
+                $this->varModelObj->UpdateTable($updSql);
+                echo "success";
             break;
             
              case 'delete_customers':
