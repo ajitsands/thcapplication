@@ -650,9 +650,9 @@
 
         if ($("#del")) {
             $("#del").onclick = () => {
-                if (confirm("Are you sure you want to delete this draft?")) {
+                confirmSwal("Delete Draft?", "Are you sure you want to delete this draft quotation?", () => {
                     deleteDraft(q.id);
-                }
+                });
             };
         }
 
@@ -1163,6 +1163,70 @@
     }
 
     // ==========================================
+    // SWEETALERT & MODAL HELPERS
+    // ==========================================
+    function confirmSwal(title, text, confirmCallback) {
+        if (typeof window.swal === "function") {
+            window.swal({
+                title: title,
+                text: text,
+                icon: "warning",
+                buttons: {
+                    cancel: {
+                        text: "Cancel",
+                        value: null,
+                        visible: true,
+                        className: "btn btn-light",
+                        closeModal: true
+                    },
+                    confirm: {
+                        text: "Yes, Delete",
+                        value: true,
+                        visible: true,
+                        className: "btn btn-danger",
+                        closeModal: true
+                    }
+                },
+                dangerMode: true,
+                showCancelButton: true
+            }).then(willConfirm => {
+                if (willConfirm) {
+                    confirmCallback();
+                }
+            });
+        } else if (window.Swal && typeof window.Swal.fire === "function") {
+            window.Swal.fire({
+                title: title,
+                text: text,
+                type: "warning",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#ef4444",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Yes, Delete"
+            }).then(result => {
+                if (result && (result.value === true || result.isConfirmed === true)) {
+                    confirmCallback();
+                }
+            });
+        } else {
+            if (confirm(text ? `${title}\n${text}` : title)) {
+                confirmCallback();
+            }
+        }
+    }
+
+    function notifySwal(title, text, type = "success") {
+        if (typeof window.swal === "function") {
+            window.swal(title, text, type);
+        } else if (window.Swal && typeof window.Swal.fire === "function") {
+            window.Swal.fire(title, text, type);
+        } else {
+            toast(text || title);
+        }
+    }
+
+    // ==========================================
     // UNIT MASTER MODAL & MANAGEMENT
     // ==========================================
     function showModal(selector) {
@@ -1342,28 +1406,31 @@
                 const uName = btn.dataset.name;
                 if (!uName) return;
 
-                if (!confirm(`Are you sure you want to delete unit "${uName}" from Unit Master?`)) {
-                    return;
-                }
-
-                apiCall("delete_unit", { id: uId, unit_name: uName }, "POST").then(res => {
-                    if (res && res.status === "success") {
-                        toast(res.message || "Unit deleted successfully");
-                        if (res.units && Array.isArray(res.units)) {
-                            unitMasterList = res.units;
-                            UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
-                        } else {
-                            unitMasterList = unitMasterList.filter(x => (typeof x === "string" ? x : x.name) !== uName);
-                            UNITS = UNITS.filter(x => x !== uName);
-                        }
-                        renderUnitMasterList($("#filter_unit_list") ? $("#filter_unit_list").value : "");
-                        if (ED) {
-                            renderItems();
-                        }
-                    } else {
-                        toast(res && res.message ? res.message : "Failed to delete unit");
+                confirmSwal(
+                    "Delete Unit?",
+                    `Are you sure you want to delete "${uName}" from Unit Master?`,
+                    () => {
+                        apiCall("delete_unit", { id: uId, unit_name: uName }, "POST").then(res => {
+                            if (res && res.status === "success") {
+                                notifySwal("Deleted!", res.message || `Unit "${uName}" deleted successfully.`, "success");
+                                if (res.units && Array.isArray(res.units)) {
+                                    unitMasterList = res.units;
+                                    UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
+                                } else {
+                                    unitMasterList = unitMasterList.filter(x => (typeof x === "string" ? x : x.name) !== uName);
+                                    UNITS = UNITS.filter(x => x !== uName);
+                                }
+                                renderUnitMasterList($("#filter_unit_list") ? $("#filter_unit_list").value : "");
+                                if (ED) {
+                                    renderItems();
+                                }
+                            } else {
+                                const msg = res && res.message ? res.message : "Failed to delete unit";
+                                notifySwal("Error", msg, "error");
+                            }
+                        });
                     }
-                });
+                );
             };
         }
 

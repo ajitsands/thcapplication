@@ -1063,6 +1063,10 @@ if ($isLoggedIn) {
     <!-- Select2 (Ensured for Searchable Dropdowns) -->
     <script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
 
+    <!-- SweetAlert Notification Library -->
+    <script src="global_assets/js/plugins/notifications/sweet_alert.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+
     <!-- Client-side Application Script -->
     <script src="../httpdocs/user_js/quotation_module.js?v=<?= @filemtime(__DIR__ . '/../httpdocs/user_js/quotation_module.js') ?: time() ?>"></script>
 
