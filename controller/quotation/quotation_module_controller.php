@@ -15,6 +15,7 @@ class QuotationModuleController
 {
     private $db;
     private $jsonFallbackFile;
+    private $unitsFallbackFile;
     private $isDbConnected = false;
 
     // Standard Default Terms
@@ -65,9 +66,17 @@ class QuotationModuleController
         ["code" => "C0172", "name" => "Seef Entertainment W.L.L", "address" => "Block 428, Seef District, Kingdom of Bahrain", "contact" => "17000000"]
     ];
 
+    // Default Units Master
+    private $defaultUnits = [
+        "Lumpsum", "No.", "Nos", "Set", "Lot", "Job", "Pcs", 
+        "Trip", "Visit", "Hr", "Day", "Month", 
+        "m", "m²", "m³", "Kg", "Ltr", "Box", "Roll", "Pack", "Pair"
+    ];
+
     public function __construct()
     {
         $this->jsonFallbackFile = __DIR__ . '/../../scratch/quotations_data.json';
+        $this->unitsFallbackFile = __DIR__ . '/../../scratch/quotation_units.json';
         $this->initDbConnection();
         $this->ensureSchemaAndData();
     }
@@ -135,6 +144,27 @@ class QuotationModuleController
                 KEY `idx_quotation_id` (`quotation_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             @mysqli_query($this->db, $itemsSql);
+
+            $unitsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_units_master` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `unit_name` VARCHAR(50) NOT NULL,
+                `sort_order` INT(11) NOT NULL DEFAULT 0,
+                `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `idx_unit_name` (`unit_name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            @mysqli_query($this->db, $unitsSql);
+
+            $cntRes = @mysqli_query($this->db, "SELECT COUNT(*) as cnt FROM `tbl_quotation_units_master`");
+            $cntRow = $cntRes ? mysqli_fetch_assoc($cntRes) : null;
+            if (!$cntRow || (int)$cntRow['cnt'] === 0) {
+                $sort = 1;
+                foreach ($this->defaultUnits as $u) {
+                    $escU = mysqli_real_escape_string($this->db, $u);
+                    @mysqli_query($this->db, "INSERT IGNORE INTO `tbl_quotation_units_master` (`unit_name`, `sort_order`) VALUES ('$escU', $sort)");
+                    $sort++;
+                }
+            }
 
             // Do not automatically re-seed demo data if the administrator clears the table.
             // Demo data can be manually seeded by visiting with ?action=seed_demo_data if needed.
@@ -393,7 +423,7 @@ class QuotationModuleController
             return $this->parsedInput;
         }
 
-        $data = $_REQUEST;
+        $data = array_merge($_GET, $_POST, $_REQUEST);
         $raw = @file_get_contents('php://input');
         if (!empty($raw)) {
             $json = @json_decode($raw, true);
@@ -447,6 +477,18 @@ class QuotationModuleController
 
                 case 'get_performance':
                     $this->getPerformance();
+                    break;
+
+                case 'get_units':
+                    $this->getUnits();
+                    break;
+
+                case 'add_unit':
+                    $this->addUnit();
+                    break;
+
+                case 'delete_unit':
+                    $this->deleteUnit();
                     break;
 
                 case 'seed_demo_data':
@@ -602,6 +644,7 @@ class QuotationModuleController
             "default_terms" => $this->defaultTerms,
             "library_terms" => $this->libraryTerms,
             "rejection_reasons" => $this->rejectionReasons,
+            "units" => $this->fetchUnitsList(),
             "quotations" => $quotations
         ]);
     }
@@ -666,6 +709,188 @@ class QuotationModuleController
         }
 
         return $this->getJsonQuotations();
+    }
+
+    public function fetchUnitsList(): array
+    {
+        if ($this->isDbConnected) {
+            $units = [];
+            $res = @mysqli_query($this->db, "SELECT id, unit_name FROM tbl_quotation_units_master ORDER BY sort_order ASC, unit_name ASC");
+            if ($res && mysqli_num_rows($res) > 0) {
+                while ($r = mysqli_fetch_assoc($res)) {
+                    $units[] = [
+                        "id" => (int)$r['id'],
+                        "name" => $r['unit_name']
+                    ];
+                }
+                return $units;
+            }
+        }
+
+        // Fallback or JSON fallback
+        if (file_exists($this->unitsFallbackFile)) {
+            $json = @json_decode(file_get_contents($this->unitsFallbackFile), true);
+            if (is_array($json) && !empty($json)) {
+                return $json;
+            }
+        }
+
+        $units = [];
+        $id = 1;
+        foreach ($this->defaultUnits as $u) {
+            $units[] = ["id" => $id++, "name" => $u];
+        }
+        return $units;
+    }
+
+    private function getUnits()
+    {
+        $units = $this->fetchUnitsList();
+        echo json_encode([
+            "status" => "success",
+            "units" => $units
+        ]);
+    }
+
+    private function addUnit()
+    {
+        $data = $this->getInputData();
+        $unitName = trim($data['unit_name'] ?? '');
+        if ($unitName === '') {
+            echo json_encode(["status" => "error", "message" => "Unit name cannot be empty."]);
+            return;
+        }
+        if (mb_strlen($unitName) > 50) {
+            echo json_encode(["status" => "error", "message" => "Unit name cannot exceed 50 characters."]);
+            return;
+        }
+
+        if ($this->isDbConnected) {
+            $escName = mysqli_real_escape_string($this->db, $unitName);
+            $checkRes = @mysqli_query($this->db, "SELECT id, unit_name FROM tbl_quotation_units_master WHERE LOWER(unit_name) = LOWER('$escName')");
+            if ($checkRes && mysqli_num_rows($checkRes) > 0) {
+                echo json_encode(["status" => "error", "message" => "Unit '$unitName' already exists in the master."]);
+                return;
+            }
+
+            $maxRes = @mysqli_query($this->db, "SELECT MAX(sort_order) as max_sort FROM tbl_quotation_units_master");
+            $maxRow = $maxRes ? mysqli_fetch_assoc($maxRes) : null;
+            $newSort = ($maxRow && isset($maxRow['max_sort'])) ? (int)$maxRow['max_sort'] + 1 : 1;
+
+            $insertSql = "INSERT INTO tbl_quotation_units_master (unit_name, sort_order) VALUES ('$escName', $newSort)";
+            if (@mysqli_query($this->db, $insertSql)) {
+                $newId = (int)mysqli_insert_id($this->db);
+                $units = $this->fetchUnitsList();
+                echo json_encode([
+                    "status" => "success",
+                    "message" => "Unit '$unitName' added successfully.",
+                    "unit" => ["id" => $newId, "name" => $unitName],
+                    "units" => $units
+                ]);
+                return;
+            } else {
+                echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($this->db)]);
+                return;
+            }
+        }
+
+        // Fallback JSON handling
+        $units = $this->fetchUnitsList();
+        foreach ($units as $u) {
+            if (strcasecmp($u['name'], $unitName) === 0) {
+                echo json_encode(["status" => "error", "message" => "Unit '$unitName' already exists."]);
+                return;
+            }
+        }
+        $maxId = 0;
+        foreach ($units as $u) {
+            if ($u['id'] > $maxId) $maxId = $u['id'];
+        }
+        $newUnit = ["id" => $maxId + 1, "name" => $unitName];
+        $units[] = $newUnit;
+        $this->saveUnitsToJson($units);
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Unit '$unitName' added successfully.",
+            "unit" => $newUnit,
+            "units" => $units
+        ]);
+    }
+
+    private function deleteUnit()
+    {
+        $data = $this->getInputData();
+        $id = !empty($data['id']) ? (int)$data['id'] : 0;
+        $unitName = trim($data['unit_name'] ?? '');
+
+        if ($id <= 0 && $unitName === '') {
+            echo json_encode(["status" => "error", "message" => "Unit ID or name required to delete."]);
+            return;
+        }
+
+        if ($this->isDbConnected) {
+            $whereClause = "";
+            if ($id > 0) {
+                $whereClause = "id = $id";
+            } else {
+                $escName = mysqli_real_escape_string($this->db, $unitName);
+                $whereClause = "LOWER(unit_name) = LOWER('$escName')";
+            }
+
+            $selRes = @mysqli_query($this->db, "SELECT id, unit_name FROM tbl_quotation_units_master WHERE $whereClause LIMIT 1");
+            $target = $selRes ? mysqli_fetch_assoc($selRes) : null;
+            if (!$target) {
+                echo json_encode(["status" => "error", "message" => "Unit not found in master."]);
+                return;
+            }
+
+            $deletedName = $target['unit_name'];
+            $targetId = (int)$target['id'];
+
+            @mysqli_query($this->db, "DELETE FROM tbl_quotation_units_master WHERE id = $targetId");
+            $units = $this->fetchUnitsList();
+
+            echo json_encode([
+                "status" => "success",
+                "message" => "Unit '$deletedName' deleted successfully.",
+                "units" => $units
+            ]);
+            return;
+        }
+
+        // Fallback JSON handling
+        $units = $this->fetchUnitsList();
+        $filtered = [];
+        $deletedName = "";
+        foreach ($units as $u) {
+            if (($id > 0 && $u['id'] === $id) || ($unitName !== '' && strcasecmp($u['name'], $unitName) === 0)) {
+                $deletedName = $u['name'];
+                continue;
+            }
+            $filtered[] = $u;
+        }
+
+        if ($deletedName === '') {
+            echo json_encode(["status" => "error", "message" => "Unit not found."]);
+            return;
+        }
+
+        $this->saveUnitsToJson($filtered);
+        echo json_encode([
+            "status" => "success",
+            "message" => "Unit '$deletedName' deleted successfully.",
+            "units" => $filtered
+        ]);
+    }
+
+    private function saveUnitsToJson(array $units)
+    {
+        $dir = dirname($this->unitsFallbackFile);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($this->unitsFallbackFile, json_encode($units, JSON_PRETTY_PRINT));
     }
 
     private function getQuotations()

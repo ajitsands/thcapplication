@@ -952,6 +952,9 @@ if ($isLoggedIn) {
                             <a data-v="perf" class="thc-subnav-btn">
                                 <i class="icon-stats-growth"></i> Performance
                             </a>
+                            <a id="btn_open_unit_master" class="thc-subnav-btn" style="cursor:pointer;" title="Manage Units in Master">
+                                <i class="icon-stack2"></i> Unit Master
+                            </a>
                         </div>
 
                         <div class="d-flex align-items-center ml-auto flex-wrap" style="gap:10px;">
@@ -971,6 +974,55 @@ if ($isLoggedIn) {
         <!-- /content -->
 
         <?PHP include_once('template/reset_password_modal.php'); ?>
+
+        <!-- Unit Master Modal -->
+        <div id="modal_unit_master" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="unitMasterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:520px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #001D39 0%, #0A4174 100%);color:#ffffff;padding:16px 22px;border:none;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="unitMasterModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-stack2 mr-2" style="font-size:20px;color:#7BBDE8;"></i> Quotation Unit Master
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;">
+                        <!-- Add Unit Card -->
+                        <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);margin-bottom:14px !important;">
+                            <label class="font-weight-bold text-dark mb-1" style="font-size:12.5px;">Add New Unit</label>
+                            <div class="input-group">
+                                <input type="text" id="input_new_unit" class="form-control" placeholder="e.g. Coil, Drum, Sq.ft, Bundle" maxlength="50" style="border-radius:8px 0 0 8px !important;font-size:13.5px;height:38px;border:1.5px solid #c2daeb;margin:0 !important;">
+                                <div class="input-group-append">
+                                    <button type="button" id="btn_save_unit" class="btn btn-primary" style="border-radius:0 8px 8px 0 !important;background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);font-weight:600;padding:0 16px;height:38px;margin:0 !important;border:none;">
+                                        <i class="icon-plus2 mr-1"></i> Add Unit
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="text-muted mt-1" style="font-size:11.5px;line-height:1.4;">Newly added units will be immediately available in the quotation item dropdown.</small>
+                        </div>
+
+                        <!-- Unit List Card -->
+                        <div class="card p-3" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);margin-bottom:0 !important;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="font-weight-bold text-dark" style="font-size:12.5px;">
+                                    Available Units (<span id="unit_count_badge">0</span>)
+                                </span>
+                                <input type="text" id="filter_unit_list" class="form-control form-control-sm" placeholder="Search units…" style="width:150px;height:28px;font-size:12px;border-radius:6px;border:1px solid #c2daeb;margin:0 !important;padding:4px 8px;">
+                            </div>
+                            <div id="unit_master_list_container" style="max-height:280px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;background:#ffffff;">
+                                <!-- Dynamically populated unit list -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:10px 20px;">
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:6px;padding:6px 16px;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Global permissions fallback to prevent permission.js ReferenceError -->
         <script>

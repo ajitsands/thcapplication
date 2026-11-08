@@ -95,7 +95,7 @@
         "No response / expired",
         "Other"
     ];
-    const UNITS = [
+    let UNITS = [
         "Lumpsum",
         "No.",
         "Nos",
@@ -118,6 +118,7 @@
         "Pack",
         "Pair"
     ];
+    let unitMasterList = UNITS.map((u, i) => ({ id: i + 1, name: u }));
     let Q = [];
     let CU = "MA";
     let ED = null;
@@ -789,7 +790,12 @@
                     
                     <!-- Scope of Works Card -->
                     <div class="card pad">
-                        <h2>Scope of works</h2>
+                        <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:2px solid var(--q-blue-ice);">
+                            <h2 style="margin:0;border:none;padding:0;">Scope of works</h2>
+                            <button type="button" id="btn_manage_units" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#f0f7fc;border:1.5px solid #c2daeb;color:var(--q-navy-main);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                                <i class="icon-stack2" style="font-size:13px;color:#0A4174;"></i> Manage Units
+                            </button>
+                        </div>
                         <div class="it h">
                             <span>Qty</span>
                             <span>Unit</span>
@@ -935,6 +941,11 @@
             renderItems();
             renderLivePreview();
         };
+
+        const btnManageUnits = $("#btn_manage_units");
+        if (btnManageUnits) {
+            btnManageUnits.onclick = () => openUnitMasterModal();
+        }
 
         $("#its").onclick = ev => {
             const btn = ev.target.closest("[data-rm]");
@@ -1151,6 +1162,217 @@
             });
     }
 
+    // ==========================================
+    // UNIT MASTER MODAL & MANAGEMENT
+    // ==========================================
+    function showModal(selector) {
+        const modalEl = $(selector);
+        if (!modalEl) return;
+        if (window.jQuery && typeof window.jQuery.fn.modal === "function") {
+            window.jQuery(selector).modal("show");
+        } else {
+            modalEl.classList.add("show");
+            modalEl.style.display = "block";
+            let bd = $(".modal-backdrop-custom");
+            if (!bd) {
+                bd = document.createElement("div");
+                bd.className = "modal-backdrop fade show modal-backdrop-custom";
+                document.body.appendChild(bd);
+            }
+        }
+    }
+
+    function hideModal(selector) {
+        const modalEl = $(selector);
+        if (!modalEl) return;
+        if (window.jQuery && typeof window.jQuery.fn.modal === "function") {
+            window.jQuery(selector).modal("hide");
+        } else {
+            modalEl.classList.remove("show");
+            modalEl.style.display = "none";
+            const bd = $(".modal-backdrop-custom");
+            if (bd) bd.remove();
+        }
+    }
+
+    function openUnitMasterModal() {
+        const inp = $("#input_new_unit");
+        if (inp) inp.value = "";
+        const filterInp = $("#filter_unit_list");
+        if (filterInp) filterInp.value = "";
+
+        // Fetch fresh units from server
+        apiCall("get_units", {}, "GET").then(res => {
+            if (res && res.status === "success" && Array.isArray(res.units)) {
+                unitMasterList = res.units;
+                UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
+            }
+            renderUnitMasterList();
+            showModal("#modal_unit_master");
+            setTimeout(() => {
+                const addInput = $("#input_new_unit");
+                if (addInput) addInput.focus();
+            }, 250);
+        });
+    }
+
+    function renderUnitMasterList(filterQuery = "") {
+        const c = $("#unit_master_list_container");
+        if (!c) return;
+
+        const q = (filterQuery || "").trim().toLowerCase();
+        const list = unitMasterList.filter(u => {
+            const name = typeof u === "string" ? u : (u.name || "");
+            return !q || name.toLowerCase().includes(q);
+        });
+
+        const badge = $("#unit_count_badge");
+        if (badge) badge.textContent = unitMasterList.length;
+
+        if (list.length === 0) {
+            c.innerHTML = `<div class="p-3 text-center text-muted font-size-sm">No units found${q ? ' matching "' + H(q) + '"' : ''}</div>`;
+            return;
+        }
+
+        c.innerHTML = `
+        <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+            <thead class="bg-light text-muted font-size-xs text-uppercase font-weight-bold" style="position:sticky;top:0;z-index:2;background:#f8fafc;">
+                <tr>
+                    <th style="width:40px;text-align:center;">#</th>
+                    <th>Unit Name</th>
+                    <th style="width:70px;text-align:center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${M(list, (u, idx) => {
+                    const uName = typeof u === "string" ? u : (u.name || "");
+                    const uId = typeof u === "object" && u.id ? u.id : "";
+                    return `
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td class="text-center text-muted" style="vertical-align:middle;font-size:11.5px;">${idx + 1}</td>
+                        <td style="vertical-align:middle;">
+                            <span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:12.5px;padding:4px 9px;border-radius:6px;font-weight:600;letter-spacing:0.3px;">
+                                ${H(uName)}
+                            </span>
+                        </td>
+                        <td class="text-center" style="vertical-align:middle;">
+                            <button type="button" class="btn btn-sm btn-del-unit" data-id="${uId}" data-name="${H(uName)}" title="Delete unit" style="background:transparent;border:none;color:#ef4444;padding:4px 8px;border-radius:4px;cursor:pointer;">
+                                <i class="icon-trash" style="font-size:13px;"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                })}
+            </tbody>
+        </table>`;
+    }
+
+    function setupUnitMasterEvents() {
+        // Subnav button
+        const subnavBtn = $("#btn_open_unit_master");
+        if (subnavBtn) {
+            subnavBtn.onclick = ev => {
+                ev.preventDefault();
+                openUnitMasterModal();
+            };
+        }
+
+        // Add Unit button & Enter key
+        const addBtn = $("#btn_save_unit");
+        const addInp = $("#input_new_unit");
+        const handleAddUnit = () => {
+            if (!addInp) return;
+            const val = addInp.value.trim();
+            if (!val) {
+                toast("Please enter a unit name");
+                addInp.focus();
+                return;
+            }
+            if (val.length > 50) {
+                toast("Unit name cannot exceed 50 characters");
+                return;
+            }
+
+            apiCall("add_unit", { unit_name: val }, "POST").then(res => {
+                if (res && res.status === "success") {
+                    toast(res.message || "Unit added successfully");
+                    addInp.value = "";
+                    if (res.units && Array.isArray(res.units)) {
+                        unitMasterList = res.units;
+                        UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
+                    } else if (res.unit) {
+                        unitMasterList.push(res.unit);
+                        UNITS.push(res.unit.name);
+                    }
+                    renderUnitMasterList($("#filter_unit_list") ? $("#filter_unit_list").value : "");
+                    if (ED) {
+                        renderItems();
+                    }
+                    addInp.focus();
+                } else {
+                    toast(res && res.message ? res.message : "Failed to add unit");
+                }
+            });
+        };
+
+        if (addBtn) addBtn.onclick = handleAddUnit;
+        if (addInp) {
+            addInp.onkeydown = ev => {
+                if (ev.key === "Enter") {
+                    ev.preventDefault();
+                    handleAddUnit();
+                }
+            };
+        }
+
+        // Live filter
+        const filterInp = $("#filter_unit_list");
+        if (filterInp) {
+            filterInp.oninput = () => {
+                renderUnitMasterList(filterInp.value);
+            };
+        }
+
+        // Delete Unit delegation
+        const listContainer = $("#unit_master_list_container");
+        if (listContainer) {
+            listContainer.onclick = ev => {
+                const btn = ev.target.closest(".btn-del-unit");
+                if (!btn) return;
+                const uId = btn.dataset.id;
+                const uName = btn.dataset.name;
+                if (!uName) return;
+
+                if (!confirm(`Are you sure you want to delete unit "${uName}" from Unit Master?`)) {
+                    return;
+                }
+
+                apiCall("delete_unit", { id: uId, unit_name: uName }, "POST").then(res => {
+                    if (res && res.status === "success") {
+                        toast(res.message || "Unit deleted successfully");
+                        if (res.units && Array.isArray(res.units)) {
+                            unitMasterList = res.units;
+                            UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
+                        } else {
+                            unitMasterList = unitMasterList.filter(x => (typeof x === "string" ? x : x.name) !== uName);
+                            UNITS = UNITS.filter(x => x !== uName);
+                        }
+                        renderUnitMasterList($("#filter_unit_list") ? $("#filter_unit_list").value : "");
+                        if (ED) {
+                            renderItems();
+                        }
+                    } else {
+                        toast(res && res.message ? res.message : "Failed to delete unit");
+                    }
+                });
+            };
+        }
+
+        // Close buttons inside modal
+        $$("#modal_unit_master [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_unit_master");
+        });
+    }
+
     function loadInitialData() {
         apiCall("get_initial_data", {}, "GET").then(res => {
             if (res && res.status === "success") {
@@ -1164,6 +1386,10 @@
                 if (res.library_terms) LIB = res.library_terms;
                 if (res.rejection_reasons) REASONS = res.rejection_reasons;
                 if (res.quotations) Q = res.quotations;
+                if (res.units && Array.isArray(res.units) && res.units.length) {
+                    unitMasterList = res.units;
+                    UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
+                }
             }
 
             initAppUi();
@@ -1171,6 +1397,7 @@
     }
 
     function initAppUi() {
+        setupUnitMasterEvents();
         // Build user switcher options
         const us = $("#us");
         if (us) {
