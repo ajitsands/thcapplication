@@ -90,6 +90,7 @@
         { code: "C0173", name: "UAE Embassy", address: "Block 321, Road 2108, Juffair, Kingdom of Bahrain", contact: "17748333" },
         { code: "C0172", name: "Seef Entertainment W.L.L", address: "Block 428, Seef District, Kingdom of Bahrain", contact: "17000000" }
     ];
+    let NON_AMC = [];
     let T0 = [
         "Payment to be made in advance. (Cash/Cheque)",
         "Validity for the quotation 15 Days.",
@@ -327,7 +328,7 @@
     // Main Router
     function go(v) {
         if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
-            ['#cl', '#fc', '#fu'].forEach(selId => {
+            ['#cl', '#cl_non_amc', '#fc', '#fu'].forEach(selId => {
                 const $s = window.jQuery(selId);
                 if ($s.length && $s.data('select2')) {
                     $s.select2('destroy');
@@ -384,7 +385,8 @@
 
         const uniqueClients = [...new Set([
             ...Q.map(x => x.client_name || x.client).filter(Boolean),
-            ...AMC.map(c => c.name).filter(Boolean)
+            ...AMC.map(c => c.name).filter(Boolean),
+            ...NON_AMC.map(c => c.name).filter(Boolean)
         ])].sort((a, b) => a.localeCompare(b));
         const userList = Object.keys(USERS).map(u => [u, Array.isArray(USERS[u]) ? USERS[u][0] : USERS[u].name]);
 
@@ -790,6 +792,10 @@
         const discVal = (e.discount_value !== undefined && +e.discount_value > 0) ? e.discount_value : ((e.discount !== undefined && +e.discount > 0) ? e.discount : "");
         const discType = e.discount_type || "amount";
 
+        const nonAmcSelected = NON_AMC.find(c => (clientCode && c.code === clientCode) || (clientName && c.name.toLowerCase() === clientName.toLowerCase()));
+        const activeNonAmcCode = nonAmcSelected ? nonAmcSelected.code : clientCode;
+        const hasCustCode = !!((isAmc ? AMC : NON_AMC).some(c => c.code === (isAmc ? clientCode : activeNonAmcCode)));
+
         $("#v").innerHTML = `
             <div class="top">
                 <h1>${seq ? "Revise quotation" : "New quotation"} <span class="tag">${isAmc ? "AMC client" : "Non-AMC client"}</span></h1>
@@ -807,31 +813,83 @@
                 <div>
                     <!-- Client Card -->
                     <div class="card pad">
-                        <h2>Client</h2>
+                        <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:2px solid var(--q-blue-ice);">
+                            <h2 style="margin:0;border:none;padding:0;">Client</h2>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <button type="button" id="btn_add_new_customer" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                                    <i class="icon-user-plus" style="font-size:13px;color:#0A4174;"></i> + Add Customer
+                                </button>
+                                <button type="button" id="btn_edit_current_customer" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#f0f7fc;border:1.5px solid #c2daeb;color:var(--q-navy-main);font-weight:600;display:${hasCustCode ? 'inline-flex' : 'none'};align-items:center;gap:6px;cursor:pointer;">
+                                    <i class="icon-pencil5" style="font-size:13px;color:#0A4174;"></i> Edit Customer
+                                </button>
+                            </div>
+                        </div>
                         ${isAmc ? `
-                            <select id="cl" class="form-control select-search" data-placeholder="Select active AMC client…">
-                                <option value="">Select active AMC client…</option>
-                                ${M(AMC, c => `
-                                    <option value="${H(c.code)}" ${clientCode == c.code ? "selected" : ""} data-contact="${H(c.contact || '')}" data-address="${H(c.address || '')}">
-                                        ${H(c.code)} · ${H(c.name)}
-                                    </option>`
-                                )}
-                            </select>
+                            <div style="margin-bottom:8px;">
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Select AMC Customer</label>
+                                <select id="cl" class="form-control select-search" data-placeholder="Select active AMC client…">
+                                    <option value="">Select active AMC client…</option>
+                                    ${M(AMC, c => `
+                                        <option value="${H(c.code)}" ${clientCode == c.code ? "selected" : ""} 
+                                            data-id="${H(c.id || '')}"
+                                            data-name="${H(c.name || '')}"
+                                            data-contact="${H(c.contact || '')}" 
+                                            data-address="${H(c.address || '')}"
+                                            data-person="${H(c.contact_person || '')}">
+                                            ${H(c.code)} · ${H(c.name)}
+                                        </option>`
+                                    )}
+                                </select>
+                            </div>
                         ` : `
-                            <div class="g2">
-                                <input data-k="client_name" placeholder="Client name" value="${H(clientName)}" spellcheck="true" autocorrect="on" autocapitalize="words">
-                                <input data-k="contact_no" placeholder="Contact number" value="${H(contact)}">
+                            <div style="margin-bottom:8px;">
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Select Non-AMC Customer (or type custom details below)</label>
+                                <select id="cl_non_amc" class="form-control select-search" data-placeholder="Search or select Non-AMC client…">
+                                    <option value="">Search or select Non-AMC client…</option>
+                                    ${M(NON_AMC, c => `
+                                        <option value="${H(c.code)}" ${activeNonAmcCode == c.code ? "selected" : ""} 
+                                            data-id="${H(c.id || '')}"
+                                            data-name="${H(c.name || '')}"
+                                            data-contact="${H(c.contact || '')}" 
+                                            data-address="${H(c.address || '')}"
+                                            data-person="${H(c.contact_person || '')}">
+                                            ${H(c.code)} · ${H(c.name)} ${c.contact ? `(${H(c.contact)})` : ''}
+                                        </option>`
+                                    )}
+                                </select>
+                            </div>
+                            <div class="g2" style="margin-bottom:8px;">
+                                <div>
+                                    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Client Name *</label>
+                                    <input id="inp_client_name" data-k="client_name" placeholder="Client name" value="${H(clientName)}" spellcheck="true" autocorrect="on" autocapitalize="words">
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Contact Number</label>
+                                    <input id="inp_contact_no" data-k="contact_no" placeholder="Contact number" value="${H(contact)}">
+                                </div>
                             </div>
                         `}
                         
-                        <textarea id="ad" data-k="client_address" rows="2" ${isAmc ? "readonly" : ""} placeholder="${isAmc ? "Address is pulled from the AMC client record" : "Client address"}" spellcheck="true" autocorrect="on" autocapitalize="sentences">${H(clientAddr)}</textarea>
-                        
-                        <div class="g2">
-                            <input data-k="attention" placeholder="Kind attention" value="${H(attn)}" spellcheck="true" autocorrect="on" autocapitalize="words">
-                            <input type="date" data-k="quotation_date" value="${date}">
+                        <div style="margin-bottom:8px;">
+                            <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Client Address</label>
+                            <textarea id="ad" data-k="client_address" rows="2" ${isAmc ? "readonly" : ""} placeholder="${isAmc ? "Address is pulled from the AMC client record" : "Client address"}" spellcheck="true" autocorrect="on" autocapitalize="sentences">${H(clientAddr)}</textarea>
                         </div>
                         
-                        <input data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" autocorrect="on" autocapitalize="sentences">
+                        <div class="g2" style="margin-bottom:8px;">
+                            <div>
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Kind Attention</label>
+                                <input data-k="attention" placeholder="Kind attention" value="${H(attn)}" spellcheck="true" autocorrect="on" autocapitalize="words">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Quotation Date</label>
+                                <input type="date" data-k="quotation_date" value="${date}">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom:8px;">
+                            <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Subject</label>
+                            <input data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" autocorrect="on" autocapitalize="sentences">
+                        </div>
                         
                         <div class="g2" style="margin-top:8px;">
                             <div>
@@ -927,7 +985,19 @@
                 } else {
                     ED[k] = t.value;
                 }
-                if (k === "client_name") ED.client = t.value;
+                if (k === "client_name") {
+                    ED.client = t.value;
+                    const curCode = ED.client_code || ED.code;
+                    const currentObj = (NON_AMC.concat(AMC)).find(c => c.code === curCode);
+                    if (currentObj && currentObj.name.toLowerCase() !== t.value.trim().toLowerCase()) {
+                        const another = (NON_AMC.concat(AMC)).find(c => c.name.toLowerCase() === t.value.trim().toLowerCase());
+                        if (another) {
+                            ED.client_code = another.code;
+                            ED.code = another.code;
+                        }
+                    }
+                    updateEditCustomerButtonVisibility();
+                }
                 if (k === "contact_no") ED.contact = t.value;
                 if (k === "client_address") ED.addr = t.value;
                 if (k === "attention") ED.attn = t.value;
@@ -956,6 +1026,14 @@
         $("#v").oninput = handleFormInput;
         $("#v").onchange = handleFormInput;
 
+        const updateEditCustomerButtonVisibility = function () {
+            const btnEdit = $("#btn_edit_current_customer");
+            if (!btnEdit) return;
+            const curCode = ED.client_code || ED.code;
+            const exists = (AMC.concat(NON_AMC)).some(c => c.code === curCode);
+            btnEdit.style.display = (exists && curCode) ? "inline-flex" : "none";
+        };
+
         const handleClientSelection = function (selCode) {
             const found = AMC.find(x => x.code === selCode);
             ED.client_code = found ? found.code : "";
@@ -966,8 +1044,43 @@
             ED.addr = ED.client_address;
             ED.contact_no = found ? found.contact : "";
             ED.contact = ED.contact_no;
+            if (found && found.contact_person && (!ED.attention || ED.attention === "")) {
+                ED.attention = found.contact_person;
+                ED.attn = ED.attention;
+                const attnField = $('[data-k="attention"]');
+                if (attnField) attnField.value = ED.attention;
+            }
             const adField = $("#ad");
             if (adField) adField.value = ED.client_address;
+            updateEditCustomerButtonVisibility();
+            renderLivePreview();
+        };
+
+        const handleNonAmcSelection = function (selCode) {
+            const found = NON_AMC.find(x => x.code === selCode);
+            ED.client_code = found ? found.code : "";
+            ED.code = ED.client_code;
+            ED.client_name = found ? found.name : "";
+            ED.client = ED.client_name;
+            ED.client_address = found ? found.address : "";
+            ED.addr = ED.client_address;
+            ED.contact_no = found ? found.contact : "";
+            ED.contact = ED.contact_no;
+            if (found && found.contact_person && (!ED.attention || ED.attention === "")) {
+                ED.attention = found.contact_person;
+                ED.attn = ED.attention;
+                const attnField = $('[data-k="attention"]');
+                if (attnField) attnField.value = ED.attention;
+            }
+
+            const inpName = $("#inp_client_name");
+            if (inpName) inpName.value = ED.client_name;
+            const inpContact = $("#inp_contact_no");
+            if (inpContact) inpContact.value = ED.contact_no;
+            const adField = $("#ad");
+            if (adField) adField.value = ED.client_address;
+
+            updateEditCustomerButtonVisibility();
             renderLivePreview();
         };
 
@@ -1004,6 +1117,62 @@
                     handleClientSelection(this.value);
                 });
             }
+        }
+
+        const clNonAmcEl = $("#cl_non_amc");
+        if (clNonAmcEl) {
+            clNonAmcEl.onchange = ev => handleNonAmcSelection(ev.target.value);
+
+            if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
+                const $clNa = window.jQuery(clNonAmcEl);
+                if ($clNa.data('select2')) {
+                    $clNa.select2('destroy');
+                }
+                $clNa.select2({
+                    width: '100%',
+                    placeholder: 'Search or select Non-AMC client…',
+                    allowClear: true,
+                    matcher: function (params, data) {
+                        if (!params.term || window.jQuery.trim(params.term) === '') {
+                            return data;
+                        }
+                        if (typeof data.text === 'undefined') {
+                            return null;
+                        }
+                        const term = params.term.toLowerCase();
+                        const text = data.text.toLowerCase();
+                        const contact = (data.element && data.element.dataset.contact) ? data.element.dataset.contact.toLowerCase() : '';
+                        const address = (data.element && data.element.dataset.address) ? data.element.dataset.address.toLowerCase() : '';
+                        const person = (data.element && data.element.dataset.person) ? data.element.dataset.person.toLowerCase() : '';
+                        if (text.indexOf(term) > -1 || contact.indexOf(term) > -1 || address.indexOf(term) > -1 || person.indexOf(term) > -1) {
+                            return data;
+                        }
+                        return null;
+                    }
+                }).on('change', function () {
+                    handleNonAmcSelection(this.value);
+                });
+            }
+        }
+
+        updateEditCustomerButtonVisibility();
+
+        const btnAddCust = $("#btn_add_new_customer");
+        if (btnAddCust) {
+            btnAddCust.onclick = () => openCustomerMasterModal(null);
+        }
+
+        const btnEditCust = $("#btn_edit_current_customer");
+        if (btnEditCust) {
+            btnEditCust.onclick = () => {
+                const curCode = ED.client_code || ED.code;
+                const cust = (AMC.concat(NON_AMC)).find(c => c.code === curCode);
+                if (cust) {
+                    openCustomerMasterModal(cust);
+                } else {
+                    notifySwal("Notice", "Please select a customer to edit.", "info");
+                }
+            };
         }
 
         $("#lib").onchange = ev => {
@@ -1560,6 +1729,210 @@
     }
 
     // ==========================================
+    // CUSTOMER MASTER MODAL (Add / Edit Customers)
+    // ==========================================
+    function openCustomerMasterModal(cust) {
+        const titleEl = $("#modal_customer_title");
+        const idInp = $("#cust_modal_id");
+        const typeSel = $("#cust_modal_type");
+        const codeInp = $("#cust_modal_code");
+        const nameInp = $("#cust_modal_name");
+        const contactInp = $("#cust_modal_contact");
+        const emailInp = $("#cust_modal_email");
+        const altContactInp = $("#cust_modal_alt_contact");
+        const personInp = $("#cust_modal_person");
+        const personNoInp = $("#cust_modal_person_no");
+        const cprInp = $("#cust_modal_cpr");
+        const vatInp = $("#cust_modal_vat");
+        const addrInp = $("#cust_modal_address");
+        const descInp = $("#cust_modal_description");
+
+        const isCurrentlyAmc = ED && !!(+ED.is_amc);
+
+        if (cust) {
+            // Edit existing customer
+            if (titleEl) titleEl.textContent = `Edit Customer (${cust.code || ''})`;
+            if (idInp) idInp.value = cust.id || 0;
+            if (codeInp) codeInp.value = cust.code || "";
+            if (typeSel) typeSel.value = cust.customer_type || (cust.is_amc ? "AMC" : "Non AMC");
+            if (nameInp) nameInp.value = cust.name || "";
+            if (contactInp) contactInp.value = cust.contact || "";
+            if (emailInp) emailInp.value = cust.email || "";
+            if (altContactInp) altContactInp.value = cust.alternate_contact || "";
+            if (personInp) personInp.value = cust.contact_person || "";
+            if (personNoInp) personNoInp.value = cust.contact_person_no || "";
+            if (cprInp) cprInp.value = cust.cpr_cr || "";
+            if (vatInp) vatInp.value = cust.vat_no || "";
+            if (addrInp) addrInp.value = cust.address || "";
+            if (descInp) descInp.value = cust.description || "";
+        } else {
+            // Add new customer
+            if (titleEl) titleEl.textContent = "Add New Customer";
+            if (idInp) idInp.value = 0;
+            if (codeInp) codeInp.value = "";
+            if (typeSel) typeSel.value = isCurrentlyAmc ? "AMC" : "Non AMC";
+
+            const curName = (ED && ED.client_name) ? ED.client_name : ($("#inp_client_name") ? $("#inp_client_name").value : "");
+            const curContact = (ED && ED.contact_no) ? ED.contact_no : ($("#inp_contact_no") ? $("#inp_contact_no").value : "");
+            const curAddr = (ED && ED.client_address) ? ED.client_address : ($("#ad") ? $("#ad").value : "");
+            const curAttn = (ED && ED.attention) ? ED.attention : ($('[data-k="attention"]') ? $('[data-k="attention"]').value : "");
+
+            if (nameInp) nameInp.value = curName || "";
+            if (contactInp) contactInp.value = curContact || "";
+            if (emailInp) emailInp.value = "";
+            if (altContactInp) altContactInp.value = "";
+            if (personInp) personInp.value = curAttn || "";
+            if (personNoInp) personNoInp.value = "";
+            if (cprInp) cprInp.value = "";
+            if (vatInp) vatInp.value = "";
+            if (addrInp) addrInp.value = curAddr || "";
+            if (descInp) descInp.value = "";
+        }
+
+        showModal("#modal_customer_master");
+        setTimeout(() => {
+            if (nameInp) nameInp.focus();
+        }, 200);
+    }
+
+    function refreshClientDropdown(selector, list, selectedCode) {
+        const el = $(selector);
+        if (!el) return;
+        const placeholder = el.dataset.placeholder || "Select client…";
+        let html = `<option value="">${placeholder}</option>`;
+        list.forEach(c => {
+            const isSel = (c.code === selectedCode) ? "selected" : "";
+            html += `<option value="${H(c.code)}" ${isSel}
+                data-id="${H(c.id || '')}"
+                data-name="${H(c.name || '')}"
+                data-contact="${H(c.contact || '')}"
+                data-address="${H(c.address || '')}"
+                data-person="${H(c.contact_person || '')}">
+                ${H(c.code)} · ${H(c.name)} ${c.contact ? `(${H(c.contact)})` : ''}
+            </option>`;
+        });
+        el.innerHTML = html;
+        if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
+            const $el = window.jQuery(el);
+            $el.val(selectedCode).trigger('change.select2');
+        }
+    }
+
+    function setupCustomerMasterEvents() {
+        const btnSave = $("#btn_save_customer_master");
+        if (btnSave) {
+            btnSave.onclick = () => {
+                const idVal = parseInt($("#cust_modal_id") ? $("#cust_modal_id").value : 0) || 0;
+                const typeVal = $("#cust_modal_type") ? $("#cust_modal_type").value : "Non AMC";
+                const isAmcVal = (typeVal === "AMC") ? 1 : 0;
+                const nameVal = $("#cust_modal_name") ? $("#cust_modal_name").value.trim() : "";
+                const contactVal = $("#cust_modal_contact") ? $("#cust_modal_contact").value.trim() : "";
+                const emailVal = $("#cust_modal_email") ? $("#cust_modal_email").value.trim() : "";
+                const altContactVal = $("#cust_modal_alt_contact") ? $("#cust_modal_alt_contact").value.trim() : "";
+                const personVal = $("#cust_modal_person") ? $("#cust_modal_person").value.trim() : "";
+                const personNoVal = $("#cust_modal_person_no") ? $("#cust_modal_person_no").value.trim() : "";
+                const cprVal = $("#cust_modal_cpr") ? $("#cust_modal_cpr").value.trim() : "";
+                const vatVal = $("#cust_modal_vat") ? $("#cust_modal_vat").value.trim() : "";
+                const addrVal = $("#cust_modal_address") ? $("#cust_modal_address").value.trim() : "";
+                const descVal = $("#cust_modal_description") ? $("#cust_modal_description").value.trim() : "";
+
+                if (!nameVal) {
+                    notifySwal("Required", "Please enter customer / company name.", "warning");
+                    if ($("#cust_modal_name")) $("#cust_modal_name").focus();
+                    return;
+                }
+                if (!contactVal) {
+                    notifySwal("Required", "Please enter contact number.", "warning");
+                    if ($("#cust_modal_contact")) $("#cust_modal_contact").focus();
+                    return;
+                }
+
+                btnSave.disabled = true;
+                const origHtml = btnSave.innerHTML;
+                btnSave.innerHTML = `<i class="icon-spinner2 spinner mr-1"></i> Saving…`;
+
+                const payload = {
+                    action: "save_customer_master",
+                    customer_id: idVal,
+                    customer_type: typeVal,
+                    is_amc: isAmcVal,
+                    customer_name: nameVal,
+                    customer_contact_no: contactVal,
+                    customer_email_id: emailVal,
+                    alternate_contact_no: altContactVal,
+                    contact_person: personVal,
+                    contact_person_number: personNoVal,
+                    cpr_cr_number: cprVal,
+                    vat_number: vatVal,
+                    customer_address: addrVal,
+                    customer_description: descVal
+                };
+
+                apiCall("save_customer_master", payload, "POST").then(res => {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = origHtml;
+
+                    if (res && res.status === "success") {
+                        if (res.amc_clients) AMC = res.amc_clients;
+                        if (res.non_amc_clients) NON_AMC = res.non_amc_clients;
+
+                        hideModal("#modal_customer_master");
+                        notifySwal("Success", res.message || "Customer saved successfully", "success");
+
+                        const savedCust = res.customer;
+                        if (savedCust && ED) {
+                            ED.client_code = savedCust.code;
+                            ED.code = savedCust.code;
+                            ED.client_name = savedCust.name;
+                            ED.client = savedCust.name;
+                            ED.client_address = savedCust.address;
+                            ED.addr = savedCust.address;
+                            ED.contact_no = savedCust.contact;
+                            ED.contact = savedCust.contact;
+                            if (savedCust.contact_person) {
+                                ED.attention = savedCust.contact_person;
+                                ED.attn = savedCust.contact_person;
+                                const attnField = $('[data-k="attention"]');
+                                if (attnField) attnField.value = ED.attention;
+                            }
+
+                            const inpName = $("#inp_client_name");
+                            if (inpName) inpName.value = ED.client_name;
+                            const inpContact = $("#inp_contact_no");
+                            if (inpContact) inpContact.value = ED.contact_no;
+                            const adField = $("#ad");
+                            if (adField) adField.value = ED.client_address;
+
+                            const isQuoteAmc = !!(+ED.is_amc);
+                            if (isQuoteAmc) {
+                                refreshClientDropdown("#cl", AMC, savedCust.code);
+                            } else {
+                                refreshClientDropdown("#cl_non_amc", NON_AMC, savedCust.code);
+                            }
+
+                            const btnEdit = $("#btn_edit_current_customer");
+                            if (btnEdit) btnEdit.style.display = "inline-flex";
+
+                            renderLivePreview();
+                        }
+                    } else {
+                        const errMsg = (res && res.message) ? res.message : "Failed to save customer.";
+                        notifySwal("Error", errMsg, "error");
+                    }
+                }).catch(err => {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = origHtml;
+                    notifySwal("Error", "Server error while saving customer.", "error");
+                });
+            };
+        }
+
+        $$("#modal_customer_master [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_customer_master");
+        });
+    }
+
+    // ==========================================
     // SPELLING & GRAMMAR CHECK ENGINE (LanguageTool)
     // ==========================================
     let currentGrammarIssues = [];
@@ -1912,6 +2285,7 @@
                 }
                 if (res.users) USERS = res.users;
                 if (res.amc_clients) AMC = res.amc_clients;
+                if (res.non_amc_clients) NON_AMC = res.non_amc_clients;
                 if (res.default_terms) T0 = res.default_terms;
                 if (res.library_terms) LIB = res.library_terms;
                 if (res.rejection_reasons) REASONS = res.rejection_reasons;
@@ -1928,6 +2302,7 @@
 
     function initAppUi() {
         setupUnitMasterEvents();
+        setupCustomerMasterEvents();
         initGrammarCheckModalListeners();
         // Build user switcher options
         const us = $("#us");

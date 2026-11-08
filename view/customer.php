@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 require_once __DIR__ . '/../model/common/session_init.php';
 
 if($_SESSION["loggedin"] ==true)

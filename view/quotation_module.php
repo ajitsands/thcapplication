@@ -1066,6 +1066,110 @@ if ($isLoggedIn) {
             </div>
         </div>
 
+        <!-- Customer Master Modal (Add / Edit Customer from Quotation Module) -->
+        <div id="modal_customer_master" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="customerMasterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:760px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #001D39 0%, #0A4174 100%);color:#ffffff;padding:16px 22px;border:none;display:flex;align-items:center;justify-content:space-between;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="customerMasterModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-user-plus mr-2" style="font-size:20px;color:#7BBDE8;"></i> <span id="modal_customer_title">Add Customer</span>
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;margin:0;padding:0;line-height:1;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;max-height:72vh;overflow-y:auto;">
+                        <form id="form_customer_master" onsubmit="return false;" autocomplete="off">
+                            <input type="hidden" id="cust_modal_id" value="0">
+                            
+                            <!-- Category & Code Row -->
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer Category <span class="text-danger">*</span></label>
+                                    <select id="cust_modal_type" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                        <option value="Non AMC">Non AMC Customer</option>
+                                        <option value="AMC">AMC Customer</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer Code</label>
+                                    <input type="text" id="cust_modal_code" class="form-control" placeholder="Auto-generated upon save" readonly style="height:36px;font-size:13px;border-radius:6px;background:#eef3f7;border:1.5px solid #d4e4f0;color:#0A4174;font-weight:600;">
+                                </div>
+                            </div>
+
+                            <!-- Name & Primary Contact Row -->
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer / Company Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="cust_modal_name" class="form-control" placeholder="e.g. Al Futtaim Group" required style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true">
+                                </div>
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Contact Number <span class="text-danger">*</span></label>
+                                    <input type="text" id="cust_modal_contact" class="form-control" placeholder="e.g. +973 1712 3456" required style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                </div>
+                            </div>
+
+                            <!-- Email & Alternate Contact Row -->
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Email Address</label>
+                                    <input type="email" id="cust_modal_email" class="form-control" placeholder="e.g. info@alfuttaim.com" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                </div>
+                                <div class="col-md-6 form-md form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Alternate Contact / Location</label>
+                                    <input type="text" id="cust_modal_alt_contact" class="form-control" placeholder="e.g. +973 3944 1234 or Seef" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                </div>
+                            </div>
+
+                            <!-- Contact Person Name & Number Row -->
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Attention / Contact Person</label>
+                                    <input type="text" id="cust_modal_person" class="form-control" placeholder="e.g. John Doe / Facilities Manager" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true">
+                                </div>
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Contact Person Mobile</label>
+                                    <input type="text" id="cust_modal_person_no" class="form-control" placeholder="e.g. +973 3311 2233" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                </div>
+                            </div>
+
+                            <!-- CPR/CR & VAT No Row -->
+                            <div class="row">
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">CPR / CR Number</label>
+                                    <input type="text" id="cust_modal_cpr" class="form-control" placeholder="e.g. 123456-1" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                </div>
+                                <div class="col-md-6 form-group mb-2">
+                                    <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">VAT Number</label>
+                                    <input type="text" id="cust_modal_vat" class="form-control" placeholder="e.g. 200001234500002" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                </div>
+                            </div>
+
+                            <!-- Customer Address -->
+                            <div class="form-group mb-2">
+                                <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Customer Address</label>
+                                <textarea id="cust_modal_address" rows="2" class="form-control" placeholder="Building, Road, Block, City, Kingdom of Bahrain" style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
+                            </div>
+
+                            <!-- Description / Notes -->
+                            <div class="form-group mb-0">
+                                <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Description / Notes</label>
+                                <textarea id="cust_modal_description" rows="2" class="form-control" placeholder="Optional notes or customer requirements" style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between align-items-center" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:12px 22px;">
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:6px;padding:6px 16px;">
+                            Cancel
+                        </button>
+                        <button type="button" id="btn_save_customer_master" class="btn btn-primary btn-sm font-weight-semibold" style="background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);border:none;border-radius:6px;padding:7px 20px;box-shadow:0 2px 6px rgba(10,65,116,0.3);">
+                            <i class="icon-checkmark3 mr-1"></i> Save Customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Global permissions fallback to prevent permission.js ReferenceError -->
         <script>
             if (typeof permissions === 'undefined') {

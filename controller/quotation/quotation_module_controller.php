@@ -507,6 +507,14 @@ class QuotationModuleController
                     $this->checkGrammar();
                     break;
 
+                case 'get_customers':
+                    $this->getCustomers();
+                    break;
+
+                case 'save_customer_master':
+                    $this->saveCustomerMaster();
+                    break;
+
                 case 'seed_demo_data':
                     $this->seedInitialData();
                     echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
@@ -570,25 +578,10 @@ class QuotationModuleController
     {
         $curUser = $this->getCurrentSessionUser();
 
-        // 1. Fetch AMC Customers
-        $amcClients = [];
-        if ($this->isDbConnected) {
-            $cRes = @mysqli_query($this->db, "SELECT customer_id, customer_code, customer_name, customer_address, customer_contact_no FROM tbl_customers WHERE customer_status='Active' AND (is_amc = 1 OR customer_type = 'AMC') ORDER BY customer_name ASC");
-            if ($cRes && mysqli_num_rows($cRes) > 0) {
-                while ($c = mysqli_fetch_assoc($cRes)) {
-                    $code = !empty($c['customer_code']) && $c['customer_code'] !== 'NA' ? $c['customer_code'] : 'C' . str_pad($c['customer_id'], 4, '0', STR_PAD_LEFT);
-                    $amcClients[] = [
-                        "code" => $code,
-                        "name" => $c['customer_name'],
-                        "address" => !empty($c['customer_address']) && $c['customer_address'] !== 'NA' ? $c['customer_address'] : "M/S " . $c['customer_name'] . ", Kingdom of Bahrain",
-                        "contact" => !empty($c['customer_contact_no']) && $c['customer_contact_no'] !== 'NA' ? $c['customer_contact_no'] : ""
-                    ];
-                }
-            }
-        }
-        if (empty($amcClients)) {
-            $amcClients = $this->defaultAmcClients;
-        }
+        // 1. Fetch AMC and Non-AMC Customers
+        $custData = $this->fetchCustomersList();
+        $amcClients = $custData['amc_clients'];
+        $nonAmcClients = $custData['non_amc_clients'];
 
         // 2. Fetch Users / Estimators (strictly users with Quotation permissions: Administrator, Operation Manager, Operation Coordinator)
         $users = [];
@@ -657,11 +650,211 @@ class QuotationModuleController
             "current_user" => $curUser,
             "users" => $users,
             "amc_clients" => $amcClients,
+            "non_amc_clients" => $nonAmcClients,
             "default_terms" => $this->defaultTerms,
             "library_terms" => $this->libraryTerms,
             "rejection_reasons" => $this->rejectionReasons,
             "units" => $this->fetchUnitsList(),
             "quotations" => $quotations
+        ]);
+    }
+
+    private function fetchCustomersList(): array
+    {
+        $amcClients = [];
+        $nonAmcClients = [];
+
+        if ($this->isDbConnected) {
+            $cRes = @mysqli_query($this->db, "SELECT customer_id, customer_code, customer_name, customer_address, customer_contact_no, customer_contact_person_name, customer_contact_person_no, customer_email_id, customer_cpr_cr_no, customer_vat_no, customer_location, customer_description, is_amc, customer_type FROM tbl_customers WHERE customer_status='Active' ORDER BY customer_name ASC");
+            if ($cRes && mysqli_num_rows($cRes) > 0) {
+                while ($c = mysqli_fetch_assoc($cRes)) {
+                    $code = !empty($c['customer_code']) && $c['customer_code'] !== 'NA' ? $c['customer_code'] : 'C' . str_pad($c['customer_id'], 4, '0', STR_PAD_LEFT);
+                    $isAmc = ((int)$c['is_amc'] === 0 || $c['customer_type'] === 'Non AMC') ? 0 : 1;
+                    $cObj = [
+                        "id" => (int)$c['customer_id'],
+                        "code" => $code,
+                        "name" => $c['customer_name'],
+                        "address" => !empty($c['customer_address']) && $c['customer_address'] !== 'NA' ? $c['customer_address'] : "M/S " . $c['customer_name'] . ", Kingdom of Bahrain",
+                        "contact" => !empty($c['customer_contact_no']) && $c['customer_contact_no'] !== 'NA' ? $c['customer_contact_no'] : "",
+                        "contact_person" => !empty($c['customer_contact_person_name']) && $c['customer_contact_person_name'] !== 'NA' ? $c['customer_contact_person_name'] : "",
+                        "contact_person_no" => !empty($c['customer_contact_person_no']) && $c['customer_contact_person_no'] !== 'NA' ? $c['customer_contact_person_no'] : "",
+                        "email" => !empty($c['customer_email_id']) && $c['customer_email_id'] !== 'NA' ? $c['customer_email_id'] : "",
+                        "alternate_contact" => !empty($c['customer_location']) && $c['customer_location'] !== 'NA' ? $c['customer_location'] : "",
+                        "cpr_cr" => !empty($c['customer_cpr_cr_no']) && $c['customer_cpr_cr_no'] !== 'NA' ? $c['customer_cpr_cr_no'] : "",
+                        "vat_no" => !empty($c['customer_vat_no']) && $c['customer_vat_no'] !== 'NA' ? $c['customer_vat_no'] : "",
+                        "description" => !empty($c['customer_description']) && $c['customer_description'] !== 'NA' ? $c['customer_description'] : "",
+                        "is_amc" => $isAmc,
+                        "customer_type" => $isAmc ? 'AMC' : 'Non AMC'
+                    ];
+
+                    if ($isAmc === 1) {
+                        $amcClients[] = $cObj;
+                    } else {
+                        $nonAmcClients[] = $cObj;
+                    }
+                }
+            }
+        }
+
+        if (empty($amcClients)) {
+            $amcClients = $this->defaultAmcClients;
+        }
+
+        return [
+            "amc_clients" => $amcClients,
+            "non_amc_clients" => $nonAmcClients
+        ];
+    }
+
+    private function getCustomers()
+    {
+        $custData = $this->fetchCustomersList();
+        echo json_encode([
+            "status" => "success",
+            "amc_clients" => $custData['amc_clients'],
+            "non_amc_clients" => $custData['non_amc_clients']
+        ]);
+    }
+
+    private function saveCustomerMaster()
+    {
+        if (!$this->isDbConnected) {
+            echo json_encode(["status" => "error", "message" => "Database connection not available."]);
+            return;
+        }
+
+        $input = $this->getInputData();
+        $custId = isset($input['customer_id']) ? (int)$input['customer_id'] : 0;
+        $name = trim($input['customer_name'] ?? '');
+        $contact = trim($input['customer_contact_no'] ?? '');
+        $email = trim($input['customer_email_id'] ?? '');
+        $altContact = trim($input['alternate_contact_no'] ?? '');
+        $contactPerson = trim($input['contact_person'] ?? '');
+        $contactPersonNo = trim($input['contact_person_number'] ?? '');
+        $cprCr = trim($input['cpr_cr_number'] ?? '');
+        $vatNo = trim($input['vat_number'] ?? '');
+        $address = trim($input['customer_address'] ?? '');
+        $description = trim($input['customer_description'] ?? '');
+        $customerType = (isset($input['customer_type']) && trim($input['customer_type']) === 'Non AMC') ? 'Non AMC' : 'AMC';
+        if (isset($input['is_amc'])) {
+            $isAmc = ((int)$input['is_amc'] === 0 || $input['is_amc'] === '0') ? 0 : 1;
+            $customerType = ($isAmc === 1) ? 'AMC' : 'Non AMC';
+        } else {
+            $isAmc = ($customerType === 'AMC') ? 1 : 0;
+        }
+
+        if ($name === '') {
+            echo json_encode(["status" => "error", "message" => "Customer name is required."]);
+            return;
+        }
+        if ($contact === '') {
+            echo json_encode(["status" => "error", "message" => "Customer contact number is required."]);
+            return;
+        }
+
+        $escName = mysqli_real_escape_string($this->db, $name);
+        $escContact = mysqli_real_escape_string($this->db, $contact);
+        $escEmail = mysqli_real_escape_string($this->db, $email);
+        $escAltContact = mysqli_real_escape_string($this->db, $altContact);
+        $escPerson = mysqli_real_escape_string($this->db, $contactPerson);
+        $escPersonNo = mysqli_real_escape_string($this->db, $contactPersonNo);
+        $escCpr = mysqli_real_escape_string($this->db, $cprCr);
+        $escVat = mysqli_real_escape_string($this->db, $vatNo);
+        $escAddress = mysqli_real_escape_string($this->db, $address);
+        $escDesc = mysqli_real_escape_string($this->db, $description);
+
+        // Check contact uniqueness
+        $chkContactSql = "SELECT customer_id, customer_name FROM tbl_customers WHERE customer_contact_no = '$escContact' AND customer_id != $custId LIMIT 1";
+        $chkContactRes = @mysqli_query($this->db, $chkContactSql);
+        if ($chkContactRes && mysqli_num_rows($chkContactRes) > 0) {
+            $existing = mysqli_fetch_assoc($chkContactRes);
+            echo json_encode(["status" => "error", "message" => "Contact number '$contact' already belongs to '" . $existing['customer_name'] . "'."]);
+            return;
+        }
+
+        // Check CPR/CR uniqueness if provided
+        if ($cprCr !== '') {
+            $chkCprSql = "SELECT customer_id, customer_name FROM tbl_customers WHERE customer_cpr_cr_no = '$escCpr' AND customer_id != $custId AND customer_cpr_cr_no != '' LIMIT 1";
+            $chkCprRes = @mysqli_query($this->db, $chkCprSql);
+            if ($chkCprRes && mysqli_num_rows($chkCprRes) > 0) {
+                $existing = mysqli_fetch_assoc($chkCprRes);
+                echo json_encode(["status" => "error", "message" => "CPR/CR number '$cprCr' already belongs to '" . $existing['customer_name'] . "'."]);
+                return;
+            }
+        }
+
+        $custCode = '';
+        if ($custId > 0) {
+            $updateSql = "UPDATE `tbl_customers` SET 
+                `customer_name` = '$escName',
+                `customer_contact_no` = '$escContact',
+                `customer_email_id` = '$escEmail',
+                `customer_location` = '$escAltContact',
+                `customer_contact_person_name` = '$escPerson',
+                `customer_contact_person_no` = '$escPersonNo',
+                `customer_cpr_cr_no` = '$escCpr',
+                `customer_vat_no` = '$escVat',
+                `customer_address` = '$escAddress',
+                `customer_description` = '$escDesc',
+                `is_amc` = $isAmc,
+                `customer_type` = '$customerType'
+                WHERE `customer_id` = $custId";
+            $res = @mysqli_query($this->db, $updateSql);
+            if (!$res) {
+                echo json_encode(["status" => "error", "message" => "Failed to update customer: " . mysqli_error($this->db)]);
+                return;
+            }
+
+            $cCodeRes = @mysqli_query($this->db, "SELECT customer_code FROM tbl_customers WHERE customer_id = $custId LIMIT 1");
+            if ($cCodeRes && $row = mysqli_fetch_assoc($cCodeRes)) {
+                $custCode = !empty($row['customer_code']) && $row['customer_code'] !== 'NA' ? $row['customer_code'] : 'C' . str_pad($custId, 4, '0', STR_PAD_LEFT);
+            }
+        } else {
+            $insertSql = "INSERT INTO `tbl_customers` (
+                `customer_name`, `customer_contact_no`, `customer_email_id`, `customer_location`,
+                `customer_contact_person_name`, `customer_contact_person_no`, `customer_cpr_cr_no`, `customer_vat_no`,
+                `customer_address`, `customer_description`, `customer_status`, `is_amc`, `customer_type`, `date_active`
+            ) VALUES (
+                '$escName', '$escContact', '$escEmail', '$escAltContact',
+                '$escPerson', '$escPersonNo', '$escCpr', '$escVat',
+                '$escAddress', '$escDesc', 'Active', $isAmc, '$customerType', NOW()
+            )";
+            $res = @mysqli_query($this->db, $insertSql);
+            if (!$res) {
+                echo json_encode(["status" => "error", "message" => "Failed to create customer: " . mysqli_error($this->db)]);
+                return;
+            }
+
+            $custId = (int)mysqli_insert_id($this->db);
+            $custCode = 'C' . str_pad($custId, 4, '0', STR_PAD_LEFT);
+            @mysqli_query($this->db, "UPDATE `tbl_customers` SET `customer_code` = '$custCode' WHERE `customer_id` = $custId");
+        }
+
+        $fresh = $this->fetchCustomersList();
+
+        $savedCust = [
+            "id" => $custId,
+            "code" => $custCode,
+            "name" => $name,
+            "address" => !empty($address) ? $address : "M/S " . $name . ", Kingdom of Bahrain",
+            "contact" => $contact,
+            "contact_person" => $contactPerson,
+            "contact_person_no" => $contactPersonNo,
+            "email" => $email,
+            "alternate_contact" => $altContact,
+            "cpr_cr" => $cprCr,
+            "vat_no" => $vatNo,
+            "description" => $description,
+            "is_amc" => $isAmc,
+            "customer_type" => $customerType
+        ];
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Customer '$name' ($custCode) saved successfully.",
+            "customer" => $savedCust,
+            "amc_clients" => $fresh['amc_clients'],
+            "non_amc_clients" => $fresh['non_amc_clients']
         ]);
     }
 
