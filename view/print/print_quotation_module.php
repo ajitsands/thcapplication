@@ -15,6 +15,7 @@ require_once __DIR__ . '/../template/thc_logo.php';
 $quoteId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $refNo = isset($_GET['ref_no']) ? trim($_GET['ref_no']) : '';
 $autoPrint = isset($_GET['autoprint']) && $_GET['autoprint'] == '1';
+$download = isset($_GET['download']) && in_array(strtolower((string)$_GET['download']), ['1', 'pdf', 'true', 'yes']);
 
 $q = null;
 $items = [];
@@ -145,6 +146,233 @@ if ($discountAmt > $subtotal) {
 $netSubtotal = max(0, $subtotal - $discountAmt);
 $vatAmt = ($netSubtotal * $vatRate) / 100.0;
 $total = $netSubtotal + $vatAmt;
+
+$userCode = !empty($q['user_code']) ? preg_replace('/\s+/', '', $q['user_code']) : 'THC';
+$seqPad = !empty($q['seq_no']) ? str_pad($q['seq_no'], 4, '0', STR_PAD_LEFT) : 'DRAFT';
+$datePart = '';
+if (!empty($q['quotation_date'])) {
+    $cleanDate = str_replace('-', '', $q['quotation_date']);
+    if (strlen($cleanDate) >= 6) {
+        $datePart = '_' . substr($cleanDate, 2, 4);
+    }
+}
+$pdfFilename = "CG_THC_{$userCode}_QTN_{$seqPad}" . ($rev > 0 ? "_R{$rev}" : "") . $datePart . ".pdf";
+
+if ($download) {
+    // Suppress notices and deprecation warnings during binary stream
+    error_reporting(0);
+    ini_set('display_errors', '0');
+
+    require_once __DIR__ . '/../../printpdf/tcpdf.php';
+
+    if (!class_exists('THCQuotationTCPDF')) {
+        class THCQuotationTCPDF extends TCPDF {
+            public $footerText = 'Tel: +973 17 100 190 | info@thc.com.bh | www.thc.com.bh · CR 88982-1 · YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain';
+            public $quoteRef = '';
+
+            public function Header() {
+                if ($this->page > 1) {
+                    $this->SetY(8);
+                    $this->SetFont('helvetica', 'I', 8);
+                    $this->SetTextColor(100, 116, 139);
+                    $this->Cell(0, 5, 'THC Facility Management — Quotation Ref: ' . $this->quoteRef . ' (Page ' . $this->page . ')', 0, 0, 'R');
+                    $this->SetDrawColor(203, 213, 225);
+                    $this->Line(15, 14, 195, 14);
+                }
+            }
+
+            public function Footer() {
+                $this->SetY(-15);
+                $this->SetFont('helvetica', '', 7.5);
+                $this->SetFillColor(46, 46, 121); // #2e2e79
+                $this->SetTextColor(255, 255, 255);
+                $this->Cell(0, 6, $this->footerText, 0, 0, 'C', true);
+            }
+        }
+    }
+
+    $pdf = new THCQuotationTCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+    $pdf->quoteRef = $qNo;
+    $pdf->SetCreator('THC Facility Management');
+    $pdf->SetAuthor('THC Facility Management');
+    $pdf->SetTitle($pdfFilename);
+    $pdf->setPrintHeader(true);
+    $pdf->setPrintFooter(true);
+    $pdf->SetMargins(15, 16, 15);
+    $pdf->SetAutoPageBreak(TRUE, 18);
+    $pdf->SetFont('helvetica', '', 9);
+    $pdf->AddPage();
+
+    // Letterhead Logo
+    $logoCandidates = [
+        __DIR__ . '/../global_assets/images/logo_print.png',
+        __DIR__ . '/../global_assets/images/final_logo2.png',
+        __DIR__ . '/../global_assets/images/backgrounds/final_logo2.png',
+        __DIR__ . '/../assets/images/final_logo2.png'
+    ];
+    $logoFile = null;
+    foreach ($logoCandidates as $cand) {
+        if (file_exists($cand)) {
+            $logoFile = $cand;
+            break;
+        }
+    }
+    if ($logoFile) {
+        $pdf->Image($logoFile, 15, 11, 55, 0, 'PNG');
+    }
+    $pdf->Ln(18);
+
+    // Decorative rule under letterhead
+    $pdf->SetDrawColor(46, 46, 121);
+    $pdf->SetLineWidth(0.6);
+    $pdf->Line(15, 28, 195, 28);
+    $pdf->SetDrawColor(203, 213, 225);
+    $pdf->SetLineWidth(0.2);
+
+    $signerName = $q['user_name'] ?? 'Authorized Signatory';
+    if (strtolower(trim($signerName)) === 'adminstrator') {
+        $signerName = 'Administrator';
+    }
+    $signerTitle = $q['user_designation'] ?? 'THC Facility Management';
+
+    // Build HTML for TCPDF writeHTML
+    $html = '
+    <table cellpadding="1" cellspacing="0" border="0" style="width:100%;font-size:9.5pt;color:#1e293b;">
+        <tr>
+            <td style="line-height:1.4;">
+                <b>No: ' . htmlspecialchars($qNo) . '</b><br>
+                <b>Date: ' . htmlspecialchars(fDate($q['quotation_date'])) . '</b>
+            </td>
+        </tr>
+        <tr><td></td></tr>
+        <tr>
+            <td style="line-height:1.4;">
+                <b>To,</b><br>
+                <b>' . htmlspecialchars($q['client_name']) . '</b><br>
+                ' . nl2br(htmlspecialchars($q['client_address'])) . '
+                ' . (!empty($q['client_code']) ? '<br><span style="color:#64748b;font-size:8.5pt;">Client code: ' . htmlspecialchars($q['client_code']) . '</span>' : '') . '
+            </td>
+        </tr>
+        ' . (!empty($q['attention']) ? '<tr><td></td></tr><tr><td style="line-height:1.4;"><b>Kind Attn: ' . htmlspecialchars($q['attention']) . '</b></td></tr>' : '') . '
+        <tr><td></td></tr>
+        <tr>
+            <td style="line-height:1.4;">
+                <b><u>Sub: ' . htmlspecialchars($q['subject']) . '</u></b><br>
+                With reference to subject job we are pleased to submit our offer as under: -
+            </td>
+        </tr>
+    </table>
+    <br><br>
+
+    <table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
+        <thead>
+            <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
+                <th width="7%" align="center"><b>SL.</b></th>
+                <th width="53%" align="left"><b>DESCRIPTION</b></th>
+                <th width="11%" align="center"><b>QTY</b></th>
+                <th width="13%" align="center"><b>UNIT</b></th>
+                <th width="16%" align="right"><b>TOTAL (BD)</b></th>
+            </tr>
+        </thead>
+        <tbody>';
+
+    foreach ($items as $idx => $it) {
+        $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
+        $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
+        $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
+        $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
+        $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
+        $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
+
+        $html .= '
+            <tr style="background-color:' . $bg . ';">
+                <td width="7%" align="center">' . ($idx + 1) . '.</td>
+                <td width="53%">' . nl2br(htmlspecialchars($desc)) . '</td>
+                <td width="11%" align="center">' . $qty . '</td>
+                <td width="13%" align="center">' . htmlspecialchars($unit) . '</td>
+                <td width="16%" align="right">' . number_format($lineTot, 3) . '</td>
+            </tr>';
+    }
+
+    $html .= '
+        </tbody>
+        <tfoot>';
+
+    if ($discountAmt > 0) {
+        $html .= '
+            <tr style="background-color:#ffffff;">
+                <td colspan="4" align="center"><b>Gross Amount Excluding VAT</b></td>
+                <td align="right"><b>' . number_format($subtotal, 3) . '</b></td>
+            </tr>
+            <tr style="background-color:#ffffff;color:#b91c1c;">
+                <td colspan="4" align="center"><b>Discount ' . ($discountType === 'percent' ? "({$discountVal}%)" : "") . '</b></td>
+                <td align="right"><b>-' . number_format($discountAmt, 3) . '</b></td>
+            </tr>
+            <tr style="background-color:#ffffff;">
+                <td colspan="4" align="center"><b>Net Amount Excluding VAT</b></td>
+                <td align="right"><b>' . number_format($netSubtotal, 3) . '</b></td>
+            </tr>';
+    } else {
+        $html .= '
+            <tr style="background-color:#ffffff;">
+                <td colspan="4" align="center"><b>Amount Excluding VAT</b></td>
+                <td align="right"><b>' . number_format($subtotal, 3) . '</b></td>
+            </tr>';
+    }
+
+    $html .= '
+            <tr style="background-color:#ffffff;">
+                <td colspan="4" align="center"><b>VAT ' . $vatRate . '%</b></td>
+                <td align="right"><b>' . number_format($vatAmt, 3) . '</b></td>
+            </tr>
+            <tr style="background-color:#f1f5f9;font-weight:bold;">
+                <td colspan="4" align="center"><b>Total Amount (BD)</b></td>
+                <td align="right"><b>' . number_format($total, 3) . '</b></td>
+            </tr>
+        </tfoot>
+    </table>
+    <br><br>';
+
+    if (!empty($terms)) {
+        $html .= '<p style="font-size:9.5pt;margin-bottom:4px;"><b><u>Terms and Condition:</u></b></p><ol style="font-size:9pt;line-height:1.4;">';
+        foreach ($terms as $t) {
+            $html .= '<li>' . htmlspecialchars($t) . '</li>';
+        }
+        $html .= '</ol><br>';
+    }
+
+    $html .= '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p>
+    <br><br>
+
+    <table cellpadding="4" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
+        <tr>
+            <td width="55%" style="line-height:1.4;">
+                <b>Thanking you,</b><br><br>
+                <b>Yours sincerely,</b><br>
+                <b>THC Facility Management W.L.L</b><br><br>
+                <b>' . htmlspecialchars($signerName) . '</b><br>
+                <span style="color:#475569;">' . htmlspecialchars($signerTitle) . '</span>
+            </td>
+            <td width="5%"></td>
+            <td width="40%" style="border:1px solid #cbd5e1;background-color:#f8fafc;padding:8px;line-height:1.8;">
+                <b>Approved By:</b><br><br>
+                Name:<br><br>
+                Date:
+            </td>
+        </tr>
+    </table>';
+
+    $pdf->writeHTML($html, true, false, true, false, '');
+
+    // Clear output buffer before sending binary PDF
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    // Force direct download as attachment with correct filename
+    $pdf->Output($pdfFilename, 'D');
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -333,6 +561,9 @@ $total = $netSubtotal + $vatAmt;
             Document: <strong>Quotation Sheet</strong> &nbsp;|&nbsp; Ref: <strong><?= htmlspecialchars($qNo) ?></strong>
         </div>
         <div style="display: flex; gap: 8px;">
+            <a href="print_quotation_module.php?id=<?= $quoteId ?><?= !empty($refNo) ? '&ref_no=' . urlencode($refNo) : '' ?>&download=1" class="btn-action" style="background:#0f766e;">
+                <span>&#11015;</span> Download PDF
+            </a>
             <button type="button" class="btn-action" onclick="window.print();">
                 <span>&#128438;</span> Print Quotation
             </button>

@@ -298,25 +298,35 @@
         </div>`;
     }
 
-    // Direct High-Resolution Print / PDF Generation
+    // Direct High-Resolution PDF Download (Direct download without print dialog)
     function pdf(q) {
-        if (q && q.id) {
-            const url = `print/print_quotation_module.php?id=${encodeURIComponent(q.id)}&autoprint=1`;
-            const win = window.open(url, "_blank");
-            if (win) {
-                win.focus();
-                return;
-            }
+        if (!q) return;
+        const qId = q.id;
+        const fn = fnm(q) + ".pdf";
+
+        if (qId) {
+            const url = `print/print_quotation_module.php?id=${encodeURIComponent(qId)}&download=1`;
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fn;
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                try { document.body.removeChild(a); } catch (e) {}
+            }, 1000);
+            toast("Downloading " + fn + "...");
+            return;
         }
 
-        const fn = fnm(q);
+        const fnClean = fnm(q);
         const ph = $("#ph");
         if (ph) {
             ph.innerHTML = sheet(q);
         }
         const oldTitle = document.title;
-        document.title = fn;
-        toast("File name: " + fn + ".pdf (choose Save as PDF in the print window)");
+        document.title = fnClean;
+        toast("Opening draft print: " + fn);
         try {
             window.print();
         } catch (e) {
