@@ -106,7 +106,7 @@
 						<div class="form-group row">
 										<label class="col-lg-1 col-form-label">Subject</label>
 										<div class="col-lg-11">
-										   	<textarea cols="1" class="form-control" id="txt_quotation_subject" placeholder="Subject" tabindex=9></textarea>
+										   	<textarea cols="1" class="form-control" id="txt_quotation_subject" placeholder="Subject" tabindex=9 spellcheck="true" lang="en" autocomplete="off" autocorrect="on"></textarea>
     											<span class="form-text text-muted"><font color="black">Subject</font></span> 
 										</div>
 						</div>
@@ -136,7 +136,7 @@
 										<input type="hidden" class="form-control " id="txt_quotation_child_id">
 										<input type="hidden" class="form-control " id="txt_quotation_master_id">
 										<input type="hidden" class="form-control " id="txt_quotation_ref_no">
-										<textarea cols="1" class="form-control" id="txt_quotation_description" placeholder="Description" tabindex=10></textarea>
+										<textarea cols="1" class="form-control" id="txt_quotation_description" placeholder="Description" tabindex=10 spellcheck="true" lang="en" autocomplete="off" autocorrect="on"></textarea>
     											<span class="form-text text-muted"><font color="black">Description</font></span>    
     									
 									</div>

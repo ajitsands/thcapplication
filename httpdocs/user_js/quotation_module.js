@@ -861,24 +861,24 @@
                             <div class="g2" style="margin-bottom:8px;">
                                 <div>
                                     <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Client Name *</label>
-                                    <input id="inp_client_name" data-k="client_name" placeholder="Client name" value="${H(clientName)}" spellcheck="true" autocorrect="on" autocapitalize="words">
+                                    <input type="text" id="inp_client_name" data-k="client_name" placeholder="Client name" value="${H(clientName)}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="words">
                                 </div>
                                 <div>
                                     <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Contact Number</label>
-                                    <input id="inp_contact_no" data-k="contact_no" placeholder="Contact number" value="${H(contact)}">
+                                    <input type="text" id="inp_contact_no" data-k="contact_no" placeholder="Contact number" value="${H(contact)}">
                                 </div>
                             </div>
                         `}
                         
                         <div style="margin-bottom:8px;">
                             <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Client Address</label>
-                            <textarea id="ad" data-k="client_address" rows="2" ${isAmc ? "readonly" : ""} placeholder="${isAmc ? "Address is pulled from the AMC client record" : "Client address"}" spellcheck="true" autocorrect="on" autocapitalize="sentences">${H(clientAddr)}</textarea>
+                            <textarea id="ad" data-k="client_address" rows="2" ${isAmc ? "readonly" : ""} placeholder="${isAmc ? "Address is pulled from the AMC client record" : "Client address"}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(clientAddr)}</textarea>
                         </div>
                         
                         <div class="g2" style="margin-bottom:8px;">
                             <div>
                                 <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Kind Attention</label>
-                                <input data-k="attention" placeholder="Kind attention" value="${H(attn)}" spellcheck="true" autocorrect="on" autocapitalize="words">
+                                <input type="text" data-k="attention" placeholder="Kind attention" value="${H(attn)}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="words">
                             </div>
                             <div>
                                 <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Quotation Date</label>
@@ -887,8 +887,13 @@
                         </div>
                         
                         <div style="margin-bottom:8px;">
-                            <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Subject</label>
-                            <input data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" autocorrect="on" autocapitalize="sentences">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin:0;">Subject *</label>
+                                <button type="button" id="btn_check_subject" class="btn btn-sm" style="font-size:11px;padding:2px 9px;border-radius:6px;background:#eef6fc;border:1.2px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" title="Spell & grammar check quotation subject">
+                                    <i class="icon-spell-check" style="font-size:12px;color:#0A4174;"></i> Check Subject
+                                </button>
+                            </div>
+                            <input type="text" data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences" style="margin-top:0 !important;width:100%;">
                         </div>
                         
                         <div class="g2" style="margin-top:8px;">
@@ -1212,6 +1217,11 @@
             btnCheckTop.onclick = () => runQuotationGrammarCheck("all");
         }
 
+        const btnCheckSubject = $("#btn_check_subject");
+        if (btnCheckSubject) {
+            btnCheckSubject.onclick = () => runQuotationGrammarCheck("subject");
+        }
+
         const btnCheckItems = $("#btn_check_grammar_items");
         if (btnCheckItems) {
             btnCheckItems.onclick = () => runQuotationGrammarCheck("items");
@@ -1311,7 +1321,7 @@
 
             return `
             <div class="it">
-                <input data-i="${i}" data-f="desc" placeholder="Description of work" value="${H(desc)}" style="grid-column:1/-1;" spellcheck="true" autocorrect="on" autocapitalize="sentences">
+                <input type="text" data-i="${i}" data-f="desc" placeholder="Description of work" value="${H(desc)}" style="grid-column:1/-1;" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">
                 <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}">
                 <select data-i="${i}" data-f="unit">
                     ${M(unitOptions, u => `<option value="${H(u)}"${u === unit ? " selected" : ""}>${H(u)}</option>`)}
@@ -1328,7 +1338,7 @@
         if (!el || !ED) return;
         el.innerHTML = M(ED.terms, (t, i) => `
             <div class="tr">
-                <textarea rows="2" data-t="${i}" spellcheck="true" autocorrect="on" autocapitalize="sentences">${H(t)}</textarea>
+                <textarea rows="2" data-t="${i}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(t)}</textarea>
                 <button data-x="${i}" title="Remove">✕</button>
             </div>`
         );
@@ -1980,16 +1990,19 @@
         // Collect fields to check
         const tasks = [];
 
-        // Subject
-        if (scope === "all") {
+        // Subject - checked in 'all', 'subject', and 'items'
+        if (scope === "all" || scope === "subject" || scope === "items") {
             const subj = ED.subject || ED.subj || "";
-            if (subj.trim()) {
+            if (subj && subj.trim()) {
                 tasks.push({
                     section: "subject",
                     index: 0,
                     fieldLabel: "Quotation Subject",
-                    text: subj
+                    text: subj.trim()
                 });
+            } else if (scope === "subject") {
+                toast("Please enter a quotation subject first.");
+                return;
             }
         }
 
@@ -2027,7 +2040,7 @@
         }
 
         if (tasks.length === 0) {
-            toast("No text entered in quotation items or terms yet.");
+            toast("No text entered to check yet.");
             return;
         }
 
@@ -2065,10 +2078,13 @@
                 });
 
                 if (issues.length === 0) {
+                    const clearMsg = scope === "subject" 
+                        ? "Quotation subject is all clear! No spelling or grammatical issues found."
+                        : "No spelling or grammatical issues were detected in this quotation.";
                     if (typeof window.swal === "function") {
                         window.swal({
                             title: "All Clear! ✓",
-                            text: "No spelling or grammatical issues were detected in this quotation.",
+                            text: clearMsg,
                             type: "success",
                             confirmButtonColor: "#0A4174"
                         });
@@ -2435,6 +2451,423 @@
         });
     }
 
+    // ==========================================
+    // RIGHT-CLICK SPELL CHECK & CORRECTION ENGINE
+    // ==========================================
+    const COMMON_TYPOS = {
+        "repaire": ["repair", "repairs", "repaired"],
+        "repaires": ["repairs", "repair"],
+        "plubming": ["plumbing"],
+        "pluming": ["plumbing"],
+        "maintanence": ["maintenance"],
+        "maintanance": ["maintenance"],
+        "maintenence": ["maintenance"],
+        "maintenace": ["maintenance"],
+        "subect": ["subject"],
+        "subjet": ["subject"],
+        "subjt": ["subject"],
+        "suject": ["subject"],
+        "electircal": ["electrical"],
+        "electical": ["electrical"],
+        "electic": ["electric"],
+        "conditoning": ["conditioning"],
+        "conditoner": ["conditioner"],
+        "instalation": ["installation"],
+        "instaling": ["installing"],
+        "instal": ["install"],
+        "replaceing": ["replacing"],
+        "replacment": ["replacement"],
+        "servicing": ["servicing"],
+        "servic": ["service"],
+        "serivce": ["service"],
+        "clening": ["cleaning"],
+        "cleanning": ["cleaning"],
+        "washig": ["washing"],
+        "paintng": ["painting"],
+        "leake": ["leak"],
+        "leakge": ["leakage"],
+        "piping": ["piping"],
+        "materil": ["material"],
+        "meterial": ["material"],
+        "quntity": ["quantity"],
+        "quanty": ["quantity"],
+        "lumpsum": ["Lumpsum"],
+        "lumsum": ["Lumpsum"],
+        "lumpum": ["Lumpsum"],
+        "quoattaion": ["quotation"],
+        "quotaton": ["quotation"],
+        "quotatn": ["quotation"],
+        "teh": ["the"],
+        "recieve": ["receive"],
+        "recieved": ["received"],
+        "recieving": ["receiving"],
+        "seperate": ["separate"],
+        "seperated": ["separated"],
+        "untill": ["until"],
+        "definately": ["definitely"],
+        "completly": ["completely"],
+        "necessery": ["necessary"],
+        "requirment": ["requirement"],
+        "requirments": ["requirements"],
+        "requierd": ["required"],
+        "agreemnt": ["agreement"],
+        "waranty": ["warranty"],
+        "warenty": ["warranty"],
+        "guarenty": ["guarantee"],
+        "validty": ["validity"],
+        "scafolding": ["scaffolding"],
+        "additonal": ["additional"],
+        "aprove": ["approve"],
+        "aproval": ["approval"],
+        "attension": ["attention"],
+        "atention": ["attention"]
+    };
+
+    let activeContextMenu = null;
+    let spellDebounceTimer = null;
+    let fieldSpellIssues = [];
+
+    function removeSpellContextMenu() {
+        if (activeContextMenu && activeContextMenu.parentNode) {
+            activeContextMenu.parentNode.removeChild(activeContextMenu);
+        }
+        activeContextMenu = null;
+    }
+
+    document.addEventListener("click", removeSpellContextMenu);
+    document.addEventListener("scroll", removeSpellContextMenu, true);
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") removeSpellContextMenu();
+    });
+
+    function getWordAtEvent(ev, el) {
+        if (!el) return null;
+        const text = el.value || "";
+        if (!text.trim()) return null;
+
+        let start = 0;
+        let end = 0;
+        let word = "";
+
+        if (typeof el.selectionStart === "number" && typeof el.selectionEnd === "number" && el.selectionEnd > el.selectionStart) {
+            start = el.selectionStart;
+            end = el.selectionEnd;
+            word = text.substring(start, end).trim();
+        } else {
+            let pos = (typeof el.selectionStart === "number") ? el.selectionStart : 0;
+            if (pos > text.length) pos = text.length;
+
+            if (pos > 0 && /\s/.test(text[pos]) && !/\s/.test(text[pos - 1])) {
+                pos--;
+            }
+
+            start = pos;
+            while (start > 0 && /[^\s,;:!?"'()\[\]{}]/.test(text[start - 1])) {
+                start--;
+            }
+            end = pos;
+            while (end < text.length && /[^\s,;:!?"'()\[\]{}]/.test(text[end])) {
+                end++;
+            }
+            word = text.substring(start, end).trim();
+        }
+
+        if (!word || word.length < 2) return null;
+        return { word: word, start: start, end: end, fullText: text };
+    }
+
+    function applyWordCorrection(el, start, end, replacement) {
+        const oldText = el.value || "";
+        const newText = oldText.substring(0, start) + replacement + oldText.substring(end);
+        el.value = newText;
+
+        const newPos = start + replacement.length;
+        try {
+            el.setSelectionRange(newPos, newPos);
+        } catch (e) {}
+
+        // Dispatch input and change events so the quotation reactive engine and preview update
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+
+        toast(`Corrected to "${replacement}" ✓`);
+    }
+
+    function renderSpellMenuSuggestions(menu, el, wordInfo, cleanWord, suggestions) {
+        const isCapitalized = /^[A-Z][a-z]/.test(cleanWord);
+        const isAllUpper = /^[A-Z0-9]+$/.test(cleanWord) && cleanWord.length > 2;
+
+        const formattedSuggestions = suggestions.map(s => {
+            if (isAllUpper) return s.toUpperCase();
+            if (isCapitalized) return s.charAt(0).toUpperCase() + s.slice(1);
+            return s;
+        });
+
+        // Deduplicate suggestions
+        const uniqueSuggestions = [...new Set(formattedSuggestions)].filter(s => s.toLowerCase() !== cleanWord.toLowerCase()).slice(0, 5);
+
+        if (uniqueSuggestions.length === 0) {
+            renderSpellMenuClean(menu, cleanWord);
+            return;
+        }
+
+        let html = `
+            <div class="spell-context-header">
+                <span><i class="icon-spell-check mr-1" style="color:#0A4174;"></i> Spelling Suggestion</span>
+                <span class="spell-context-target" title="${H(cleanWord)}">${H(cleanWord)}</span>
+            </div>
+            <div style="padding:4px 0;">
+        `;
+
+        uniqueSuggestions.forEach(sug => {
+            html += `
+                <div class="spell-context-item suggest-item" data-rep="${H(sug)}">
+                    <i class="icon-checkmark3 text-success" style="font-size:13px;"></i>
+                    <span>${H(sug)}</span>
+                </div>
+            `;
+        });
+
+        html += `
+            </div>
+            <div class="spell-context-divider"></div>
+            <div class="spell-context-item" id="spell_menu_full_check" style="font-size:12.5px;color:#475569;font-weight:500;">
+                <i class="icon-file-text2 text-muted" style="font-size:13px;"></i> Full Quotation Review…
+            </div>
+            <div class="spell-context-item" id="spell_menu_browser" style="font-size:12px;color:#94a3b8;font-weight:400;">
+                <i class="icon-menu7 text-muted" style="font-size:12px;"></i> Shift+Right-Click for browser menu
+            </div>
+        `;
+
+        menu.innerHTML = html;
+
+        const items = menu.querySelectorAll(".suggest-item");
+        items.forEach(it => {
+            it.onclick = function(e) {
+                e.stopPropagation();
+                const rep = this.getAttribute("data-rep");
+                if (rep) {
+                    applyWordCorrection(el, wordInfo.start, wordInfo.end, rep);
+                }
+                removeSpellContextMenu();
+            };
+        });
+
+        const fullCheckBtn = menu.querySelector("#spell_menu_full_check");
+        if (fullCheckBtn) {
+            fullCheckBtn.onclick = function(e) {
+                e.stopPropagation();
+                removeSpellContextMenu();
+                runQuotationGrammarCheck("all");
+            };
+        }
+
+        const browserBtn = menu.querySelector("#spell_menu_browser");
+        if (browserBtn) {
+            browserBtn.onclick = function(e) {
+                e.stopPropagation();
+                removeSpellContextMenu();
+                toast("Tip: Hold Shift and Right-Click to open standard browser menu anytime");
+            };
+        }
+    }
+
+    function renderSpellMenuClean(menu, cleanWord) {
+        menu.innerHTML = `
+            <div class="spell-context-header">
+                <span><i class="icon-spell-check mr-1" style="color:#0A4174;"></i> Spelling Check</span>
+                <span class="spell-context-target">${H(cleanWord)}</span>
+            </div>
+            <div class="spell-context-badge">
+                <i class="icon-checkmark-circle text-success" style="font-size:14px;"></i>
+                <span><b>"${H(cleanWord)}"</b> looks correctly spelled</span>
+            </div>
+            <div class="spell-context-divider"></div>
+            <div class="spell-context-item" id="spell_menu_full_check" style="font-size:12.5px;color:#475569;font-weight:500;">
+                <i class="icon-file-text2 text-muted" style="font-size:13px;"></i> Full Quotation Review…
+            </div>
+            <div class="spell-context-item" id="spell_menu_browser" style="font-size:12px;color:#94a3b8;font-weight:400;">
+                <i class="icon-menu7 text-muted" style="font-size:12px;"></i> Shift+Right-Click for browser menu
+            </div>
+        `;
+
+        const fullCheckBtn = menu.querySelector("#spell_menu_full_check");
+        if (fullCheckBtn) {
+            fullCheckBtn.onclick = function(e) {
+                e.stopPropagation();
+                removeSpellContextMenu();
+                runQuotationGrammarCheck("all");
+            };
+        }
+
+        const browserBtn = menu.querySelector("#spell_menu_browser");
+        if (browserBtn) {
+            browserBtn.onclick = function(e) {
+                e.stopPropagation();
+                removeSpellContextMenu();
+                toast("Tip: Hold Shift and Right-Click to open standard browser menu anytime");
+            };
+        }
+    }
+
+    // Right-Click Context Menu Listener for all editable text fields
+    document.addEventListener("contextmenu", function(e) {
+        if (e.shiftKey) return; // User holds Shift: allow native browser context menu
+
+        const el = e.target;
+        if (!el) return;
+
+        const tag = el.tagName;
+        const isTextInput = (tag === "TEXTAREA") || (tag === "INPUT" && (!el.type || el.type === "text" || el.type === "search"));
+        if (!isTextInput || el.readOnly || el.disabled) return;
+
+        // Check if inside quotation module
+        const inQuotation = el.closest("#v") || el.closest("#app");
+        if (!inQuotation) return;
+
+        el.focus();
+
+        const wordInfo = getWordAtEvent(e, el);
+        if (!wordInfo || !wordInfo.word) return;
+
+        const word = wordInfo.word;
+        const cleanWord = word.replace(/^[^\w]+|[^\w]+$/g, "");
+        if (!cleanWord || cleanWord.length < 2 || /^\d+$/.test(cleanWord)) return;
+
+        e.preventDefault();
+        removeSpellContextMenu();
+
+        const menu = document.createElement("div");
+        menu.className = "spell-context-menu";
+        menu.id = "spell_context_menu";
+
+        let posX = e.clientX;
+        let posY = e.clientY;
+        menu.style.left = posX + "px";
+        menu.style.top = posY + "px";
+        document.body.appendChild(menu);
+
+        const rect = menu.getBoundingClientRect();
+        if (posX + rect.width > window.innerWidth - 10) {
+            posX = Math.max(10, window.innerWidth - rect.width - 10);
+            menu.style.left = posX + "px";
+        }
+        if (posY + rect.height > window.innerHeight - 10) {
+            posY = Math.max(10, window.innerHeight - rect.height - 10);
+            menu.style.top = posY + "px";
+        }
+
+        activeContextMenu = menu;
+
+        const lower = cleanWord.toLowerCase();
+        let suggestions = [];
+
+        // 1. Offline common typo dictionary
+        if (COMMON_TYPOS[lower]) {
+            suggestions = COMMON_TYPOS[lower];
+        }
+
+        // 2. Pre-cached issues from background check
+        if (suggestions.length === 0 && Array.isArray(fieldSpellIssues)) {
+            const found = fieldSpellIssues.find(iss => {
+                const w = iss.word ? iss.word.toLowerCase() : "";
+                return w === lower || (iss.offset <= wordInfo.start && (iss.offset + iss.length) >= wordInfo.end);
+            });
+            if (found && found.replacements && found.replacements.length > 0) {
+                suggestions = found.replacements.map(r => typeof r === "string" ? r : r.value);
+            }
+        }
+
+        if (suggestions.length > 0) {
+            renderSpellMenuSuggestions(menu, el, wordInfo, cleanWord, suggestions);
+            return;
+        }
+
+        // 3. Query LanguageTool API
+        menu.innerHTML = `
+            <div class="spell-context-header">
+                <span><i class="icon-spell-check mr-1" style="color:#0A4174;"></i> Spelling Check</span>
+                <span class="spell-context-target">${H(cleanWord)}</span>
+            </div>
+            <div class="spell-context-loading">
+                <i class="icon-spinner2 spinner text-primary"></i> Checking suggestions…
+            </div>
+            <div class="spell-context-divider"></div>
+            <div class="spell-context-item" id="spell_menu_full_check" style="font-size:12.5px;color:#475569;font-weight:500;">
+                <i class="icon-file-text2 text-muted" style="font-size:13px;"></i> Full Quotation Review…
+            </div>
+        `;
+
+        const fullCheckInitial = menu.querySelector("#spell_menu_full_check");
+        if (fullCheckInitial) {
+            fullCheckInitial.onclick = function() {
+                removeSpellContextMenu();
+                runQuotationGrammarCheck("all");
+            };
+        }
+
+        checkGrammarAPI(wordInfo.fullText).then(res => {
+            if (!activeContextMenu || activeContextMenu !== menu) return;
+            const matches = res.matches || [];
+
+            let matchCovering = matches.find(m => {
+                const mStart = m.offset;
+                const mEnd = m.offset + m.length;
+                return (mStart <= wordInfo.start && mEnd >= wordInfo.end) || 
+                       (Math.abs(mStart - wordInfo.start) <= 2 && Math.abs(mEnd - wordInfo.end) <= 2);
+            });
+
+            if (!matchCovering) {
+                matchCovering = matches.find(m => {
+                    const ctxText = (m.context && m.context.text) ? m.context.text.substr(m.context.offset, m.context.length) : "";
+                    return ctxText.toLowerCase() === lower;
+                });
+            }
+
+            if (matchCovering && matchCovering.replacements && matchCovering.replacements.length > 0) {
+                const fetched = matchCovering.replacements.slice(0, 5).map(r => typeof r === "string" ? r : r.value);
+                renderSpellMenuSuggestions(menu, el, wordInfo, cleanWord, fetched);
+            } else {
+                renderSpellMenuClean(menu, cleanWord);
+            }
+        }).catch(() => {
+            if (!activeContextMenu || activeContextMenu !== menu) return;
+            renderSpellMenuClean(menu, cleanWord);
+        });
+    });
+
+    // Background pre-caching when typing stops in editable fields
+    document.addEventListener("input", function(e) {
+        const el = e.target;
+        if (!el) return;
+        const tag = el.tagName;
+        const isTextInput = (tag === "TEXTAREA") || (tag === "INPUT" && (!el.type || el.type === "text" || el.type === "search"));
+        if (!isTextInput) return;
+
+        clearTimeout(spellDebounceTimer);
+        spellDebounceTimer = setTimeout(() => {
+            const val = el.value || "";
+            if (!val.trim() || val.length < 3) {
+                fieldSpellIssues = [];
+                return;
+            }
+            checkGrammarAPI(val).then(res => {
+                if (res && res.matches && Array.isArray(res.matches)) {
+                    fieldSpellIssues = res.matches.map(m => {
+                        const word = (m.context && m.context.text) ? m.context.text.substr(m.context.offset, m.context.length) : "";
+                        return {
+                            word: word,
+                            offset: m.offset,
+                            length: m.length,
+                            replacements: m.replacements || [],
+                            message: m.message
+                        };
+                    });
+                }
+            }).catch(() => {});
+        }, 750);
+    });
+
     // Global spellcheck enforcer for all user input areas and textareas
     document.addEventListener("focusin", function(e) {
         const el = e.target;
@@ -2445,8 +2878,17 @@
             if (el.getAttribute("spellcheck") !== "true") {
                 el.setAttribute("spellcheck", "true");
             }
+            if (!el.hasAttribute("lang")) {
+                el.setAttribute("lang", "en");
+            }
+            if (!el.hasAttribute("autocomplete")) {
+                el.setAttribute("autocomplete", "off");
+            }
             if (!el.hasAttribute("autocorrect")) {
                 el.setAttribute("autocorrect", "on");
+            }
+            if (!el.hasAttribute("autocapitalize")) {
+                el.setAttribute("autocapitalize", "sentences");
             }
         }
     });

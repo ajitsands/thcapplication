@@ -736,6 +736,100 @@ if ($isLoggedIn) {
             border: 1px solid #cbd5e1;
         }
 
+        /* Right-Click Spell Check Context Menu */
+        .spell-context-menu {
+            position: fixed;
+            z-index: 1000000;
+            min-width: 210px;
+            max-width: 320px;
+            background: #ffffff;
+            border: 1.5px solid #c2daeb;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 29, 57, 0.22);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 6px 0;
+            user-select: none;
+            animation: spellMenuFadeIn 0.15s ease-out;
+        }
+        @keyframes spellMenuFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .spell-context-header {
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #49769F;
+            border-bottom: 1px solid #eef4f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .spell-context-target {
+            font-weight: 700;
+            color: #001D39;
+            background: #eef6fc;
+            padding: 1px 7px;
+            border-radius: 5px;
+            max-width: 130px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 11.5px;
+        }
+        .spell-context-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 7px 14px;
+            font-size: 13.5px;
+            color: #001D39;
+            cursor: pointer;
+            transition: background 0.12s ease;
+            font-weight: 600;
+        }
+        .spell-context-item:hover {
+            background: #eaf3fb;
+            color: #0A4174;
+        }
+        .spell-context-item.suggest-item {
+            font-weight: 700;
+            color: #0A4174;
+            padding: 7px 14px;
+        }
+        .spell-context-item.suggest-item:hover {
+            background: #e1effa;
+            color: #001D39;
+        }
+        .spell-context-divider {
+            height: 1px;
+            background: #eef4f9;
+            margin: 5px 0;
+        }
+        .spell-context-loading {
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .spell-context-badge {
+            padding: 7px 12px;
+            font-size: 12px;
+            color: #15803d;
+            background: #f0fdf4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #bbf7d0;
+        }
+
         /* ==============================================================
            Quotation Letterhead Sheet Template
            Strictly aligned with THC corporate report standards
