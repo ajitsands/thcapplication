@@ -896,26 +896,7 @@
                             <input type="text" data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences" style="margin-top:0 !important;width:100%;">
                         </div>
                         
-                        <div class="g2" style="margin-top:8px;">
-                            <div>
-                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">VAT Rate</label>
-                                <select data-k="vat_rate" style="width:100%;height:38px;">
-                                    ${M([10, 5, 0], v => `<option value="${v}" ${vat == v ? "selected" : ""}>VAT ${v}%</option>`)}
-                                </select>
-                            </div>
-                            <div>
-                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Discount (Optional)</label>
-                                <div style="display:flex;gap:4px;">
-                                    <input type="number" min="0" step="0.001" data-k="discount_value" placeholder="0.000" value="${discVal}" style="flex:1;height:38px;margin:0;">
-                                    <select data-k="discount_type" style="width:75px;height:38px;padding:0 6px;margin:0;">
-                                        <option value="amount" ${discType === "amount" ? "selected" : ""}>BD</option>
-                                        <option value="percent" ${discType === "percent" ? "selected" : ""}>%</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <p style="color:var(--mut);margin:8px 0 0;font-size:12px;">
+                        <p style="color:var(--mut);margin:12px 0 0;font-size:12px;">
                             Signed as <b>${H(uName)}</b>, ${H(uTitle)} (from the logged-in profile)
                         </p>
                     </div>
@@ -941,9 +922,40 @@
                             <span></span>
                         </div>
                         <div id="its"></div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;justify-content:flex-start;align-items:center;margin-top:10px;">
                             <button id="ai">+ Add item</button>
-                            <div id="quote_editor_calc_summary" style="font-size:12px;color:#475569;text-align:right;"></div>
+                        </div>
+
+                        <!-- VAT & Discount (Positioned at bottom after all line items) -->
+                        <div style="margin-top:18px;padding-top:16px;border-top:2px solid var(--q-blue-ice);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h3 style="margin:0;font-size:13.5px;font-weight:700;color:var(--q-navy-dark);font-family:'Outfit',sans-serif;">
+                                    <i class="icon-calculator4 mr-1" style="color:#0A4174;"></i> Pricing, Discount & VAT
+                                </h3>
+                            </div>
+                            <div class="g2" style="margin-top:6px;margin-bottom:14px;">
+                                <div>
+                                    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Discount (Optional)</label>
+                                    <div style="display:flex;gap:4px;">
+                                        <input type="number" min="0" step="0.001" data-k="discount_value" placeholder="0.000" value="${discVal}" style="flex:1;height:38px;margin:0;">
+                                        <select data-k="discount_type" style="width:75px;height:38px;padding:0 6px;margin:0;">
+                                            <option value="amount" ${discType === "amount" ? "selected" : ""}>BD</option>
+                                            <option value="percent" ${discType === "percent" ? "selected" : ""}>%</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">VAT Rate</label>
+                                    <select data-k="vat_rate" style="width:100%;height:38px;margin:0;">
+                                        ${M([10, 5, 0], v => `<option value="${v}" ${vat == v ? "selected" : ""}>VAT ${v}%</option>`)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Real-time calculation summary -->
+                            <div id="quote_editor_calc_box" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 16px;">
+                                <div id="quote_editor_calc_summary"></div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1296,10 +1308,44 @@
             const sNet = netAmt(ED);
             const sTot = tot(ED);
             const sVat = (ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10));
+            const sVatVal = (sNet * sVat) / 100;
+
             if (sDiscAmt > 0) {
-                sumEl.innerHTML = `Subtotal: <b>${f3(sSub)} BD</b> &nbsp;|&nbsp; Discount: <b style="color:#b91c1c;">-${f3(sDiscAmt)} BD</b> &nbsp;|&nbsp; Net: <b>${f3(sNet)} BD</b> &nbsp;|&nbsp; Total (incl. ${sVat}% VAT): <b style="color:var(--q-navy-main);font-size:13px;">${f3(sTot)} BD</b>`;
+                sumEl.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12.5px;color:#475569;">
+                        <span>Gross Subtotal:</span>
+                        <b style="color:#1e293b;">${f3(sSub)} BD</b>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12.5px;color:#b91c1c;">
+                        <span>Less Discount:</span>
+                        <b>-${f3(sDiscAmt)} BD</b>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12.5px;color:#475569;">
+                        <span>Net Amount (Excl. VAT):</span>
+                        <b style="color:#1e293b;">${f3(sNet)} BD</b>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;color:#475569;">
+                        <span>VAT (${sVat}%):</span>
+                        <b style="color:#1e293b;">${f3(sVatVal)} BD</b>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1.5px dashed #cbd5e1;font-size:13.5px;color:#001D39;">
+                        <span style="font-weight:700;">Total Amount (Incl. VAT):</span>
+                        <b style="color:#0A4174;font-size:15px;font-weight:700;">${f3(sTot)} BD</b>
+                    </div>`;
             } else {
-                sumEl.innerHTML = `Subtotal: <b>${f3(sSub)} BD</b> &nbsp;|&nbsp; Total (incl. ${sVat}% VAT): <b style="color:var(--q-navy-main);font-size:13px;">${f3(sTot)} BD</b>`;
+                sumEl.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12.5px;color:#475569;">
+                        <span>Amount (Excl. VAT):</span>
+                        <b style="color:#1e293b;">${f3(sSub)} BD</b>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;color:#475569;">
+                        <span>VAT (${sVat}%):</span>
+                        <b style="color:#1e293b;">${f3(sVatVal)} BD</b>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1.5px dashed #cbd5e1;font-size:13.5px;color:#001D39;">
+                        <span style="font-weight:700;">Total Amount (Incl. VAT):</span>
+                        <b style="color:#0A4174;font-size:15px;font-weight:700;">${f3(sTot)} BD</b>
+                    </div>`;
             }
         }
     }
