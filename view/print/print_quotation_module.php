@@ -241,36 +241,21 @@ if ($download) {
     }
     $signerTitle = $q['user_designation'] ?? 'THC Facility Management';
 
-    // Build HTML for TCPDF writeHTML
-    $html = '
-    <table cellpadding="1" cellspacing="0" border="0" style="width:100%;font-size:9.5pt;color:#1e293b;">
-        <tr>
-            <td style="line-height:1.4;">
-                <b>No: ' . htmlspecialchars($qNo) . '</b><br>
-                <b>Date: ' . htmlspecialchars(fDate($q['quotation_date'])) . '</b>
-            </td>
-        </tr>
-        <tr><td></td></tr>
-        <tr>
-            <td style="line-height:1.4;">
-                <b>To,</b><br>
-                <b>' . htmlspecialchars($q['client_name']) . '</b><br>
-                ' . nl2br(htmlspecialchars($q['client_address'])) . '
-                ' . (!empty($q['client_code']) ? '<br><span style="color:#64748b;font-size:8.5pt;">Client code: ' . htmlspecialchars($q['client_code']) . '</span>' : '') . '
-            </td>
-        </tr>
-        ' . (!empty($q['attention']) ? '<tr><td></td></tr><tr><td style="line-height:1.4;"><b>Kind Attn: ' . htmlspecialchars($q['attention']) . '</b></td></tr>' : '') . '
-        <tr><td></td></tr>
-        <tr>
-            <td style="line-height:1.4;">
-                <b><u>Sub: ' . htmlspecialchars($q['subject']) . '</u></b><br>
-                With reference to subject job we are pleased to submit our offer as under: -
-            </td>
-        </tr>
-    </table>
-    <br><br>
+    // Build HTML for TCPDF writeHTML with strict zero-indent formatting to ensure perfect flush-left alignment
+    $html = '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9.5pt;color:#1e293b;">'
+        . '<tr><td style="line-height:1.4;"><b>No: ' . htmlspecialchars($qNo) . '</b><br><b>Date: ' . htmlspecialchars(fDate($q['quotation_date'])) . '</b></td></tr>';
+    $html .= '<tr><td style="height:6px;"></td></tr>'
+        . '<tr><td style="line-height:1.4;"><b>To,</b><br><b>' . htmlspecialchars($q['client_name']) . '</b><br>' . nl2br(htmlspecialchars($q['client_address']))
+        . (!empty($q['client_code']) ? '<br><span style="color:#64748b;font-size:8.5pt;">Client code: ' . htmlspecialchars($q['client_code']) . '</span>' : '')
+        . '</td></tr>';
+    if (!empty($q['attention'])) {
+        $html .= '<tr><td style="height:6px;"></td></tr><tr><td style="line-height:1.4;"><b>Kind Attn: ' . htmlspecialchars($q['attention']) . '</b></td></tr>';
+    }
+    $html .= '<tr><td style="height:6px;"></td></tr>'
+        . '<tr><td style="line-height:1.4;"><b><u>Sub: ' . htmlspecialchars($q['subject']) . '</u></b><br>With reference to subject job we are pleased to submit our offer as under: -</td></tr>'
+        . '</table><br><br>';
 
-    <table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
+    $html .= '<table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
         <thead>
             <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
                 <th width="7%" align="center"><b>SL.</b></th>
