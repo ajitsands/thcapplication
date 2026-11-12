@@ -122,7 +122,8 @@ foreach ($items as $it) {
 }
 
 $rev = (int)$q['rev_no'];
-$qNo = !empty($q['quotation_no']) ? $q['quotation_no'] . ($rev > 0 ? "/R" . $rev : "") : "(Draft)";
+$varNo = (int)($q['variation_no'] ?? 0);
+$qNo = !empty($q['quotation_no']) ? $q['quotation_no'] . ($varNo > 0 && strpos($q['quotation_no'], '/V') === false ? "/V" . $varNo : "") . ($rev > 0 && strpos($q['quotation_no'], '/R') === false ? "/R" . $rev : "") : "(Draft)";
 $vatRate = (float)$q['vat_rate'];
 $subtotal = (float)$q['subtotal_excl_vat'];
 if ($subtotal <= 0 && $calcSubtotal > 0) {
@@ -156,7 +157,12 @@ if (!empty($q['quotation_date'])) {
         $datePart = '_' . substr($cleanDate, 2, 4);
     }
 }
-$pdfFilename = "CG_THC_{$userCode}_QTN_{$seqPad}" . ($rev > 0 ? "_R{$rev}" : "") . $datePart . ".pdf";
+$pdfFilename = "CG_THC_{$userCode}_QTN_{$seqPad}" . ($varNo > 0 ? "_V{$varNo}" : "") . ($rev > 0 ? "_R{$rev}" : "") . $datePart . ".pdf";
+
+$isApproved = ($q['status'] === 'Approved');
+$apprBy = $q['approval_by'] ?? '';
+$apprDate = $q['approval_date'] ?? '';
+$apprPo = $q['client_po_ref'] ?? '';
 
 if ($download) {
     // Suppress notices and deprecation warnings during binary stream
@@ -341,6 +347,11 @@ if ($download) {
         $html .= '</ol><br>';
     }
 
+    $apprBoxHtml = '<b>Approved By:</b><br><br>Name:<br><br>Date:';
+    if ($isApproved && !empty($apprBy)) {
+        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><br><b>Date:</b> ' . htmlspecialchars($apprDate ?: fDate($q['quotation_date'])) . (!empty($apprPo) ? '<br><br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
+    }
+
     $html .= '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p>
     <br><br>
 
@@ -355,9 +366,7 @@ if ($download) {
             </td>
             <td width="5%"></td>
             <td width="40%" style="border:1px solid #cbd5e1;background-color:#f8fafc;padding:8px;line-height:1.8;">
-                <b>Approved By:</b><br><br>
-                Name:<br><br>
-                Date:
+                ' . $apprBoxHtml . '
             </td>
         </tr>
     </table>';
@@ -378,7 +387,7 @@ if ($download) {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title><?= htmlspecialchars($q['user_code'] . "-QTN-" . ($q['seq_no'] ?: "DRAFT") . ($rev ? "-R" . $rev : "")) ?></title>
+    <title><?= htmlspecialchars($q['user_code'] . "-QTN-" . ($q['seq_no'] ?: "DRAFT") . ($varNo ? "-V" . $varNo : "") . ($rev ? "-R" . $rev : "")) ?></title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -695,9 +704,17 @@ if ($download) {
             <span style="font-weight: 400; color: #475569;"><?= htmlspecialchars($q['user_designation']) ?></span></b>
         </div>
         <div class="ap">
-            <b>Approved By:</b><br><br>
-            Name:<br><br>
-            Date:
+            <?php if ($isApproved && !empty($apprBy)): ?>
+                <b>Approved By:</b> <?= htmlspecialchars($apprBy) ?><br><br>
+                <b>Date:</b> <?= htmlspecialchars($apprDate ?: fDate($q['quotation_date'])) ?>
+                <?php if (!empty($apprPo)): ?>
+                    <br><br><b>PO Ref:</b> <?= htmlspecialchars($apprPo) ?>
+                <?php endif; ?>
+            <?php else: ?>
+                <b>Approved By:</b><br><br>
+                Name:<br><br>
+                Date:
+            <?php endif; ?>
         </div>
     </div>
 

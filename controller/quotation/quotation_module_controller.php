@@ -143,6 +143,35 @@ class QuotationModuleController
                     ADD COLUMN `discount_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_value`");
             }
 
+            // Migration check: Add variation_no column if missing
+            $chkVar = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'variation_no'");
+            if ($chkVar && mysqli_num_rows($chkVar) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `variation_no` INT(11) NOT NULL DEFAULT 0 AFTER `rev_no`");
+            }
+
+            // Migration check: Update status enum to include 'Void'
+            $chkStatus = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'status'");
+            if ($chkStatus && ($col = mysqli_fetch_assoc($chkStatus))) {
+                if (strpos($col['Type'], 'Void') === false) {
+                    @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Approved','Not approved','Superseded','Void') NOT NULL DEFAULT 'Draft'");
+                }
+            }
+
+            // Migration check: Add approval fields if missing
+            $chkAppr = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'approval_by'");
+            if ($chkAppr && mysqli_num_rows($chkAppr) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
+                    ADD COLUMN `approval_by` VARCHAR(255) DEFAULT '' AFTER `status`,
+                    ADD COLUMN `approval_date` DATE DEFAULT NULL AFTER `approval_by`,
+                    ADD COLUMN `client_po_ref` VARCHAR(100) DEFAULT '' AFTER `approval_date`");
+            }
+
+            // Migration check: Add activity_json column if missing
+            $chkAct = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'activity_json'");
+            if ($chkAct && mysqli_num_rows($chkAct) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `activity_json` LONGTEXT DEFAULT NULL AFTER `remark`");
+            }
+
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
                 `item_id` INT(11) NOT NULL AUTO_INCREMENT,
                 `quotation_id` INT(11) NOT NULL,
@@ -886,10 +915,23 @@ class QuotationModuleController
                     if (!is_array($terms)) $terms = $this->defaultTerms;
                     $items = $itemsByQuote[$qId] ?? [];
 
+                    $appr = null;
+                    if (!empty($r['approval_by'])) {
+                        $appr = [
+                            "by" => $r['approval_by'],
+                            "on" => !empty($r['approval_date']) ? $r['approval_date'] : $r['quotation_date'],
+                            "po" => $r['client_po_ref'] ?? ''
+                        ];
+                    }
+                    $activity = json_decode($r['activity_json'] ?? '', true);
+                    if (!is_array($activity)) $activity = [];
+
                     $list[] = [
                         "id" => (int)$r['id'],
                         "seq_no" => $r['seq_no'] !== null ? (int)$r['seq_no'] : null,
                         "rev_no" => (int)$r['rev_no'],
+                        "variation_no" => (int)($r['variation_no'] ?? 0),
+                        "vn" => (int)($r['variation_no'] ?? 0),
                         "quotation_no" => $r['quotation_no'],
                         "is_amc" => (int)$r['is_amc'],
                         "client_code" => $r['client_code'],
@@ -913,6 +955,10 @@ class QuotationModuleController
                         "status" => $r['status'],
                         "rejection_reason" => $r['rejection_reason'],
                         "remark" => $r['remark'],
+                        "appr" => $appr,
+                        "approval" => $appr,
+                        "log" => $activity,
+                        "activity" => $activity,
                         "items" => $items
                     ];
                 }
@@ -1170,6 +1216,27 @@ class QuotationModuleController
         $items = isset($input['items']) && is_array($input['items']) ? $input['items'] : [];
         $seqNo = isset($input['seq_no']) && $input['seq_no'] !== '' ? (int)$input['seq_no'] : null;
         $revNo = isset($input['rev_no']) ? (int)$input['rev_no'] : 0;
+        $variationNo = isset($input['variation_no']) ? (int)$input['variation_no'] : (isset($input['vn']) ? (int)$input['vn'] : 0);
+
+        // Rule 1: Issued quotes are immutable. Edit exists only for Draft.
+        if ($id > 0 && $this->isDbConnected) {
+            $chkRes = mysqli_query($this->db, "SELECT status, quotation_no FROM tbl_quotations_v2 WHERE id = $id");
+            if ($chkRes && ($chkRow = mysqli_fetch_assoc($chkRes))) {
+                if ($chkRow['status'] !== 'Draft') {
+                    echo json_encode(["status" => "error", "message" => "Issued quotations are immutable. Only drafts can be edited. Changes to an issued quote must be created as a new revision or variation."]);
+                    return;
+                }
+            }
+        }
+
+        // Rule 2: Approved quotes are final. Revisions of approved quotes are rejected.
+        if ($isIssue && $seqNo !== null && $revNo > 0 && $this->isDbConnected) {
+            $chkAppr = mysqli_query($this->db, "SELECT id FROM tbl_quotations_v2 WHERE seq_no = $seqNo AND variation_no = $variationNo AND status = 'Approved' LIMIT 1");
+            if ($chkAppr && mysqli_num_rows($chkAppr) > 0) {
+                echo json_encode(["status" => "error", "message" => "Approved quotations are final and locked. They cannot be revised. Please create a variation (V1, V2...) for any changes after approval."]);
+                return;
+            }
+        }
 
         // Validation
         if (empty($clientName)) {
@@ -1242,17 +1309,20 @@ class QuotationModuleController
                 }
 
                 $mmyy = date('my', strtotime($quotationDate));
-                $quotationNo = "CG/THC/{$userCode}/QTN/{$seqNo}/{$mmyy}";
+                $varSuffix = $variationNo > 0 ? "/V{$variationNo}" : "";
+                $quotationNo = "CG/THC/{$userCode}/QTN/{$seqNo}/{$mmyy}{$varSuffix}";
 
-                // Supersede older revisions of this quotation sequence
+                // Rule 3: Supersede older revisions in the same sequence and variation
                 if ($revNo > 0) {
-                    $supSql = "UPDATE tbl_quotations_v2 SET status='Superseded' WHERE seq_no={$seqNo} AND rev_no < {$revNo}";
+                    $supSql = "UPDATE tbl_quotations_v2 SET status='Superseded', remark='Revised to R{$revNo} on " . date('Y-m-d') . "' 
+                               WHERE seq_no={$seqNo} AND variation_no={$variationNo} AND rev_no < {$revNo} AND status NOT IN ('Approved', 'Void')";
                     mysqli_query($this->db, $supSql);
                 }
             } else {
                 if ($seqNo !== null) {
                     $mmyy = date('my', strtotime($quotationDate));
-                    $quotationNo = "CG/THC/{$userCode}/QTN/{$seqNo}/{$mmyy}";
+                    $varSuffix = $variationNo > 0 ? "/V{$variationNo}" : "";
+                    $quotationNo = "CG/THC/{$userCode}/QTN/{$seqNo}/{$mmyy}{$varSuffix}";
                 }
             }
 
@@ -1270,10 +1340,24 @@ class QuotationModuleController
             $escQNo = mysqli_real_escape_string($this->db, $quotationNo);
             $seqVal = $seqNo !== null ? (int)$seqNo : "NULL";
 
+            // Activity Log
+            $activity = [];
+            if ($id > 0) {
+                $chkAct = mysqli_query($this->db, "SELECT activity_json FROM tbl_quotations_v2 WHERE id = $id");
+                if ($chkAct && ($aRow = mysqli_fetch_assoc($chkAct))) {
+                    $activity = json_decode($aRow['activity_json'] ?? '', true);
+                    if (!is_array($activity)) $activity = [];
+                }
+            }
+            $actNote = $isIssue ? ("Issued quotation " . $quotationNo . ($revNo ? "/R" . $revNo : "")) : "Draft saved";
+            $activity[] = ["d" => date('Y-m-d'), "u" => $userName, "t" => $actNote];
+            $actJson = mysqli_real_escape_string($this->db, json_encode($activity));
+
             if ($id > 0) {
                 $upd = "UPDATE tbl_quotations_v2 SET 
                     seq_no = $seqVal,
                     rev_no = $revNo,
+                    variation_no = $variationNo,
                     quotation_no = '$escQNo',
                     is_amc = $isAmc,
                     client_code = '$escClientCode',
@@ -1294,20 +1378,21 @@ class QuotationModuleController
                     vat_amount = $vatAmount,
                     total_incl_vat = $totalInclVat,
                     terms_json = '$termsJson',
-                    status = '$status'
+                    status = '$status',
+                    activity_json = '$actJson'
                     WHERE id = $id";
                 mysqli_query($this->db, $upd);
                 mysqli_query($this->db, "DELETE FROM tbl_quotation_items_v2 WHERE quotation_id = $id");
                 $savedId = $id;
             } else {
                 $ins = "INSERT INTO tbl_quotations_v2 
-                    (seq_no, rev_no, quotation_no, is_amc, client_code, client_name, client_address,
+                    (seq_no, rev_no, variation_no, quotation_no, is_amc, client_code, client_name, client_address,
                      contact_no, attention, subject, quotation_date, user_code, user_name, user_designation,
-                     vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat, terms_json, status)
+                     vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat, terms_json, status, activity_json)
                     VALUES 
-                    ($seqVal, $revNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
+                    ($seqVal, $revNo, $variationNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
                      '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig',
-                     $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat, '$termsJson', '$status')";
+                     $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat, '$termsJson', '$status', '$actJson')";
                 mysqli_query($this->db, $ins);
                 $savedId = mysqli_insert_id($this->db);
             }
@@ -1427,57 +1512,238 @@ class QuotationModuleController
     {
         $id = (int)$this->getInputParam('id', 0);
         $status = trim((string)$this->getInputParam('status', ''));
+        $action = trim((string)$this->getInputParam('action', ''));
         $reason = trim((string)$this->getInputParam('reason', ''));
         $remark = trim((string)$this->getInputParam('remark', ''));
-
-        // Normalize status
-        $stLower = strtolower($status);
-        if ($stLower === 'approved') {
-            $status = 'Approved';
-        } elseif ($stLower === 'not approved' || $stLower === 'rejected' || $stLower === 'notapproved') {
-            $status = 'Not approved';
-        } elseif ($stLower === 'pending') {
-            $status = 'Pending';
-        } elseif ($stLower === 'draft') {
-            $status = 'Draft';
-        } else {
-            echo json_encode(["status" => "error", "message" => "Invalid status" . ($status !== '' ? ": " . htmlspecialchars($status) : '')]);
-            return;
-        }
+        $approvedBy = trim((string)$this->getInputParam('approved_by', ''));
+        $approvedOn = trim((string)$this->getInputParam('approved_on', ''));
+        $clientPo = trim((string)$this->getInputParam('client_po', ''));
 
         if ($id <= 0) {
             echo json_encode(["status" => "error", "message" => "Invalid quotation ID"]);
             return;
         }
 
-        if ($status === 'Not approved' && empty($reason)) {
-            echo json_encode(["status" => "error", "message" => "A reason is required when marking not approved"]);
+        $curUser = $this->getCurrentSessionUser();
+        $userName = $curUser['name'];
+        $userTitle = $curUser['title'];
+        $today = date('Y-m-d');
+
+        $qRow = null;
+        if ($this->isDbConnected) {
+            $qRes = mysqli_query($this->db, "SELECT * FROM tbl_quotations_v2 WHERE id = $id");
+            if ($qRes) $qRow = mysqli_fetch_assoc($qRes);
+        } else {
+            $quotes = $this->getJsonQuotations();
+            foreach ($quotes as $q) {
+                if ($q['id'] == $id) {
+                    $qRow = $q;
+                    break;
+                }
+            }
+        }
+
+        if (!$qRow) {
+            echo json_encode(["status" => "error", "message" => "Quotation not found"]);
             return;
         }
 
-        $fullRemark = $status === 'Not approved' ? ($reason . ($remark ? " – " . $remark : "")) : $remark;
+        $seqNo = (int)($qRow['seq_no'] ?? 0);
+        $revNo = (int)($qRow['rev_no'] ?? 0);
+        $varNo = (int)($qRow['variation_no'] ?? 0);
+        $qLabel = ($varNo ? "V" . $varNo : "") . ($revNo ? ($varNo ? "/" : "") . "R" . $revNo : "") ?: "Original";
+        $currentStatus = $qRow['status'];
 
-        if ($this->isDbConnected) {
-            $escSt = mysqli_real_escape_string($this->db, $status);
-            $escReason = mysqli_real_escape_string($this->db, $reason);
-            $escRem = mysqli_real_escape_string($this->db, $fullRemark);
-            $sql = "UPDATE tbl_quotations_v2 SET 
-                status = '$escSt',
-                rejection_reason = '$escReason',
-                remark = '$escRem'
-                WHERE id = $id";
-            $res = mysqli_query($this->db, $sql);
-            if (!$res) {
-                echo json_encode(["status" => "error", "message" => "Database update failed: " . mysqli_error($this->db)]);
+        $activity = json_decode($qRow['activity_json'] ?? '', true);
+        if (!is_array($activity)) $activity = [];
+
+        // Rule 6: Reopen approval (Manager permission required)
+        if ($action === 'reopen' || ($currentStatus === 'Approved' && strtolower($status) === 'pending')) {
+            $isManager = (bool)preg_match('/manager|administrator|director|head/i', $userTitle);
+            if (!$isManager) {
+                echo json_encode(["status" => "error", "message" => "Reopening an approved quote requires Manager permission."]);
                 return;
             }
+            if (empty($reason)) {
+                echo json_encode(["status" => "error", "message" => "A reason is required to reopen an approved quotation (logged for auditing)."]);
+                return;
+            }
+
+            $prevApprover = !empty($qRow['approval_by']) ? $qRow['approval_by'] : "Client representative";
+            $logMsg = "Reopened. Previous approval by {$prevApprover} cleared. Reason: {$reason}";
+            $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+            $actJson = json_encode($activity);
+            $fullRemark = "Reopened: " . $reason;
+
+            if ($this->isDbConnected) {
+                $escRem = mysqli_real_escape_string($this->db, $fullRemark);
+                $escAct = mysqli_real_escape_string($this->db, $actJson);
+                mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                    status = 'Pending',
+                    approval_by = NULL,
+                    approval_date = NULL,
+                    client_po_ref = '',
+                    remark = '$escRem',
+                    activity_json = '$escAct'
+                    WHERE id = $id");
+            } else {
+                foreach ($quotes as &$q) {
+                    if ($q['id'] == $id) {
+                        $q['status'] = 'Pending';
+                        $q['appr'] = null;
+                        $q['remark'] = $fullRemark;
+                        $q['activity'] = $activity;
+                        break;
+                    }
+                }
+                unset($q);
+                $this->saveJsonQuotations($quotes);
+            }
+
+            echo json_encode([
+                "status" => "success",
+                "message" => "Approval reopened and logged. Status returned to Pending.",
+                "id" => $id,
+                "new_status" => "Pending",
+                "remark" => $fullRemark
+            ]);
+            return;
+        }
+
+        // Rule 4: Mark Approved & Void other open revisions in group
+        if (strtolower($status) === 'approved') {
+            if (empty($approvedBy)) {
+                echo json_encode(["status" => "error", "message" => "Client approver name is mandatory to confirm approval."]);
+                return;
+            }
+            $appDate = !empty($approvedOn) ? $approvedOn : $today;
+            $logMsg = "Approved by " . $approvedBy . ($clientPo ? " (" . $clientPo . ")" : "");
+            $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+            $actJson = json_encode($activity);
+
+            if ($this->isDbConnected) {
+                $escBy = mysqli_real_escape_string($this->db, $approvedBy);
+                $escDate = mysqli_real_escape_string($this->db, $appDate);
+                $escPo = mysqli_real_escape_string($this->db, $clientPo);
+                $escAct = mysqli_real_escape_string($this->db, $actJson);
+
+                mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                    status = 'Approved',
+                    approval_by = '$escBy',
+                    approval_date = '$escDate',
+                    client_po_ref = '$escPo',
+                    rejection_reason = '',
+                    remark = '',
+                    activity_json = '$escAct'
+                    WHERE id = $id");
+
+                // Void other open (Pending/Draft) revisions in the same sequence and variation
+                if ($seqNo > 0) {
+                    $voidReason = "Voided: " . $qLabel . " was approved";
+                    $escVoidRem = mysqli_real_escape_string($this->db, $voidReason);
+
+                    $otherRes = mysqli_query($this->db, "SELECT id, activity_json FROM tbl_quotations_v2 
+                        WHERE seq_no = $seqNo AND variation_no = $varNo AND id != $id AND status IN ('Pending', 'Draft')");
+                    if ($otherRes) {
+                        while ($oth = mysqli_fetch_assoc($otherRes)) {
+                            $othId = (int)$oth['id'];
+                            $othAct = json_decode($oth['activity_json'] ?? '', true);
+                            if (!is_array($othAct)) $othAct = [];
+                            $othAct[] = ["d" => $today, "u" => "System", "t" => $voidReason];
+                            $escOthAct = mysqli_real_escape_string($this->db, json_encode($othAct));
+                            mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                                status = 'Void',
+                                remark = '$escVoidRem',
+                                activity_json = '$escOthAct'
+                                WHERE id = $othId");
+                        }
+                    }
+                }
+            } else {
+                foreach ($quotes as &$q) {
+                    if ($q['id'] == $id) {
+                        $q['status'] = 'Approved';
+                        $q['appr'] = ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo];
+                        $q['remark'] = '';
+                        $q['activity'] = $activity;
+                    } elseif (($q['seq_no'] ?? null) == $seqNo && ($q['variation_no'] ?? 0) == $varNo && in_array($q['status'] ?? '', ['Pending', 'Draft'])) {
+                        $q['status'] = 'Void';
+                        $q['remark'] = "Voided: " . $qLabel . " was approved";
+                    }
+                }
+                unset($q);
+                $this->saveJsonQuotations($quotes);
+            }
+
+            echo json_encode([
+                "status" => "success",
+                "message" => "Quotation approved and locked. Other open revisions in this group were voided.",
+                "id" => $id,
+                "new_status" => "Approved",
+                "remark" => "",
+                "appr" => ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo]
+            ]);
+            return;
+        }
+
+        // Rule 7: Not approved
+        if (strtolower($status) === 'not approved' || strtolower($status) === 'rejected') {
+            if (empty($reason)) {
+                echo json_encode(["status" => "error", "message" => "A reason is required when marking not approved."]);
+                return;
+            }
+            $fullRemark = $reason . ($remark ? " – " . $remark : "");
+            $logMsg = "Not approved: " . $fullRemark;
+            $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+            $actJson = json_encode($activity);
+
+            if ($this->isDbConnected) {
+                $escReason = mysqli_real_escape_string($this->db, $reason);
+                $escRem = mysqli_real_escape_string($this->db, $fullRemark);
+                $escAct = mysqli_real_escape_string($this->db, $actJson);
+
+                mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                    status = 'Not approved',
+                    rejection_reason = '$escReason',
+                    remark = '$escRem',
+                    activity_json = '$escAct'
+                    WHERE id = $id");
+            } else {
+                foreach ($quotes as &$q) {
+                    if ($q['id'] == $id) {
+                        $q['status'] = 'Not approved';
+                        $q['rejection_reason'] = $reason;
+                        $q['remark'] = $fullRemark;
+                        $q['activity'] = $activity;
+                        break;
+                    }
+                }
+                unset($q);
+                $this->saveJsonQuotations($quotes);
+            }
+
+            echo json_encode([
+                "status" => "success",
+                "message" => "Quotation marked as Not approved",
+                "id" => $id,
+                "new_status" => "Not approved",
+                "remark" => $fullRemark
+            ]);
+            return;
+        }
+
+        // Other status update (e.g. Void or Draft)
+        $escSt = $status;
+        $escRem = $remark;
+        if ($this->isDbConnected) {
+            $escSt = mysqli_real_escape_string($this->db, $status);
+            $escRem = mysqli_real_escape_string($this->db, $remark);
+            mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET status = '$escSt', remark = '$escRem' WHERE id = $id");
         } else {
-            $quotes = $this->getJsonQuotations();
             foreach ($quotes as &$q) {
                 if ($q['id'] == $id) {
                     $q['status'] = $status;
-                    $q['rejection_reason'] = $reason;
-                    $q['remark'] = $fullRemark;
+                    $q['remark'] = $remark;
                     break;
                 }
             }
@@ -1487,10 +1753,10 @@ class QuotationModuleController
 
         echo json_encode([
             "status" => "success",
-            "message" => "Quotation marked as " . $status,
+            "message" => "Quotation status updated to " . $status,
             "id" => $id,
             "new_status" => $status,
-            "remark" => $fullRemark
+            "remark" => $remark
         ]);
     }
 

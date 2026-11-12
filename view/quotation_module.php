@@ -631,10 +631,64 @@ if ($isLoggedIn) {
             color: #991b1b !important;
             border: 1px solid #fecaca;
         }
-        .tag.Draft, .tag.Superseded {
+        .tag.Draft, .tag.Superseded, .tag.Void {
             background: #f1f5f9 !important;
             color: #475569 !important;
             border: 1px solid #cbd5e1;
+        }
+        .tag.Void {
+            text-decoration: line-through;
+            color: #94a3b8 !important;
+            background: #f8fafc !important;
+        }
+
+        .lock {
+            background: #e8f5e9 !important;
+            color: #1b5e20 !important;
+            border: 1px solid #a5d6a7 !important;
+            padding: 12px 18px !important;
+            border-radius: 8px !important;
+            margin-bottom: 16px !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .rl th, .rl td {
+            padding: 10px 12px;
+            border-top: 1px solid var(--q-border-subtle);
+            text-align: left;
+            vertical-align: middle;
+        }
+        .rl th {
+            color: var(--q-text-muted);
+            font-size: 12px;
+            background: #f8fafc;
+            font-weight: 700;
+        }
+        .rl tr:hover td {
+            background: #f8fafc;
+        }
+        .y { color: #16a34a; font-weight: 700; font-size: 15px; }
+        .n { color: #cbd5e1; font-size: 15px; }
+        .m { color: #d97706; font-weight: 600; }
+        ul.r { padding-left: 20px; }
+        ul.r li { margin: 8px 0; font-size: 13px; line-height: 1.5; color: #334155; }
+        ul.r li b { color: var(--q-navy-dark); }
+        pre.data-model {
+            background: #0f172a;
+            color: #38bdf8;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-x: auto;
         }
 
         /* Split Editor / Detail View */
@@ -1045,6 +1099,9 @@ if ($isLoggedIn) {
                             </a>
                             <a data-v="perf" class="thc-subnav-btn">
                                 <i class="icon-stats-growth"></i> Performance
+                            </a>
+                            <a data-v="rules" class="thc-subnav-btn">
+                                <i class="icon-file-check"></i> Business Rules (dev)
                             </a>
                             <a id="btn_open_unit_master" class="thc-subnav-btn" style="cursor:pointer;" title="Manage Units in Master">
                                 <i class="icon-stack2"></i> Unit Master

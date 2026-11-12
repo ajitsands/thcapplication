@@ -68,12 +68,27 @@
         return `<span class="tag ${cleanClass}">${H(status)}${isExp ? " · expired" : ""}</span>`;
     };
 
+    // Label helper: "Original", "R1", "V1", "V1/R1"
+    const lab = q => {
+        const vn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
+        const rev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
+        return (vn ? "V" + vn : "") + (rev ? (vn ? "/" : "") + "R" + rev : "") || "Original";
+    };
+
+    // Manager permission checker
+    const mgr = u => {
+        const uInfo = USERS[u];
+        const title = Array.isArray(uInfo) ? uInfo[1] : (uInfo ? uInfo.title : currentUserObj.title);
+        return /manager|administrator|director|head/i.test(title || "") || /manager|administrator|director|head/i.test(currentUserObj.title || "");
+    };
+
     // Formatted PDF filename
     const fnm = q => {
         const u = q.user_code || q.user || "THC";
         const seq = q.seq_no || q.seq || "DRAFT";
+        const vn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
         const rev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
-        return `${u}-QTN-${seq}${rev ? "-R" + rev : ""}`;
+        return `${u}-QTN-${seq}${vn ? "-V" + vn : ""}${rev ? "-R" + rev : ""}`;
     };
 
     // State Variables with default seed data
@@ -177,6 +192,7 @@
         const uTitle = q.user_designation || (Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC Facility Management"));
 
         const qNo = q.quotation_no || q.no;
+        const qVn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
         const qRev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
         const qDate = q.quotation_date || q.date || TODAY;
         const clientName = q.client_name || q.client || "—";
@@ -186,6 +202,16 @@
         const subj = q.subject || q.subj || "—";
         const terms = q.terms || T0;
         const items = q.items || [];
+
+        let formattedNo = qNo ? H(qNo) : "(assigned on issue)";
+        if (qNo) {
+            if (qVn > 0 && !formattedNo.includes("/V")) {
+                formattedNo += "/V" + qVn;
+            }
+            if (qRev > 0 && !formattedNo.includes("/R")) {
+                formattedNo += "/R" + qRev;
+            }
+        }
 
         return `
         <div class="sheet">
@@ -197,7 +223,7 @@
             </div>
             
             <p>
-                <b>No: ${qNo ? H(qNo) + (qRev ? "/R" + qRev : "") : "(assigned on issue)"}<br>
+                <b>No: ${formattedNo}<br>
                 Date: ${fd(qDate)}</b>
             </p>
             
@@ -286,9 +312,16 @@
                     <span style="font-weight:400;color:#444;">${H(uTitle)}</span></b>
                 </div>
                 <div class="ap">
-                    <b>Approved By:</b><br><br>
-                    Name:<br><br>
-                    Date:
+                    ${(q.status === 'Approved' || q.st === 'Approved') && (q.approval_by || (q.appr && q.appr.by)) ? `
+                        <b>Approved By:</b><br><br>
+                        <b>Name:</b> ${H(q.approval_by || q.appr.by)}<br><br>
+                        <b>Date:</b> ${fd(q.approval_date || (q.appr && q.appr.on) || qDate)}
+                        ${(q.client_po_ref || (q.appr && q.appr.po)) ? `<br><br><b>PO / LPO Ref:</b> ${H(q.client_po_ref || q.appr.po)}` : ""}
+                    ` : `
+                        <b>Approved By:</b><br><br>
+                        Name:<br><br>
+                        Date:
+                    `}
                 </div>
             </div>
             
@@ -346,16 +379,18 @@
             });
             window.jQuery('.select2-container--open').remove();
         }
-        $$("aside a[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === v));
+        $$("aside a[data-v], .thc-subnav-btn[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === v));
         ED = null;
         if (v === "log") vlog();
         else if (v === "perf") vperf();
+        else if (v === "rules") vrules();
         else if (v === "A" || v === "N") {
             const isAmc = v === "A";
             ED = {
                 id: null,
                 seq_no: null,
                 rev_no: 0,
+                variation_no: 0,
                 quotation_no: "",
                 client_name: "",
                 client_code: "",
@@ -415,7 +450,7 @@
                 ${sel("ft", "AMC & non-AMC", [["AMC", "AMC clients"], ["Non-AMC", "Non-AMC clients"]])}
                 ${sel("fu", "All users", userList)}
                 <label>
-                    <input type="checkbox" id="fx" ${F.sup ? "checked" : ""}> Show superseded
+                    <input type="checkbox" id="fx" ${F.sup ? "checked" : ""}> Show superseded / void
                 </label>
             </div>
             <div id="res"></div>`;
@@ -474,7 +509,7 @@
             const qNo = x.quotation_no || x.no || "";
             const subj = x.subject || x.subj || "";
 
-            if (!F.sup && status === "Superseded") return false;
+            if (!F.sup && (status === "Superseded" || status === "Void")) return false;
             if (F.st && status !== F.st) return false;
             if (F.client && client !== F.client) return false;
             if (F.type && (F.type === "AMC") !== isAmc) return false;
@@ -525,7 +560,6 @@
                     <tbody>
                         ${M(L, x => {
                             const qNo = x.quotation_no || x.no;
-                            const rev = x.rev_no !== undefined ? x.rev_no : (x.rev || 0);
                             const client = x.client_name || x.client || "—";
                             const code = x.client_code || x.code || "—";
                             const isAmc = x.is_amc !== undefined ? !!x.is_amc : !!x.amc;
@@ -539,7 +573,7 @@
                             <tr data-id="${x.id}">
                                 <td>
                                     <b>${qNo ? H(qNo) : "Draft"}</b>
-                                    ${rev ? ` <span class="tag">R${rev}</span>` : ""}
+                                    ${lab(x) !== "Original" ? ` <span class="tag">${lab(x)}</span>` : ""}
                                 </td>
                                 <td>
                                     ${H(client)}<br>
@@ -568,7 +602,7 @@
                 </table>
                 ${L.length ? "" : '<p style="padding:28px;text-align:center;color:var(--mut);">No quotations match these filters.</p>'}
             </div>
-            <p style="color:var(--mut);font-size:12px;margin-top:8px;">Totals follow the filters above. Drafts and superseded revisions are never counted.</p>`;
+            <p style="color:var(--mut);font-size:12px;margin-top:8px;">Totals follow the filters above. Drafts, superseded revisions and void quotes are never counted.</p>`;
 
         $("#res").onclick = e => {
             const pdfBtn = e.target.closest("[data-pdf]");
@@ -595,17 +629,28 @@
 
         const seq = q.seq_no !== undefined ? q.seq_no : q.seq;
         const h = seq ? Q.filter(x => (x.seq_no !== undefined ? x.seq_no : x.seq) == seq).sort((a, b) => {
+            const va = a.variation_no !== undefined ? a.variation_no : (a.vn || 0);
+            const vb = b.variation_no !== undefined ? b.variation_no : (b.vn || 0);
             const ra = a.rev_no !== undefined ? a.rev_no : (a.rev || 0);
             const rb = b.rev_no !== undefined ? b.rev_no : (b.rev || 0);
-            return ra - rb;
+            return (va - vb) || (ra - rb);
         }) : [q];
 
-        const status = q.status || q.st;
-        const pend = status === "Pending";
-        const qNo = q.quotation_no || q.no;
-        const rev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
-        const nextRev = Math.max(...h.map(x => (x.rev_no !== undefined ? x.rev_no : (x.rev || 0)))) + 1;
+        const qVn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
+        const grp = h.filter(x => (x.variation_no !== undefined ? x.variation_no : (x.vn || 0)) == qVn);
+        const apGrp = grp.find(x => (x.status || x.st) === "Approved");
+        const nextRev = Math.max(...grp.map(x => (x.rev_no !== undefined ? x.rev_no : (x.rev || 0))), 0) + 1;
 
+        const st = q.status || q.st;
+        const can = {
+            rev: ["Pending", "Not approved"].includes(st),
+            ap: ["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp),
+            no: st === "Pending",
+            vr: st === "Approved",
+            ro: st === "Approved" && mgr(CU)
+        };
+
+        const qNo = q.quotation_no || q.no;
         const uCode = q.user_code || q.user;
         const uInfo = USERS[uCode] || [q.user_name || "Authorized User", q.user_designation || "THC"];
         let uName = q.user_name || (Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || "Authorized User"));
@@ -619,16 +664,19 @@
 
         $("#v").innerHTML = `
             <div class="top">
-                <h1>${qNo ? H(qNo) + (rev ? " / R" + rev : "") : "Draft quotation"} ${tg(q)}</h1>
+                <h1>${qNo ? H(qNo) + (lab(q) !== "Original" ? " / " + lab(q) : "") : "Draft quotation"} ${tg(q)}</h1>
                 <div>
                     <button id="bk">← Log</button>
-                    ${status === "Draft" ? '<button id="ed">Edit draft</button> <button class="d" id="del">Delete draft</button>' : ""}
-                    ${SENT.includes(status) ? `<button id="rv">Revise (R${nextRev})</button>` : ""}
+                    ${st === "Draft" ? '<button id="ed">Edit draft</button> <button class="d" id="del">Delete draft</button>' : ""}
+                    ${can.rev ? `<button id="rv">Revise (R${nextRev})</button>` : ""}
+                    ${can.vr ? '<button id="vr">Create variation</button>' : ""}
                     <button id="dp">Duplicate</button>
                     <button class="p" id="dl">⬇ Download PDF</button>
                 </div>
             </div>
             
+            ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval.</div>' : ""}
+
             <div class="two">
                 <div>
                     <div class="card pad">
@@ -651,6 +699,11 @@
                             
                             <span>PDF file name</span>
                             <div>${fnm(q)}.pdf</div>
+
+                            ${(q.approval_by || (q.appr && q.appr.by)) ? `
+                                <span>Approved by</span>
+                                <div>${H(q.approval_by || q.appr.by)} on ${q.approval_date || (q.appr && q.appr.on)}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}</div>
+                            ` : ''}
                             
                             ${remark ? `<span>Remark</span><div>${H(remark)}</div>` : ""}
                         </div>
@@ -658,39 +711,71 @@
                     
                     ${h.length > 1 ? `
                     <div class="card pad">
-                        <h2>Revision history</h2>
+                        <h2>Revisions &amp; variations</h2>
                         ${M(h, x => {
-                            const xRev = x.rev_no !== undefined ? x.rev_no : (x.rev || 0);
                             const xDate = x.quotation_date || x.date;
                             return `
                             <div style="margin-top:8px;">
-                                <a href="#" data-r="${x.id}" style="${x.id == q.id ? 'font-weight:700;' : ''}">${xRev ? "R" + xRev : "Original"}</a>
+                                <a href="#" data-r="${x.id}" style="${x.id == q.id ? 'font-weight:700;' : ''}">${lab(x)}</a>
                                 · ${xDate} · ${f3(tot(x))} incl. VAT ${tg(x)}
                             </div>`;
                         })}
                     </div>` : ""}
                     
-                    ${pend ? `
+                    ${can.ap || can.no || can.ro ? `
                     <div class="card pad">
                         <h2>Client decision</h2>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                            <button class="p" id="ya">Mark approved</button>
-                            <button class="d" id="no">Mark not approved</button>
+                            ${can.ap ? `<button class="p" id="ya">${st === "Superseded" ? "Client approved this older revision" : "Mark approved"}</button>` : ""}
+                            ${can.no ? '<button class="d" id="no">Mark not approved</button>' : ""}
+                            ${can.ro ? '<button id="ro">Reopen approval (manager only)</button>' : ""}
+                        </div>
+                        <div id="apb" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
+                            <label style="display:block;margin-bottom:4px;font-weight:600;">Approved By (Client Contact Name) <span style="color:var(--bad);">*</span></label>
+                            <input id="pa" placeholder="Approved by (client name) *" style="width:100%;margin-bottom:8px;">
+                            <label style="display:block;margin-bottom:4px;font-weight:600;">Approval Date</label>
+                            <input type="date" id="pd" value="${TODAY}" style="width:100%;margin-bottom:8px;">
+                            <label style="display:block;margin-bottom:4px;font-weight:600;">Client PO / LPO Reference (optional)</label>
+                            <input id="pp" placeholder="Client PO / LPO reference (optional)" style="width:100%;margin-bottom:8px;">
+                            <button class="p" id="ca">Confirm approval</button>
                         </div>
                         <div id="nab" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Reason for rejection <span style="color:var(--bad);">*</span></label>
                             <select id="rs" style="width:100%;margin-bottom:8px;">
                                 <option value="">Select reason (required)</option>
-                                ${M(REASONS, r => `<option>${H(r)}</option>`)}
+                                ${M(REASONS, r => `<option value="${H(r)}">${H(r)}</option>`)}
                             </select>
                             <textarea id="rt" rows="2" placeholder="Additional remark (optional)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
                             <button class="d" id="cf">Confirm not approved</button>
                         </div>
+                        <div id="rob" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
+                            <label style="display:block;margin-bottom:4px;font-weight:600;">Reason for reopening <span style="color:var(--bad);">*</span></label>
+                            <textarea id="rr" rows="2" placeholder="Reason for reopening (required, logged)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
+                            <button class="d" id="cro">Confirm reopen</button>
+                        </div>
+                    </div>` : ""}
+
+                    ${((q.activity && q.activity.length) || (q.log && q.log.length)) ? `
+                    <div class="card pad">
+                        <h2>Activity</h2>
+                        ${M((q.activity || q.log), l => `
+                            <div style="margin-top:6px;border-bottom:1px solid var(--line);padding-bottom:6px;">
+                                <small style="color:var(--mut);">${H(l.d || l.at)} · ${H(l.u || l.user_id || "")}</small><br>
+                                <span>${H(l.t || l.note || "")}</span>
+                            </div>`
+                        )}
                     </div>` : ""}
                 </div>
                 
                 <div id="pv">${sheet(q)}</div>
             </div>`;
+
+        const showBox = i => {
+            ["apb", "nab", "rob"].forEach(x => {
+                const el = $("#" + x);
+                if (el) el.hidden = (x !== i);
+            });
+        };
 
         $("#bk").onclick = () => go("log");
         $("#dl").onclick = () => pdf(q);
@@ -723,15 +808,52 @@
                 ED.id = null;
                 ED.rev_no = nextRev;
                 ED.rev = nextRev;
+                ED.variation_no = qVn;
+                ED.vn = qVn;
                 ED.status = "Draft";
                 ED.st = "Draft";
                 ED.remark = "";
+                ED.approval_by = null;
+                ED.approval_date = null;
+                ED.client_po_ref = null;
+                ED.appr = null;
+                ED.log = [];
+                ED.activity = [];
                 ED.quotation_date = TODAY;
                 ED.date = TODAY;
                 ED.user_code = CU;
                 ED.user = CU;
                 edit();
                 toast("Revision R" + nextRev + " started from " + (qNo || "quote"));
+            };
+        }
+
+        if ($("#vr")) {
+            $("#vr").onclick = () => {
+                const nextVn = Math.max(...h.map(x => (x.variation_no !== undefined ? x.variation_no : (x.vn || 0))), 0) + 1;
+                ED = JSON.parse(JSON.stringify(q));
+                ED.id = null;
+                ED.variation_no = nextVn;
+                ED.vn = nextVn;
+                ED.rev_no = 0;
+                ED.rev = 0;
+                ED.status = "Draft";
+                ED.st = "Draft";
+                ED.remark = "";
+                ED.approval_by = null;
+                ED.approval_date = null;
+                ED.client_po_ref = null;
+                ED.appr = null;
+                ED.log = [];
+                ED.activity = [];
+                ED.quotation_date = TODAY;
+                ED.date = TODAY;
+                ED.user_code = CU;
+                ED.user = CU;
+                ED.subject = "Variation: " + (q.subject || q.subj || "");
+                ED.subj = ED.subject;
+                edit();
+                toast("Variation V" + nextVn + " linked to " + (qNo || "quote") + ". The approved quote is untouched.");
             };
         }
 
@@ -744,6 +866,14 @@
             ED.no = "";
             ED.rev_no = 0;
             ED.rev = 0;
+            ED.variation_no = 0;
+            ED.vn = 0;
+            ED.approval_by = null;
+            ED.approval_date = null;
+            ED.client_po_ref = null;
+            ED.appr = null;
+            ED.log = [];
+            ED.activity = [];
             ED.status = "Draft";
             ED.st = "Draft";
             ED.remark = "";
@@ -759,18 +889,34 @@
             toast("Copied as a new draft");
         };
 
-        if (pend) {
-            $("#ya").onclick = () => {
-                updateStatus(q.id, "Approved", "", "");
+        if ($("#ya")) $("#ya").onclick = () => showBox("apb");
+        if ($("#no")) $("#no").onclick = () => showBox("nab");
+        if ($("#ro")) $("#ro").onclick = () => showBox("rob");
+
+        if ($("#ca")) {
+            $("#ca").onclick = () => {
+                const by = $("#pa").value.trim();
+                if (!by) return toast("Enter the client name who approved");
+                const on = $("#pd").value || TODAY;
+                const po = $("#pp").value.trim();
+                updateStatus(q.id, "Approved", "", "", { approved_by: by, approved_on: on, client_po: po });
             };
-            $("#no").onclick = () => {
-                $("#nab").hidden = false;
-            };
+        }
+
+        if ($("#cf")) {
             $("#cf").onclick = () => {
                 const rsVal = $("#rs").value;
                 if (!rsVal) return toast("A reason is required for not approved quotes");
                 const rtVal = $("#rt").value.trim();
                 updateStatus(q.id, "Not approved", rsVal, rtVal);
+            };
+        }
+
+        if ($("#cro")) {
+            $("#cro").onclick = () => {
+                const r = $("#rr").value.trim();
+                if (!r) return toast("A reason is required to reopen");
+                updateStatus(q.id, "Pending", "", r, { action: "reopen" });
             };
         }
     }
@@ -808,7 +954,7 @@
 
         $("#v").innerHTML = `
             <div class="top">
-                <h1>${seq ? "Revise quotation" : "New quotation"} <span class="tag">${isAmc ? "AMC client" : "Non-AMC client"}</span></h1>
+                <h1>${(e.variation_no || e.vn) && !(e.rev_no || e.rev) ? "New variation" : (seq ? "Revise quotation" : "New quotation")} <span class="tag">${isAmc ? "AMC client" : "Non-AMC client"}</span></h1>
                 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
                     <button id="cn">Cancel</button>
                     <button type="button" id="btn_check_grammar_top" style="background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;">
@@ -2399,15 +2545,18 @@
             };
         }
 
-        // Attach aside click listeners
-        $$("aside a[data-v]").forEach(a => {
-            a.onclick = () => go(a.dataset.v);
+        // Attach aside and subnav click listeners
+        $$("aside a[data-v], .thc-subnav-btn[data-v]").forEach(a => {
+            a.onclick = (e) => {
+                e.preventDefault();
+                go(a.dataset.v);
+            };
         });
 
-        // Initialize view based on URL query parameter ?v= (log, A, N, perf)
+        // Initialize view based on URL query parameter ?v= (log, A, N, perf, rules)
         const urlParams = new URLSearchParams(window.location.search);
         const initialView = urlParams.get("v");
-        if (initialView && ["log", "A", "N", "perf"].includes(initialView)) {
+        if (initialView && ["log", "A", "N", "perf", "rules"].includes(initialView)) {
             go(initialView);
         } else {
             go("log");
@@ -2438,6 +2587,7 @@
             is_issue: isIssue,
             seq_no: ED.seq_no !== undefined ? ED.seq_no : ED.seq,
             rev_no: ED.rev_no !== undefined ? ED.rev_no : (ED.rev || 0),
+            variation_no: ED.variation_no !== undefined ? ED.variation_no : (ED.vn || 0),
             is_amc: xIsAmc(ED) ? 1 : 0,
             client_name: ED.client_name || ED.client,
             client_code: ED.client_code || ED.code,
@@ -2477,18 +2627,17 @@
         });
     }
 
-    function updateStatus(id, newStatus, reason, remark) {
-        apiCall("update_status", { id, status: newStatus, reason, remark }, "POST").then(res => {
+    function updateStatus(id, newStatus, reason, remark, extra = {}) {
+        const payload = Object.assign({ id, status: newStatus, reason, remark }, extra);
+        apiCall("update_status", payload, "POST").then(res => {
             if (res && res.status === "success") {
                 toast(res.message);
-                const q = Q.find(x => x.id == id);
-                if (q) {
-                    q.status = newStatus;
-                    q.st = newStatus;
-                    q.rejection_reason = reason;
-                    q.remark = res.remark;
-                }
-                vq(id);
+                apiCall("get_quotations", {}, "GET").then(qRes => {
+                    if (qRes && qRes.status === "success" && qRes.quotations) {
+                        Q = qRes.quotations;
+                    }
+                    vq(id);
+                });
             } else {
                 toast((res && res.message) || "Failed to update status");
             }
@@ -2505,6 +2654,103 @@
                 toast("Failed to delete draft");
             }
         });
+    }
+
+    // ==========================================
+    // VIEW 5: BUSINESS RULES DEV HANDOFF (vrules)
+    // ==========================================
+    function vrules() {
+        $$("aside a[data-v], .thc-subnav-btn[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === "rules"));
+        const Y = '<span class="y">✓</span>', N = '<span class="n">✗</span>';
+        const R = [
+            ["Draft", Y, N, N, N, N, N, Y, "No"],
+            ["Pending", N, Y, Y, Y, N, N, Y, "Sent"],
+            ["Approved", N, N, "—", N, Y, '<span class="m">Manager only</span>', Y, "Sent + approved"],
+            ["Not approved", N, Y, Y, "—", N, N, Y, "Sent"],
+            ["Superseded", N, N, "Only if no revision in its group is approved", N, N, N, Y, "No"],
+            ["Void", N, N, N, N, N, N, Y, "No"]
+        ];
+
+        $("#v").innerHTML = `
+            <div class="top">
+                <h1>Business rules · developer handoff</h1>
+            </div>
+            <p style="color:var(--mut);margin-top:-6px;font-size:13px;">Rules enforced by the system. Every rule is checked on the server, not only hidden in the UI.</p>
+            
+            <div class="card pad">
+                <h2>Status × allowed action</h2>
+                <div class="tw">
+                    <table class="rl">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Edit</th>
+                                <th>Revise</th>
+                                <th>Mark approved</th>
+                                <th>Mark not approved</th>
+                                <th>Create variation</th>
+                                <th>Reopen</th>
+                                <th>PDF</th>
+                                <th>Counted in totals</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${M(R, r => `
+                                <tr>
+                                    <td><b>${r[0]}</b></td>
+                                    ${M(r.slice(1), c => `<td>${c}</td>`)}
+                                </tr>`
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card pad">
+                <h2>Rules</h2>
+                <ul class="r">
+                    <li><b>1. Issued quotes are immutable.</b> Edit exists only for Draft. Any change to an issued quote is a new revision (R1, R2…) under the same quote number.</li>
+                    <li><b>2. Approved is final.</b> Edit and Revise are blocked in the UI and rejected by the API. Approval is never lost by creating another revision.</li>
+                    <li><b>3. Superseded</b> means an older revision replaced by a newer issued one in the same group (quote number + variation). An Approved revision can never become Superseded.</li>
+                    <li><b>4. One approved revision per group.</b> Approving a revision voids any other open (Draft or Pending) revision in that group. If the client approves an older Superseded revision (when no other revision in its group is approved), allow it and void the newer open ones.</li>
+                    <li><b>5. Variations.</b> Changes after approval are issued from the approved quote as V1, V2… with their own revision chain and their own approval. Number: <code>CG/THC/MA/QTN/7074/1126/V1/R1</code>. PDF: <code>MA-QTN-7074-V1-R1.pdf</code>.</li>
+                    <li><b>6. Reopen.</b> Manager permission and a reason are required. Status returns to Pending, the approval details are cleared from the record but kept in the activity log. Intended for approving the wrong quote by mistake.</li>
+                    <li><b>7. Mandatory fields.</b> Approval: client approver name and date (PO/LPO ref optional). Not approved: reason. Void: automatic system reason.</li>
+                    <li><b>8. Totals.</b> Sent = Pending + Approved + Not approved. Approved = Approved only. Draft, Superseded and Void are excluded. An approved variation counts as its own approved quote.</li>
+                    <li><b>9. Activity log.</b> Every status change records user, time, action and reason.</li>
+                    <li><b>10. Permissions to add</b> in Role Management: <code>quotation.approve</code>, <code>quotation.reopen</code>, <code>quotation.variation</code>.</li>
+                </ul>
+            </div>
+
+            <div class="card pad">
+                <h2>Suggested data model</h2>
+                <pre class="data-model">quotation {
+  id, quote_no            // CG/THC/{initials}/QTN/{seq}/{MMYY}
+  variation_no (0=original), revision_no (0=original)
+  status: draft | pending | approved | not_approved | superseded | void
+  client_type: amc | non_amc, client_code, client_name, client_address
+  attention, subject, quote_date, vat_percent
+  items[{description, qty, unit, unit_price}], terms[]
+  created_by_user_id      // signer name + designation come from users table
+  approval {approved_by, approved_on, client_po_ref}
+  remark                  // not-approved or void reason
+  activity[{at, user_id, action, from_status, to_status, note}]
+}</pre>
+            </div>
+
+            <div class="card pad">
+                <h2>Acceptance checks</h2>
+                <ul class="r">
+                    <li>✓ Approve a quote, then try Revise and Edit from the UI and the API: both are blocked.</li>
+                    <li>✓ Approved totals stay the same after a variation is created.</li>
+                    <li>✓ Revise a Pending quote: the older revision becomes Superseded and leaves the totals.</li>
+                    <li>✓ Approve an older Superseded revision while a newer one is Pending: the newer one becomes Void.</li>
+                    <li>✓ Reopen without manager permission, or without a reason: denied.</li>
+                    <li>✓ Variation of an approved quote gets a V1 number and needs its own approval.</li>
+                    <li>✓ Draft, Superseded and Void never appear in sent or approved totals.</li>
+                </ul>
+            </div>
+        `;
     }
 
     // ==========================================
