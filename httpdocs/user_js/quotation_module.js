@@ -341,31 +341,34 @@
             const url = `print/print_quotation_module.php?id=${encodeURIComponent(qId)}&download=1`;
             const a = document.createElement("a");
             a.href = url;
-            a.download = fn;
+            a.setAttribute("download", fn);
             a.style.display = "none";
             document.body.appendChild(a);
             a.click();
             setTimeout(() => {
                 try { document.body.removeChild(a); } catch (e) {}
-            }, 1000);
+            }, 1500);
             toast("Downloading " + fn + "...");
             return;
         }
 
-        const fnClean = fnm(q);
-        const ph = $("#ph");
-        if (ph) {
-            ph.innerHTML = sheet(q);
+        if (q.quotation_no || q.no) {
+            const refNo = q.quotation_no || q.no;
+            const url = `print/print_quotation_module.php?ref_no=${encodeURIComponent(refNo)}&download=1`;
+            const a = document.createElement("a");
+            a.href = url;
+            a.setAttribute("download", fn);
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                try { document.body.removeChild(a); } catch (e) {}
+            }, 1500);
+            toast("Downloading " + fn + "...");
+            return;
         }
-        const oldTitle = document.title;
-        document.title = fnClean;
-        toast("Opening draft print: " + fn);
-        try {
-            window.print();
-        } catch (e) {
-            console.error(e);
-        }
-        document.title = oldTitle;
+
+        toast("Please save or issue the quotation before downloading the PDF.");
     }
 
     // Main Router
@@ -594,7 +597,7 @@
                                     ${remark ? `<br><small>${H(remark)}</small>` : ""}
                                 </td>
                                 <td>
-                                    <button data-pdf="${x.id}" title="Print / PDF">PDF</button>
+                                    <button data-pdf="${x.id}" title="Download PDF">PDF</button>
                                 </td>
                             </tr>`;
                         })}
@@ -916,7 +919,7 @@
             $("#cro").onclick = () => {
                 const r = $("#rr").value.trim();
                 if (!r) return toast("A reason is required to reopen");
-                updateStatus(q.id, "Pending", "", r, { action: "reopen" });
+                updateStatus(q.id, "Pending", r, r, { action: "reopen" });
             };
         }
     }

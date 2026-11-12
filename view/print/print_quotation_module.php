@@ -15,7 +15,8 @@ require_once __DIR__ . '/../template/thc_logo.php';
 $quoteId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $refNo = isset($_GET['ref_no']) ? trim($_GET['ref_no']) : '';
 $autoPrint = isset($_GET['autoprint']) && $_GET['autoprint'] == '1';
-$download = isset($_GET['download']) && in_array(strtolower((string)$_GET['download']), ['1', 'pdf', 'true', 'yes']);
+// Direct download by default without print dialog (HTML preview only when ?preview=1 or ?html=1 is explicitly passed)
+$download = (!isset($_GET['preview']) || $_GET['preview'] != '1') && (!isset($_GET['html']) || $_GET['html'] != '1');
 
 $q = null;
 $items = [];
@@ -362,6 +363,15 @@ if ($download) {
     while (ob_get_level()) {
         ob_end_clean();
     }
+
+    // Force direct attachment download in all browsers
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');
+    header('Content-Transfer-Encoding: binary');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Pragma: public');
 
     // Force direct download as attachment with correct filename
     $pdf->Output($pdfFilename, 'D');

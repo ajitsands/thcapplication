@@ -509,6 +509,7 @@ class QuotationModuleController
                     break;
 
                 case 'update_status':
+                case 'reopen':
                     $this->updateStatus();
                     break;
 
@@ -1524,6 +1525,14 @@ class QuotationModuleController
             return;
         }
 
+        // Support fallback if reason was passed in remark or vice-versa
+        if (empty($reason) && !empty($remark)) {
+            $reason = $remark;
+        }
+        if (empty($remark) && !empty($reason)) {
+            $remark = $reason;
+        }
+
         $curUser = $this->getCurrentSessionUser();
         $userName = $curUser['name'];
         $userTitle = $curUser['title'];
@@ -1559,7 +1568,10 @@ class QuotationModuleController
 
         // Rule 6: Reopen approval (Manager permission required)
         if ($action === 'reopen' || ($currentStatus === 'Approved' && strtolower($status) === 'pending')) {
-            $isManager = (bool)preg_match('/manager|administrator|director|head/i', $userTitle);
+            $isManager = (bool)preg_match('/manager|administrator|director|head|admin/i', $userTitle)
+                || (bool)preg_match('/manager|administrator|director|head|admin/i', $userName)
+                || (isset($_SESSION['user_type']) && (bool)preg_match('/manager|administrator|director|head|admin/i', $_SESSION['user_type']))
+                || (isset($_SESSION['user_name']) && (bool)preg_match('/manager|administrator|director|head|admin/i', $_SESSION['user_name']));
             if (!$isManager) {
                 echo json_encode(["status" => "error", "message" => "Reopening an approved quote requires Manager permission."]);
                 return;
