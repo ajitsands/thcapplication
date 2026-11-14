@@ -1106,6 +1106,9 @@ if ($isLoggedIn) {
                             <a id="btn_open_unit_master" class="thc-subnav-btn" style="cursor:pointer;" title="Manage Units in Master">
                                 <i class="icon-stack2"></i> Unit Master
                             </a>
+                            <a id="btn_open_footer_settings" class="thc-subnav-btn" style="cursor:pointer;" title="Configure PDF & Print Footer">
+                                <i class="icon-file-text2"></i> Footer Settings
+                            </a>
                         </div>
 
                         <div class="d-flex align-items-center ml-auto flex-wrap" style="gap:10px;">
@@ -1125,6 +1128,135 @@ if ($isLoggedIn) {
         <!-- /content -->
 
         <?PHP include_once('template/reset_password_modal.php'); ?>
+
+        <!-- Quotation Footer Settings Modal -->
+        <div id="modal_footer_settings" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="footerSettingsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:760px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #001D39 0%, #0A4174 100%);color:#ffffff;padding:16px 22px;border:none;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="footerSettingsModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-file-text2 mr-2" style="font-size:20px;color:#7BBDE8;"></i> Quotation PDF & Print Footer Settings
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;max-height:calc(85vh - 120px);overflow-y:auto;">
+                        <p class="text-muted mb-3" style="font-size:12px;">
+                            Configure the corporate contact details, commercial registration, addresses, and accreditation badges displayed on all quotation PDF downloads and printable sheets.
+                        </p>
+
+                        <!-- Live Interactive Preview Box -->
+                        <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #c2daeb;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="font-weight-bold text-dark" style="font-size:12.5px;">
+                                    <i class="icon-eye mr-1 text-primary"></i> Live Footer Preview
+                                </span>
+                                <span class="badge badge-info" style="font-size:11px;">Real-time</span>
+                            </div>
+                            <div style="background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:6px;padding:12px;">
+                                <div id="footer_preview_top" style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#475569;margin-bottom:4px;font-family:'Montserrat',sans-serif;">
+                                    <div id="footer_preview_page">Page 1 of 2</div>
+                                    <div id="footer_preview_ref">CINQO/THC/QTN/01/2020/REV3</div>
+                                </div>
+                                <div id="footer_preview_bar" style="background:#1e2560;border-radius:4px;padding:10px 14px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <div id="footer_preview_text" style="font-size:10px;line-height:1.5;color:#ffffff;font-family:'Montserrat',sans-serif;">
+                                        <div>Tel: <b id="fp_phone">+973 17 100 190</b> | <span id="fp_email">info@thc.com.bh</span> | <span id="fp_website">www.thc.com.bh</span></div>
+                                        <div>CR : <b id="fp_cr">88982-1</b> | <span id="fp_addr1">Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317</span></div>
+                                        <div><b id="fp_addr2">YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain</b></div>
+                                    </div>
+                                    <div id="footer_preview_badges" style="flex-shrink:0;">
+                                        <img src="global_assets/images/a.png" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='../view/global_assets/images/a.png';}" alt="Bureau Veritas" style="max-height:36px;display:block;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Settings -->
+                        <div class="card p-3 mb-0" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Telephone / Mobile</label>
+                                    <input type="text" id="cfg_footer_phone" class="form-control form-control-sm" placeholder="+973 17 100 190" value="+973 17 100 190">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Email Address</label>
+                                    <input type="email" id="cfg_footer_email" class="form-control form-control-sm" placeholder="info@thc.com.bh" value="info@thc.com.bh">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Official Website</label>
+                                    <input type="text" id="cfg_footer_website" class="form-control form-control-sm" placeholder="www.thc.com.bh" value="www.thc.com.bh">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Commercial Reg. (CR)</label>
+                                    <input type="text" id="cfg_footer_cr" class="form-control form-control-sm" placeholder="88982-1" value="88982-1">
+                                </div>
+                                <div class="col-md-8 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Office Address (Line 1)</label>
+                                    <input type="text" id="cfg_footer_addr1" class="form-control form-control-sm" placeholder="Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317" value="Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Building & Area (Line 2)</label>
+                                    <input type="text" id="cfg_footer_addr2" class="form-control form-control-sm" placeholder="YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain" value="YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Footer Background Color</label>
+                                    <div class="d-flex align-items-center" style="gap:8px;">
+                                        <input type="color" id="cfg_footer_color" class="form-control form-control-sm p-1" value="#1e2560" style="width:45px;height:34px;cursor:pointer;">
+                                        <input type="text" id="cfg_footer_color_hex" class="form-control form-control-sm" value="#1e2560" style="font-family:monospace;font-size:12px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="margin:12px 0;border-color:#e2e8f0;">
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="cfg_footer_badges" checked>
+                                        <label class="custom-control-label font-weight-semibold" for="cfg_footer_badges" style="font-size:12px;">Show ISO Accreditation Badges</label>
+                                    </div>
+                                    <small class="text-muted d-block" style="font-size:11px;">Bureau Veritas ISO 41001 & ISO 9001</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="cfg_footer_page_no" checked>
+                                        <label class="custom-control-label font-weight-semibold" for="cfg_footer_page_no" style="font-size:12px;">Show Page Numbers</label>
+                                    </div>
+                                    <small class="text-muted d-block" style="font-size:11px;">"Page X of Y" above footer bar</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="cfg_footer_ref_no" checked>
+                                        <label class="custom-control-label font-weight-semibold" for="cfg_footer_ref_no" style="font-size:12px;">Show Quotation Reference</label>
+                                    </div>
+                                    <small class="text-muted d-block" style="font-size:11px;">Quotation reference no. on top right</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:12px 20px;">
+                        <button type="button" id="btn_reset_footer_cfg" class="btn btn-outline-secondary btn-sm font-weight-semibold" style="border-radius:8px;">
+                            <i class="icon-reset mr-1"></i> Reset to Default
+                        </button>
+                        <div style="display:flex;gap:8px;">
+                            <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:8px;padding:6px 16px;">
+                                Cancel
+                            </button>
+                            <button type="button" id="btn_save_footer_cfg" class="btn btn-primary btn-sm font-weight-semibold" style="border-radius:8px;padding:6px 20px;background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);border:none;">
+                                <i class="icon-floppy-disk mr-1"></i> Save Footer Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Unit Master Modal -->
         <div id="modal_unit_master" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="unitMasterModalLabel" aria-hidden="true">

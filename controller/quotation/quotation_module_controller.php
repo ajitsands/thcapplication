@@ -73,10 +73,26 @@ class QuotationModuleController
         "m", "m²", "m³", "Kg", "Ltr", "Box", "Roll", "Pack", "Pair"
     ];
 
+    private $footerConfigFile;
+    private $defaultFooterConfig = [
+        'phone' => '+973 17 100 190',
+        'email' => 'info@thc.com.bh',
+        'website' => 'www.thc.com.bh',
+        'cr_no' => '88982-1',
+        'address_line1' => 'Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317',
+        'address_line2' => 'YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain',
+        'bg_color' => '#1e2560',
+        'show_badges' => 1,
+        'badges_image' => 'global_assets/images/a.png',
+        'show_page_no' => 1,
+        'show_ref_no' => 1
+    ];
+
     public function __construct()
     {
         $this->jsonFallbackFile = __DIR__ . '/../../scratch/quotations_data.json';
         $this->unitsFallbackFile = __DIR__ . '/../../scratch/quotation_units.json';
+        $this->footerConfigFile = __DIR__ . '/../../scratch/quotation_footer_config.json';
         $this->initDbConnection();
         $this->ensureSchemaAndData();
     }
@@ -206,6 +222,13 @@ class QuotationModuleController
                     $sort++;
                 }
             }
+
+            $settingsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_settings_v2` (
+                `setting_key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `setting_value` LONGTEXT NOT NULL,
+                `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            @mysqli_query($this->db, $settingsSql);
 
             // Do not automatically re-seed demo data if the administrator clears the table.
             // Demo data can be manually seeded by visiting with ?action=seed_demo_data if needed.
@@ -545,6 +568,14 @@ class QuotationModuleController
                     $this->saveCustomerMaster();
                     break;
 
+                case 'get_footer_config':
+                    $this->handleGetFooterConfig();
+                    break;
+
+                case 'save_footer_config':
+                    $this->handleSaveFooterConfig();
+                    break;
+
                 case 'seed_demo_data':
                     $this->seedInitialData();
                     echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
@@ -685,6 +716,7 @@ class QuotationModuleController
             "library_terms" => $this->libraryTerms,
             "rejection_reasons" => $this->rejectionReasons,
             "units" => $this->fetchUnitsList(),
+            "footer_config" => $this->getFooterConfig(),
             "quotations" => $quotations
         ]);
     }
@@ -1150,6 +1182,77 @@ class QuotationModuleController
             @mkdir($dir, 0777, true);
         }
         @file_put_contents($this->unitsFallbackFile, json_encode($units, JSON_PRETTY_PRINT));
+    }
+
+    public function getFooterConfig(): array
+    {
+        $cfg = $this->defaultFooterConfig;
+        if ($this->isDbConnected) {
+            $sRes = @mysqli_query($this->db, "SELECT `setting_value` FROM `tbl_quotation_settings_v2` WHERE `setting_key` = 'quotation_footer_config' LIMIT 1");
+            if ($sRes && ($row = mysqli_fetch_assoc($sRes))) {
+                $dbVal = json_decode($row['setting_value'], true);
+                if (is_array($dbVal)) {
+                    $cfg = array_merge($cfg, $dbVal);
+                }
+            }
+        } elseif (file_exists($this->footerConfigFile)) {
+            $fVal = json_decode(@file_get_contents($this->footerConfigFile), true);
+            if (is_array($fVal)) {
+                $cfg = array_merge($cfg, $fVal);
+            }
+        }
+        return $cfg;
+    }
+
+    private function handleGetFooterConfig()
+    {
+        echo json_encode([
+            "status" => "success",
+            "footer_config" => $this->getFooterConfig()
+        ]);
+    }
+
+    private function handleSaveFooterConfig()
+    {
+        $input = $this->getInputData();
+        $curCfg = $this->getFooterConfig();
+
+        $updated = [
+            'phone' => isset($input['phone']) ? trim((string)$input['phone']) : $curCfg['phone'],
+            'email' => isset($input['email']) ? trim((string)$input['email']) : $curCfg['email'],
+            'website' => isset($input['website']) ? trim((string)$input['website']) : $curCfg['website'],
+            'cr_no' => isset($input['cr_no']) ? trim((string)$input['cr_no']) : $curCfg['cr_no'],
+            'address_line1' => isset($input['address_line1']) ? trim((string)$input['address_line1']) : $curCfg['address_line1'],
+            'address_line2' => isset($input['address_line2']) ? trim((string)$input['address_line2']) : $curCfg['address_line2'],
+            'bg_color' => !empty($input['bg_color']) ? trim((string)$input['bg_color']) : $curCfg['bg_color'],
+            'show_badges' => isset($input['show_badges']) ? (int)(bool)$input['show_badges'] : $curCfg['show_badges'],
+            'badges_image' => !empty($input['badges_image']) ? trim((string)$input['badges_image']) : $curCfg['badges_image'],
+            'show_page_no' => isset($input['show_page_no']) ? (int)(bool)$input['show_page_no'] : $curCfg['show_page_no'],
+            'show_ref_no' => isset($input['show_ref_no']) ? (int)(bool)$input['show_ref_no'] : $curCfg['show_ref_no']
+        ];
+
+        $jsonStr = json_encode($updated, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if ($this->isDbConnected) {
+            $escKey = 'quotation_footer_config';
+            $escVal = mysqli_real_escape_string($this->db, $jsonStr);
+            @mysqli_query($this->db, "INSERT INTO `tbl_quotation_settings_v2` (`setting_key`, `setting_value`) 
+                VALUES ('$escKey', '$escVal') 
+                ON DUPLICATE KEY UPDATE `setting_value` = '$escVal'");
+        }
+
+        // Always save fallback JSON
+        $dir = dirname($this->footerConfigFile);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($this->footerConfigFile, $jsonStr);
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Quotation footer configuration saved successfully.",
+            "footer_config" => $updated
+        ]);
     }
 
     private function getQuotations()

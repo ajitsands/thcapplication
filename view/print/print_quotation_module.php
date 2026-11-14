@@ -165,6 +165,38 @@ $apprBy = $q['approval_by'] ?? '';
 $apprDate = $q['approval_date'] ?? '';
 $apprPo = $q['client_po_ref'] ?? '';
 
+// Load Footer Configuration
+$footerConfig = [
+    'phone' => '+973 17 100 190',
+    'email' => 'info@thc.com.bh',
+    'website' => 'www.thc.com.bh',
+    'cr_no' => '88982-1',
+    'address_line1' => 'Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317',
+    'address_line2' => 'YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain',
+    'bg_color' => '#1e2560',
+    'show_badges' => 1,
+    'badges_image' => 'global_assets/images/a.png',
+    'show_page_no' => 1,
+    'show_ref_no' => 1
+];
+
+if (isset($db) && $db && !mysqli_connect_errno()) {
+    $cfgRes = @mysqli_query($db, "SELECT `setting_value` FROM `tbl_quotation_settings_v2` WHERE `setting_key` = 'quotation_footer_config' LIMIT 1");
+    if ($cfgRes && ($cfgRow = mysqli_fetch_assoc($cfgRes))) {
+        $dbCfg = json_decode($cfgRow['setting_value'], true);
+        if (is_array($dbCfg)) {
+            $footerConfig = array_merge($footerConfig, $dbCfg);
+        }
+    }
+}
+$fallbackFooterJson = __DIR__ . '/../../scratch/quotation_footer_config.json';
+if (file_exists($fallbackFooterJson)) {
+    $fJson = json_decode(@file_get_contents($fallbackFooterJson), true);
+    if (is_array($fJson)) {
+        $footerConfig = array_merge($footerConfig, $fJson);
+    }
+}
+
 if ($download) {
     // Suppress notices and deprecation warnings during binary stream
     error_reporting(0);
@@ -174,7 +206,7 @@ if ($download) {
 
     if (!class_exists('THCQuotationTCPDF')) {
         class THCQuotationTCPDF extends TCPDF {
-            public $footerText = 'Tel: +973 17 100 190 | info@thc.com.bh | www.thc.com.bh · CR 88982-1 · YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain';
+            public $footerConfig = [];
             public $quoteRef = '';
 
             public function Header() {
@@ -188,25 +220,102 @@ if ($download) {
                 }
             }
 
+            private function hex2rgb($hex) {
+                $hex = ltrim($hex, '#');
+                if (strlen($hex) == 3) {
+                    $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+                    $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+                    $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+                } else {
+                    $r = hexdec(substr($hex, 0, 2));
+                    $g = hexdec(substr($hex, 2, 2));
+                    $b = hexdec(substr($hex, 4, 2));
+                }
+                return [$r, $g, $b];
+            }
+
             public function Footer() {
-                $this->SetY(-15);
-                $this->SetFont('helvetica', '', 7.5);
-                $this->SetFillColor(46, 46, 121); // #2e2e79
-                $this->SetTextColor(255, 255, 255);
-                $this->Cell(0, 6, $this->footerText, 0, 0, 'C', true);
+                $curY = -25;
+                $this->SetY($curY);
+
+                $cfg = $this->footerConfig;
+                $showPageNo = !empty($cfg['show_page_no']);
+                $showRefNo = !empty($cfg['show_ref_no']);
+
+                // 1. Top row above the blue bar: Page X of Y (Left) and Quote Ref (Right)
+                $this->SetFont('helvetica', '', 8);
+                $this->SetTextColor(71, 85, 105);
+                $pageNumStr = $showPageNo ? ('Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages()) : '';
+                $refStr = $showRefNo ? $this->quoteRef : '';
+                $this->Cell(90, 5, $pageNumStr, 0, 0, 'L', false);
+                $this->Cell(90, 5, $refStr, 0, 1, 'R', false);
+
+                // 2. Dark Blue Bar
+                $barY = $this->GetY() + 0.5;
+                $barH = 17;
+
+                // Background box
+                $bgColorHex = !empty($cfg['bg_color']) ? $cfg['bg_color'] : '#1e2560';
+                $rgb = $this->hex2rgb($bgColorHex);
+                $this->SetFillColor($rgb[0], $rgb[1], $rgb[2]);
+                $this->Rect(15, $barY, 180, $barH, 'F');
+
+                // Left text inside the blue bar
+                $phone = htmlspecialchars($cfg['phone'] ?? '+973 17 100 190');
+                $email = htmlspecialchars($cfg['email'] ?? 'info@thc.com.bh');
+                $website = htmlspecialchars($cfg['website'] ?? 'www.thc.com.bh');
+                $crNo = htmlspecialchars($cfg['cr_no'] ?? '88982-1');
+                $addr1 = htmlspecialchars($cfg['address_line1'] ?? 'Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317');
+                $addr2 = htmlspecialchars($cfg['address_line2'] ?? 'YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain');
+
+                $htmlText = '<table cellpadding="0" cellspacing="0" border="0" style="color:#ffffff;font-size:7pt;line-height:1.4;">
+                    <tr>
+                        <td>Tel: <b>' . $phone . '</b> | ' . $email . ' | ' . $website . '</td>
+                    </tr>
+                    <tr>
+                        <td>CR : <b>' . $crNo . '</b> | ' . $addr1 . '</td>
+                    </tr>
+                    <tr>
+                        <td><b>' . $addr2 . '</b></td>
+                    </tr>
+                </table>';
+
+                $this->writeHTMLCell(128, $barH - 2, 17, $barY + 1.5, $htmlText, 0, 0, false, true, 'L', true);
+
+                // Right side badge image (Bureau Veritas ISO 41001 & ISO 9001)
+                $badgeCandidates = [
+                    __DIR__ . '/../global_assets/images/a.png',
+                    __DIR__ . '/../../httpdocs/global_assets/images/a.png',
+                    __DIR__ . '/../assets/images/a.png'
+                ];
+                $badgeFile = null;
+                foreach ($badgeCandidates as $b) {
+                    if (file_exists($b)) {
+                        $badgeFile = $b;
+                        break;
+                    }
+                }
+                if (!empty($cfg['show_badges']) && $badgeFile) {
+                    $imgW = 46;
+                    $imgH = 10;
+                    $imgX = 15 + 180 - $imgW - 3;
+                    $imgY = $barY + (($barH - $imgH) / 2);
+                    $this->Image($badgeFile, $imgX, $imgY, $imgW, $imgH, 'PNG', '', '', false, 300, '', false, false, 0, false, false, false);
+                }
             }
         }
     }
 
     $pdf = new THCQuotationTCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
     $pdf->quoteRef = $qNo;
+    $pdf->footerConfig = $footerConfig;
     $pdf->SetCreator('THC Facility Management');
     $pdf->SetAuthor('THC Facility Management');
     $pdf->SetTitle($pdfFilename);
     $pdf->setPrintHeader(true);
     $pdf->setPrintFooter(true);
     $pdf->SetMargins(15, 16, 15);
-    $pdf->SetAutoPageBreak(TRUE, 18);
+    $pdf->SetAutoPageBreak(TRUE, 27);
     $pdf->SetFont('helvetica', '', 9);
     $pdf->AddPage();
 
@@ -713,9 +822,30 @@ if ($download) {
         </div>
     </div>
 
-    <!-- Corporate Footer -->
-    <div class="ft">
-        Tel: +973 17 100 190 | info@thc.com.bh | www.thc.com.bh · CR 88982-1 · YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain
+    <!-- Corporate Footer Matching PDF -->
+    <div class="divFooter page-break-inside-avoid" style="margin-top:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#475569;margin-bottom:4px;font-family:'Montserrat',sans-serif;padding:0 2px;">
+            <div>Page 1 of 1</div>
+            <div><?= htmlspecialchars($qNo) ?></div>
+        </div>
+        <table style="width: 100%; border: none; border-collapse: collapse; background-color: <?= htmlspecialchars($footerConfig['bg_color'] ?? '#1e2560') ?>; border-radius: 4px; overflow: hidden;">
+            <tbody>
+                <tr>
+                    <td style="border: none; padding: 10px 14px; color: #ffffff; line-height: 1.5; width: 68%; vertical-align: middle; font-family:'Montserrat',sans-serif;">
+                        <div style="font-size: 10px; color: #ffffff;">
+                            Tel: <b><?= htmlspecialchars($footerConfig['phone'] ?? '+973 17 100 190') ?></b> &nbsp;|&nbsp; <?= htmlspecialchars($footerConfig['email'] ?? 'info@thc.com.bh') ?> &nbsp;|&nbsp; <?= htmlspecialchars($footerConfig['website'] ?? 'www.thc.com.bh') ?><br>
+                            CR : <b><?= htmlspecialchars($footerConfig['cr_no'] ?? '88982-1') ?></b> &nbsp;|&nbsp; <?= htmlspecialchars($footerConfig['address_line1'] ?? 'Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317') ?><br>
+                            <b><?= htmlspecialchars($footerConfig['address_line2'] ?? 'YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain') ?></b>
+                        </div>
+                    </td>
+                    <td style="border: none; text-align: right; padding: 10px 14px; width: 32%; vertical-align: middle;">
+                        <?php if (!empty($footerConfig['show_badges'])): ?>
+                            <img src="global_assets/images/a.png" alt="Bureau Veritas Certification" style="max-height: 36px; display: inline-block;" />
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
 </div>

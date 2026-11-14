@@ -162,6 +162,21 @@
     let TODAY = new Date().toISOString().slice(0, 10);
     let currentUserObj = { code: "MA", name: "Mohammed Ali", title: "Operations Manager" };
 
+    const DEFAULT_FOOTER_CONFIG = {
+        phone: "+973 17 100 190",
+        email: "info@thc.com.bh",
+        website: "www.thc.com.bh",
+        cr_no: "88982-1",
+        address_line1: "Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317",
+        address_line2: "YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain",
+        bg_color: "#1e2560",
+        show_badges: 1,
+        badges_image: "global_assets/images/a.png",
+        show_page_no: 1,
+        show_ref_no: 1
+    };
+    let FOOTER_CONFIG = Object.assign({}, DEFAULT_FOOTER_CONFIG);
+
     // Toast notification
     function toast(m) {
         const t = $("#toast");
@@ -325,8 +340,25 @@
                 </div>
             </div>
             
-            <div class="ft">
-                Tel: +973 17 100 190 | info@thc.com.bh | www.thc.com.bh · CR 88982-1 · YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain
+            <div class="sheet-footer-container" style="margin-top:24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#475569;margin-bottom:4px;padding:0 2px;">
+                    <div>${FOOTER_CONFIG.show_page_no ? "Page 1 of 1" : ""}</div>
+                    <div>${FOOTER_CONFIG.show_ref_no ? H(qNo || "CINQO/THC/QTN/01/2020/REV3") : ""}</div>
+                </div>
+                <div style="background:${H(FOOTER_CONFIG.bg_color || '#1e2560')};border-radius:4px;padding:10px 14px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div style="font-size:10px;line-height:1.5;color:#ffffff;">
+                        <div>Tel: <b>${H(FOOTER_CONFIG.phone || '+973 17 100 190')}</b> | ${H(FOOTER_CONFIG.email || 'info@thc.com.bh')} | ${H(FOOTER_CONFIG.website || 'www.thc.com.bh')}</div>
+                        <div>CR : <b>${H(FOOTER_CONFIG.cr_no || '88982-1')}</b> | ${H(FOOTER_CONFIG.address_line1 || 'Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317')}</div>
+                        <div><b>${H(FOOTER_CONFIG.address_line2 || 'YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain')}</b></div>
+                    </div>
+                    ${FOOTER_CONFIG.show_badges ? `
+                        <div style="flex-shrink:0;">
+                            <img src="global_assets/images/a.png" 
+                                 onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='../view/global_assets/images/a.png';}" 
+                                 alt="Bureau Veritas" style="max-height:36px;display:block;">
+                        </div>
+                    ` : ""}
+                </div>
             </div>
         </div>`;
     }
@@ -2148,6 +2180,159 @@
     }
 
     // ==========================================
+    // FOOTER SETTINGS CONTROLLER & PREVIEW
+    // ==========================================
+    function setupFooterSettingsModalEvents() {
+        const btnOpen = $("#btn_open_footer_settings");
+        if (btnOpen) {
+            btnOpen.onclick = ev => {
+                ev.preventDefault();
+                openFooterSettingsModal();
+            };
+        }
+
+        const btnSave = $("#btn_save_footer_cfg");
+        if (btnSave) {
+            btnSave.onclick = () => saveFooterSettings();
+        }
+
+        const btnReset = $("#btn_reset_footer_cfg");
+        if (btnReset) {
+            btnReset.onclick = () => {
+                populateFooterSettingsForm(DEFAULT_FOOTER_CONFIG);
+                updateFooterLivePreview();
+                toast("Reset to default corporate footer values (click Save to apply).");
+            };
+        }
+
+        // Color sync
+        const colorInput = $("#cfg_footer_color");
+        const colorHex = $("#cfg_footer_color_hex");
+        if (colorInput && colorHex) {
+            colorInput.oninput = e => {
+                colorHex.value = e.target.value;
+                updateFooterLivePreview();
+            };
+            colorHex.oninput = e => {
+                const val = e.target.value.trim();
+                if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                    colorInput.value = val;
+                }
+                updateFooterLivePreview();
+            };
+        }
+
+        // Live preview listeners on all inputs
+        [
+            "#cfg_footer_phone", "#cfg_footer_email", "#cfg_footer_website",
+            "#cfg_footer_cr", "#cfg_footer_addr1", "#cfg_footer_addr2",
+            "#cfg_footer_badges", "#cfg_footer_page_no", "#cfg_footer_ref_no"
+        ].forEach(sel => {
+            const el = $(sel);
+            if (el) {
+                el.addEventListener("input", updateFooterLivePreview);
+                el.addEventListener("change", updateFooterLivePreview);
+            }
+        });
+
+        $$("#modal_footer_settings [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_footer_settings");
+        });
+    }
+
+    function openFooterSettingsModal() {
+        populateFooterSettingsForm(FOOTER_CONFIG);
+        updateFooterLivePreview();
+        showModal("#modal_footer_settings");
+    }
+
+    function populateFooterSettingsForm(cfg) {
+        if ($("#cfg_footer_phone")) $("#cfg_footer_phone").value = cfg.phone || "";
+        if ($("#cfg_footer_email")) $("#cfg_footer_email").value = cfg.email || "";
+        if ($("#cfg_footer_website")) $("#cfg_footer_website").value = cfg.website || "";
+        if ($("#cfg_footer_cr")) $("#cfg_footer_cr").value = cfg.cr_no || "";
+        if ($("#cfg_footer_addr1")) $("#cfg_footer_addr1").value = cfg.address_line1 || "";
+        if ($("#cfg_footer_addr2")) $("#cfg_footer_addr2").value = cfg.address_line2 || "";
+        if ($("#cfg_footer_color")) $("#cfg_footer_color").value = cfg.bg_color || "#1e2560";
+        if ($("#cfg_footer_color_hex")) $("#cfg_footer_color_hex").value = cfg.bg_color || "#1e2560";
+        if ($("#cfg_footer_badges")) $("#cfg_footer_badges").checked = (cfg.show_badges !== 0 && cfg.show_badges !== false);
+        if ($("#cfg_footer_page_no")) $("#cfg_footer_page_no").checked = (cfg.show_page_no !== 0 && cfg.show_page_no !== false);
+        if ($("#cfg_footer_ref_no")) $("#cfg_footer_ref_no").checked = (cfg.show_ref_no !== 0 && cfg.show_ref_no !== false);
+    }
+
+    function updateFooterLivePreview() {
+        const phone = ($("#cfg_footer_phone") ? $("#cfg_footer_phone").value.trim() : "") || "+973 17 100 190";
+        const email = ($("#cfg_footer_email") ? $("#cfg_footer_email").value.trim() : "") || "info@thc.com.bh";
+        const website = ($("#cfg_footer_website") ? $("#cfg_footer_website").value.trim() : "") || "www.thc.com.bh";
+        const cr = ($("#cfg_footer_cr") ? $("#cfg_footer_cr").value.trim() : "") || "88982-1";
+        const addr1 = ($("#cfg_footer_addr1") ? $("#cfg_footer_addr1").value.trim() : "") || "Level 14, Office 1403/1404, Bldg 155, Road 1703, Block 317";
+        const addr2 = ($("#cfg_footer_addr2") ? $("#cfg_footer_addr2").value.trim() : "") || "YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain";
+        const color = ($("#cfg_footer_color_hex") ? $("#cfg_footer_color_hex").value.trim() : "") || "#1e2560";
+        const showBadges = $("#cfg_footer_badges") ? $("#cfg_footer_badges").checked : true;
+        const showPageNo = $("#cfg_footer_page_no") ? $("#cfg_footer_page_no").checked : true;
+        const showRefNo = $("#cfg_footer_ref_no") ? $("#cfg_footer_ref_no").checked : true;
+
+        if ($("#fp_phone")) $("#fp_phone").textContent = phone;
+        if ($("#fp_email")) $("#fp_email").textContent = email;
+        if ($("#fp_website")) $("#fp_website").textContent = website;
+        if ($("#fp_cr")) $("#fp_cr").textContent = cr;
+        if ($("#fp_addr1")) $("#fp_addr1").textContent = addr1;
+        if ($("#fp_addr2")) $("#fp_addr2").textContent = addr2;
+        if ($("#footer_preview_bar")) $("#footer_preview_bar").style.background = color;
+        if ($("#footer_preview_badges")) $("#footer_preview_badges").style.display = showBadges ? "block" : "none";
+        if ($("#footer_preview_page")) $("#footer_preview_page").style.visibility = showPageNo ? "visible" : "hidden";
+        if ($("#footer_preview_ref")) $("#footer_preview_ref").style.visibility = showRefNo ? "visible" : "hidden";
+    }
+
+    function saveFooterSettings() {
+        const payload = {
+            phone: $("#cfg_footer_phone") ? $("#cfg_footer_phone").value.trim() : "",
+            email: $("#cfg_footer_email") ? $("#cfg_footer_email").value.trim() : "",
+            website: $("#cfg_footer_website") ? $("#cfg_footer_website").value.trim() : "",
+            cr_no: $("#cfg_footer_cr") ? $("#cfg_footer_cr").value.trim() : "",
+            address_line1: $("#cfg_footer_addr1") ? $("#cfg_footer_addr1").value.trim() : "",
+            address_line2: $("#cfg_footer_addr2") ? $("#cfg_footer_addr2").value.trim() : "",
+            bg_color: ($("#cfg_footer_color_hex") ? $("#cfg_footer_color_hex").value.trim() : "") || "#1e2560",
+            show_badges: $("#cfg_footer_badges") && $("#cfg_footer_badges").checked ? 1 : 0,
+            show_page_no: $("#cfg_footer_page_no") && $("#cfg_footer_page_no").checked ? 1 : 0,
+            show_ref_no: $("#cfg_footer_ref_no") && $("#cfg_footer_ref_no").checked ? 1 : 0
+        };
+
+        const btnSave = $("#btn_save_footer_cfg");
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="icon-spinner2 spinner mr-1"></i> Saving…';
+        }
+
+        apiCall("save_footer_config", payload, "POST").then(res => {
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="icon-floppy-disk mr-1"></i> Save Footer Settings';
+            }
+            if (res && res.status === "success") {
+                FOOTER_CONFIG = Object.assign({}, FOOTER_CONFIG, res.footer_config || payload);
+                toast(res.message || "Footer settings saved successfully.");
+                hideModal("#modal_footer_settings");
+
+                // Refresh any live sheet preview on screen
+                if (ED) renderLivePreview();
+                const curOn = document.querySelector("aside a.on");
+                if (curOn && curOn.dataset.v === "vq" && curOn.dataset.id) {
+                    vq(+curOn.dataset.id);
+                }
+            } else {
+                toast((res && res.message) || "Failed to save footer settings.");
+            }
+        }).catch(err => {
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="icon-floppy-disk mr-1"></i> Save Footer Settings';
+            }
+            toast("Error while saving footer settings.");
+        });
+    }
+
+    // ==========================================
     // SPELLING & GRAMMAR CHECK ENGINE (LanguageTool)
     // ==========================================
     let currentGrammarIssues = [];
@@ -2515,6 +2700,9 @@
                     unitMasterList = res.units;
                     UNITS = res.units.map(u => typeof u === "string" ? u : (u.name || ""));
                 }
+                if (res.footer_config && typeof res.footer_config === "object") {
+                    FOOTER_CONFIG = Object.assign({}, DEFAULT_FOOTER_CONFIG, res.footer_config);
+                }
             }
 
             initAppUi();
@@ -2524,6 +2712,7 @@
     function initAppUi() {
         setupUnitMasterEvents();
         setupCustomerMasterEvents();
+        setupFooterSettingsModalEvents();
         initGrammarCheckModalListeners();
         // Build user switcher options
         const us = $("#us");

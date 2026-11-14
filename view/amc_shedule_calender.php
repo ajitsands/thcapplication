@@ -75,9 +75,44 @@ $OBJ->URLEncode('head=dashboard');
  
    
     #popoverContent{
-          width: 500px;
-         
-      }
+          width: 100% !important;
+          max-width: 400px !important;
+    }
+
+    /* Calendar Entry Popover Styling & Viewport Protection */
+    .popover.calendar-entry-popover,
+    .popover {
+        width: 380px !important;
+        max-width: 420px !important;
+        min-width: 300px !important;
+        z-index: 104000 !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25) !important;
+        background: #ffffff !important;
+    }
+    .popover .popover-header {
+        border-top-left-radius: 7px !important;
+        border-top-right-radius: 7px !important;
+    }
+    .popover .popover-content,
+    .popover .popover-body {
+        padding: 0 !important;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .popover .card {
+        margin-bottom: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .popover .card-body {
+        padding: 14px 16px !important;
+    }
+    .popover .list-group-item {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
    
       #config{
           overflow: auto;
@@ -566,9 +601,36 @@ $(document).ready(function(){
    
    
    
- $(document).on('click',"#modal_close",function () {
-      $('.popover').not(this).popover('hide');
-   });
+ $(document).on('click', "#modal_close, .popover-header #modal_close, #modal_close a, #modal_close i", function (e) {
+      if (e) e.preventDefault();
+      $('.popover').remove();
+ });
+
+ $(document).on('click', function (e) {
+      if (!$(e.target).closest('.popover, .fc-event, .modal, .sweet-alert, .swal-overlay').length) {
+          $('.popover').remove();
+      }
+ });
+
+ $(document).on('shown.bs.popover', function () {
+      var $popover = $('.popover.in, .popover.show');
+      if ($popover.length) {
+          var offset = $popover.offset();
+          var popWidth = $popover.outerWidth();
+          var winWidth = $(window).width();
+          
+          // Never allow cut off on the left edge
+          if (offset.left < 15) {
+              $popover.css('left', '15px');
+          } else if (offset.left + popWidth > winWidth - 15) {
+              var newLeft = Math.max(15, winWidth - popWidth - 15);
+              $popover.css('left', newLeft + 'px');
+          }
+          if (offset.top < 60) {
+              $popover.css('top', '60px');
+          }
+      }
+ });
    
    
 //     $("txt_additional_slots_hidden").change(function(){
@@ -630,13 +692,12 @@ var FullCalendarBasic = function() {
         var fullCalendar = function(){
             
              var popTemplate = [
-                '<div class="popover" style="max-width:1000px;" >',
+                '<div class="popover calendar-entry-popover" role="tooltip" style="max-width:450px;">',
                 '<div class="arrow"></div>',
-                '<div class="popover-header ">',
-                '<div class="row " id="modal_close"><div class="col-10"></div><div class="2" ><a href="#" ><i class="icon-cross"></i></a></div></div>',
-                '<h2 class="popover-title" ></h2>',
+                '<div class="popover-header" style="position:relative;background:#f8fafc;padding:6px 12px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:flex-end;">',
+                '<a href="javascript:void(0);" id="modal_close" style="color:#64748b;font-size:16px;text-decoration:none;line-height:1;display:inline-block;padding:2px 4px;" title="Close"><i class="icon-cross"></i></a>',
                 '</div>',
-                '<div class="popover-content"></div>',
+                '<div class="popover-content popover-body" style="padding:0;"></div>',
                 '</div>'].join('');
                 
         var calendar = function(){
@@ -739,8 +800,8 @@ var FullCalendarBasic = function() {
 					 
 			
                 
-                    eventClick: function (event, jsEvent, view,) {
-                         //closePopovers();
+                    eventClick: function (event, jsEvent, view) {
+                         $('.popover').remove();
                          popoverElement = $(jsEvent.currentTarget);
                          $("#txt_visit_id_hidden").val(event.id);
                          $("#txt_amc_no_hidden").val(event.title);
@@ -829,7 +890,18 @@ var FullCalendarBasic = function() {
                                 				
                                             },
                                             template: popTemplate,
-                                            placement: 'left',
+                                            placement: function (tip, element) {
+                                                var winWidth = $(window).width();
+                                                if (winWidth < 768) {
+                                                    return 'bottom';
+                                                }
+                                                var $el = $(element);
+                                                var offset = $el.offset();
+                                                if (!offset) {
+                                                    return 'right';
+                                                }
+                                                return (offset.left < (winWidth / 2)) ? 'right' : 'left';
+                                            },
                                             html: 'true',
                                             trigger: 'click',
                                             animation: 'true',
