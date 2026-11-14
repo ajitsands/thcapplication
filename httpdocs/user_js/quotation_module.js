@@ -13,6 +13,19 @@
     const M = (a, f) => (a || []).map(f).join("");
     const f3 = x => (+x || 0).toLocaleString("en", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
+    // Ladda Progress Button Helper
+    function createLadda(btn) {
+        if (!btn) return null;
+        if (typeof Ladda !== "undefined") {
+            try {
+                return Ladda.create(btn);
+            } catch (e) {
+                console.warn("Ladda create error:", e);
+            }
+        }
+        return null;
+    }
+
     // Date formatting helper: "27th October 2026"
     function fd(s) {
         if (!s) return "—";
@@ -772,7 +785,7 @@
                             <input type="date" id="pd" value="${TODAY}" style="width:100%;margin-bottom:8px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Client PO / LPO Reference (optional)</label>
                             <input id="pp" placeholder="Client PO / LPO reference (optional)" style="width:100%;margin-bottom:8px;">
-                            <button class="p" id="ca">Confirm approval</button>
+                            <button class="p btn ladda-button" id="ca" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm approval</span></button>
                         </div>
                         <div id="nab" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Reason for rejection <span style="color:var(--bad);">*</span></label>
@@ -781,12 +794,12 @@
                                 ${M(REASONS, r => `<option value="${H(r)}">${H(r)}</option>`)}
                             </select>
                             <textarea id="rt" rows="2" placeholder="Additional remark (optional)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
-                            <button class="d" id="cf">Confirm not approved</button>
+                            <button class="d btn ladda-button" id="cf" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm not approved</span></button>
                         </div>
                         <div id="rob" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Reason for reopening <span style="color:var(--bad);">*</span></label>
                             <textarea id="rr" rows="2" placeholder="Reason for reopening (required, logged)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
-                            <button class="d" id="cro">Confirm reopen</button>
+                            <button class="d btn ladda-button" id="cro" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm reopen</span></button>
                         </div>
                     </div>` : ""}
 
@@ -934,7 +947,7 @@
                 if (!by) return toast("Enter the client name who approved");
                 const on = $("#pd").value || TODAY;
                 const po = $("#pp").value.trim();
-                updateStatus(q.id, "Approved", "", "", { approved_by: by, approved_on: on, client_po: po });
+                updateStatus(q.id, "Approved", "", "", { approved_by: by, approved_on: on, client_po: po }, $("#ca"));
             };
         }
 
@@ -943,7 +956,7 @@
                 const rsVal = $("#rs").value;
                 if (!rsVal) return toast("A reason is required for not approved quotes");
                 const rtVal = $("#rt").value.trim();
-                updateStatus(q.id, "Not approved", rsVal, rtVal);
+                updateStatus(q.id, "Not approved", rsVal, rtVal, {}, $("#cf"));
             };
         }
 
@@ -951,7 +964,7 @@
             $("#cro").onclick = () => {
                 const r = $("#rr").value.trim();
                 if (!r) return toast("A reason is required to reopen");
-                updateStatus(q.id, "Pending", r, r, { action: "reopen" });
+                updateStatus(q.id, "Pending", r, r, { action: "reopen" }, $("#cro"));
             };
         }
     }
@@ -995,8 +1008,12 @@
                     <button type="button" id="btn_check_grammar_top" style="background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;">
                         <i class="icon-spell-check" style="font-size:13px;color:#0A4174;"></i> Check Grammar
                     </button>
-                    <button id="sd">Save draft</button>
-                    <button class="p" id="is">Issue quote</button>
+                    <button type="button" id="sd" class="btn ladda-button" data-style="expand-right" data-spinner-color="#0A4174">
+                        <span class="ladda-label"><i class="icon-floppy-disk mr-1"></i> Save draft</span>
+                    </button>
+                    <button type="button" class="p btn ladda-button" id="is" data-style="expand-right" data-spinner-color="#ffffff">
+                        <span class="ladda-label"><i class="icon-paperplane mr-1"></i> Issue quote</span>
+                    </button>
                 </div>
             </div>
             
@@ -1458,11 +1475,13 @@
             else go("log");
         };
 
-        $("#sd").onclick = () => {
+        $("#sd").onclick = (ev) => {
+            if (ev) ev.preventDefault();
             saveQuotationApi(false);
         };
 
-        $("#is").onclick = () => {
+        $("#is").onclick = (ev) => {
+            if (ev) ev.preventDefault();
             const e = ED;
             const cName = e.client_name || e.client;
             const cCode = e.client_code || e.code;
@@ -2758,6 +2777,21 @@
     function saveQuotationApi(isIssue) {
         if (!ED) return;
 
+        const activeBtn = isIssue ? $("#is") : $("#sd");
+        const otherBtn = isIssue ? $("#sd") : $("#is");
+        const laddaInst = createLadda(activeBtn);
+        if (laddaInst) laddaInst.start();
+        if (activeBtn) activeBtn.disabled = true;
+        if (otherBtn) otherBtn.disabled = true;
+
+        const stopLoading = () => {
+            if (laddaInst) {
+                try { laddaInst.stop(); } catch (e) {}
+            }
+            if (activeBtn) activeBtn.disabled = false;
+            if (otherBtn) otherBtn.disabled = false;
+        };
+
         // Ensure latest values from input fields are synced
         const discValEl = $('[data-k="discount_value"]');
         if (discValEl) {
@@ -2804,6 +2838,7 @@
                 toast(res.message);
                 // Reload quotations
                 apiCall("get_quotations", {}, "GET").then(qRes => {
+                    stopLoading();
                     if (qRes && qRes.status === "success" && qRes.quotations) {
                         Q = qRes.quotations;
                     }
@@ -2812,27 +2847,54 @@
                     } else {
                         go("log");
                     }
+                }).catch(() => {
+                    stopLoading();
+                    if (isIssue) {
+                        vq(res.id);
+                    } else {
+                        go("log");
+                    }
                 });
             } else {
+                stopLoading();
                 toast((res && res.message) || "Failed to save quotation");
             }
+        }).catch(err => {
+            stopLoading();
+            toast("An error occurred while saving the quotation.");
         });
     }
 
-    function updateStatus(id, newStatus, reason, remark, extra = {}) {
+    function updateStatus(id, newStatus, reason, remark, extra = {}, btnEl = null) {
+        let laddaInst = createLadda(btnEl);
+        if (laddaInst) laddaInst.start();
+        if (btnEl) btnEl.disabled = true;
+
         const payload = Object.assign({ id, status: newStatus, reason, remark }, extra);
         apiCall("update_status", payload, "POST").then(res => {
             if (res && res.status === "success") {
                 toast(res.message);
                 apiCall("get_quotations", {}, "GET").then(qRes => {
+                    if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                    if (btnEl) btnEl.disabled = false;
                     if (qRes && qRes.status === "success" && qRes.quotations) {
                         Q = qRes.quotations;
                     }
                     vq(id);
+                }).catch(() => {
+                    if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                    if (btnEl) btnEl.disabled = false;
+                    vq(id);
                 });
             } else {
+                if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                if (btnEl) btnEl.disabled = false;
                 toast((res && res.message) || "Failed to update status");
             }
+        }).catch(err => {
+            if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+            if (btnEl) btnEl.disabled = false;
+            toast("Error updating quotation status");
         });
     }
 

@@ -98,6 +98,7 @@ if ($isLoggedIn) {
 
     <!-- Main Navigation Topnav & Icons -->
     <link href="assets/css/thc_topnav.css" rel="stylesheet" type="text/css">
+    <link href="assets/css/ladda/ladda-themeless.min.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -265,6 +266,32 @@ if ($isLoggedIn) {
             background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%) !important;
             box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35) !important;
             color: #ffffff !important;
+        }
+
+        /* Ladda Progress Buttons */
+        .ladda-button {
+            position: relative !important;
+        }
+        .ladda-button .ladda-spinner {
+            position: absolute !important;
+            z-index: 2 !important;
+            display: inline-block !important;
+            width: 32px !important;
+            height: 32px !important;
+            top: 50% !important;
+            margin-top: -16px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .ladda-button[data-style="expand-right"][data-loading] {
+            padding-right: 48px !important;
+        }
+        .ladda-button[data-style="expand-right"] .ladda-spinner {
+            right: 12px !important;
+        }
+        .ladda-button[data-loading] {
+            cursor: wait !important;
+            opacity: 0.88 !important;
         }
 
         /* Modernized Form Inputs & Selects */
@@ -1495,6 +1522,11 @@ if ($isLoggedIn) {
     <!-- SweetAlert Notification Library -->
     <script src="global_assets/js/plugins/notifications/sweet_alert.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+
+    <!-- Ladda Button Spinners -->
+    <script src="assets/js/ladda/spin.min.js" type="text/javascript"></script>
+    <script src="assets/js/ladda/ladda.min.js" type="text/javascript"></script>
+    <script src="assets/js/ladda/ladda.jquery.min.js" type="text/javascript"></script>
 
     <!-- Client-side Application Script -->
     <script src="../httpdocs/user_js/quotation_module.js?v=<?= @filemtime(__DIR__ . '/../httpdocs/user_js/quotation_module.js') ?: time() ?>"></script>
