@@ -441,11 +441,13 @@ var FullCalendarBasic = function() {
         var fullCalendar = function(){
             
              var popTemplate = [
-                '<div class="popover calendar-entry-popover" role="tooltip" style="max-width:450px;">',
+                '<div class="popover calendar-entry-popover" role="tooltip" style="max-width:420px; z-index:104000;">',
                 '<div class="arrow"></div>',
-                '<div class="popover-header" style="position:relative;background:#f8fafc;padding:6px 12px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:flex-end;">',
+                '<div class="popover-header" style="position:relative;background:#f8fafc;padding:8px 12px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">',
+                '<span style="font-weight:600;font-size:13px;color:#1e293b;"><i class="icon-calendar3 mr-1 text-primary"></i> Visit Details</span>',
                 '<a href="javascript:void(0);" id="modal_close" style="color:#64748b;font-size:16px;text-decoration:none;line-height:1;display:inline-block;padding:2px 4px;" title="Close"><i class="icon-cross"></i></a>',
                 '</div>',
+                '<h2 class="popover-title" style="display:none;"></h2>',
                 '<div class="popover-content popover-body" style="padding:0;"></div>',
                 '</div>'].join('');
                 
@@ -637,16 +639,20 @@ var FullCalendarBasic = function() {
                                             },
                                             template: popTemplate,
                                             placement: function (tip, element) {
-                                                var winWidth = $(window).width();
-                                                if (winWidth < 768) {
-                                                    return 'bottom';
+                                                try {
+                                                    var winWidth = $(window).width();
+                                                    if (winWidth < 768) return 'bottom';
+                                                    var $el = element ? $(element) : (this && this.$element ? this.$element : null);
+                                                    if ($el && $el.length) {
+                                                        var offset = $el.offset();
+                                                        if (offset && typeof offset.left === 'number') {
+                                                            return (offset.left < (winWidth / 2)) ? 'right' : 'left';
+                                                        }
+                                                    }
+                                                } catch (e) {
+                                                    console.warn('Popover placement error:', e);
                                                 }
-                                                var $el = $(element);
-                                                var offset = $el.offset();
-                                                if (!offset) {
-                                                    return 'right';
-                                                }
-                                                return (offset.left < (winWidth / 2)) ? 'right' : 'left';
+                                                return 'auto left';
                                             },
                                             html: 'true',
                                             trigger: 'click',
