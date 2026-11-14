@@ -3004,7 +3004,51 @@
                     <li>✓ Draft, Superseded and Void never appear in sent or approved totals.</li>
                 </ul>
             </div>
+
+            <div class="card pad" style="border-left: 4px solid #dc3545;margin-top:20px;">
+                <h2 style="color:#c82333;display:flex;align-items:center;gap:8px;">
+                    <i class="icon-trash"></i> Data Maintenance · Clear Quotation Records
+                </h2>
+                <p style="color:var(--mut);font-size:13px;margin-bottom:12px;">
+                    Clear all quotation transactions and line items (<code>tbl_quotations_v2</code> &amp; <code>tbl_quotation_items_v2</code>) from the database to start fresh with a clean slate.
+                </p>
+                <div style="background:#fff3cd;border:1px solid #ffeeba;border-radius:4px;padding:10px 14px;color:#856404;font-size:12px;margin-bottom:15px;">
+                    <strong><i class="icon-shield-check mr-1"></i> Masters are completely preserved:</strong> Customer Master (AMC &amp; Non-AMC), Unit Master (<code>tbl_quotation_units_master</code>), and Footer &amp; PDF settings (<code>tbl_quotation_settings_v2</code>) are NOT affected.
+                </div>
+                <button type="button" id="btn_clear_all_quotes" class="btn btn-danger btn-sm" style="font-weight:600;padding:6px 16px;box-shadow:0 2px 4px rgba(220,53,69,0.3);">
+                    <i class="icon-trash mr-1"></i> Clear All Quotations
+                </button>
+            </div>
         `;
+
+        const btnClear = $("#btn_clear_all_quotes");
+        if (btnClear) {
+            btnClear.onclick = () => {
+                confirmSwal(
+                    "Clear all quotations?",
+                    "This will permanently remove all quotation headers and line items from the database. Customer Master, Units Master, and Settings will remain intact.",
+                    () => {
+                        btnClear.disabled = true;
+                        btnClear.innerHTML = '<i class="icon-spinner2 spinner mr-1"></i> Clearing...';
+                        apiCall("clear_quotations", {}, "POST").then(res => {
+                            btnClear.disabled = false;
+                            btnClear.innerHTML = '<i class="icon-trash mr-1"></i> Clear All Quotations';
+                            if (res && res.status === "success") {
+                                Q = [];
+                                toast(res.message || "All quotations cleared.");
+                                go("log");
+                            } else {
+                                toast((res && res.message) || "Failed to clear quotations.");
+                            }
+                        }).catch(err => {
+                            btnClear.disabled = false;
+                            btnClear.innerHTML = '<i class="icon-trash mr-1"></i> Clear All Quotations';
+                            toast("Error clearing quotation records.");
+                        });
+                    }
+                );
+            };
+        }
     }
 
     // ==========================================

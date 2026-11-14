@@ -576,6 +576,10 @@ class QuotationModuleController
                     $this->handleSaveFooterConfig();
                     break;
 
+                case 'clear_quotations':
+                    $this->handleClearQuotations();
+                    break;
+
                 case 'seed_demo_data':
                     $this->seedInitialData();
                     echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
@@ -1252,6 +1256,19 @@ class QuotationModuleController
             "status" => "success",
             "message" => "Quotation footer configuration saved successfully.",
             "footer_config" => $updated
+        ]);
+    }
+
+    private function handleClearQuotations()
+    {
+        if ($this->isDbConnected) {
+            @mysqli_query($this->db, "TRUNCATE TABLE `tbl_quotation_items_v2`");
+            @mysqli_query($this->db, "TRUNCATE TABLE `tbl_quotations_v2`");
+        }
+        @file_put_contents($this->jsonFallbackFile, json_encode([], JSON_PRETTY_PRINT));
+        echo json_encode([
+            "status" => "success",
+            "message" => "All quotation records and line items have been cleared successfully. Masters and settings remain untouched."
         ]);
     }
 
