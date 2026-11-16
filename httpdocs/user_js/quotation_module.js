@@ -40,7 +40,12 @@
 
     // Amount calculation helpers
     const itemTotal = it => (+it.quantity || +it[1] || 0) * (+it.unit_price || +it[3] || 0);
-    const amt = q => (q.items || []).reduce((t, r) => t + itemTotal(r), 0);
+    const amt = q => {
+        if (q && q.merge_items && +q.merged_lump_sum_price > 0) {
+            return +q.merged_lump_sum_price;
+        }
+        return (q && q.items ? q.items : []).reduce((t, r) => t + itemTotal(r), 0);
+    };
     const discAmount = q => {
         const sub = amt(q);
         const dVal = q.discount_value !== undefined ? +q.discount_value : (q.discount !== undefined ? +q.discount : 0);
@@ -190,6 +195,15 @@
     };
     let FOOTER_CONFIG = Object.assign({}, DEFAULT_FOOTER_CONFIG);
 
+    const DEFAULT_STAMP_SIGN_CONFIG = {
+        show_stamp: 1,
+        show_signature: 1,
+        company_stamp_url: "uploads/quotation_signatures/default_thc_stamp.png",
+        default_signature_url: "uploads/quotation_signatures/default_signature.png",
+        user_signatures: {}
+    };
+    let STAMP_SIGN_CONFIG = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG);
+
     // Toast notification
     function toast(m) {
         const t = $("#toast");
@@ -230,6 +244,16 @@
         const subj = q.subject || q.subj || "—";
         const terms = q.terms || T0;
         const items = q.items || [];
+
+        const isMerged = !!(q.merge_items);
+        const mergeQty = !!(q.merge_qty);
+        let lumpSumTot = +(q.merged_lump_sum_price || 0);
+        if (lumpSumTot <= 0) lumpSumTot = sub;
+
+        const uSigRel = (STAMP_SIGN_CONFIG.user_signatures && STAMP_SIGN_CONFIG.user_signatures[uCode]) || STAMP_SIGN_CONFIG.default_signature_url;
+        const stampRel = STAMP_SIGN_CONFIG.company_stamp_url || "uploads/quotation_signatures/default_thc_stamp.png";
+        const showSig = (STAMP_SIGN_CONFIG.show_signature !== 0 && STAMP_SIGN_CONFIG.show_signature !== false);
+        const showStamp = (STAMP_SIGN_CONFIG.show_stamp !== 0 && STAMP_SIGN_CONFIG.show_stamp !== false);
 
         let formattedNo = qNo ? H(qNo) : "(assigned on issue)";
         if (qNo) {
@@ -272,53 +296,68 @@
                     <tr>
                         <th style="width:38px;text-align:center;">Sl.</th>
                         <th>Description</th>
-                        <th style="width:65px;text-align:center;">Qty</th>
-                        <th style="width:80px;text-align:center;">Unit</th>
-                        <th style="width:95px;text-align:right;">Total (BD)</th>
+                        <th style="width:${isMerged && mergeQty ? '120px' : '100px'};text-align:center;">Qty.</th>
+                        <th style="width:110px;text-align:right;">Total (BD)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${M(items, (r, i) => {
-                        const desc = r.description || r[0] || "";
-                        const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : 1);
-                        const unit = r.unit || r[2] || "Lumpsum";
-                        const lineTot = itemTotal(r);
-                        return `
-                        <tr>
-                            <td class="c">${i + 1}.</td>
-                            <td>${H(desc)}</td>
-                            <td class="c">${qty}</td>
-                            <td class="c">${H(unit)}</td>
-                            <td class="r">${f3(lineTot)}</td>
-                        </tr>`;
-                    })}
+                    ${isMerged && items.length > 0 ? (
+                        items.map((r, i) => {
+                            const desc = r.description || r[0] || "";
+                            const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : 1);
+                            const unit = r.unit || r[2] || "Lumpsum";
+                            const qtyStr = `${qty} ${H(unit)}`;
+                            return `
+                            <tr>
+                                <td class="c">${i + 1}.</td>
+                                <td>${H(desc).replace(/\n/g, "<br>")}</td>
+                                ${mergeQty ? (i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;font-weight:600;">1 Lumpsum</td>` : '') : `<td class="c">${qtyStr}</td>`}
+                                ${i === 0 ? `<td class="r" rowspan="${items.length}" style="vertical-align:middle;font-weight:600;">${f3(lumpSumTot)}</td>` : ''}
+                            </tr>`;
+                        }).join("")
+                    ) : (
+                        items.map((r, i) => {
+                            const desc = r.description || r[0] || "";
+                            const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : 1);
+                            const unit = r.unit || r[2] || "Lumpsum";
+                            const lineTot = itemTotal(r);
+                            const qtyStr = `${qty} ${H(unit)}`;
+                            return `
+                            <tr>
+                                <td class="c">${i + 1}.</td>
+                                <td>${H(desc).replace(/\n/g, "<br>")}</td>
+                                <td class="c">${qtyStr}</td>
+                                <td class="r">${f3(lineTot)}</td>
+                            </tr>`;
+                        }).join("")
+                    )}
                 </tbody>
                 <tfoot>
                     ${discAmt > 0 ? `
                         <tr>
-                            <td colspan="4" class="c"><b>Gross Amount Excluding VAT</b></td>
+                            <td colspan="3" class="c"><b>Gross Amount Excluding VAT</b></td>
                             <td class="r"><b>${f3(sub)}</b></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="c" style="color:#b91c1c;"><b>Discount ${discType === "percent" ? `(${discVal}%)` : ""}</b></td>
+                            <td colspan="3" class="c" style="color:#b91c1c;"><b>Discount ${discType === "percent" ? `(${discVal}%)` : ""}</b></td>
                             <td class="r" style="color:#b91c1c;"><b>-${f3(discAmt)}</b></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="c"><b>Net Amount Excluding VAT</b></td>
+                            <td colspan="3" class="c"><b>Net Amount Excluding VAT</b></td>
                             <td class="r"><b>${f3(netSub)}</b></td>
                         </tr>
                     ` : `
                         <tr>
-                            <td colspan="4" class="c"><b>Amount Excluding VAT</b></td>
+                            <td colspan="3" class="c"><b>Amount Excluding VAT</b></td>
                             <td class="r"><b>${f3(sub)}</b></td>
                         </tr>
                     `}
                     <tr>
-                        <td colspan="4" class="c"><b>VAT ${vatRate}%</b></td>
+                        <td colspan="3" class="c"><b>VAT ${vatRate}%</b></td>
                         <td class="r"><b>${f3(vatVal)}</b></td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="c"><b>Total Amount (BD)</b></td>
+                        <td colspan="3" class="c"><b>Total Amount (BD)</b></td>
                         <td class="r"><b>${f3(grandTot)}</b></td>
                     </tr>
                 </tfoot>
@@ -335,8 +374,14 @@
                 <div>
                     <b>Thanking you,<br><br>
                     Yours sincerely,<br>
-                    THC Facility Management W.L.L<br><br>
-                    ${H(uName)}<br>
+                    THC Facility Management W.L.L</b><br>
+                    ${(showSig || showStamp) ? `
+                        <div style="display:flex;align-items:center;gap:14px;margin:8px 0;min-height:55px;">
+                            ${showSig && uSigRel ? `<img src="${H(uSigRel)}" onerror="this.src='../view/${H(uSigRel)}';" alt="Signature" style="max-height:48px;max-width:130px;object-fit:contain;display:block;">` : ""}
+                            ${showStamp && stampRel ? `<img src="${H(stampRel)}" onerror="this.src='../view/${H(stampRel)}';" alt="Stamp" style="max-height:68px;max-width:130px;object-fit:contain;display:block;margin-left:-8px;">` : ""}
+                        </div>
+                    ` : `<br><br>`}
+                    <b>${H(uName)}<br>
                     <span style="font-weight:400;color:#444;">${H(uTitle)}</span></b>
                 </div>
                 <div class="ap">
@@ -457,7 +502,11 @@
                 discount_value: 0,
                 terms: T0.slice(),
                 status: "Draft",
-                remark: ""
+                remark: "",
+                internal_notes: "",
+                merge_items: 0,
+                merge_qty: 0,
+                merged_lump_sum_price: 0
             };
             edit();
         }
@@ -601,6 +650,7 @@
                             <th>By</th>
                             <th>Excl. VAT</th>
                             <th>Incl. VAT</th>
+                            <th>Internal Notes</th>
                             <th>Status</th>
                             <th style="width:60px;"></th>
                         </tr>
@@ -637,6 +687,13 @@
                                     ` : f3(netAmt(x))}
                                 </td>
                                 <td><b>${f3(tot(x))}</b></td>
+                                <td style="max-width:160px;font-size:11.5px;">
+                                    ${x.internal_notes ? `
+                                        <div style="background:#fffbeb;border:1px solid #fef3c7;color:#92400e;padding:4px 7px;border-radius:5px;line-height:1.3;display:inline-block;max-width:100%;white-space:normal;word-break:break-word;" title="${H(x.internal_notes)}">
+                                            <i class="icon-file-text2 mr-1" style="font-size:10px;"></i>${H(x.internal_notes.length > 38 ? x.internal_notes.slice(0, 36) + '…' : x.internal_notes)}
+                                        </div>
+                                    ` : '<span style="color:#cbd5e1;">—</span>'}
+                                </td>
                                 <td class="w">
                                     ${tg(x)}
                                     ${remark ? `<br><small>${H(remark)}</small>` : ""}
@@ -751,6 +808,19 @@
                             ${(q.approval_by || (q.appr && q.appr.by)) ? `
                                 <span>Approved by</span>
                                 <div>${H(q.approval_by || q.appr.by)} on ${q.approval_date || (q.appr && q.appr.on)}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}</div>
+                            ` : ''}
+
+                            ${q.merge_items ? `
+                                <span>Line items</span>
+                                <div style="color:#0284c7;font-weight:600;"><i class="icon-stack mr-1"></i> Merged line items (Lump sum: ${f3(q.merged_lump_sum_price || amt(q))} BD)</div>
+                            ` : ''}
+
+                            ${q.internal_notes ? `
+                                <span>Internal note</span>
+                                <div style="background:#fffbeb;border:1px solid #fef3c7;border-radius:6px;padding:6px 10px;color:#92400e;font-size:12px;line-height:1.4;">
+                                    <i class="icon-file-text2 mr-1"></i> <b>Internal Reference (Not on quote):</b><br>
+                                    ${H(q.internal_notes).replace(/\n/g, "<br>")}
+                                </div>
                             ` : ''}
                             
                             ${remark ? `<span>Remark</span><div>${H(remark)}</div>` : ""}
@@ -1103,9 +1173,21 @@
                             </div>
                             <input type="text" data-k="subject" placeholder="Subject" value="${H(subj)}" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences" style="margin-top:0 !important;width:100%;">
                         </div>
+
+                        <div style="margin-bottom:8px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                                <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin:0;">
+                                    Internal Notes <small style="color:#b45309;font-weight:600;">(Private reference only — will NOT appear on the quote or PDF)</small>
+                                </label>
+                            </div>
+                            <textarea id="inp_internal_notes" data-k="internal_notes" rows="2" placeholder="e.g. Approved discount by GM, site visit reference, supplier quotation ref, etc." style="width:100%;font-size:12.5px;background:#fffdfa;border-color:#fde68a;" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(e.internal_notes || "")}</textarea>
+                        </div>
                         
-                        <p style="color:var(--mut);margin:12px 0 0;font-size:12px;">
-                            Signed as <b>${H(uName)}</b>, ${H(uTitle)} (from the logged-in profile)
+                        <p style="color:var(--mut);margin:12px 0 0;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                            <span>Signed as <b>${H(uName)}</b>, ${H(uTitle)} (from the logged-in profile)</span>
+                            <a href="#" id="btn_quick_stamp_sign" style="color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:underline;">
+                                <i class="icon-stamp" style="font-size:12px;"></i> Stamp & Sign
+                            </a>
                         </p>
                     </div>
                     
@@ -1120,6 +1202,27 @@
                                 <button type="button" id="btn_manage_units" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#f0f7fc;border:1.5px solid #c2daeb;color:var(--q-navy-main);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
                                     <i class="icon-stack2" style="font-size:13px;color:#0A4174;"></i> Manage Units
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Merge Line Items Option Box -->
+                        <div style="background:#f0f7fc;border:1.5px solid #c2daeb;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                                <label style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
+                                    <input type="checkbox" id="chk_merge_items" ${e.merge_items ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
+                                    <span>Merge line items with single lump sum total rate</span>
+                                </label>
+                                <div id="merge_qty_wrap" style="display:${e.merge_items ? 'inline-flex' : 'none'};align-items:center;gap:6px;">
+                                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#475569;cursor:pointer;margin:0;">
+                                        <input type="checkbox" id="chk_merge_qty" ${e.merge_qty ? "checked" : ""} style="cursor:pointer;width:15px;height:15px;">
+                                        <span>Merge Qty into '1 Lumpsum'</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="merged_price_wrap" style="display:${e.merge_items ? 'flex' : 'none'};align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1;">
+                                <label style="font-size:12px;font-weight:600;color:#0A4174;margin:0;white-space:nowrap;">Lump Sum Total Price (BD) * :</label>
+                                <input type="number" step="0.001" min="0" id="inp_merged_price" data-k="merged_lump_sum_price" placeholder="0.000" value="${e.merged_lump_sum_price !== undefined && +e.merged_lump_sum_price > 0 ? e.merged_lump_sum_price : ''}" style="width:140px;height:34px;margin:0;font-weight:700;color:#0A4174;">
+                                <small style="color:#64748b;font-size:11.5px;">(If 0 or blank, sum of line item totals is used)</small>
                             </div>
                         </div>
                         <div class="it h">
@@ -1228,6 +1331,8 @@
                 if (k === "attention") ED.attn = t.value;
                 if (k === "quotation_date") ED.date = t.value;
                 if (k === "subject") ED.subj = t.value;
+                if (k === "internal_notes") ED.internal_notes = t.value;
+                if (k === "merged_lump_sum_price") ED.merged_lump_sum_price = +t.value || 0;
             } else if (t.dataset.f !== undefined) {
                 const idx = +t.dataset.i;
                 const field = t.dataset.f;
@@ -1250,6 +1355,41 @@
 
         $("#v").oninput = handleFormInput;
         $("#v").onchange = handleFormInput;
+
+        const chkMerge = $("#chk_merge_items");
+        const chkQty = $("#chk_merge_qty");
+        const inpMerged = $("#inp_merged_price");
+        const wrapQty = $("#merge_qty_wrap");
+        const wrapPrice = $("#merged_price_wrap");
+
+        if (chkMerge) {
+            chkMerge.onchange = e => {
+                ED.merge_items = e.target.checked ? 1 : 0;
+                if (wrapQty) wrapQty.style.display = ED.merge_items ? "inline-flex" : "none";
+                if (wrapPrice) wrapPrice.style.display = ED.merge_items ? "flex" : "none";
+                renderLivePreview();
+            };
+        }
+        if (chkQty) {
+            chkQty.onchange = e => {
+                ED.merge_qty = e.target.checked ? 1 : 0;
+                renderLivePreview();
+            };
+        }
+        if (inpMerged) {
+            inpMerged.oninput = e => {
+                ED.merged_lump_sum_price = +e.target.value || 0;
+                renderLivePreview();
+            };
+        }
+
+        const btnQuickSign = $("#btn_quick_stamp_sign");
+        if (btnQuickSign) {
+            btnQuickSign.onclick = ev => {
+                ev.preventDefault();
+                openStampSignModal();
+            };
+        }
 
         const updateEditCustomerButtonVisibility = function () {
             const btnEdit = $("#btn_edit_current_customer");
@@ -2352,6 +2492,183 @@
     }
 
     // ==========================================
+    // STAMP & SIGNATURE CONTROLLER & PREVIEW
+    // ==========================================
+    function setupStampSignModalEvents() {
+        const btnOpen = $("#btn_open_stamp_sign");
+        if (btnOpen) {
+            btnOpen.onclick = ev => {
+                ev.preventDefault();
+                openStampSignModal();
+            };
+        }
+
+        const btnSave = $("#btn_save_stamp_sign_cfg");
+        if (btnSave) {
+            btnSave.onclick = () => saveStampSignConfig();
+        }
+
+        // Toggles in modal
+        const chkStamp = $("#cfg_show_stamp");
+        if (chkStamp) {
+            chkStamp.onchange = e => {
+                const prev = $("#live_prev_stamp");
+                if (prev) prev.style.display = e.target.checked ? "block" : "none";
+            };
+        }
+
+        const chkSig = $("#cfg_show_signature");
+        if (chkSig) {
+            chkSig.onchange = e => {
+                const prev = $("#live_prev_sig");
+                if (prev) prev.style.display = e.target.checked ? "block" : "none";
+            };
+        }
+
+        // File uploaders
+        const uplStamp = $("#upload_stamp_input");
+        if (uplStamp) {
+            uplStamp.onchange = e => {
+                if (e.target.files && e.target.files[0]) {
+                    uploadStampSignFile("stamp", e.target.files[0]);
+                }
+            };
+        }
+
+        const uplSig = $("#upload_sig_input");
+        if (uplSig) {
+            uplSig.onchange = e => {
+                if (e.target.files && e.target.files[0]) {
+                    uploadStampSignFile("signature", e.target.files[0]);
+                }
+            };
+        }
+
+        $$("#modal_stamp_sign_settings [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_stamp_sign_settings");
+        });
+    }
+
+    function openStampSignModal() {
+        const chkStamp = $("#cfg_show_stamp");
+        if (chkStamp) chkStamp.checked = (STAMP_SIGN_CONFIG.show_stamp !== 0 && STAMP_SIGN_CONFIG.show_stamp !== false);
+
+        const chkSig = $("#cfg_show_signature");
+        if (chkSig) chkSig.checked = (STAMP_SIGN_CONFIG.show_signature !== 0 && STAMP_SIGN_CONFIG.show_signature !== false);
+
+        const uCode = CU;
+        const uSig = (STAMP_SIGN_CONFIG.user_signatures && STAMP_SIGN_CONFIG.user_signatures[uCode]) || STAMP_SIGN_CONFIG.default_signature_url || "uploads/quotation_signatures/default_signature.png";
+        const stampUrl = STAMP_SIGN_CONFIG.company_stamp_url || "uploads/quotation_signatures/default_thc_stamp.png";
+
+        const stampImg = $("#stamp_preview_img");
+        if (stampImg) stampImg.src = stampUrl + "?t=" + Date.now();
+
+        const sigImg = $("#sig_preview_img");
+        if (sigImg) sigImg.src = uSig + "?t=" + Date.now();
+
+        const liveSig = $("#live_prev_sig");
+        if (liveSig) {
+            liveSig.src = uSig + "?t=" + Date.now();
+            liveSig.style.display = (chkSig && chkSig.checked) ? "block" : "none";
+        }
+
+        const liveStamp = $("#live_prev_stamp");
+        if (liveStamp) {
+            liveStamp.src = stampUrl + "?t=" + Date.now();
+            liveStamp.style.display = (chkStamp && chkStamp.checked) ? "block" : "none";
+        }
+
+        const cur = USERS[uCode];
+        const cName = cur ? (Array.isArray(cur) ? cur[0] : cur.name) : currentUserObj.name;
+        const cTitle = cur ? (Array.isArray(cur) ? cur[1] : cur.title) : currentUserObj.title;
+
+        if ($("#live_prev_user_name")) $("#live_prev_user_name").textContent = cName;
+        if ($("#live_prev_user_title")) $("#live_prev_user_title").textContent = cTitle;
+
+        showModal("#modal_stamp_sign_settings");
+    }
+
+    function uploadStampSignFile(type, file) {
+        if (!file) return;
+        const formData = new FormData();
+        formData.append("action", "upload_stamp_sign");
+        formData.append("user_code", CU);
+        formData.append("show_stamp", $("#cfg_show_stamp") && $("#cfg_show_stamp").checked ? 1 : 0);
+        formData.append("show_signature", $("#cfg_show_signature") && $("#cfg_show_signature").checked ? 1 : 0);
+        if (type === "stamp") {
+            formData.append("stamp_file", file);
+        } else {
+            formData.append("signature_file", file);
+        }
+
+        toast("Uploading " + (type === "stamp" ? "stamp" : "signature") + "…");
+
+        fetch(`${API_URL}?action=upload_stamp_sign`, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res && res.status === "success") {
+                if (res.stamp_sign_config) {
+                    STAMP_SIGN_CONFIG = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG, res.stamp_sign_config);
+                }
+                toast(res.message || "Uploaded successfully.");
+                openStampSignModal();
+                if (ED) renderLivePreview();
+            } else {
+                toast((res && res.message) || "Failed to upload image.");
+            }
+        })
+        .catch(err => {
+            console.error("Upload error:", err);
+            toast("Error uploading image file.");
+        });
+    }
+
+    function saveStampSignConfig() {
+        const payload = {
+            show_stamp: $("#cfg_show_stamp") && $("#cfg_show_stamp").checked ? 1 : 0,
+            show_signature: $("#cfg_show_signature") && $("#cfg_show_signature").checked ? 1 : 0,
+            company_stamp_url: STAMP_SIGN_CONFIG.company_stamp_url || "uploads/quotation_signatures/default_thc_stamp.png",
+            default_signature_url: STAMP_SIGN_CONFIG.default_signature_url || "uploads/quotation_signatures/default_signature.png",
+            user_signatures: STAMP_SIGN_CONFIG.user_signatures || {}
+        };
+
+        const btnSave = $("#btn_save_stamp_sign_cfg");
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="icon-spinner2 spinner mr-1"></i> Saving…';
+        }
+
+        apiCall("save_stamp_sign_config", payload, "POST").then(res => {
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="icon-floppy-disk mr-1"></i> Save & Apply';
+            }
+            if (res && res.status === "success") {
+                STAMP_SIGN_CONFIG = Object.assign({}, STAMP_SIGN_CONFIG, res.stamp_sign_config || payload);
+                toast(res.message || "Stamp & signature settings saved successfully.");
+                hideModal("#modal_stamp_sign_settings");
+
+                if (ED) renderLivePreview();
+                const curOn = document.querySelector("aside a.on");
+                if (curOn && curOn.dataset.v === "vq" && curOn.dataset.id) {
+                    vq(+curOn.dataset.id);
+                }
+            } else {
+                toast((res && res.message) || "Failed to save stamp & signature settings.");
+            }
+        }).catch(err => {
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="icon-floppy-disk mr-1"></i> Save & Apply';
+            }
+            toast("Error while saving stamp & signature settings.");
+        });
+    }
+
+    // ==========================================
     // SPELLING & GRAMMAR CHECK ENGINE (LanguageTool)
     // ==========================================
     let currentGrammarIssues = [];
@@ -2722,6 +3039,9 @@
                 if (res.footer_config && typeof res.footer_config === "object") {
                     FOOTER_CONFIG = Object.assign({}, DEFAULT_FOOTER_CONFIG, res.footer_config);
                 }
+                if (res.stamp_sign_config && typeof res.stamp_sign_config === "object") {
+                    STAMP_SIGN_CONFIG = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG, res.stamp_sign_config);
+                }
             }
 
             initAppUi();
@@ -2732,6 +3052,7 @@
         setupUnitMasterEvents();
         setupCustomerMasterEvents();
         setupFooterSettingsModalEvents();
+        setupStampSignModalEvents();
         initGrammarCheckModalListeners();
         // Build user switcher options
         const us = $("#us");
@@ -2808,6 +3129,23 @@
             ED.vat = ED.vat_rate;
         }
 
+        const notesEl = $('#inp_internal_notes');
+        if (notesEl) {
+            ED.internal_notes = notesEl.value;
+        }
+        const chkMergeEl = $('#chk_merge_items');
+        if (chkMergeEl) {
+            ED.merge_items = chkMergeEl.checked ? 1 : 0;
+        }
+        const chkQtyEl = $('#chk_merge_qty');
+        if (chkQtyEl) {
+            ED.merge_qty = chkQtyEl.checked ? 1 : 0;
+        }
+        const mergedPriceEl = $('#inp_merged_price');
+        if (mergedPriceEl) {
+            ED.merged_lump_sum_price = +mergedPriceEl.value || 0;
+        }
+
         const payload = {
             id: ED.id || null,
             is_issue: isIssue,
@@ -2829,6 +3167,10 @@
             discount_type: ED.discount_type || "amount",
             discount_value: ED.discount_value !== undefined ? +ED.discount_value : (ED.discount !== undefined ? +ED.discount : 0),
             discount_amount: discAmount(ED),
+            internal_notes: ED.internal_notes || "",
+            merge_items: ED.merge_items ? 1 : 0,
+            merge_qty: ED.merge_qty ? 1 : 0,
+            merged_lump_sum_price: ED.merged_lump_sum_price !== undefined ? +ED.merged_lump_sum_price : 0,
             terms: ED.terms || T0,
             items: ED.items || []
         };

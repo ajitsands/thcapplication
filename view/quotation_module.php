@@ -1136,6 +1136,9 @@ if ($isLoggedIn) {
                             <a id="btn_open_footer_settings" class="thc-subnav-btn" style="cursor:pointer;" title="Configure PDF & Print Footer">
                                 <i class="icon-file-text2"></i> Footer Settings
                             </a>
+                            <a id="btn_open_stamp_sign" class="thc-subnav-btn" style="cursor:pointer;" title="Upload & Configure Stamp and Signature">
+                                <i class="icon-stamp"></i> Stamp & Sign
+                            </a>
                         </div>
 
                         <div class="d-flex align-items-center ml-auto flex-wrap" style="gap:10px;">
@@ -1280,6 +1283,101 @@ if ($isLoggedIn) {
                                 <i class="icon-floppy-disk mr-1"></i> Save Footer Settings
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stamp & Signature Management Modal -->
+        <div id="modal_stamp_sign_settings" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="stampSignModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:760px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #001D39 0%, #0A4174 100%);color:#ffffff;padding:16px 22px;border:none;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="stampSignModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-stamp mr-2" style="font-size:20px;color:#7BBDE8;"></i> Quotation Stamp & Signature Management
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;max-height:calc(85vh - 120px);overflow-y:auto;">
+                        <p class="text-muted mb-3" style="font-size:12px;">
+                            Upload official company seal/stamp and estimator signatures to reflect automatically on quotation sheets and downloaded PDFs (aligned with corporate reporting).
+                        </p>
+
+                        <div class="row">
+                            <!-- Company Stamp Card -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 p-3" style="border:1.5px solid #c2daeb;border-radius:10px;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                                    <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:1px solid #e2e8f0;">
+                                        <h6 class="font-weight-bold mb-0" style="color:#0A4174;font-size:13px;">
+                                            <i class="icon-stamp mr-1"></i> Company Stamp / Seal
+                                        </h6>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="cfg_show_stamp" checked>
+                                            <label class="custom-control-label font-weight-semibold font-size-xs" for="cfg_show_stamp">Display Stamp</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-center my-3 p-2" style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;min-height:130px;display:flex;align-items:center;justify-content:center;">
+                                        <img id="stamp_preview_img" src="uploads/quotation_signatures/default_thc_stamp.png" onerror="this.src='../view/uploads/quotation_signatures/default_thc_stamp.png';" alt="THC Stamp" style="max-height:110px;max-width:150px;object-fit:contain;">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="font-weight-semibold font-size-xs text-muted mb-1">Upload New Stamp (PNG / JPG):</label>
+                                        <input type="file" id="upload_stamp_input" class="form-control-file form-control-sm" accept="image/png,image/jpeg,image/webp">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Estimator Signature Card -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 p-3" style="border:1.5px solid #c2daeb;border-radius:10px;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                                    <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:1px solid #e2e8f0;">
+                                        <h6 class="font-weight-bold mb-0" style="color:#0A4174;font-size:13px;">
+                                            <i class="icon-pencil7 mr-1"></i> Estimator Signature
+                                        </h6>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="cfg_show_signature" checked>
+                                            <label class="custom-control-label font-weight-semibold font-size-xs" for="cfg_show_signature">Display Sign</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-center my-3 p-2" style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;min-height:130px;display:flex;align-items:center;justify-content:center;">
+                                        <img id="sig_preview_img" src="uploads/quotation_signatures/default_signature.png" onerror="this.src='../view/uploads/quotation_signatures/default_signature.png';" alt="Signature" style="max-height:80px;max-width:170px;object-fit:contain;">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="font-weight-semibold font-size-xs text-muted mb-1">Upload Signature for Current Estimator (PNG / JPG):</label>
+                                        <input type="file" id="upload_sig_input" class="form-control-file form-control-sm" accept="image/png,image/jpeg,image/webp">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Footer Signature Preview -->
+                        <div class="card p-3 mb-0" style="background:#ffffff;border:1.5px solid #d4e4f0;border-radius:10px;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                            <div class="font-weight-bold text-dark mb-2" style="font-size:12.5px;">
+                                <i class="icon-eye mr-1 text-primary"></i> Live Signature & Stamp Appearance (as rendered on quote):
+                            </div>
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;max-width:380px;">
+                                <div style="font-size:12px;line-height:1.5;color:#1e293b;">
+                                    <div><b>Thanking you,</b></div>
+                                    <div class="mt-2"><b>Yours sincerely,</b></div>
+                                    <div><b>THC Facility Management W.L.L</b></div>
+                                    <div style="display:flex;align-items:center;gap:12px;margin:8px 0;min-height:55px;">
+                                        <img id="live_prev_sig" src="uploads/quotation_signatures/default_signature.png" onerror="this.src='../view/uploads/quotation_signatures/default_signature.png';" style="max-height:46px;max-width:130px;object-fit:contain;">
+                                        <img id="live_prev_stamp" src="uploads/quotation_signatures/default_thc_stamp.png" onerror="this.src='../view/uploads/quotation_signatures/default_thc_stamp.png';" style="max-height:65px;max-width:130px;object-fit:contain;margin-left:-8px;">
+                                    </div>
+                                    <div id="live_prev_user_name" class="font-weight-bold">Parthiban Jayaraman</div>
+                                    <div id="live_prev_user_title" class="text-muted font-size-xs">Operations Engineer</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:12px 20px;">
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:8px;padding:6px 16px;">
+                            Close
+                        </button>
+                        <button type="button" id="btn_save_stamp_sign_cfg" class="btn btn-primary btn-sm font-weight-semibold" style="border-radius:8px;padding:6px 20px;background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);border:none;">
+                            <i class="icon-floppy-disk mr-1"></i> Save & Apply
+                        </button>
                     </div>
                 </div>
             </div>

@@ -29,13 +29,28 @@ try {
     if ($db && !mysqli_connect_errno()) {
         mysqli_set_charset($db, 'utf8mb4');
 
-        // Safety check: Ensure discount columns exist if accessed directly
+        // Safety check: Ensure discount and merge columns exist if accessed directly
         $chkDisc = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'discount_amount'");
         if ($chkDisc && mysqli_num_rows($chkDisc) === 0) {
             @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` 
                 ADD COLUMN `discount_type` VARCHAR(20) NOT NULL DEFAULT 'amount' AFTER `vat_rate`,
                 ADD COLUMN `discount_value` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_type`,
                 ADD COLUMN `discount_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `discount_value`");
+        }
+        $chkNotes = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'internal_notes'");
+        if ($chkNotes && mysqli_num_rows($chkNotes) === 0) {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `internal_notes` TEXT DEFAULT NULL AFTER `remark`");
+        }
+        $chkMerge = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'merge_items'");
+        if ($chkMerge && mysqli_num_rows($chkMerge) === 0) {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` 
+                ADD COLUMN `merge_items` TINYINT(1) NOT NULL DEFAULT 0 AFTER `discount_amount`,
+                ADD COLUMN `merge_qty` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merge_items`,
+                ADD COLUMN `merged_lump_sum_price` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `merge_qty`");
+        }
+        $chkItmMerge = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotation_items_v2` LIKE 'merge_with_prev'");
+        if ($chkItmMerge && mysqli_num_rows($chkItmMerge) === 0) {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotation_items_v2` ADD COLUMN `merge_with_prev` TINYINT(1) NOT NULL DEFAULT 0 AFTER `total_price`");
         }
         if ($quoteId > 0) {
             $qRes = mysqli_query($db, "SELECT * FROM tbl_quotations_v2 WHERE id = {$quoteId}");
@@ -87,7 +102,10 @@ if (!$q) {
                         'discount_amount' => $item['discount_amount'] ?? 0,
                         'subtotal_excl_vat' => $item['subtotal_excl_vat'],
                         'vat_amount' => $item['vat_amount'],
-                        'total_incl_vat' => $item['total_incl_vat']
+                        'total_incl_vat' => $item['total_incl_vat'],
+                        'merge_items' => $item['merge_items'] ?? 0,
+                        'merge_qty' => $item['merge_qty'] ?? 0,
+                        'merged_lump_sum_price' => $item['merged_lump_sum_price'] ?? 0
                     ];
                     $items = $item['items'];
                     $terms = $item['terms'];
@@ -196,6 +214,62 @@ if (file_exists($fallbackFooterJson)) {
         $footerConfig = array_merge($footerConfig, $fJson);
     }
 }
+
+// Load Stamp & Signature Configuration
+$stampSignConfig = [
+    'show_stamp' => 1,
+    'show_signature' => 1,
+    'company_stamp_url' => 'uploads/quotation_signatures/default_thc_stamp.png',
+    'default_signature_url' => 'uploads/quotation_signatures/default_signature.png',
+    'user_signatures' => []
+];
+
+if (isset($db) && $db && !mysqli_connect_errno()) {
+    $sRes = @mysqli_query($db, "SELECT `setting_value` FROM `tbl_quotation_settings_v2` WHERE `setting_key` = 'quotation_stamp_sign_config' LIMIT 1");
+    if ($sRes && ($sRow = mysqli_fetch_assoc($sRes))) {
+        $dbSCfg = json_decode($sRow['setting_value'], true);
+        if (is_array($dbSCfg)) {
+            $stampSignConfig = array_merge($stampSignConfig, $dbSCfg);
+        }
+    }
+}
+$fallbackStampSignJson = __DIR__ . '/../../scratch/quotation_stamp_sign_config.json';
+if (file_exists($fallbackStampSignJson)) {
+    $ssJson = json_decode(@file_get_contents($fallbackStampSignJson), true);
+    if (is_array($ssJson)) {
+        $stampSignConfig = array_merge($stampSignConfig, $ssJson);
+    }
+}
+
+// Prepare Stamp & Signature resolution (available for both PDF download and HTML preview)
+$sigFile = null;
+$stampFile = null;
+
+$uCode = $q['user_code'] ?? '';
+$userSigRel = $stampSignConfig['user_signatures'][$uCode] ?? $stampSignConfig['default_signature_url'];
+$candSig = [
+    __DIR__ . '/../' . ltrim($userSigRel, '/'),
+    __DIR__ . '/../../view/' . ltrim($userSigRel, '/'),
+    __DIR__ . '/../uploads/quotation_signatures/default_signature.png',
+    __DIR__ . '/../global_assets/images/quotation_signatures/default_signature.png'
+];
+foreach ($candSig as $cs) {
+    if (file_exists($cs)) { $sigFile = $cs; break; }
+}
+
+$stampRel = $stampSignConfig['company_stamp_url'] ?? 'uploads/quotation_signatures/default_thc_stamp.png';
+$candStamp = [
+    __DIR__ . '/../' . ltrim($stampRel, '/'),
+    __DIR__ . '/../../view/' . ltrim($stampRel, '/'),
+    __DIR__ . '/../uploads/quotation_signatures/default_thc_stamp.png',
+    __DIR__ . '/../global_assets/images/quotation_signatures/default_thc_stamp.png'
+];
+foreach ($candStamp as $cst) {
+    if (file_exists($cst)) { $stampFile = $cst; break; }
+}
+
+$hasSig = !empty($stampSignConfig['show_signature']) && $sigFile;
+$hasStamp = !empty($stampSignConfig['show_stamp']) && $stampFile;
 
 if ($download) {
     // Suppress notices and deprecation warnings during binary stream
@@ -365,34 +439,69 @@ if ($download) {
         . '<tr><td style="line-height:1.4;"><b><u>Sub: ' . htmlspecialchars($q['subject']) . '</u></b><br>With reference to subject job we are pleased to submit our offer as under: -</td></tr>'
         . '</table><br><br>';
 
+    $isMerged = !empty($q['merge_items']);
+    $mergeQty = !empty($q['merge_qty']);
+    $itemCount = count($items);
+    $calcLumpSum = (float)($q['merged_lump_sum_price'] ?? 0);
+    if ($calcLumpSum <= 0) {
+        $calcLumpSum = $subtotal;
+    }
+
     $html .= '<table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
         <thead>
             <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
                 <th width="7%" align="center"><b>SL.</b></th>
-                <th width="53%" align="left"><b>DESCRIPTION</b></th>
-                <th width="11%" align="center"><b>QTY</b></th>
-                <th width="13%" align="center"><b>UNIT</b></th>
-                <th width="16%" align="right"><b>TOTAL (BD)</b></th>
+                <th width="' . ($isMerged && $mergeQty ? '60%' : '57%') . '" align="left"><b>DESCRIPTION</b></th>
+                <th width="' . ($isMerged && $mergeQty ? '15%' : '18%') . '" align="center"><b>QTY.</b></th>
+                <th width="18%" align="right"><b>TOTAL (BD)</b></th>
             </tr>
         </thead>
         <tbody>';
 
-    foreach ($items as $idx => $it) {
-        $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
-        $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
-        $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
-        $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
-        $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
-        $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
+    if ($isMerged && $itemCount > 0) {
+        foreach ($items as $idx => $it) {
+            $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
+            $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
+            $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
+            $qtyStr = $qty . ' ' . $unit;
+            $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
-        $html .= '
-            <tr style="background-color:' . $bg . ';">
+            $html .= '<tr style="background-color:' . $bg . ';">
                 <td width="7%" align="center">' . ($idx + 1) . '.</td>
-                <td width="53%">' . nl2br(htmlspecialchars($desc)) . '</td>
-                <td width="11%" align="center">' . $qty . '</td>
-                <td width="13%" align="center">' . htmlspecialchars($unit) . '</td>
-                <td width="16%" align="right">' . number_format($lineTot, 3) . '</td>
-            </tr>';
+                <td width="' . ($mergeQty ? '60%' : '57%') . '">' . nl2br(htmlspecialchars($desc)) . '</td>';
+
+            if ($mergeQty) {
+                if ($idx === 0) {
+                    $html .= '<td width="15%" align="center" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>1 Lumpsum</b></td>';
+                }
+            } else {
+                $html .= '<td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>';
+            }
+
+            if ($idx === 0) {
+                $html .= '<td width="18%" align="right" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>' . number_format($calcLumpSum, 3) . '</b></td>';
+            }
+
+            $html .= '</tr>';
+        }
+    } else {
+        foreach ($items as $idx => $it) {
+            $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
+            $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
+            $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
+            $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
+            $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
+            $qtyStr = $qty . ' ' . $unit;
+            $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
+
+            $html .= '
+                <tr style="background-color:' . $bg . ';">
+                    <td width="7%" align="center">' . ($idx + 1) . '.</td>
+                    <td width="57%">' . nl2br(htmlspecialchars($desc)) . '</td>
+                    <td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>
+                    <td width="18%" align="right">' . number_format($lineTot, 3) . '</td>
+                </tr>';
+        }
     }
 
     $html .= '
@@ -402,32 +511,32 @@ if ($download) {
     if ($discountAmt > 0) {
         $html .= '
             <tr style="background-color:#ffffff;">
-                <td colspan="4" align="center"><b>Gross Amount Excluding VAT</b></td>
+                <td colspan="3" align="center"><b>Gross Amount Excluding VAT</b></td>
                 <td align="right"><b>' . number_format($subtotal, 3) . '</b></td>
             </tr>
             <tr style="background-color:#ffffff;color:#b91c1c;">
-                <td colspan="4" align="center"><b>Discount ' . ($discountType === 'percent' ? "({$discountVal}%)" : "") . '</b></td>
+                <td colspan="3" align="center"><b>Discount ' . ($discountType === 'percent' ? "({$discountVal}%)" : "") . '</b></td>
                 <td align="right"><b>-' . number_format($discountAmt, 3) . '</b></td>
             </tr>
             <tr style="background-color:#ffffff;">
-                <td colspan="4" align="center"><b>Net Amount Excluding VAT</b></td>
+                <td colspan="3" align="center"><b>Net Amount Excluding VAT</b></td>
                 <td align="right"><b>' . number_format($netSubtotal, 3) . '</b></td>
             </tr>';
     } else {
         $html .= '
             <tr style="background-color:#ffffff;">
-                <td colspan="4" align="center"><b>Amount Excluding VAT</b></td>
+                <td colspan="3" align="center"><b>Amount Excluding VAT</b></td>
                 <td align="right"><b>' . number_format($subtotal, 3) . '</b></td>
             </tr>';
     }
 
     $html .= '
             <tr style="background-color:#ffffff;">
-                <td colspan="4" align="center"><b>VAT ' . $vatRate . '%</b></td>
+                <td colspan="3" align="center"><b>VAT ' . $vatRate . '%</b></td>
                 <td align="right"><b>' . number_format($vatAmt, 3) . '</b></td>
             </tr>
             <tr style="background-color:#f1f5f9;font-weight:bold;">
-                <td colspan="4" align="center"><b>Total Amount (BD)</b></td>
+                <td colspan="3" align="center"><b>Total Amount (BD)</b></td>
                 <td align="right"><b>' . number_format($total, 3) . '</b></td>
             </tr>
         </tfoot>
@@ -448,14 +557,28 @@ if ($download) {
     }
 
     $html .= '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p>
-    <br><br>
+    <br><br>';
 
-    <table cellpadding="4" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
+    // Prepare Stamp & Signature for PDF
+    $stampSignHtml = '';
+    if ($hasSig || $hasStamp) {
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:4px;"><tr>';
+        if ($hasSig) {
+            $stampSignHtml .= '<td width="130" style="vertical-align:middle;"><img src="' . $sigFile . '" height="36" /></td>';
+        }
+        if ($hasStamp) {
+            $stampSignHtml .= '<td width="120" style="vertical-align:middle;"><img src="' . $stampFile . '" height="52" /></td>';
+        }
+        $stampSignHtml .= '</tr></table>';
+    }
+
+    $html .= '<table cellpadding="4" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
         <tr>
             <td width="55%" style="line-height:1.4;">
                 <b>Thanking you,</b><br><br>
                 <b>Yours sincerely,</b><br>
-                <b>THC Facility Management W.L.L</b><br><br>
+                <b>THC Facility Management W.L.L</b><br>
+                ' . $stampSignHtml . '
                 <b>' . htmlspecialchars($signerName) . '</b><br>
                 <span style="color:#475569;">' . htmlspecialchars($signerTitle) . '</span>
             </td>
@@ -727,54 +850,77 @@ if ($download) {
             <tr>
                 <th style="width: 38px; text-align: center;">Sl.</th>
                 <th>Description</th>
-                <th style="width: 65px; text-align: center;">Qty</th>
-                <th style="width: 80px; text-align: center;">Unit</th>
-                <th style="width: 100px; text-align: right;">Total (BD)</th>
+                <th style="width: 120px; text-align: center;">Qty.</th>
+                <th style="width: 120px; text-align: right;">Total (BD)</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($items as $idx => $it): 
-                $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
-                $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
-                $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
-                $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
-                $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
-            ?>
-            <tr>
-                <td class="c"><?= ($idx + 1) ?>.</td>
-                <td><?= htmlspecialchars($desc) ?></td>
-                <td class="c"><?= $qty ?></td>
-                <td class="c"><?= htmlspecialchars($unit) ?></td>
-                <td class="r"><?= number_format($lineTot, 3) ?></td>
-            </tr>
-            <?php endforeach; ?>
+            <?php if ($isMerged && $itemCount > 0): ?>
+                <?php foreach ($items as $idx => $it): 
+                    $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
+                    $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
+                    $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
+                    $qtyStr = $qty . ' ' . $unit;
+                ?>
+                <tr>
+                    <td class="c"><?= ($idx + 1) ?>.</td>
+                    <td><?= nl2br(htmlspecialchars($desc)) ?></td>
+                    <?php if ($mergeQty): ?>
+                        <?php if ($idx === 0): ?>
+                            <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle;"><b>1 Lumpsum</b></td>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <td class="c"><?= htmlspecialchars($qtyStr) ?></td>
+                    <?php endif; ?>
+                    <?php if ($idx === 0): ?>
+                        <td class="r" rowspan="<?= $itemCount ?>" style="vertical-align: middle; font-weight: 700;"><?= number_format($calcLumpSum, 3) ?></td>
+                    <?php endif; ?>
+                </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <?php foreach ($items as $idx => $it): 
+                    $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
+                    $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
+                    $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
+                    $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
+                    $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
+                    $qtyStr = $qty . ' ' . $unit;
+                ?>
+                <tr>
+                    <td class="c"><?= ($idx + 1) ?>.</td>
+                    <td><?= nl2br(htmlspecialchars($desc)) ?></td>
+                    <td class="c"><?= htmlspecialchars($qtyStr) ?></td>
+                    <td class="r"><?= number_format($lineTot, 3) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </tbody>
         <tfoot>
             <?php if ($discountAmt > 0): ?>
             <tr style="background: #ffffff;">
-                <td colspan="4" class="c"><b>Gross Amount Excluding VAT</b></td>
+                <td colspan="3" class="c"><b>Gross Amount Excluding VAT</b></td>
                 <td class="r"><b><?= number_format($subtotal, 3) ?></b></td>
             </tr>
             <tr style="background: #ffffff; color: #b91c1c;">
-                <td colspan="4" class="c"><b>Discount <?= $discountType === 'percent' ? "({$discountVal}%)" : "" ?></b></td>
+                <td colspan="3" class="c"><b>Discount <?= $discountType === 'percent' ? "({$discountVal}%)" : "" ?></b></td>
                 <td class="r"><b>-<?= number_format($discountAmt, 3) ?></b></td>
             </tr>
             <tr style="background: #ffffff;">
-                <td colspan="4" class="c"><b>Net Amount Excluding VAT</b></td>
+                <td colspan="3" class="c"><b>Net Amount Excluding VAT</b></td>
                 <td class="r"><b><?= number_format($netSubtotal, 3) ?></b></td>
             </tr>
             <?php else: ?>
             <tr style="background: #ffffff;">
-                <td colspan="4" class="c"><b>Amount Excluding VAT</b></td>
+                <td colspan="3" class="c"><b>Amount Excluding VAT</b></td>
                 <td class="r"><b><?= number_format($subtotal, 3) ?></b></td>
             </tr>
             <?php endif; ?>
             <tr style="background: #ffffff;">
-                <td colspan="4" class="c"><b>VAT <?= $vatRate ?>%</b></td>
+                <td colspan="3" class="c"><b>VAT <?= $vatRate ?>%</b></td>
                 <td class="r"><b><?= number_format($vatAmt, 3) ?></b></td>
             </tr>
             <tr style="background: #f1f5f9; font-weight: 700;">
-                <td colspan="4" class="c"><b>Total Amount (BD)</b></td>
+                <td colspan="3" class="c"><b>Total Amount (BD)</b></td>
                 <td class="r"><b><?= number_format($total, 3) ?></b></td>
             </tr>
         </tfoot>
@@ -797,14 +943,22 @@ if ($download) {
         <div>
             <b>Thanking you,<br><br>
             Yours sincerely,<br>
-            THC Facility Management W.L.L<br><br>
+            THC Facility Management W.L.L</b><br>
+            <div style="display: flex; align-items: center; gap: 12px; margin: 8px 0 6px 0; min-height: 55px;">
+                <?php if ($hasSig): ?>
+                    <img src="../view/<?= htmlspecialchars(ltrim($userSigRel, '/')) ?>" onerror="this.src='<?= htmlspecialchars(ltrim($userSigRel, '/')) ?>';" alt="Signature" style="max-height: 46px; max-width: 130px; object-fit: contain;" />
+                <?php endif; ?>
+                <?php if ($hasStamp): ?>
+                    <img src="../view/<?= htmlspecialchars(ltrim($stampRel, '/')) ?>" onerror="this.src='<?= htmlspecialchars(ltrim($stampRel, '/')) ?>';" alt="Company Stamp" style="max-height: 65px; max-width: 130px; object-fit: contain;" />
+                <?php endif; ?>
+            </div>
             <?php
             $signer = $q['user_name'] ?? '';
             if (strtolower(trim($signer)) === 'adminstrator') {
                 $signer = 'Administrator';
             }
             ?>
-            <?= htmlspecialchars($signer) ?><br>
+            <b><?= htmlspecialchars($signer) ?><br>
             <span style="font-weight: 400; color: #475569;"><?= htmlspecialchars($q['user_designation']) ?></span></b>
         </div>
         <div class="ap">

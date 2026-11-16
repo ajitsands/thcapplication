@@ -88,11 +88,21 @@ class QuotationModuleController
         'show_ref_no' => 1
     ];
 
+    private $stampSignConfigFile;
+    private $defaultStampSignConfig = [
+        'show_stamp' => 1,
+        'show_signature' => 1,
+        'company_stamp_url' => 'uploads/quotation_signatures/default_thc_stamp.png',
+        'default_signature_url' => 'uploads/quotation_signatures/default_signature.png',
+        'user_signatures' => []
+    ];
+
     public function __construct()
     {
         $this->jsonFallbackFile = __DIR__ . '/../../scratch/quotations_data.json';
         $this->unitsFallbackFile = __DIR__ . '/../../scratch/quotation_units.json';
         $this->footerConfigFile = __DIR__ . '/../../scratch/quotation_footer_config.json';
+        $this->stampSignConfigFile = __DIR__ . '/../../scratch/quotation_stamp_sign_config.json';
         $this->initDbConnection();
         $this->ensureSchemaAndData();
     }
@@ -188,6 +198,21 @@ class QuotationModuleController
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `activity_json` LONGTEXT DEFAULT NULL AFTER `remark`");
             }
 
+            // Migration check: Add internal_notes column if missing
+            $chkNotes = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'internal_notes'");
+            if ($chkNotes && mysqli_num_rows($chkNotes) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `internal_notes` TEXT DEFAULT NULL AFTER `remark`");
+            }
+
+            // Migration check: Add merge_items, merge_qty, merged_lump_sum_price columns if missing
+            $chkMerge = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'merge_items'");
+            if ($chkMerge && mysqli_num_rows($chkMerge) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
+                    ADD COLUMN `merge_items` TINYINT(1) NOT NULL DEFAULT 0 AFTER `discount_amount`,
+                    ADD COLUMN `merge_qty` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merge_items`,
+                    ADD COLUMN `merged_lump_sum_price` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `merge_qty`");
+            }
+
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
                 `item_id` INT(11) NOT NULL AUTO_INCREMENT,
                 `quotation_id` INT(11) NOT NULL,
@@ -197,10 +222,17 @@ class QuotationModuleController
                 `unit` VARCHAR(50) NOT NULL DEFAULT 'Lumpsum',
                 `unit_price` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `total_price` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
+                `merge_with_prev` TINYINT(1) NOT NULL DEFAULT 0,
                 PRIMARY KEY (`item_id`),
                 KEY `idx_quotation_id` (`quotation_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             @mysqli_query($this->db, $itemsSql);
+
+            // Migration check: Add merge_with_prev in tbl_quotation_items_v2 if missing
+            $chkItmMerge = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotation_items_v2` LIKE 'merge_with_prev'");
+            if ($chkItmMerge && mysqli_num_rows($chkItmMerge) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotation_items_v2` ADD COLUMN `merge_with_prev` TINYINT(1) NOT NULL DEFAULT 0 AFTER `total_price`");
+            }
 
             $unitsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_units_master` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -236,6 +268,19 @@ class QuotationModuleController
             if (!file_exists($this->jsonFallbackFile)) {
                 $this->seedInitialDataJson();
             }
+        }
+
+        // Ensure default stamp & signature files exist in uploads
+        $upDir = __DIR__ . '/../../view/uploads/quotation_signatures/';
+        if (!file_exists($upDir)) {
+            @mkdir($upDir, 0777, true);
+        }
+        $assetDir = __DIR__ . '/../../view/global_assets/images/quotation_signatures/';
+        if (file_exists($assetDir . 'default_thc_stamp.png') && !file_exists($upDir . 'default_thc_stamp.png')) {
+            @copy($assetDir . 'default_thc_stamp.png', $upDir . 'default_thc_stamp.png');
+        }
+        if (file_exists($assetDir . 'default_signature.png') && !file_exists($upDir . 'default_signature.png')) {
+            @copy($assetDir . 'default_signature.png', $upDir . 'default_signature.png');
         }
     }
 
@@ -576,6 +621,18 @@ class QuotationModuleController
                     $this->handleSaveFooterConfig();
                     break;
 
+                case 'get_stamp_sign_config':
+                    $this->handleGetStampSignConfig();
+                    break;
+
+                case 'save_stamp_sign_config':
+                    $this->handleSaveStampSignConfig();
+                    break;
+
+                case 'upload_stamp_sign':
+                    $this->handleUploadStampSign();
+                    break;
+
                 case 'clear_quotations':
                     $this->handleClearQuotations();
                     break;
@@ -721,6 +778,7 @@ class QuotationModuleController
             "rejection_reasons" => $this->rejectionReasons,
             "units" => $this->fetchUnitsList(),
             "footer_config" => $this->getFooterConfig(),
+            "stamp_sign_config" => $this->getStampSignConfig(),
             "quotations" => $quotations
         ]);
     }
@@ -941,7 +999,8 @@ class QuotationModuleController
                             "quantity" => (float)$it['quantity'],
                             "unit" => $it['unit'],
                             "unit_price" => (float)$it['unit_price'],
-                            "total_price" => (float)$it['total_price']
+                            "total_price" => (float)$it['total_price'],
+                            "merge_with_prev" => (int)($it['merge_with_prev'] ?? 0)
                         ];
                     }
                 }
@@ -988,6 +1047,10 @@ class QuotationModuleController
                         "subtotal_excl_vat" => (float)$r['subtotal_excl_vat'],
                         "vat_amount" => (float)$r['vat_amount'],
                         "total_incl_vat" => (float)$r['total_incl_vat'],
+                        "internal_notes" => $r['internal_notes'] ?? '',
+                        "merge_items" => (int)($r['merge_items'] ?? 0),
+                        "merge_qty" => (int)($r['merge_qty'] ?? 0),
+                        "merged_lump_sum_price" => (float)($r['merged_lump_sum_price'] ?? 0.0),
                         "terms" => $terms,
                         "status" => $r['status'],
                         "rejection_reason" => $r['rejection_reason'],
@@ -1259,6 +1322,155 @@ class QuotationModuleController
         ]);
     }
 
+    public function getStampSignConfig(): array
+    {
+        $cfg = $this->defaultStampSignConfig;
+        if ($this->isDbConnected) {
+            $res = @mysqli_query($this->db, "SELECT `setting_value` FROM `tbl_quotation_settings_v2` WHERE `setting_key` = 'quotation_stamp_sign_config' LIMIT 1");
+            if ($res && ($row = mysqli_fetch_assoc($res))) {
+                $dbCfg = json_decode($row['setting_value'], true);
+                if (is_array($dbCfg)) {
+                    $cfg = array_merge($cfg, $dbCfg);
+                }
+            }
+        }
+        if (file_exists($this->stampSignConfigFile)) {
+            $fJson = json_decode(@file_get_contents($this->stampSignConfigFile), true);
+            if (is_array($fJson)) {
+                $cfg = array_merge($cfg, $fJson);
+            }
+        }
+        return $cfg;
+    }
+
+    private function handleGetStampSignConfig()
+    {
+        echo json_encode([
+            "status" => "success",
+            "stamp_sign_config" => $this->getStampSignConfig()
+        ]);
+    }
+
+    private function handleSaveStampSignConfig()
+    {
+        $input = $this->getInputData();
+        $curCfg = $this->getStampSignConfig();
+
+        if (isset($input['show_stamp'])) {
+            $curCfg['show_stamp'] = (int)(bool)$input['show_stamp'];
+        }
+        if (isset($input['show_signature'])) {
+            $curCfg['show_signature'] = (int)(bool)$input['show_signature'];
+        }
+        if (!empty($input['company_stamp_url'])) {
+            $curCfg['company_stamp_url'] = trim((string)$input['company_stamp_url']);
+        }
+        if (!empty($input['default_signature_url'])) {
+            $curCfg['default_signature_url'] = trim((string)$input['default_signature_url']);
+        }
+
+        $jsonStr = json_encode($curCfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if ($this->isDbConnected) {
+            $escKey = 'quotation_stamp_sign_config';
+            $escVal = mysqli_real_escape_string($this->db, $jsonStr);
+            @mysqli_query($this->db, "INSERT INTO `tbl_quotation_settings_v2` (`setting_key`, `setting_value`) 
+                VALUES ('$escKey', '$escVal') 
+                ON DUPLICATE KEY UPDATE `setting_value` = '$escVal'");
+        }
+
+        $dir = dirname($this->stampSignConfigFile);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($this->stampSignConfigFile, $jsonStr);
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Stamp and signature settings saved successfully.",
+            "stamp_sign_config" => $curCfg
+        ]);
+    }
+
+    private function handleUploadStampSign()
+    {
+        $uploadDir = __DIR__ . '/../../view/uploads/quotation_signatures/';
+        if (!file_exists($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+
+        $curCfg = $this->getStampSignConfig();
+        $showStamp = isset($_POST['show_stamp']) ? (int)(bool)$_POST['show_stamp'] : $curCfg['show_stamp'];
+        $showSignature = isset($_POST['show_signature']) ? (int)(bool)$_POST['show_signature'] : $curCfg['show_signature'];
+        $userCode = isset($_POST['user_code']) ? trim((string)$_POST['user_code']) : '';
+
+        $allowedExts = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+        $uploaded = [];
+
+        // Handle Stamp Upload
+        if (!empty($_FILES['stamp_file']['name']) && $_FILES['stamp_file']['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($_FILES['stamp_file']['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, $allowedExts)) {
+                $newFileName = 'thc_stamp_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                $target = $uploadDir . $newFileName;
+                if (move_uploaded_file($_FILES['stamp_file']['tmp_name'], $target)) {
+                    $curCfg['company_stamp_url'] = 'uploads/quotation_signatures/' . $newFileName;
+                    $showStamp = 1;
+                    $uploaded[] = 'Company Stamp';
+                }
+            }
+        }
+
+        // Handle Signature Upload
+        if (!empty($_FILES['signature_file']['name']) && $_FILES['signature_file']['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($_FILES['signature_file']['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, $allowedExts)) {
+                $prefix = !empty($userCode) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $userCode) : 'sig';
+                $newFileName = 'sig_' . $prefix . '_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                $target = $uploadDir . $newFileName;
+                if (move_uploaded_file($_FILES['signature_file']['tmp_name'], $target)) {
+                    $relUrl = 'uploads/quotation_signatures/' . $newFileName;
+                    $curCfg['default_signature_url'] = $relUrl;
+                    if (!empty($userCode)) {
+                        if (!isset($curCfg['user_signatures']) || !is_array($curCfg['user_signatures'])) {
+                            $curCfg['user_signatures'] = [];
+                        }
+                        $curCfg['user_signatures'][$userCode] = $relUrl;
+                    }
+                    $showSignature = 1;
+                    $uploaded[] = 'Estimator Signature';
+                }
+            }
+        }
+
+        $curCfg['show_stamp'] = $showStamp;
+        $curCfg['show_signature'] = $showSignature;
+
+        $jsonStr = json_encode($curCfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if ($this->isDbConnected) {
+            $escKey = 'quotation_stamp_sign_config';
+            $escVal = mysqli_real_escape_string($this->db, $jsonStr);
+            @mysqli_query($this->db, "INSERT INTO `tbl_quotation_settings_v2` (`setting_key`, `setting_value`) 
+                VALUES ('$escKey', '$escVal') 
+                ON DUPLICATE KEY UPDATE `setting_value` = '$escVal'");
+        }
+
+        $dir = dirname($this->stampSignConfigFile);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($this->stampSignConfigFile, $jsonStr);
+
+        $msg = !empty($uploaded) ? (implode(' and ', $uploaded) . " uploaded and settings applied successfully.") : "Stamp and signature settings updated successfully.";
+
+        echo json_encode([
+            "status" => "success",
+            "message" => $msg,
+            "stamp_sign_config" => $curCfg
+        ]);
+    }
+
     private function handleClearQuotations()
     {
         if ($this->isDbConnected) {
@@ -1338,6 +1550,10 @@ class QuotationModuleController
         $seqNo = isset($input['seq_no']) && $input['seq_no'] !== '' ? (int)$input['seq_no'] : null;
         $revNo = isset($input['rev_no']) ? (int)$input['rev_no'] : 0;
         $variationNo = isset($input['variation_no']) ? (int)$input['variation_no'] : (isset($input['vn']) ? (int)$input['vn'] : 0);
+        $internalNotes = trim($input['internal_notes'] ?? '');
+        $mergeItems = !empty($input['merge_items']) ? 1 : 0;
+        $mergeQty = !empty($input['merge_qty']) ? 1 : 0;
+        $mergedLumpSumPrice = isset($input['merged_lump_sum_price']) ? (float)$input['merged_lump_sum_price'] : 0.0;
 
         // Rule 1: Issued quotes are immutable. Edit exists only for Draft.
         if ($id > 0 && $this->isDbConnected) {
@@ -1381,7 +1597,7 @@ class QuotationModuleController
             $qty = (float)($it['quantity'] ?? ($it[1] ?? 1));
             $unit = trim($it['unit'] ?? ($it[2] ?? 'Lumpsum'));
             $price = (float)($it['unit_price'] ?? ($it[3] ?? 0));
-            $lineTotal = $qty * $price;
+            $lineTotal = (isset($it['total_price']) && (float)$it['total_price'] > 0) ? (float)$it['total_price'] : ($qty * $price);
             $subtotal += $lineTotal;
 
             $cleanItems[] = [
@@ -1389,8 +1605,18 @@ class QuotationModuleController
                 "quantity" => $qty,
                 "unit" => $unit,
                 "unit_price" => $price,
-                "total_price" => $lineTotal
+                "total_price" => $lineTotal,
+                "merge_with_prev" => !empty($it['merge_with_prev']) ? 1 : 0
             ];
+        }
+
+        // If merge line items option is selected with a lump sum price
+        if ($mergeItems) {
+            if ($mergedLumpSumPrice > 0) {
+                $subtotal = $mergedLumpSumPrice;
+            } elseif ($subtotal > 0 && $mergedLumpSumPrice <= 0) {
+                $mergedLumpSumPrice = $subtotal;
+            }
         }
 
         $discountType = isset($input['discount_type']) && $input['discount_type'] === 'percent' ? 'percent' : 'amount';
@@ -1459,6 +1685,7 @@ class QuotationModuleController
             $escUserName = mysqli_real_escape_string($this->db, $userName);
             $escUserDesig = mysqli_real_escape_string($this->db, $userDesignation);
             $escQNo = mysqli_real_escape_string($this->db, $quotationNo);
+            $escNotes = mysqli_real_escape_string($this->db, $internalNotes);
             $seqVal = $seqNo !== null ? (int)$seqNo : "NULL";
 
             // Activity Log
@@ -1498,6 +1725,10 @@ class QuotationModuleController
                     subtotal_excl_vat = $subtotal,
                     vat_amount = $vatAmount,
                     total_incl_vat = $totalInclVat,
+                    internal_notes = '$escNotes',
+                    merge_items = $mergeItems,
+                    merge_qty = $mergeQty,
+                    merged_lump_sum_price = $mergedLumpSumPrice,
                     terms_json = '$termsJson',
                     status = '$status',
                     activity_json = '$actJson'
@@ -1509,11 +1740,13 @@ class QuotationModuleController
                 $ins = "INSERT INTO tbl_quotations_v2 
                     (seq_no, rev_no, variation_no, quotation_no, is_amc, client_code, client_name, client_address,
                      contact_no, attention, subject, quotation_date, user_code, user_name, user_designation,
-                     vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat, terms_json, status, activity_json)
+                     vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat,
+                     internal_notes, merge_items, merge_qty, merged_lump_sum_price, terms_json, status, activity_json)
                     VALUES 
                     ($seqVal, $revNo, $variationNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
                      '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig',
-                     $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat, '$termsJson', '$status', '$actJson')";
+                     $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat,
+                     '$escNotes', $mergeItems, $mergeQty, $mergedLumpSumPrice, '$termsJson', '$status', '$actJson')";
                 mysqli_query($this->db, $ins);
                 $savedId = mysqli_insert_id($this->db);
             }
@@ -1526,9 +1759,10 @@ class QuotationModuleController
                 $unit = mysqli_real_escape_string($this->db, $it['unit']);
                 $price = (float)$it['unit_price'];
                 $tot = (float)$it['total_price'];
+                $mPrev = (int)$it['merge_with_prev'];
                 mysqli_query($this->db, "INSERT INTO tbl_quotation_items_v2 
-                    (quotation_id, sort_order, description, quantity, unit, unit_price, total_price)
-                    VALUES ($savedId, $sort, '$desc', $qty, '$unit', $price, $tot)");
+                    (quotation_id, sort_order, description, quantity, unit, unit_price, total_price, merge_with_prev)
+                    VALUES ($savedId, $sort, '$desc', $qty, '$unit', $price, $tot, $mPrev)");
                 $sort++;
             }
         } else {
@@ -1593,6 +1827,10 @@ class QuotationModuleController
                 "subtotal_excl_vat" => $subtotal,
                 "vat_amount" => $vatAmount,
                 "total_incl_vat" => $totalInclVat,
+                "internal_notes" => $internalNotes,
+                "merge_items" => $mergeItems,
+                "merge_qty" => $mergeQty,
+                "merged_lump_sum_price" => $mergedLumpSumPrice,
                 "terms" => $terms,
                 "status" => $status,
                 "rejection_reason" => "",
