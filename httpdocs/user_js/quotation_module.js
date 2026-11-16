@@ -544,7 +544,17 @@
                 </div>
             </div>
             <div class="card bar filter-toolbar">
-                <input id="fq" placeholder="Search number, client or subject" value="${H(F.q)}" spellcheck="true" autocorrect="on">
+                <!-- Anti-autofill trap fields for browser credential autofill -->
+                <input type="text" name="fake_username_trap" style="display:none !important;" aria-hidden="true" autocomplete="username" tabindex="-1">
+                <input type="password" name="fake_password_trap" style="display:none !important;" aria-hidden="true" autocomplete="current-password" tabindex="-1">
+
+                <div class="search-input-wrapper">
+                    <i class="icon-search4" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:#94a3b8;pointer-events:none;z-index:2;"></i>
+                    <input type="search" id="fq" name="quote_search_filter_query_prevent_autofill" placeholder="Search number, client or subject…" value="${H(F.q)}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <button type="button" id="btn_clear_search" title="Clear search" style="display:${F.q ? 'flex' : 'none'};">
+                        <i class="icon-cross2" style="font-size:11px;"></i>
+                    </button>
+                </div>
                 ${sel("fc", "All clients", uniqueClients.map(c => [c, c]))}
                 ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved"].map(c => [c, c]))}
                 ${sel("ft", "AMC & non-AMC", [["AMC", "AMC clients"], ["Non-AMC", "Non-AMC clients"]])}
@@ -562,7 +572,65 @@
             btnExp.onclick = () => exportQuotationLogToExcel();
         }
 
-        [["fq", "q"], ["fs", "st"], ["ft", "type"]].forEach(([i, k]) => {
+        const elFq = $("#fq");
+        const btnClear = $("#btn_clear_search");
+
+        const updateClearButton = () => {
+            if (!elFq || !btnClear) return;
+            const hasVal = !!(elFq.value && elFq.value.trim().length > 0);
+            btnClear.style.display = hasVal ? "flex" : "none";
+        };
+
+        if (elFq) {
+            if (!F.q) {
+                elFq.value = "";
+            }
+            updateClearButton();
+
+            elFq.oninput = e => {
+                F.q = e.target.value;
+                updateClearButton();
+                res();
+            };
+            elFq.onchange = e => {
+                F.q = e.target.value;
+                updateClearButton();
+                res();
+            };
+            elFq.onkeydown = e => {
+                if (e.key === "Escape") {
+                    elFq.value = "";
+                    F.q = "";
+                    updateClearButton();
+                    res();
+                }
+            };
+
+            // Watchdog against late browser autofills that inject credentials on refresh
+            [40, 120, 250, 500].forEach(delay => {
+                setTimeout(() => {
+                    if (!F.q && elFq && elFq.value) {
+                        elFq.value = "";
+                        updateClearButton();
+                        res();
+                    }
+                }, delay);
+            });
+        }
+
+        if (btnClear && elFq) {
+            btnClear.onclick = e => {
+                e.preventDefault();
+                e.stopPropagation();
+                elFq.value = "";
+                F.q = "";
+                updateClearButton();
+                elFq.focus();
+                res();
+            };
+        }
+
+        [["fs", "st"], ["ft", "type"]].forEach(([i, k]) => {
             const el = $("#" + i);
             if (el) {
                 el.oninput = e => { F[k] = e.target.value; res(); };
