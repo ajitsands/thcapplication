@@ -236,6 +236,120 @@ $OBJ->URLEncode('head=dashboard');
           max-width: 95% !important;
           margin: 20px auto !important;
       }
+
+      /* ===== Page Preloader / Loader Overlay ===== */
+      #page_loader_overlay {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          background: #ffffff !important;
+          background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 100%) !important;
+          z-index: 999999 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          transition: opacity 0.4s ease, visibility 0.4s ease !important;
+          pointer-events: all !important;
+      }
+      #page_loader_overlay.loader-hidden {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+      }
+      .loader-content {
+          text-align: center !important;
+          max-width: 400px !important;
+          padding: 30px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+      }
+      .loader-spinner-wrapper {
+          position: relative !important;
+          width: 76px !important;
+          height: 76px !important;
+          margin-bottom: 22px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+      }
+      .loader-spinner-outer {
+          position: absolute !important;
+          width: 76px !important;
+          height: 76px !important;
+          border: 3.5px solid rgba(10, 65, 116, 0.12) !important;
+          border-top-color: #0A4174 !important;
+          border-radius: 50% !important;
+          animation: pageLoaderSpin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite !important;
+      }
+      .loader-spinner-inner {
+          position: absolute !important;
+          width: 56px !important;
+          height: 56px !important;
+          border: 2.5px solid rgba(56, 189, 248, 0.18) !important;
+          border-bottom-color: #38bdf8 !important;
+          border-radius: 50% !important;
+          animation: pageLoaderSpinReverse 1.3s linear infinite !important;
+      }
+      .loader-icon {
+          font-size: 26px !important;
+          color: #0A4174 !important;
+          animation: pageLoaderPulse 1.8s ease-in-out infinite !important;
+      }
+      .loader-text {
+          font-size: 17px !important;
+          font-weight: 700 !important;
+          color: #0f172a !important;
+          letter-spacing: -0.2px !important;
+          margin-bottom: 6px !important;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      }
+      .loader-sub {
+          font-size: 13px !important;
+          color: #64748b !important;
+          margin-bottom: 22px !important;
+          font-weight: 500 !important;
+      }
+      .loader-bar-track {
+          width: 200px !important;
+          height: 4px !important;
+          background: #e2e8f0 !important;
+          border-radius: 4px !important;
+          overflow: hidden !important;
+          position: relative !important;
+      }
+      .loader-bar-fill {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          bottom: 0 !important;
+          background: linear-gradient(90deg, #0A4174, #38bdf8) !important;
+          border-radius: 4px !important;
+          animation: pageLoaderBarIndeterminate 1.5s ease-in-out infinite !important;
+      }
+      @keyframes pageLoaderSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+      }
+      @keyframes pageLoaderSpinReverse {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(-360deg); }
+      }
+      @keyframes pageLoaderPulse {
+          0%, 100% { transform: scale(1); opacity: 0.85; }
+          50% { transform: scale(1.15); opacity: 1; color: #0284c7; }
+      }
+      @keyframes pageLoaderBarIndeterminate {
+          0% { left: -40%; width: 40%; }
+          50% { left: 25%; width: 60%; }
+          100% { left: 100%; width: 40%; }
+      }
     </style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
@@ -290,6 +404,21 @@ if (typeof formatComplaintHtmlBullets !== 'function') {
     }
 }
 window.formatComplaintHtmlBullets = formatComplaintHtmlBullets;
+
+function hidePageLoader() {
+    var $loader = $('#page_loader_overlay');
+    if ($loader.length && !$loader.hasClass('loader-hidden')) {
+        $loader.addClass('loader-hidden');
+        setTimeout(function() {
+            $loader.remove();
+        }, 450);
+    }
+}
+window.hidePageLoader = hidePageLoader;
+$(window).on('load', function() {
+    setTimeout(hidePageLoader, 600);
+});
+setTimeout(hidePageLoader, 3500); // Safety watchdog timer
 
 $(document).ready(function(){
      // Move modals to body so they are not trapped inside calendar card stacking context
@@ -706,6 +835,9 @@ var FullCalendarBasic = function() {
                             if (typeof $.unblockUI === 'function') {
                                 $('#calendar').unblock();
                             }
+                            if (typeof hidePageLoader === 'function') {
+                                hidePageLoader();
+                            }
                         }
                     },
 					eventDrop: function(event, start)
@@ -980,6 +1112,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		include_once('template/date_time.inc');
 	?>
 <body class="navbar-top">
+
+	<!-- ===== Page Preloader / Loader Overlay ===== -->
+	<div id="page_loader_overlay">
+		<div class="loader-content">
+			<div class="loader-spinner-wrapper">
+				<div class="loader-spinner-outer"></div>
+				<div class="loader-spinner-inner"></div>
+				<i class="icon-calendar3 loader-icon"></i>
+			</div>
+			<div class="loader-text">Loading Visit Calendar...</div>
+			<div class="loader-sub">Preparing scheduled visits and AMC appointments</div>
+			<div class="loader-bar-track">
+				<div class="loader-bar-fill"></div>
+			</div>
+		</div>
+	</div>
+	<!-- ===== /Page Preloader ===== -->
 
 	
 
