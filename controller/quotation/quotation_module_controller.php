@@ -633,6 +633,10 @@ class QuotationModuleController
                     $this->handleUploadStampSign();
                     break;
 
+                case 'export_excel':
+                    $this->exportQuotationsExcel();
+                    break;
+
                 case 'clear_quotations':
                     $this->handleClearQuotations();
                     break;
@@ -1488,6 +1492,235 @@ class QuotationModuleController
     {
         $quotations = $this->fetchQuotationsList();
         echo json_encode(["status" => "success", "quotations" => $quotations]);
+    }
+
+    private function exportQuotationsExcel()
+    {
+        $quotes = $this->fetchQuotationsList();
+        
+        $clientFilter = trim($_REQUEST['client'] ?? '');
+        $statusFilter = trim($_REQUEST['status'] ?? '');
+        $typeFilter = trim($_REQUEST['type'] ?? '');
+        $userFilter = trim($_REQUEST['user'] ?? '');
+        $searchFilter = strtolower(trim($_REQUEST['q'] ?? ''));
+        $showSuperseded = !empty($_REQUEST['show_superseded']) && ($_REQUEST['show_superseded'] === '1' || $_REQUEST['show_superseded'] === 'true');
+
+        $filtered = [];
+        foreach ($quotes as $q) {
+            $st = $q['status'] ?? 'Draft';
+            $client = $q['client_name'] ?? '';
+            $isAmc = !empty($q['is_amc']);
+            $uCode = $q['user_code'] ?? '';
+            $qNo = $q['quotation_no'] ?? '';
+            $subj = $q['subject'] ?? '';
+
+            if (!$showSuperseded && in_array($st, ['Superseded', 'Void'])) {
+                continue;
+            }
+            if ($statusFilter !== '' && $st !== $statusFilter) {
+                continue;
+            }
+            if ($clientFilter !== '' && $client !== $clientFilter) {
+                continue;
+            }
+            if ($typeFilter === 'AMC' && !$isAmc) {
+                continue;
+            }
+            if ($typeFilter === 'Non-AMC' && $isAmc) {
+                continue;
+            }
+            if ($userFilter !== '' && $uCode !== $userFilter) {
+                continue;
+            }
+            if ($searchFilter !== '') {
+                $haystack = strtolower($qNo . ' ' . $client . ' ' . $subj);
+                if (strpos($haystack, $searchFilter) === false) {
+                    continue;
+                }
+            }
+            $filtered[] = $q;
+        }
+
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $filename = 'THC_Quotation_Log_' . date('Y-m-d') . '.xls';
+        if (!headers_sent()) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Pragma: public');
+        }
+
+        echo "\xEF\xBB\xBF"; // UTF-8 BOM
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <style>
+                body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1e293b; }
+                table { border-collapse: collapse; width: 100%; }
+                th { background-color: #0A4174; color: #ffffff; font-weight: bold; border: 1px solid #7BBDE8; padding: 8px 10px; font-size: 11pt; }
+                td { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 10.5pt; vertical-align: middle; }
+            </style>
+        </head>
+        <body>
+            <table>
+                <tr>
+                    <th colspan="23" style="background:#001D39;color:#ffffff;font-size:15pt;padding:12px;text-align:left;">
+                        THC FACILITY MANAGEMENT — QUOTATION LOG EXPORT
+                    </th>
+                </tr>
+                <tr>
+                    <td colspan="23" style="background:#f8fafc;color:#475569;font-size:10pt;padding:6px 10px;border-bottom:1.5px solid #0A4174;">
+                        <b>Export Date:</b> ' . date('d-m-Y H:i:s') . ' &nbsp;|&nbsp; <b>Total Records:</b> ' . count($filtered) . '
+                    </td>
+                </tr>
+                <tr style="height:12px;"><td colspan="23" style="border:none;"></td></tr>
+                <thead>
+                    <tr>
+                        <th style="width:45px;">Sl.</th>
+                        <th style="width:180px;">Quote No.</th>
+                        <th style="width:80px;">Version</th>
+                        <th style="width:95px;">Date</th>
+                        <th style="width:190px;">Client Name</th>
+                        <th style="width:85px;">Client Code</th>
+                        <th style="width:85px;">Type</th>
+                        <th style="width:110px;">Contact No.</th>
+                        <th style="width:140px;">Attention</th>
+                        <th style="width:230px;">Subject</th>
+                        <th style="width:150px;">Prepared By</th>
+                        <th style="width:140px;">Designation</th>
+                        <th style="width:115px;text-align:right;">Gross Excl. VAT (BHD)</th>
+                        <th style="width:105px;text-align:right;">Discount (BHD)</th>
+                        <th style="width:115px;text-align:right;">Net Excl. VAT (BHD)</th>
+                        <th style="width:75px;text-align:center;">VAT %</th>
+                        <th style="width:105px;text-align:right;">VAT Amount (BHD)</th>
+                        <th style="width:125px;text-align:right;">Total Incl. VAT (BHD)</th>
+                        <th style="width:70px;text-align:center;">Merged?</th>
+                        <th style="width:95px;text-align:center;">Status</th>
+                        <th style="width:200px;">Decision / Remark</th>
+                        <th style="width:220px;">Internal Notes (Office Ref)</th>
+                        <th style="width:300px;">Scope of Works Summary</th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+        $totalGross = 0.0;
+        $totalDisc = 0.0;
+        $totalNet = 0.0;
+        $totalVat = 0.0;
+        $grandTotal = 0.0;
+
+        foreach ($filtered as $idx => $x) {
+            $qNo = $x['quotation_no'] ?: 'Draft';
+            $vn = (int)($x['variation_no'] ?? 0);
+            $rev = (int)($x['rev_no'] ?? 0);
+            $version = 'Original';
+            if ($vn > 0 && $rev > 0) $version = "V{$vn} / R{$rev}";
+            elseif ($vn > 0) $version = "V{$vn}";
+            elseif ($rev > 0) $version = "R{$rev}";
+
+            $date = $x['quotation_date'] ?? '';
+            $clientName = $x['client_name'] ?? '';
+            $clientCode = $x['client_code'] ?? '';
+            $isAmc = !empty($x['is_amc']) ? 'AMC' : 'Non-AMC';
+            $contactNo = $x['contact_no'] ?? '';
+            $attention = $x['attention'] ?? '';
+            $subject = $x['subject'] ?? '';
+            $userName = $x['user_name'] ?? '';
+            if (strtolower(trim($userName)) === 'adminstrator') $userName = 'Administrator';
+            $userTitle = $x['user_designation'] ?? '';
+
+            $isMerged = !empty($x['merge_items']);
+            $mergedPrice = (float)($x['merged_lump_sum_price'] ?? 0);
+            $grossAmt = (float)($x['subtotal_excl_vat'] ?? 0);
+            if ($isMerged && $mergedPrice > 0) {
+                $grossAmt = $mergedPrice;
+            }
+            $discAmt = (float)($x['discount_amount'] ?? 0);
+            $netAmt = max(0, $grossAmt - $discAmt);
+            $vatRate = (float)($x['vat_rate'] ?? 10);
+            $vatAmt = ($netAmt * $vatRate) / 100.0;
+            $totAmt = $netAmt + $vatAmt;
+
+            $status = $x['status'] ?? 'Draft';
+            $decisionInfo = '';
+            if ($status === 'Approved') {
+                $apprBy = $x['approval_by'] ?? '';
+                $apprDate = $x['approval_date'] ?? '';
+                $poRef = $x['client_po_ref'] ?? '';
+                $decisionInfo = 'Approved by ' . $apprBy . ($apprDate ? ' on ' . $apprDate : '') . ($poRef ? ' (PO: ' . $poRef . ')' : '');
+            } elseif ($status === 'Not approved') {
+                $decisionInfo = 'Rejected: ' . ($x['rejection_reason'] ?: $x['remark']);
+            } elseif (!empty($x['remark'])) {
+                $decisionInfo = $x['remark'];
+            }
+
+            $internalNotes = $x['internal_notes'] ?? '';
+
+            $itemsSummary = [];
+            foreach (($x['items'] ?? []) as $i => $it) {
+                $desc = $it['description'] ?? ($it[0] ?? '');
+                $qty = $it['quantity'] ?? ($it[1] ?? 1);
+                $unit = $it['unit'] ?? ($it[2] ?? 'Lumpsum');
+                $price = $it['unit_price'] ?? ($it[3] ?? 0);
+                $itemsSummary[] = ($i + 1) . '. ' . $desc . ' (' . $qty . ' ' . $unit . ' @ ' . number_format((float)$price, 3) . ')';
+            }
+            $itemsSummaryStr = implode(' | ', $itemsSummary);
+
+            $totalGross += $grossAmt;
+            $totalDisc += $discAmt;
+            $totalNet += $netAmt;
+            $totalVat += $vatAmt;
+            $grandTotal += $totAmt;
+
+            echo '<tr>
+                <td style="text-align:center;">' . ($idx + 1) . '</td>
+                <td style="font-weight:bold;mso-number-format:\'\@\';">' . htmlspecialchars($qNo) . '</td>
+                <td style="text-align:center;">' . htmlspecialchars($version) . '</td>
+                <td style="text-align:center;mso-number-format:\'yyyy-mm-dd\';">' . htmlspecialchars($date) . '</td>
+                <td>' . htmlspecialchars($clientName) . '</td>
+                <td style="text-align:center;mso-number-format:\'\@\';">' . htmlspecialchars($clientCode) . '</td>
+                <td style="text-align:center;">' . htmlspecialchars($isAmc) . '</td>
+                <td style="mso-number-format:\'\@\';">' . htmlspecialchars($contactNo) . '</td>
+                <td>' . htmlspecialchars($attention) . '</td>
+                <td>' . htmlspecialchars($subject) . '</td>
+                <td>' . htmlspecialchars($userName) . '</td>
+                <td>' . htmlspecialchars($userTitle) . '</td>
+                <td style="text-align:right;mso-number-format:\'#,##0.000\';">' . number_format($grossAmt, 3, '.', '') . '</td>
+                <td style="text-align:right;mso-number-format:\'#,##0.000\';color:#b91c1c;">' . ($discAmt > 0 ? '-' . number_format($discAmt, 3, '.', '') : '0.000') . '</td>
+                <td style="text-align:right;font-weight:bold;mso-number-format:\'#,##0.000\';">' . number_format($netAmt, 3, '.', '') . '</td>
+                <td style="text-align:center;">' . $vatRate . '%</td>
+                <td style="text-align:right;mso-number-format:\'#,##0.000\';">' . number_format($vatAmt, 3, '.', '') . '</td>
+                <td style="text-align:right;font-weight:bold;color:#0A4174;mso-number-format:\'#,##0.000\';">' . number_format($totAmt, 3, '.', '') . '</td>
+                <td style="text-align:center;">' . ($isMerged ? 'Yes' : 'No') . '</td>
+                <td style="text-align:center;font-weight:bold;">' . htmlspecialchars($status) . '</td>
+                <td>' . htmlspecialchars($decisionInfo) . '</td>
+                <td style="background:#fffbeb;color:#92400e;">' . htmlspecialchars($internalNotes) . '</td>
+                <td style="font-size:10pt;color:#475569;">' . htmlspecialchars($itemsSummaryStr) . '</td>
+            </tr>';
+        }
+
+        echo '</tbody>
+            <tfoot>
+                <tr style="background:#f1f5f9;font-weight:bold;border-top:2px solid #0A4174;">
+                    <td colspan="12" style="text-align:right;padding:8px 12px;font-size:11pt;color:#001D39;">TOTALS (' . count($filtered) . ' Quotes):</td>
+                    <td style="text-align:right;mso-number-format:\'#,##0.000\';">' . number_format($totalGross, 3, '.', '') . '</td>
+                    <td style="text-align:right;mso-number-format:\'#,##0.000\';color:#b91c1c;">' . ($totalDisc > 0 ? '-' . number_format($totalDisc, 3, '.', '') : '0.000') . '</td>
+                    <td style="text-align:right;mso-number-format:\'#,##0.000\';">' . number_format($totalNet, 3, '.', '') . '</td>
+                    <td style="text-align:center;">—</td>
+                    <td style="text-align:right;mso-number-format:\'#,##0.000\';">' . number_format($totalVat, 3, '.', '') . '</td>
+                    <td style="text-align:right;font-weight:bold;color:#0A4174;mso-number-format:\'#,##0.000\';">' . number_format($grandTotal, 3, '.', '') . '</td>
+                    <td colspan="5"></td>
+                </tr>
+            </tfoot>
+        </table>
+        </body>
+        </html>';
+        exit;
     }
 
     private function getQuotation()

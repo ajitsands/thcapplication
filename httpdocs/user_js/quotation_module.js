@@ -535,9 +535,12 @@
         $("#v").innerHTML = `
             <div class="top">
                 <h1>Quotation log</h1>
-                <div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                     <button class="p" id="nA">+ New quote · AMC client</button>
                     <button id="nN">+ New quote · Non-AMC client</button>
+                    <button type="button" id="btn_export_excel" style="background:linear-gradient(135deg, #15803d 0%, #16a34a 100%);color:#ffffff;border:none;box-shadow:0 4px 12px rgba(22,163,74,0.25);font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:10px;cursor:pointer;" title="Export filtered quotation log to Excel">
+                        <i class="icon-file-excel mr-1"></i> Export to Excel
+                    </button>
                 </div>
             </div>
             <div class="card bar filter-toolbar">
@@ -554,6 +557,10 @@
 
         $("#nA").onclick = () => go("A");
         $("#nN").onclick = () => go("N");
+        const btnExp = $("#btn_export_excel");
+        if (btnExp) {
+            btnExp.onclick = () => exportQuotationLogToExcel();
+        }
 
         [["fq", "q"], ["fs", "st"], ["ft", "type"]].forEach(([i, k]) => {
             const el = $("#" + i);
@@ -597,8 +604,8 @@
         res();
     }
 
-    function res() {
-        const L = Q.filter(x => {
+    function getFilteredQuotations() {
+        return Q.filter(x => {
             const status = x.status || x.st;
             const client = x.client_name || x.client || "";
             const isAmc = x.is_amc !== undefined ? !!x.is_amc : !!x.amc;
@@ -618,6 +625,16 @@
             }
             return true;
         });
+    }
+
+    function res() {
+        const L = getFilteredQuotations();
+        const expBtn = $("#btn_export_excel");
+        if (expBtn) {
+            expBtn.innerHTML = `<i class="icon-file-excel mr-1"></i> Export to Excel (${L.length})`;
+            expBtn.disabled = (L.length === 0);
+            expBtn.style.opacity = (L.length === 0) ? "0.6" : "1";
+        }
 
         const S = L.filter(x => SENT.includes(x.status || x.st));
         const A = L.filter(x => (x.status || x.st) === "Approved");
@@ -719,6 +736,217 @@
                 vq(+row.dataset.id);
             }
         };
+    }
+
+    // Export Quotation Log to Excel
+    function exportQuotationLogToExcel() {
+        const list = getFilteredQuotations();
+        if (!list || !list.length) {
+            toast("No quotations found matching current filters to export.");
+            return;
+        }
+
+        toast("Generating Excel export for " + list.length + " quotations…");
+
+        let totalGross = 0;
+        let totalDiscount = 0;
+        let totalNet = 0;
+        let totalVat = 0;
+        let grandTotal = 0;
+
+        let rowsHtml = "";
+        list.forEach((x, idx) => {
+            const qNo = x.quotation_no || x.no || "Draft";
+            const version = lab(x);
+            const date = x.quotation_date || x.date || "";
+            const clientName = x.client_name || x.client || "";
+            const clientCode = x.client_code || x.code || "";
+            const isAmc = x.is_amc !== undefined ? (x.is_amc ? "AMC" : "Non-AMC") : (x.amc ? "AMC" : "Non-AMC");
+            const contactNo = x.contact_no || x.contact || "";
+            const attention = x.attention || x.attn || "";
+            const subject = x.subject || x.subj || "";
+            const userCode = x.user_code || x.user || "";
+            let userName = x.user_name || (USERS[userCode] ? (Array.isArray(USERS[userCode]) ? USERS[userCode][0] : USERS[userCode].name) : "") || userCode;
+            if (userName === "Adminstrator") userName = "Administrator";
+            const userTitle = x.user_designation || (USERS[userCode] ? (Array.isArray(USERS[userCode]) ? USERS[userCode][1] : USERS[userCode].title) : "") || "";
+
+            const grossAmt = amt(x);
+            const discAmt = discAmount(x);
+            const net = netAmt(x);
+            const vatRate = (x.vat_rate !== undefined ? +x.vat_rate : (x.vat !== undefined ? +x.vat : 10));
+            const vatVal = (net * vatRate) / 100;
+            const totalVal = tot(x);
+
+            const status = x.status || x.st || "Draft";
+            let decisionInfo = "";
+            if (status === "Approved") {
+                const apprBy = x.approval_by || (x.appr && x.appr.by) || "";
+                const apprDate = x.approval_date || (x.appr && x.appr.on) || "";
+                const poRef = x.client_po_ref || (x.appr && x.appr.po) || "";
+                decisionInfo = `Approved by ${apprBy}${apprDate ? ' on ' + apprDate : ''}${poRef ? ' (PO: ' + poRef + ')' : ''}`;
+            } else if (status === "Not approved") {
+                const reason = x.rejection_reason || x.remark || "";
+                decisionInfo = `Rejected: ${reason}`;
+            } else if (x.remark) {
+                decisionInfo = x.remark;
+            }
+
+            const internalNotes = x.internal_notes || "";
+            const isMerged = x.merge_items ? "Yes" : "No";
+
+            const items = x.items || [];
+            const itemsSummary = items.map((it, i) => {
+                const d = it.description || it[0] || "";
+                const q = it.quantity !== undefined ? it.quantity : (it[1] !== undefined ? it[1] : 1);
+                const u = it.unit || it[2] || "Lumpsum";
+                const p = it.unit_price !== undefined ? it.unit_price : (it[3] !== undefined ? it[3] : 0);
+                return `${i + 1}. ${d} (${q} ${u} @ ${Number(p).toFixed(3)})`;
+            }).join(" | ");
+
+            totalGross += grossAmt;
+            totalDiscount += discAmt;
+            totalNet += net;
+            totalVat += vatVal;
+            grandTotal += totalVal;
+
+            rowsHtml += `
+            <tr>
+                <td style="text-align:center;">${idx + 1}</td>
+                <td style="font-weight:bold;mso-number-format:'\\@';">${H(qNo)}</td>
+                <td style="text-align:center;">${H(version)}</td>
+                <td style="text-align:center;mso-number-format:'yyyy-mm-dd';">${H(date)}</td>
+                <td>${H(clientName)}</td>
+                <td style="text-align:center;mso-number-format:'\\@';">${H(clientCode)}</td>
+                <td style="text-align:center;">${H(isAmc)}</td>
+                <td style="mso-number-format:'\\@';">${H(contactNo)}</td>
+                <td>${H(attention)}</td>
+                <td>${H(subject)}</td>
+                <td>${H(userName)}</td>
+                <td>${H(userTitle)}</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';">${grossAmt.toFixed(3)}</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';color:#b91c1c;">${discAmt > 0 ? (-discAmt).toFixed(3) : "0.000"}</td>
+                <td style="text-align:right;font-weight:bold;mso-number-format:'#,##0.000';">${net.toFixed(3)}</td>
+                <td style="text-align:center;">${vatRate}%</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';">${vatVal.toFixed(3)}</td>
+                <td style="text-align:right;font-weight:bold;color:#0A4174;mso-number-format:'#,##0.000';">${totalVal.toFixed(3)}</td>
+                <td style="text-align:center;">${isMerged}</td>
+                <td style="text-align:center;font-weight:bold;">${H(status)}</td>
+                <td>${H(decisionInfo)}</td>
+                <td style="background:#fffbeb;color:#92400e;">${H(internalNotes)}</td>
+                <td style="font-size:10pt;color:#475569;">${H(itemsSummary)}</td>
+            </tr>`;
+        });
+
+        const footerHtml = `
+            <tr style="background:#f1f5f9;font-weight:bold;border-top:2px solid #0A4174;">
+                <td colspan="12" style="text-align:right;padding:8px 12px;font-size:11pt;color:#001D39;">TOTALS (${list.length} Quotes):</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';">${totalGross.toFixed(3)}</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';color:#b91c1c;">${(-totalDiscount).toFixed(3)}</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';">${totalNet.toFixed(3)}</td>
+                <td style="text-align:center;">—</td>
+                <td style="text-align:right;mso-number-format:'#,##0.000';">${totalVat.toFixed(3)}</td>
+                <td style="text-align:right;font-weight:bold;color:#0A4174;mso-number-format:'#,##0.000';">${grandTotal.toFixed(3)}</td>
+                <td colspan="5"></td>
+            </tr>`;
+
+        const filterSummaryParts = [];
+        if (F.q) filterSummaryParts.push(`Search: "${F.q}"`);
+        if (F.client) filterSummaryParts.push(`Client: "${F.client}"`);
+        if (F.st) filterSummaryParts.push(`Status: "${F.st}"`);
+        if (F.type) filterSummaryParts.push(`Type: "${F.type}"`);
+        if (F.user) filterSummaryParts.push(`User: "${F.user}"`);
+        if (F.sup) filterSummaryParts.push(`Including Superseded/Void`);
+        const filterStr = filterSummaryParts.length ? filterSummaryParts.join(" | ") : "All Quotations (No filters)";
+
+        const template = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>Quotation Log</x:Name>
+                            <x:WorksheetOptions>
+                                <x:DisplayGridlines/>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+            <![endif]-->
+            <style>
+                body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1e293b; }
+                table { border-collapse: collapse; width: 100%; }
+                th { background-color: #0A4174; color: #ffffff; font-weight: bold; border: 1px solid #7BBDE8; padding: 8px 10px; font-size: 11pt; }
+                td { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 10.5pt; vertical-align: middle; }
+            </style>
+        </head>
+        <body>
+            <table>
+                <tr>
+                    <th colspan="23" style="background:#001D39;color:#ffffff;font-size:15pt;padding:12px;text-align:left;">
+                        THC FACILITY MANAGEMENT — QUOTATION LOG EXPORT
+                    </th>
+                </tr>
+                <tr>
+                    <td colspan="23" style="background:#f8fafc;color:#475569;font-size:10pt;padding:6px 10px;border-bottom:1.5px solid #0A4174;">
+                        <b>Export Date:</b> ${new Date().toLocaleString()} &nbsp;|&nbsp; <b>Total Records:</b> ${list.length} &nbsp;|&nbsp; <b>Filters:</b> ${H(filterStr)}
+                    </td>
+                </tr>
+                <tr style="height:12px;"><td colspan="23" style="border:none;"></td></tr>
+                <thead>
+                    <tr>
+                        <th style="width:45px;">Sl.</th>
+                        <th style="width:180px;">Quote No.</th>
+                        <th style="width:80px;">Version</th>
+                        <th style="width:95px;">Date</th>
+                        <th style="width:190px;">Client Name</th>
+                        <th style="width:85px;">Client Code</th>
+                        <th style="width:85px;">Type</th>
+                        <th style="width:110px;">Contact No.</th>
+                        <th style="width:140px;">Attention</th>
+                        <th style="width:230px;">Subject</th>
+                        <th style="width:150px;">Prepared By</th>
+                        <th style="width:140px;">Designation</th>
+                        <th style="width:115px;text-align:right;">Gross Excl. VAT (BHD)</th>
+                        <th style="width:105px;text-align:right;">Discount (BHD)</th>
+                        <th style="width:115px;text-align:right;">Net Excl. VAT (BHD)</th>
+                        <th style="width:75px;text-align:center;">VAT %</th>
+                        <th style="width:105px;text-align:right;">VAT Amount (BHD)</th>
+                        <th style="width:125px;text-align:right;">Total Incl. VAT (BHD)</th>
+                        <th style="width:70px;text-align:center;">Merged?</th>
+                        <th style="width:95px;text-align:center;">Status</th>
+                        <th style="width:200px;">Decision / Remark</th>
+                        <th style="width:220px;">Internal Notes (Office Ref)</th>
+                        <th style="width:300px;">Scope of Works Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+                <tfoot>
+                    ${footerHtml}
+                </tfoot>
+            </table>
+        </body>
+        </html>`;
+
+        const blob = new Blob(["\ufeff", template], { type: "application/vnd.ms-excel;charset=utf-8" });
+        const fileName = `THC_Quotation_Log_${new Date().toISOString().slice(0, 10)}.xls`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 1500);
+
+        toast(`Exported ${list.length} quotations to ${fileName}`);
     }
 
     // ==========================================
