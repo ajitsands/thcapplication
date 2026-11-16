@@ -246,12 +246,6 @@ $OBJ->URLEncode('head=dashboard');
 	<script src="global_assets/js/demo_pages/components_popups.js"></script>
 
 	<script src="global_assets/js/plugins/extensions/jquery_ui/interactions.min.js"></script>
-	<script src="global_assets/js/plugins/ui/fullcalendar/core/main.min.js"></script>
-	<script src="global_assets/js/plugins/ui/fullcalendar/daygrid/main.min.js"></script>
-	<script src="global_assets/js/plugins/ui/fullcalendar/timegrid/main.min.js"></script>
-	<script src="global_assets/js/plugins/ui/fullcalendar/list/main.min.js"></script>
-	<script src="global_assets/js/plugins/ui/fullcalendar/interaction/main.min.js"></script>
-	
     <script src="global_assets/js/plugins/tables/datatables/datatables.min.js"></script>
 	<script src="../httpdocs/user_js/calender/moment.min.js"></script>
 	<script src="../httpdocs/user_js/calender/fullcalendar.min.js"></script>
@@ -650,46 +644,15 @@ $(document).ready(function(){
 // ------------------------------
 
 var FullCalendarBasic = function() {
+    var events = [];
 
-    <?PHP include(__DIR__ . '/../model/db_connection/connection.php');
-    $DBConn = new DBConnection();
-    $varDBConnection = $DBConn->ConnectToMYSQL();
- 	$result = mysqli_query($varDBConnection,"select amc_tkt_ref_no,amc_ticket,customer_code,customer_name,date_of_visits,time_of_visit,amc_visit_status,CASE WHEN amc_visit_status='Scheduled' THEN '#39C0ED' WHEN amc_visit_status='Assigned' THEN '#3F51B5'  WHEN amc_visit_status='Completed' THEN '#795548' WHEN amc_visit_status='Closed' THEN '#4CAF50' WHEN amc_visit_status='Cancelled' THEN '#B23CFD' WHEN amc_visit_status='Extended' THEN '#FFC107' ELSE '#39C0ED' END as amc_schedule_color from tbl_visits group by amc_tkt_ref_no,date_of_visits,time_of_visit");
- 	
-    $Scheduled = '#39C0ED';
-    $Assigned = '#3F51B5';
-    $Completed = '#795548';
-    $Closed = '#4CAF50';
-    $Extended = '#FFC107';
-    $Cancelled = '#B23CFD';
-    
-?>
-  
-       
-        var events = [
-            <?PHP 	while($row=mysqli_fetch_assoc($result)) { ?>
-            {
-                title: '<?PHP echo $row['amc_tkt_ref_no'];?>',
-                url: '<?PHP echo 'event_details.php?customer_id='.$row["customer_code"].'&amc_tktno='.$row["amc_tkt_ref_no"] ;?>',
-                start: '<?PHP echo $row['date_of_visits'].'T'.$row['time_of_visit'];?>',
-                color: '<?PHP echo $row['amc_schedule_color'];?>'
-            },
-            <?PHP } ?>
-        ];
     // Basic calendar
     var _componentFullCalendarBasic = function() {
-        if (typeof FullCalendar == 'undefined') {
+        if (typeof $.fn.fullCalendar === 'undefined') {
             console.warn('Warning - Fullcalendar files are not loaded.');
             return;
         }
 
-       
-       
-        var calendarBasicViewElement = document.querySelector('.fullcalendar-basic');
-
-       
-       
-       
         var fullCalendar = function(){
             
              var popTemplate = [
@@ -723,29 +686,29 @@ var FullCalendarBasic = function() {
                         right: 'month,agendaWeek,agendaDay'
                     },
                     editable: true,
-                    eventSources: {url: "assets/ajax_fullcalendar.php"},
+                    lazyFetching: true,
+                    eventSources: [{
+                        url: "assets/ajax_fullcalendar.php"
+                    }],
                     droppable: true,
                     selectable: true,
                     selectHelper: true,
-                    // select: function(start, end, allDay) {
-                    //     var title = prompt('Event Title:');
-                    //     if (title) {
-                    //         calendar.fullCalendar('renderEvent',
-                    //         {
-                    //             title: title,
-                    //             start: start,
-                    //             end: end,
-                    //             allDay: allDay
-                    //         },
-                    //         true
-                    //         );
-                    //     }
-                    //     calendar.fullCalendar('unselect');
-                        
-                    // },
-					
-					  
-					   eventDrop:function(event,start)
+                    loading: function(isLoading) {
+                        if (isLoading) {
+                            if (typeof $.blockUI === 'function') {
+                                $('#calendar').block({
+                                    message: '<i class="icon-spinner2 spinner mr-2"></i> Loading schedule...',
+                                    overlayCSS: { backgroundColor: '#fff', opacity: 0.6, cursor: 'wait' },
+                                    css: { border: '1px solid #c2daeb', padding: '10px 16px', backgroundColor: '#0a4174', color: '#fff', borderRadius: '8px', width: 'auto' }
+                                });
+                            }
+                        } else {
+                            if (typeof $.unblockUI === 'function') {
+                                $('#calendar').unblock();
+                            }
+                        }
+                    },
+					eventDrop: function(event, start)
 					 {
 						
 						
@@ -826,101 +789,105 @@ var FullCalendarBasic = function() {
                     },
                 
                     eventRender: function (event, element) {
-                        
-                                           $.post("../controller/calender/calender_controller.php",{action:'count_team_members',},function(result,status){
-                                               
-                                           });    
-                                           
-                                            $.post("../controller/calender/calender_controller.php",{action:'check_asset_schedule',v_amc_ref_no:event.title}
-                        							, function(result,status)
-                                					 { 
-                                						var obj = jQuery.parseJSON(result);
-                                						
-                                					
-                                					
-        					                element.popover({
-        					                //title: event.title,    
-                                            content: function () {
-                                                  
-                                                $("#cust_name").html(obj.data[0].customer_name);
-                                                $("#customer_name_tkt").html(obj.data[0].customer_name +'   ('+obj.data[0].customer_code+')');
-                                                $("#start_date_tkt").html(obj.data[0].visit_start_time);
-                                              
-                                                $("#mode_of_visit").html(obj.data[0].visit_mode);
-                                                $("#location_tkt").html(obj.data[0].location_name);
-                                                $("#building_tkt").html(obj.data[0].building_name);
-                                                
-                                                $("#customer_name_amc").html(obj.data[0].customer_name +'   ('+obj.data[0].customer_code+')');
-                                                $("#txt_additional_slots_hidden").val(obj.data[0].additional_slots);
-                                                $("#location_amc").html(obj.data[0].location_name);
-                                                $("#building_amc").html(obj.data[0].building_name);
-                                               
-                                                $("#start_date_amc").html(obj.data[0].start_date);
-                                                $("#end_date_amc").html(obj.data[0].end_date);
-                                                $("#description_amc").html(obj.data[0].visit_mode);
-                                                $("#title_sub_head").html(obj.data[0].visit_mode+" </br> From :"+obj.data[0].start_date+"</br> TO   :"+obj.data[0].end_date);
-                                                $("#time_slots").html(obj.data[0].time_of_visit);
-                                               
-                                                var amc_ticket=obj.data[0].amc_tkt_id;
-                                                var amc_or_ticket=obj.data[0].amc_ticket;
-                                                
-                                                if(amc_or_ticket==$.trim("AMC"))
-                                                {
-                                                        $("#ticket_priority").html("");
-                                                        $("#service_request").html("");
-                                                        $("#job_category").html("");
-                                                        
-                                                }
-                                                else
-                                                {
-                                                       
-                                                   $.post("../controller/amc_asset_schedule/amc_asset_schedule_controller.php",{action:'check_ticket_details',v_ticket_id:amc_ticket}
-                        							, function(result,status)
-                                					 { 
-                                					     
-                                					     var obj_tkt = jQuery.parseJSON(result);     
-                                					     //console.log(obj_tkt);
-                                                        $("#ticket_priority").html(obj_tkt.data[0].ticket_priority);
-                                                        $("#service_request").html(obj_tkt.data[0].service_request);
-                                                        $("#job_category").html(obj_tkt.data[0].job_category); 
-                                                       
-                                					 });
-                                					
-                                                }
-                                					 
-                                     
-                                                
-                                                 return $("#popoverContent").html();
-                                				
-                                            },
-                                            template: popTemplate,
-                                            placement: function (tip, element) {
-                                                try {
-                                                    var winWidth = $(window).width();
-                                                    if (winWidth < 768) return 'bottom';
-                                                    var $el = element ? $(element) : (this && this.$element ? this.$element : null);
-                                                    if ($el && $el.length) {
-                                                        var offset = $el.offset();
-                                                        if (offset && typeof offset.left === 'number') {
-                                                            return (offset.left < (winWidth / 2)) ? 'right' : 'left';
-                                                        }
+                        element.popover({
+                            content: function () {
+                                var custWithCode = (event.customer_name || '') + (event.customer_code ? ' (' + event.customer_code + ')' : '');
+                                var dateDisplay = event.date_of_visits1 || event.end || '';
+                                var startSlotDisplay = event.start_slot || event.visit_start_time || '';
+
+                                $("#cust_name").text(event.customer_name || '');
+                                $("#customer_name_tkt").text(custWithCode);
+                                $("#start_date_tkt").text(event.visit_start_time || startSlotDisplay);
+                                $("#mode_of_visit").text(event.visit_mode || '');
+                                $("#location_tkt, #location_amc").text(event.location_name || '');
+                                $("#building_tkt, #building_amc").text(event.building_name || '');
+
+                                $("#customer_name_amc").text(custWithCode);
+                                $("#txt_additional_slots_hidden").val(event.additional_slots || '');
+
+                                $("#start_date_amc").text(dateDisplay);
+                                $("#end_date_amc").text(dateDisplay);
+                                $("#description_amc").text(event.visit_mode || '');
+                                $("#title_sub_head").html((event.visit_mode || '') + (dateDisplay ? "<br>Date: " + dateDisplay : ""));
+                                $("#time_slots").text(startSlotDisplay);
+
+                                // Populate hidden inputs for modals (View Details & View Team)
+                                $("#txt_visit_id_hidden").val(event.id || '');
+                                $("#txt_amc_no_hidden").val(event.title || '');
+                                $("#txt_customer_name_hidden").val(custWithCode);
+                                $("#txt_amc_ticket_hidden").val(event.amc_ticket || '');
+                                $("#txt_tkt_amc_id_hidden").val(event.amc_tkt_id || '');
+                                $("#txt_tkt_amc_visit_date_hidden").val(event.end || '');
+                                $("#txt_tkt_amc_visit_time_hidden").val(event.visit_start_time || '');
+                                $("#txt_tkt_strat_slot_hidden").val(event.start_slot || '');
+                                $("#txt_tkt_add_slots_hidden").val(event.additional_slots || '');
+                                $("#txt_tkt_dt_hidden").val(dateDisplay);
+                                $("#txt_tkt_dt_val_hidden").val(event.date_of_visits_val || event.end || '');
+
+                                var isAmc = ($.trim(String(event.amc_ticket)).toUpperCase() === 'AMC');
+                                if (isAmc) {
+                                    $("#ticket_priority").text('');
+                                    $("#service_request").text('');
+                                    $("#job_category").text('');
+                                } else {
+                                    $("#ticket_priority").text('...');
+                                    $("#service_request").text('');
+                                    $("#job_category").text('');
+
+                                    var tktId = event.amc_tkt_id;
+                                    if (tktId) {
+                                        $.post("../controller/amc_asset_schedule/amc_asset_schedule_controller.php", {
+                                            action: 'check_ticket_details',
+                                            v_ticket_id: tktId
+                                        }, function(result) {
+                                            try {
+                                                var obj_tkt = (typeof result === 'object') ? result : jQuery.parseJSON(result);
+                                                if (obj_tkt && obj_tkt.data && obj_tkt.data.length > 0) {
+                                                    var tkt = obj_tkt.data[0];
+                                                    $('.popover #ticket_priority, #ticket_priority').text(tkt.ticket_priority || '');
+                                                    $('.popover #service_request, #service_request').text(tkt.service_request || '');
+                                                    $('.popover #job_category, #job_category').text(tkt.job_category || '');
+                                                    if (tkt.location_name) {
+                                                        $('.popover #location_tkt, .popover #location_amc').text(tkt.location_name);
                                                     }
-                                                } catch (e) {
-                                                    console.warn('Popover placement error:', e);
+                                                    if (tkt.building_name) {
+                                                        $('.popover #building_tkt, .popover #building_amc').text(tkt.building_name);
+                                                    }
                                                 }
-                                                return 'auto left';
-                                            },
-                                            html: 'true',
-                                            trigger: 'click',
-                                            animation: 'true',
-                                            container: 'body'
+                                            } catch(e) {
+                                                console.warn('Error fetching ticket details:', e);
+                                            }
                                         });
-                                         
-                                 });
-                                 
+                                    }
+                                }
+
+                                return $("#popoverContent").html();
+                            },
+                            template: popTemplate,
+                            placement: function (tip, element) {
+                                try {
+                                    var winWidth = $(window).width();
+                                    if (winWidth < 768) return 'bottom';
+                                    var $el = element ? $(element) : (this && this.$element ? this.$element : null);
+                                    if ($el && $el.length) {
+                                        var offset = $el.offset();
+                                        if (offset && typeof offset.left === 'number') {
+                                            return (offset.left < (winWidth / 2)) ? 'right' : 'left';
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('Popover placement error:', e);
+                                }
+                                return 'auto left';
+                            },
+                            html: true,
+                            trigger: 'click',
+                            animation: true,
+                            container: 'body'
+                        });
                     },
-					  editable:true,
-					  
+                    editable: true,
+                    
                     drop: function(date, allDay) {
 
                         var originalEventObject = $(this).data('eventObject');
@@ -965,64 +932,10 @@ var FullCalendarBasic = function() {
                 
       
       
-        // Agenda view
-        //
-        // Define element
-        var calendarAgendaViewElement = document.querySelector('.fullcalendar-agenda');
-
-        // Initialize
-        if(calendarAgendaViewElement) {
-            var calendarAgendaViewInit = new FullCalendar.Calendar(calendarAgendaViewElement, {
-                plugins: [ 'dayGrid', 'timeGrid', 'interaction' ],
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                defaultDate: '<?PHP echo date('Y-m-d');?>',
-                defaultView: 'timeGridWeek',
-                editable: true,
-                businessHours: true,
-                events: events
-            }).render();
-        }
-
-
-        //
-        // List view
-        //
-
-        // Define element
-        var calendarListViewElement = document.querySelector('.fullcalendar-list');
-
-        // Initialize
-        if(calendarListViewElement) {
-            var calendarListViewInit = new FullCalendar.Calendar(calendarListViewElement, {
-                plugins: [ 'list', 'interaction' ],
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'listDay,listWeek,listMonth'
-                },
-                views: {
-                    listDay: { buttonText: 'Day' },
-                    listWeek: { buttonText: 'Week' },
-                    listMonth: { buttonText: 'Month' }
-                },
-                defaultView: 'listMonth',
-                defaultDate: '2014-11-12',
-                navLinks: true, // can click day/week names to navigate views
-                editable: true,
-                eventLimit: true, // allow "more" link when too many events
-                events: events
-            }).render();
-        }
-    };
-    
-   
+            };
 
     //
-    // Return objects assigned to module
+// Return objects assigned to module
     //
 
     return {
