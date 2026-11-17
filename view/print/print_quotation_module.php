@@ -48,6 +48,10 @@ try {
                 ADD COLUMN `merge_qty` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merge_items`,
                 ADD COLUMN `merged_lump_sum_price` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `merge_qty`");
         }
+        $chkBullet = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'bullet_items'");
+        if ($chkBullet && mysqli_num_rows($chkBullet) === 0) {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `bullet_items` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merged_lump_sum_price`");
+        }
         $chkItmMerge = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotation_items_v2` LIKE 'merge_with_prev'");
         if ($chkItmMerge && mysqli_num_rows($chkItmMerge) === 0) {
             @mysqli_query($db, "ALTER TABLE `tbl_quotation_items_v2` ADD COLUMN `merge_with_prev` TINYINT(1) NOT NULL DEFAULT 0 AFTER `total_price`");
@@ -105,7 +109,8 @@ if (!$q) {
                         'total_incl_vat' => $item['total_incl_vat'],
                         'merge_items' => $item['merge_items'] ?? 0,
                         'merge_qty' => $item['merge_qty'] ?? 0,
-                        'merged_lump_sum_price' => $item['merged_lump_sum_price'] ?? 0
+                        'merged_lump_sum_price' => $item['merged_lump_sum_price'] ?? 0,
+                        'bullet_items' => $item['bullet_items'] ?? 0
                     ];
                     $items = $item['items'];
                     $terms = $item['terms'];
@@ -271,6 +276,40 @@ foreach ($candStamp as $cst) {
 
 $hasSig = !empty($stampSignConfig['show_signature']) && $sigFile;
 $hasStamp = !empty($stampSignConfig['show_stamp']) && $stampFile;
+
+if (!function_exists('formatQuotationDescPdf')) {
+    function formatQuotationDescPdf($desc) {
+        if (empty($desc)) return '';
+        $lines = preg_split('/\r\n|\r|\n/', (string)$desc);
+        $formatted = [];
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if (preg_match('/^[\x{2022}\-\*]\s*(.*)$/u', $trimmed, $m)) {
+                $formatted[] = '&nbsp;&nbsp;&bull;&nbsp;' . htmlspecialchars($m[1]);
+            } else {
+                $formatted[] = htmlspecialchars($line);
+            }
+        }
+        return implode('<br>', $formatted);
+    }
+}
+
+if (!function_exists('formatQuotationDescHtml')) {
+    function formatQuotationDescHtml($desc) {
+        if (empty($desc)) return '';
+        $lines = preg_split('/\r\n|\r|\n/', (string)$desc);
+        $out = [];
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if (preg_match('/^[\x{2022}\-\*]\s*(.*)$/u', $trimmed, $m)) {
+                $out[] = '<div style="padding-left:14px;text-indent:-10px;margin:2px 0;">&bull;&nbsp;' . htmlspecialchars($m[1]) . '</div>';
+            } else {
+                $out[] = '<div>' . htmlspecialchars($line) . '</div>';
+            }
+        }
+        return implode('', $out);
+    }
+}
 
 if ($download) {
     // Suppress notices and deprecation warnings during binary stream
@@ -442,6 +481,7 @@ if ($download) {
 
     $isMerged = !empty($q['merge_items']);
     $mergeQty = !empty($q['merge_qty']);
+    $isBullet = !empty($q['bullet_items']);
     $itemCount = count($items);
     $calcLumpSum = (float)($q['merged_lump_sum_price'] ?? 0);
     if ($calcLumpSum <= 0) {
@@ -451,7 +491,7 @@ if ($download) {
     $html .= '<table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
         <thead>
             <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
-                <th width="7%" align="center"><b>SL.</b></th>
+                <th width="7%" align="center"><b>' . ($isBullet ? '&bull;' : 'SL.') . '</b></th>
                 <th width="' . ($isMerged && $mergeQty ? '60%' : '57%') . '" align="left"><b>DESCRIPTION</b></th>
                 <th width="' . ($isMerged && $mergeQty ? '15%' : '18%') . '" align="center"><b>QTY.</b></th>
                 <th width="18%" align="right"><b>TOTAL (BD)</b></th>
@@ -468,8 +508,8 @@ if ($download) {
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
             $html .= '<tr style="background-color:' . $bg . ';">
-                <td width="7%" align="center">' . ($idx + 1) . '.</td>
-                <td width="' . ($mergeQty ? '60%' : '57%') . '">' . nl2br(htmlspecialchars($desc)) . '</td>';
+                <td width="7%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
+                <td width="' . ($mergeQty ? '60%' : '57%') . '">' . formatQuotationDescPdf($desc) . '</td>';
 
             if ($mergeQty) {
                 if ($idx === 0) {
@@ -497,8 +537,8 @@ if ($download) {
 
             $html .= '
                 <tr style="background-color:' . $bg . ';">
-                    <td width="7%" align="center">' . ($idx + 1) . '.</td>
-                    <td width="57%">' . nl2br(htmlspecialchars($desc)) . '</td>
+                    <td width="7%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
+                    <td width="57%">' . formatQuotationDescPdf($desc) . '</td>
                     <td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>
                     <td width="18%" align="right">' . number_format($lineTot, 3) . '</td>
                 </tr>';
@@ -848,7 +888,7 @@ if ($download) {
     <table class="tbl-quotation">
         <thead>
             <tr>
-                <th style="width: 38px; text-align: center;">Sl.</th>
+                <th style="width: 38px; text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : 'Sl.' ?></th>
                 <th>Description</th>
                 <th style="width: 120px; text-align: center;">Qty.</th>
                 <th style="width: 120px; text-align: right;">Total (BD)</th>
@@ -863,8 +903,8 @@ if ($download) {
                     $qtyStr = $qty . ' ' . $unit;
                 ?>
                 <tr>
-                    <td class="c"><?= ($idx + 1) ?>.</td>
-                    <td><?= nl2br(htmlspecialchars($desc)) ?></td>
+                    <td class="c"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
+                    <td><?= formatQuotationDescHtml($desc) ?></td>
                     <?php if ($mergeQty): ?>
                         <?php if ($idx === 0): ?>
                             <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle;"><b>1 Lumpsum</b></td>
@@ -887,8 +927,8 @@ if ($download) {
                     $qtyStr = $qty . ' ' . $unit;
                 ?>
                 <tr>
-                    <td class="c"><?= ($idx + 1) ?>.</td>
-                    <td><?= nl2br(htmlspecialchars($desc)) ?></td>
+                    <td class="c"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
+                    <td><?= formatQuotationDescHtml($desc) ?></td>
                     <td class="c"><?= htmlspecialchars($qtyStr) ?></td>
                     <td class="r"><?= number_format($lineTot, 3) ?></td>
                 </tr>

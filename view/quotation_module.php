@@ -830,8 +830,48 @@ if ($isLoggedIn) {
             margin-bottom: 10px;
             align-items: center;
         }
-        .it input, .it select {
+        #its .it {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        #its .it:focus-within {
+            border-color: #7BBDE8;
+            box-shadow: 0 0 0 3px rgba(123, 189, 232, 0.15);
+        }
+        .it input, .it select, .it textarea {
             margin: 0 !important;
+        }
+        .it textarea {
+            width: 100% !important;
+            min-height: 48px;
+            line-height: 1.45;
+            padding: 7px 10px !important;
+            font-size: 13px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 6px !important;
+            resize: vertical !important;
+            font-family: inherit !important;
+            box-sizing: border-box !important;
+            background: #ffffff !important;
+            color: #1e293b !important;
+        }
+        .it textarea:focus {
+            border-color: #0A4174 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(10, 65, 116, 0.12) !important;
+        }
+        .btn-toggle-bullet {
+            transition: all 0.15s ease;
+        }
+        .btn-toggle-bullet:hover {
+            background: #e0f0fc !important;
+            border-color: #0A4174 !important;
+            color: #0A4174 !important;
         }
         .it select {
             height: 38px !important;

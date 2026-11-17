@@ -217,6 +217,19 @@
         }, 2800);
     }
 
+    function formatDescHtml(desc) {
+        if (!desc) return "";
+        const lines = String(desc).split(/\r?\n/);
+        return lines.map(line => {
+            const trimmed = line.trim();
+            if (/^[\u2022\-\*]\s*/.test(trimmed)) {
+                const clean = trimmed.replace(/^[\u2022\-\*]\s*/, "");
+                return `<div style="padding-left:14px;text-indent:-10px;margin:2px 0;">&bull;&nbsp;${H(clean)}</div>`;
+            }
+            return `<div>${H(line)}</div>`;
+        }).join("");
+    }
+
     // Official THC Facility Management Letterhead Preview Sheet
     function sheet(q) {
         const sub = amt(q);
@@ -248,6 +261,7 @@
 
         const isMerged = !!(q.merge_items);
         const mergeQty = !!(q.merge_qty);
+        const isBullet = !!(q.bullet_items);
         let lumpSumTot = +(q.merged_lump_sum_price || 0);
         if (lumpSumTot <= 0) lumpSumTot = sub;
 
@@ -295,7 +309,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width:38px;text-align:center;">Sl.</th>
+                        <th style="width:38px;text-align:center;">${isBullet ? '&bull;' : 'Sl.'}</th>
                         <th>Description</th>
                         <th style="width:${isMerged && mergeQty ? '120px' : '100px'};text-align:center;">Qty.</th>
                         <th style="width:110px;text-align:right;">Total (BD)</th>
@@ -310,8 +324,8 @@
                             const qtyStr = `${qty} ${H(unit)}`;
                             return `
                             <tr>
-                                <td class="c">${i + 1}.</td>
-                                <td>${H(desc).replace(/\n/g, "<br>")}</td>
+                                <td class="c">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
+                                <td>${formatDescHtml(desc)}</td>
                                 ${mergeQty ? (i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;font-weight:600;">1 Lumpsum</td>` : '') : `<td class="c">${qtyStr}</td>`}
                                 ${i === 0 ? `<td class="r" rowspan="${items.length}" style="vertical-align:middle;font-weight:600;">${f3(lumpSumTot)}</td>` : ''}
                             </tr>`;
@@ -325,8 +339,8 @@
                             const qtyStr = `${qty} ${H(unit)}`;
                             return `
                             <tr>
-                                <td class="c">${i + 1}.</td>
-                                <td>${H(desc).replace(/\n/g, "<br>")}</td>
+                                <td class="c">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
+                                <td>${formatDescHtml(desc)}</td>
                                 <td class="c">${qtyStr}</td>
                                 <td class="r">${f3(lineTot)}</td>
                             </tr>`;
@@ -507,7 +521,8 @@
                 internal_notes: "",
                 merge_items: 0,
                 merge_qty: 0,
-                merged_lump_sum_price: 0
+                merged_lump_sum_price: 0,
+                bullet_items: 0
             };
             edit();
         }
@@ -1112,6 +1127,11 @@
                                 <div style="color:#0284c7;font-weight:600;"><i class="icon-stack mr-1"></i> Merged line items (Lump sum: ${f3(q.merged_lump_sum_price || amt(q))} BD)</div>
                             ` : ''}
 
+                            ${q.bullet_items ? `
+                                <span>Item style</span>
+                                <div style="color:#0284c7;font-weight:600;"><span style="font-size:14px;">&bull;</span> Bullet points</div>
+                            ` : ''}
+
                             ${q.internal_notes ? `
                                 <span>Internal note</span>
                                 <div style="background:#fffbeb;border:1px solid #fef3c7;border-radius:6px;padding:6px 10px;color:#92400e;font-size:12px;line-height:1.4;">
@@ -1502,12 +1522,16 @@
                             </div>
                         </div>
 
-                        <!-- Merge Line Items Option Box -->
+                        <!-- Line Items Formatting & Options Box -->
                         <div style="background:#f0f7fc;border:1.5px solid #c2daeb;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                                 <label style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
                                     <input type="checkbox" id="chk_merge_items" ${e.merge_items ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
                                     <span>Merge line items with single lump sum total rate</span>
+                                </label>
+                                <label style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
+                                    <input type="checkbox" id="chk_bullet_items" ${e.bullet_items ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
+                                    <span>Use bullet points for line items (<b style="font-size:14px;color:#0A4174;">&bull;</b> instead of 1, 2, 3)</span>
                                 </label>
                                 <div id="merge_qty_wrap" style="display:${e.merge_items ? 'inline-flex' : 'none'};align-items:center;gap:6px;">
                                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#475569;cursor:pointer;margin:0;">
@@ -1654,6 +1678,7 @@
         $("#v").onchange = handleFormInput;
 
         const chkMerge = $("#chk_merge_items");
+        const chkBullet = $("#chk_bullet_items");
         const chkQty = $("#chk_merge_qty");
         const inpMerged = $("#inp_merged_price");
         const wrapQty = $("#merge_qty_wrap");
@@ -1664,6 +1689,13 @@
                 ED.merge_items = e.target.checked ? 1 : 0;
                 if (wrapQty) wrapQty.style.display = ED.merge_items ? "inline-flex" : "none";
                 if (wrapPrice) wrapPrice.style.display = ED.merge_items ? "flex" : "none";
+                renderLivePreview();
+            };
+        }
+        if (chkBullet) {
+            chkBullet.onchange = e => {
+                ED.bullet_items = e.target.checked ? 1 : 0;
+                renderItems();
                 renderLivePreview();
             };
         }
@@ -1895,6 +1927,19 @@
                 ED.items.splice(+btn.dataset.rm, 1);
                 renderItems();
                 renderLivePreview();
+                return;
+            }
+            const btnBullet = ev.target.closest(".btn-toggle-bullet");
+            if (btnBullet) {
+                ev.preventDefault();
+                toggleBulletInItem(+btnBullet.dataset.bulletIdx);
+                return;
+            }
+        };
+
+        $("#its").onkeydown = ev => {
+            if (ev.key === "Enter" && !ev.shiftKey && !ev.ctrlKey && !ev.altKey) {
+                handleItemDescKeydown(ev);
             }
         };
 
@@ -1997,6 +2042,86 @@
         }
     }
 
+    function toggleBulletInItem(idx) {
+        if (!ED || !ED.items || !ED.items[idx]) return;
+        const ta = $(`textarea[data-i="${idx}"][data-f="desc"]`);
+        if (!ta) return;
+
+        const val = ta.value || "";
+        const selStart = ta.selectionStart !== undefined ? ta.selectionStart : val.length;
+        const selEnd = ta.selectionEnd !== undefined ? ta.selectionEnd : val.length;
+
+        if (!val.trim()) {
+            ta.value = "• ";
+            ta.focus();
+            ta.setSelectionRange(2, 2);
+            ED.items[idx].description = ta.value;
+            renderLivePreview();
+            return;
+        }
+
+        const lineStart = val.lastIndexOf("\n", selStart - 1) + 1;
+        let lineEnd = val.indexOf("\n", selEnd);
+        if (lineEnd === -1) lineEnd = val.length;
+
+        const targetBlock = val.substring(lineStart, lineEnd);
+        const lines = targetBlock.split("\n");
+
+        const nonBlankLines = lines.filter(l => l.trim().length > 0);
+        const allBulleted = nonBlankLines.length > 0 && nonBlankLines.every(l => /^[\u2022\-\*]\s*/.test(l.trim()));
+
+        const newLines = lines.map(l => {
+            const trimmed = l.trim();
+            if (!trimmed) return l;
+            if (allBulleted) {
+                return l.replace(/^(\s*)[\u2022\-\*]\s*/, "$1");
+            } else {
+                if (/^[\u2022\-\*]\s*/.test(trimmed)) return l;
+                return "• " + l.replace(/^\s*/, "");
+            }
+        });
+
+        const newBlock = newLines.join("\n");
+        ta.value = val.substring(0, lineStart) + newBlock + val.substring(lineEnd);
+        ta.focus();
+        ta.setSelectionRange(lineStart, lineStart + newBlock.length);
+        ED.items[idx].description = ta.value;
+        renderLivePreview();
+    }
+
+    function handleItemDescKeydown(ev) {
+        if (ev.key !== "Enter" || ev.shiftKey || ev.ctrlKey || ev.altKey) return;
+        const ta = ev.target;
+        if (!ta || ta.dataset.f !== "desc") return;
+
+        const val = ta.value;
+        const pos = ta.selectionStart;
+        const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+        const currentLine = val.substring(lineStart, pos);
+
+        const bulletMatch = currentLine.match(/^(\s*)([\u2022\-\*]\s*)/);
+        if (bulletMatch) {
+            ev.preventDefault();
+            const indent = bulletMatch[1];
+            const contentAfterBullet = currentLine.substring(bulletMatch[0].length).trim();
+
+            if (!contentAfterBullet) {
+                ta.value = val.substring(0, lineStart) + val.substring(pos);
+                ta.setSelectionRange(lineStart, lineStart);
+            } else {
+                const insertText = "\n" + indent + "• ";
+                ta.value = val.substring(0, pos) + insertText + val.substring(pos);
+                const newPos = pos + insertText.length;
+                ta.setSelectionRange(newPos, newPos);
+            }
+            const idx = +ta.dataset.i;
+            if (ED && ED.items && ED.items[idx]) {
+                ED.items[idx].description = ta.value;
+            }
+            renderLivePreview();
+        }
+    }
+
     function renderItems() {
         const el = $("#its");
         if (!el || !ED) return;
@@ -2012,16 +2137,28 @@
                 unitOptions.unshift(unit);
             }
 
+            const itemLabel = ED.bullet_items ? `• Line Item` : `Item #${i + 1}`;
+
             return `
             <div class="it">
-                <input type="text" data-i="${i}" data-f="desc" placeholder="Description of work" value="${H(desc)}" style="grid-column:1/-1;" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">
+                <div style="grid-column:1/-1;margin-bottom:6px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <span style="font-size:11.5px;font-weight:700;color:#0A4174;text-transform:uppercase;letter-spacing:0.3px;">
+                            ${itemLabel}
+                        </span>
+                        <button type="button" class="btn-toggle-bullet" data-bullet-idx="${i}" title="Insert bullet point (•) or toggle bulleted list in description" style="padding:2px 8px;font-size:11px;background:#eef6fc;border:1px solid #7BBDE8;border-radius:4px;color:#0A4174;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                            <span style="font-size:13px;line-height:1;">&bull;</span> Bullet Point
+                        </button>
+                    </div>
+                    <textarea data-i="${i}" data-f="desc" rows="2" placeholder="Description of work (supports bullet points •)..." spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(desc)}</textarea>
+                </div>
                 <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}">
                 <select data-i="${i}" data-f="unit">
                     ${M(unitOptions, u => `<option value="${H(u)}"${u === unit ? " selected" : ""}>${H(u)}</option>`)}
                 </select>
                 <input type="number" min="0" step="0.001" data-i="${i}" data-f="price" value="${price}">
                 <b id="rt${i}">${f3(lineTot)}</b>
-                <button data-rm="${i}" title="Remove">✕</button>
+                <button data-rm="${i}" title="Remove item" style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;border-radius:6px;width:34px;height:34px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;">✕</button>
             </div>`;
         });
     }
@@ -3281,7 +3418,7 @@
                 const updated = replaceTextAt(cur, offset, length, replacement);
                 if (r.description !== undefined) r.description = updated;
                 if (r[0] !== undefined) r[0] = updated;
-                const inp = $(`input[data-i="${index}"][data-f="desc"]`);
+                const inp = $(`[data-i="${index}"][data-f="desc"]`);
                 if (inp) inp.value = updated;
             }
         } else if (section === "term") {
@@ -3440,6 +3577,10 @@
         if (chkMergeEl) {
             ED.merge_items = chkMergeEl.checked ? 1 : 0;
         }
+        const chkBulletEl = $('#chk_bullet_items');
+        if (chkBulletEl) {
+            ED.bullet_items = chkBulletEl.checked ? 1 : 0;
+        }
         const chkQtyEl = $('#chk_merge_qty');
         if (chkQtyEl) {
             ED.merge_qty = chkQtyEl.checked ? 1 : 0;
@@ -3474,6 +3615,7 @@
             merge_items: ED.merge_items ? 1 : 0,
             merge_qty: ED.merge_qty ? 1 : 0,
             merged_lump_sum_price: ED.merged_lump_sum_price !== undefined ? +ED.merged_lump_sum_price : 0,
+            bullet_items: ED.bullet_items ? 1 : 0,
             terms: ED.terms || T0,
             items: ED.items || []
         };

@@ -214,6 +214,12 @@ class QuotationModuleController
                     ADD COLUMN `merged_lump_sum_price` DECIMAL(18,3) NOT NULL DEFAULT 0.000 AFTER `merge_qty`");
             }
 
+            // Migration check: Add bullet_items column if missing
+            $chkBullet = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'bullet_items'");
+            if ($chkBullet && mysqli_num_rows($chkBullet) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `bullet_items` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merged_lump_sum_price`");
+            }
+
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
                 `item_id` INT(11) NOT NULL AUTO_INCREMENT,
                 `quotation_id` INT(11) NOT NULL,
@@ -1056,6 +1062,7 @@ class QuotationModuleController
                         "merge_items" => (int)($r['merge_items'] ?? 0),
                         "merge_qty" => (int)($r['merge_qty'] ?? 0),
                         "merged_lump_sum_price" => (float)($r['merged_lump_sum_price'] ?? 0.0),
+                        "bullet_items" => (int)($r['bullet_items'] ?? 0),
                         "terms" => $terms,
                         "status" => $r['status'],
                         "rejection_reason" => $r['rejection_reason'],
@@ -1789,6 +1796,7 @@ class QuotationModuleController
         $mergeItems = !empty($input['merge_items']) ? 1 : 0;
         $mergeQty = !empty($input['merge_qty']) ? 1 : 0;
         $mergedLumpSumPrice = isset($input['merged_lump_sum_price']) ? (float)$input['merged_lump_sum_price'] : 0.0;
+        $bulletItems = !empty($input['bullet_items']) ? 1 : 0;
 
         // Rule 1: Issued quotes are immutable. Edit exists only for Draft.
         if ($id > 0 && $this->isDbConnected) {
@@ -1964,6 +1972,7 @@ class QuotationModuleController
                     merge_items = $mergeItems,
                     merge_qty = $mergeQty,
                     merged_lump_sum_price = $mergedLumpSumPrice,
+                    bullet_items = $bulletItems,
                     terms_json = '$termsJson',
                     status = '$status',
                     activity_json = '$actJson'
@@ -1976,12 +1985,12 @@ class QuotationModuleController
                     (seq_no, rev_no, variation_no, quotation_no, is_amc, client_code, client_name, client_address,
                      contact_no, attention, subject, quotation_date, user_code, user_name, user_designation,
                      vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat,
-                     internal_notes, merge_items, merge_qty, merged_lump_sum_price, terms_json, status, activity_json)
+                     internal_notes, merge_items, merge_qty, merged_lump_sum_price, bullet_items, terms_json, status, activity_json)
                     VALUES 
                     ($seqVal, $revNo, $variationNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
                      '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig',
                      $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat,
-                     '$escNotes', $mergeItems, $mergeQty, $mergedLumpSumPrice, '$termsJson', '$status', '$actJson')";
+                     '$escNotes', $mergeItems, $mergeQty, $mergedLumpSumPrice, $bulletItems, '$termsJson', '$status', '$actJson')";
                 mysqli_query($this->db, $ins);
                 $savedId = mysqli_insert_id($this->db);
             }
@@ -2066,6 +2075,7 @@ class QuotationModuleController
                 "merge_items" => $mergeItems,
                 "merge_qty" => $mergeQty,
                 "merged_lump_sum_price" => $mergedLumpSumPrice,
+                "bullet_items" => $bulletItems,
                 "terms" => $terms,
                 "status" => $status,
                 "rejection_reason" => "",
