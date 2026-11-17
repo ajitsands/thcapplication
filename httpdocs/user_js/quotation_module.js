@@ -1143,11 +1143,6 @@
                                 <div style="color:#0284c7;font-weight:600;"><i class="icon-stack mr-1"></i> Merged line items (Lump sum: ${f3(q.merged_lump_sum_price || amt(q))} BD)</div>
                             ` : ''}
 
-                            ${q.bullet_items ? `
-                                <span>Item style</span>
-                                <div style="color:#0284c7;font-weight:600;"><span style="font-size:14px;">&bull;</span> Bullet points</div>
-                            ` : ''}
-
                             ${q.internal_notes ? `
                                 <span>Internal note</span>
                                 <div style="background:#fffbeb;border:1px solid #fef3c7;border-radius:6px;padding:6px 10px;color:#92400e;font-size:12px;line-height:1.4;">
@@ -1538,16 +1533,12 @@
                             </div>
                         </div>
 
-                        <!-- Line Items Formatting & Options Box -->
+                        <!-- Merge Line Items Option Box -->
                         <div style="background:#f0f7fc;border:1.5px solid #c2daeb;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
                                 <label style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
                                     <input type="checkbox" id="chk_merge_items" ${e.merge_items ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
                                     <span>Merge line items with single lump sum total rate</span>
-                                </label>
-                                <label style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
-                                    <input type="checkbox" id="chk_bullet_items" ${e.bullet_items ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
-                                    <span>Use bullet points for line items (<b style="font-size:14px;color:#0A4174;">&bull;</b> instead of 1, 2, 3)</span>
                                 </label>
                                 <div id="merge_qty_wrap" style="display:${e.merge_items ? 'inline-flex' : 'none'};align-items:center;gap:6px;">
                                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#475569;cursor:pointer;margin:0;">
@@ -1694,7 +1685,6 @@
         $("#v").onchange = handleFormInput;
 
         const chkMerge = $("#chk_merge_items");
-        const chkBullet = $("#chk_bullet_items");
         const chkQty = $("#chk_merge_qty");
         const inpMerged = $("#inp_merged_price");
         const wrapQty = $("#merge_qty_wrap");
@@ -1705,13 +1695,6 @@
                 ED.merge_items = e.target.checked ? 1 : 0;
                 if (wrapQty) wrapQty.style.display = ED.merge_items ? "inline-flex" : "none";
                 if (wrapPrice) wrapPrice.style.display = ED.merge_items ? "flex" : "none";
-                renderLivePreview();
-            };
-        }
-        if (chkBullet) {
-            chkBullet.onchange = e => {
-                ED.bullet_items = e.target.checked ? 1 : 0;
-                renderItems();
                 renderLivePreview();
             };
         }
@@ -2258,7 +2241,7 @@
                 unitOptions.unshift(unit);
             }
 
-            const itemLabel = ED.bullet_items ? `• Line Item` : `Item #${i + 1}`;
+            const itemLabel = `Item #${i + 1}`;
 
             return `
             <div class="it">
@@ -3705,10 +3688,6 @@
         const chkMergeEl = $('#chk_merge_items');
         if (chkMergeEl) {
             ED.merge_items = chkMergeEl.checked ? 1 : 0;
-        }
-        const chkBulletEl = $('#chk_bullet_items');
-        if (chkBulletEl) {
-            ED.bullet_items = chkBulletEl.checked ? 1 : 0;
         }
         const chkQtyEl = $('#chk_merge_qty');
         if (chkQtyEl) {
