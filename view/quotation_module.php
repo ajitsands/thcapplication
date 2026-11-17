@@ -1286,9 +1286,17 @@ if ($isLoggedIn) {
                             </div>
 
                             <div class="row">
-                                <div class="col-md-8 mb-2">
+                                <div class="col-md-12 mb-2">
                                     <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Building & Area (Line 2)</label>
                                     <input type="text" id="cfg_footer_addr2" class="form-control form-control-sm" placeholder="YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain" value="YBA Kanoo Tower, Diplomatic Area, Kingdom of Bahrain">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-2">
+                                    <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Document Number (Constant on all pages)</label>
+                                    <input type="text" id="cfg_footer_doc_number" class="form-control form-control-sm" placeholder="CINQO/THC/QTN/01/2020/REV3" value="CINQO/THC/QTN/01/2020/REV3">
+                                    <small class="text-muted d-block" style="font-size:11px;">Standard document number displayed on bottom right above footer bar</small>
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="font-weight-semibold text-dark mb-1" style="font-size:12px;">Footer Background Color</label>
@@ -1319,9 +1327,9 @@ if ($isLoggedIn) {
                                 <div class="col-md-4">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input" id="cfg_footer_ref_no" checked>
-                                        <label class="custom-control-label font-weight-semibold" for="cfg_footer_ref_no" style="font-size:12px;">Show Quotation Reference</label>
+                                        <label class="custom-control-label font-weight-semibold" for="cfg_footer_ref_no" style="font-size:12px;">Show Document Number</label>
                                     </div>
-                                    <small class="text-muted d-block" style="font-size:11px;">Quotation reference no. on top right</small>
+                                    <small class="text-muted d-block" style="font-size:11px;">Document number on bottom right (CINQO/THC/QTN/01/2020/REV3)</small>
                                 </div>
                             </div>
                         </div>

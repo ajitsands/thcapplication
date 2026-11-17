@@ -195,7 +195,8 @@ $footerConfig = [
     'show_badges' => 1,
     'badges_image' => 'global_assets/images/a.png',
     'show_page_no' => 1,
-    'show_ref_no' => 1
+    'show_ref_no' => 1,
+    'doc_number' => 'CINQO/THC/QTN/01/2020/REV3'
 ];
 
 if (isset($db) && $db && !mysqli_connect_errno()) {
@@ -314,15 +315,15 @@ if ($download) {
 
                 $cfg = $this->footerConfig;
                 $showPageNo = !empty($cfg['show_page_no']);
-                $showRefNo = !empty($cfg['show_ref_no']);
+                $showRefNo = !isset($cfg['show_ref_no']) || !empty($cfg['show_ref_no']);
 
-                // 1. Top row above the blue bar: Page X of Y (Left) and Quote Ref (Right)
+                // 1. Top row above the blue bar: Page X of Y (Left) and Constant Document Number (Right)
                 $this->SetFont('helvetica', '', 8);
                 $this->SetTextColor(71, 85, 105);
                 $pageNumStr = $showPageNo ? ('Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages()) : '';
-                $refStr = $showRefNo ? $this->quoteRef : '';
+                $docNumStr = $showRefNo ? (!empty($cfg['doc_number']) ? $cfg['doc_number'] : 'CINQO/THC/QTN/01/2020/REV3') : '';
                 $this->Cell(90, 5, $pageNumStr, 0, 0, 'L', false);
-                $this->Cell(90, 5, $refStr, 0, 1, 'R', false);
+                $this->Cell(90, 5, $docNumStr, 0, 1, 'R', false);
 
                 // 2. Dark Blue Bar
                 $barY = $this->GetY() + 0.5;
@@ -561,18 +562,17 @@ if ($download) {
 
     // Prepare Stamp & Signature for PDF
     $stampSignHtml = '';
-    if ($hasSig || $hasStamp) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:4px;"><tr>';
-        if ($hasSig) {
-            $stampSignHtml .= '<td width="130" style="vertical-align:middle;"><img src="' . $sigFile . '" height="36" /></td>';
-        }
-        if ($hasStamp) {
-            $stampSignHtml .= '<td width="120" style="vertical-align:middle;"><img src="' . $stampFile . '" height="52" /></td>';
-        }
-        $stampSignHtml .= '</tr></table>';
+    if ($hasSig && $hasStamp) {
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;margin-bottom:6px;"><tr><td style="line-height:1;"><img src="' . $sigFile . '" height="42" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="' . $stampFile . '" height="48" /></td></tr></table>';
+    } elseif ($hasSig) {
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;margin-bottom:6px;"><tr><td style="line-height:1;"><img src="' . $sigFile . '" height="42" /></td></tr></table>';
+    } elseif ($hasStamp) {
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;margin-bottom:6px;"><tr><td style="line-height:1;"><img src="' . $stampFile . '" height="48" /></td></tr></table>';
+    } else {
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;margin-bottom:6px;"><tr><td height="36">&nbsp;</td></tr></table>';
     }
 
-    $html .= '<table cellpadding="4" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
+    $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
         <tr>
             <td width="55%" style="line-height:1.4;">
                 <b>Thanking you,</b><br><br>
@@ -944,12 +944,12 @@ if ($download) {
             <b>Thanking you,<br><br>
             Yours sincerely,<br>
             THC Facility Management W.L.L</b><br>
-            <div style="display: flex; align-items: center; gap: 12px; margin: 8px 0 6px 0; min-height: 55px;">
+            <div style="display: flex; align-items: center; gap: 14px; margin: 8px 0 6px 0; min-height: 52px;">
                 <?php if ($hasSig): ?>
-                    <img src="../view/<?= htmlspecialchars(ltrim($userSigRel, '/')) ?>" onerror="this.src='<?= htmlspecialchars(ltrim($userSigRel, '/')) ?>';" alt="Signature" style="max-height: 46px; max-width: 130px; object-fit: contain;" />
+                    <img src="../view/<?= htmlspecialchars(ltrim($userSigRel, '/')) ?>" onerror="this.src='<?= htmlspecialchars(ltrim($userSigRel, '/')) ?>';" alt="Signature" style="height: 42px; max-width: 140px; object-fit: contain; display: inline-block; vertical-align: middle;" />
                 <?php endif; ?>
                 <?php if ($hasStamp): ?>
-                    <img src="../view/<?= htmlspecialchars(ltrim($stampRel, '/')) ?>" onerror="this.src='<?= htmlspecialchars(ltrim($stampRel, '/')) ?>';" alt="Company Stamp" style="max-height: 65px; max-width: 130px; object-fit: contain;" />
+                    <img src="../view/<?= htmlspecialchars(ltrim($stampRel, '/')) ?>" onerror="this.src='<?= htmlspecialchars(ltrim($stampRel, '/')) ?>';" alt="Company Stamp" style="height: 48px; max-width: 140px; object-fit: contain; display: inline-block; vertical-align: middle;" />
                 <?php endif; ?>
             </div>
             <?php
@@ -979,8 +979,8 @@ if ($download) {
     <!-- Corporate Footer Matching PDF -->
     <div class="divFooter page-break-inside-avoid" style="margin-top:28px;">
         <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#475569;margin-bottom:4px;font-family:'Montserrat',sans-serif;padding:0 2px;">
-            <div>Page 1 of 1</div>
-            <div><?= htmlspecialchars($qNo) ?></div>
+            <div><?= (!empty($footerConfig['show_page_no']) || !isset($footerConfig['show_page_no'])) ? 'Page 1 of 1' : '' ?></div>
+            <div><?= (!isset($footerConfig['show_ref_no']) || !empty($footerConfig['show_ref_no'])) ? htmlspecialchars($footerConfig['doc_number'] ?? 'CINQO/THC/QTN/01/2020/REV3') : '' ?></div>
         </div>
         <table style="width: 100%; border: none; border-collapse: collapse; background-color: <?= htmlspecialchars($footerConfig['bg_color'] ?? '#1e2560') ?>; border-radius: 4px; overflow: hidden;">
             <tbody>

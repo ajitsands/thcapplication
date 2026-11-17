@@ -191,7 +191,8 @@
         show_badges: 1,
         badges_image: "global_assets/images/a.png",
         show_page_no: 1,
-        show_ref_no: 1
+        show_ref_no: 1,
+        doc_number: "CINQO/THC/QTN/01/2020/REV3"
     };
     let FOOTER_CONFIG = Object.assign({}, DEFAULT_FOOTER_CONFIG);
 
@@ -376,9 +377,9 @@
                     Yours sincerely,<br>
                     THC Facility Management W.L.L</b><br>
                     ${(showSig || showStamp) ? `
-                        <div style="display:flex;align-items:center;gap:14px;margin:8px 0;min-height:55px;">
-                            ${showSig && uSigRel ? `<img src="${H(uSigRel)}" onerror="this.src='../view/${H(uSigRel)}';" alt="Signature" style="max-height:48px;max-width:130px;object-fit:contain;display:block;">` : ""}
-                            ${showStamp && stampRel ? `<img src="${H(stampRel)}" onerror="this.src='../view/${H(stampRel)}';" alt="Stamp" style="max-height:68px;max-width:130px;object-fit:contain;display:block;margin-left:-8px;">` : ""}
+                        <div style="display:flex;align-items:center;gap:14px;margin:8px 0;min-height:52px;">
+                            ${showSig && uSigRel ? `<img src="${H(uSigRel)}" onerror="this.src='../view/${H(uSigRel)}';" alt="Signature" style="height:42px;max-width:140px;object-fit:contain;display:inline-block;vertical-align:middle;">` : ""}
+                            ${showStamp && stampRel ? `<img src="${H(stampRel)}" onerror="this.src='../view/${H(stampRel)}';" alt="Stamp" style="height:48px;max-width:140px;object-fit:contain;display:inline-block;vertical-align:middle;">` : ""}
                         </div>
                     ` : `<br><br>`}
                     <b>${H(uName)}<br>
@@ -401,7 +402,7 @@
             <div class="sheet-footer-container" style="margin-top:24px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#475569;margin-bottom:4px;padding:0 2px;">
                     <div>${FOOTER_CONFIG.show_page_no ? "Page 1 of 1" : ""}</div>
-                    <div>${FOOTER_CONFIG.show_ref_no ? H(qNo || "CINQO/THC/QTN/01/2020/REV3") : ""}</div>
+                    <div>${H(FOOTER_CONFIG.doc_number || "CINQO/THC/QTN/01/2020/REV3")}</div>
                 </div>
                 <div style="background:${H(FOOTER_CONFIG.bg_color || '#1e2560')};border-radius:4px;padding:10px 14px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;gap:12px;">
                     <div style="font-size:10px;line-height:1.5;color:#ffffff;">
@@ -2713,6 +2714,7 @@
         if ($("#cfg_footer_badges")) $("#cfg_footer_badges").checked = (cfg.show_badges !== 0 && cfg.show_badges !== false);
         if ($("#cfg_footer_page_no")) $("#cfg_footer_page_no").checked = (cfg.show_page_no !== 0 && cfg.show_page_no !== false);
         if ($("#cfg_footer_ref_no")) $("#cfg_footer_ref_no").checked = (cfg.show_ref_no !== 0 && cfg.show_ref_no !== false);
+        if ($("#cfg_footer_doc_number")) $("#cfg_footer_doc_number").value = cfg.doc_number || "CINQO/THC/QTN/01/2020/REV3";
     }
 
     function updateFooterLivePreview() {
@@ -2726,6 +2728,7 @@
         const showBadges = $("#cfg_footer_badges") ? $("#cfg_footer_badges").checked : true;
         const showPageNo = $("#cfg_footer_page_no") ? $("#cfg_footer_page_no").checked : true;
         const showRefNo = $("#cfg_footer_ref_no") ? $("#cfg_footer_ref_no").checked : true;
+        const docNumber = ($("#cfg_footer_doc_number") ? $("#cfg_footer_doc_number").value.trim() : "") || "CINQO/THC/QTN/01/2020/REV3";
 
         if ($("#fp_phone")) $("#fp_phone").textContent = phone;
         if ($("#fp_email")) $("#fp_email").textContent = email;
@@ -2736,7 +2739,10 @@
         if ($("#footer_preview_bar")) $("#footer_preview_bar").style.background = color;
         if ($("#footer_preview_badges")) $("#footer_preview_badges").style.display = showBadges ? "block" : "none";
         if ($("#footer_preview_page")) $("#footer_preview_page").style.visibility = showPageNo ? "visible" : "hidden";
-        if ($("#footer_preview_ref")) $("#footer_preview_ref").style.visibility = showRefNo ? "visible" : "hidden";
+        if ($("#footer_preview_ref")) {
+            $("#footer_preview_ref").textContent = docNumber;
+            $("#footer_preview_ref").style.visibility = showRefNo ? "visible" : "hidden";
+        }
     }
 
     function saveFooterSettings() {
@@ -2750,7 +2756,8 @@
             bg_color: ($("#cfg_footer_color_hex") ? $("#cfg_footer_color_hex").value.trim() : "") || "#1e2560",
             show_badges: $("#cfg_footer_badges") && $("#cfg_footer_badges").checked ? 1 : 0,
             show_page_no: $("#cfg_footer_page_no") && $("#cfg_footer_page_no").checked ? 1 : 0,
-            show_ref_no: $("#cfg_footer_ref_no") && $("#cfg_footer_ref_no").checked ? 1 : 0
+            show_ref_no: $("#cfg_footer_ref_no") && $("#cfg_footer_ref_no").checked ? 1 : 0,
+            doc_number: ($("#cfg_footer_doc_number") ? $("#cfg_footer_doc_number").value.trim() : "") || "CINQO/THC/QTN/01/2020/REV3"
         };
 
         const btnSave = $("#btn_save_footer_cfg");

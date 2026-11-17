@@ -85,7 +85,8 @@ class QuotationModuleController
         'show_badges' => 1,
         'badges_image' => 'global_assets/images/a.png',
         'show_page_no' => 1,
-        'show_ref_no' => 1
+        'show_ref_no' => 1,
+        'doc_number' => 'CINQO/THC/QTN/01/2020/REV3'
     ];
 
     private $stampSignConfigFile;
@@ -1299,7 +1300,8 @@ class QuotationModuleController
             'show_badges' => isset($input['show_badges']) ? (int)(bool)$input['show_badges'] : $curCfg['show_badges'],
             'badges_image' => !empty($input['badges_image']) ? trim((string)$input['badges_image']) : $curCfg['badges_image'],
             'show_page_no' => isset($input['show_page_no']) ? (int)(bool)$input['show_page_no'] : $curCfg['show_page_no'],
-            'show_ref_no' => isset($input['show_ref_no']) ? (int)(bool)$input['show_ref_no'] : $curCfg['show_ref_no']
+            'show_ref_no' => isset($input['show_ref_no']) ? (int)(bool)$input['show_ref_no'] : $curCfg['show_ref_no'],
+            'doc_number' => !empty($input['doc_number']) ? trim((string)$input['doc_number']) : ($curCfg['doc_number'] ?? 'CINQO/THC/QTN/01/2020/REV3')
         ];
 
         $jsonStr = json_encode($updated, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
