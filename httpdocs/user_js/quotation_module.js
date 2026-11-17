@@ -217,6 +217,22 @@
         }, 2800);
     }
 
+    function renderFormattedInline(str) {
+        if (!str) return "";
+        let s = H(str);
+        s = s.replace(/&lt;b&gt;/gi, "<b>")
+             .replace(/&lt;\/b&gt;/gi, "</b>")
+             .replace(/&lt;strong&gt;/gi, "<b>")
+             .replace(/&lt;\/strong&gt;/gi, "</b>")
+             .replace(/&lt;u&gt;/gi, "<u>")
+             .replace(/&lt;\/u&gt;/gi, "</u>")
+             .replace(/&lt;i&gt;/gi, "<i>")
+             .replace(/&lt;\/i&gt;/gi, "</i>");
+        s = s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+        s = s.replace(/__([^_]+)__/g, "<u>$1</u>");
+        return s;
+    }
+
     function formatDescHtml(desc) {
         if (!desc) return "";
         const lines = String(desc).split(/\r?\n/);
@@ -224,9 +240,9 @@
             const trimmed = line.trim();
             if (/^[\u2022\-\*]\s*/.test(trimmed)) {
                 const clean = trimmed.replace(/^[\u2022\-\*]\s*/, "");
-                return `<div style="padding-left:14px;text-indent:-10px;margin:2px 0;">&bull;&nbsp;${H(clean)}</div>`;
+                return `<div style="padding-left:14px;text-indent:-10px;margin:2px 0;">&bull;&nbsp;${renderFormattedInline(clean)}</div>`;
             }
-            return `<div>${H(line)}</div>`;
+            return `<div>${renderFormattedInline(line)}</div>`;
         }).join("");
     }
 
@@ -880,7 +896,7 @@
 
             const items = x.items || [];
             const itemsSummary = items.map((it, i) => {
-                const d = it.description || it[0] || "";
+                const d = (it.description || it[0] || "").replace(/<[^>]+>/g, "").replace(/\*\*/g, "").replace(/__/g, "");
                 const q = it.quantity !== undefined ? it.quantity : (it[1] !== undefined ? it[1] : 1);
                 const u = it.unit || it[2] || "Lumpsum";
                 const p = it.unit_price !== undefined ? it.unit_price : (it[3] !== undefined ? it[3] : 0);
@@ -1935,12 +1951,22 @@
                 toggleBulletInItem(+btnBullet.dataset.bulletIdx);
                 return;
             }
+            const btnBold = ev.target.closest(".btn-toggle-bold");
+            if (btnBold) {
+                ev.preventDefault();
+                formatItemText(+btnBold.dataset.boldIdx, "bold");
+                return;
+            }
+            const btnUnderline = ev.target.closest(".btn-toggle-underline");
+            if (btnUnderline) {
+                ev.preventDefault();
+                formatItemText(+btnUnderline.dataset.underlineIdx, "underline");
+                return;
+            }
         };
 
         $("#its").onkeydown = ev => {
-            if (ev.key === "Enter" && !ev.shiftKey && !ev.ctrlKey && !ev.altKey) {
-                handleItemDescKeydown(ev);
-            }
+            handleItemDescKeydown(ev);
         };
 
         $("#tm").onclick = ev => {
@@ -2089,36 +2115,131 @@
         renderLivePreview();
     }
 
+    function formatItemText(idx, formatType) {
+        if (!ED || !ED.items || !ED.items[idx]) return;
+        const ta = $(`textarea[data-i="${idx}"][data-f="desc"]`);
+        if (!ta) return;
+
+        const val = ta.value || "";
+        const selStart = ta.selectionStart;
+        const selEnd = ta.selectionEnd;
+
+        const tagOpen = formatType === "bold" ? "<b>" : "<u>";
+        const tagClose = formatType === "bold" ? "</b>" : "</u>";
+        const tagLen = tagOpen.length;
+        const closeLen = tagClose.length;
+
+        // Case 1: User has selected text
+        if (selStart !== undefined && selEnd !== undefined && selStart !== selEnd) {
+            const beforeSel = val.substring(0, selStart);
+            const selected = val.substring(selStart, selEnd);
+            const afterSel = val.substring(selEnd);
+
+            if (selected.startsWith(tagOpen) && selected.endsWith(tagClose) && selected.length >= tagLen + closeLen) {
+                const unwrapped = selected.substring(tagLen, selected.length - closeLen);
+                ta.value = beforeSel + unwrapped + afterSel;
+                ta.focus();
+                ta.setSelectionRange(selStart, selStart + unwrapped.length);
+            } else if (beforeSel.endsWith(tagOpen) && afterSel.startsWith(tagClose)) {
+                const newBefore = beforeSel.substring(0, beforeSel.length - tagLen);
+                const newAfter = afterSel.substring(closeLen);
+                ta.value = newBefore + selected + newAfter;
+                ta.focus();
+                ta.setSelectionRange(selStart - tagLen, selEnd - tagLen);
+            } else {
+                const wrapped = tagOpen + selected + tagClose;
+                ta.value = beforeSel + wrapped + afterSel;
+                ta.focus();
+                ta.setSelectionRange(selStart, selStart + wrapped.length);
+            }
+        } 
+        // Case 2: No text selected (cursor is at a position)
+        else {
+            const pos = selStart !== undefined ? selStart : val.length;
+            const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+            let lineEnd = val.indexOf("\n", pos);
+            if (lineEnd === -1) lineEnd = val.length;
+
+            const currentLine = val.substring(lineStart, lineEnd);
+            const trimmedLine = currentLine.trim();
+
+            if (!trimmedLine) {
+                const ins = tagOpen + tagClose;
+                ta.value = val.substring(0, pos) + ins + val.substring(pos);
+                ta.focus();
+                ta.setSelectionRange(pos + tagLen, pos + tagLen);
+            } else if (trimmedLine.startsWith(tagOpen) && trimmedLine.endsWith(tagClose) && trimmedLine.length >= tagLen + closeLen) {
+                const leadingSpace = currentLine.match(/^\s*/)[0];
+                const trailingSpace = currentLine.match(/\s*$/)[0];
+                const unwrapped = leadingSpace + trimmedLine.substring(tagLen, trimmedLine.length - closeLen) + trailingSpace;
+                ta.value = val.substring(0, lineStart) + unwrapped + val.substring(lineEnd);
+                ta.focus();
+                ta.setSelectionRange(lineStart + leadingSpace.length, lineStart + unwrapped.length - trailingSpace.length);
+            } else {
+                const bulletMatch = currentLine.match(/^(\s*[\u2022\-\*]\s*)(.*)$/);
+                let newLine = "";
+                if (bulletMatch) {
+                    newLine = bulletMatch[1] + tagOpen + bulletMatch[2] + tagClose;
+                } else {
+                    newLine = tagOpen + currentLine + tagClose;
+                }
+                ta.value = val.substring(0, lineStart) + newLine + val.substring(lineEnd);
+                ta.focus();
+                ta.setSelectionRange(lineStart, lineStart + newLine.length);
+            }
+        }
+
+        ED.items[idx].description = ta.value;
+        renderLivePreview();
+    }
+
     function handleItemDescKeydown(ev) {
-        if (ev.key !== "Enter" || ev.shiftKey || ev.ctrlKey || ev.altKey) return;
         const ta = ev.target;
         if (!ta || ta.dataset.f !== "desc") return;
 
-        const val = ta.value;
-        const pos = ta.selectionStart;
-        const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
-        const currentLine = val.substring(lineStart, pos);
-
-        const bulletMatch = currentLine.match(/^(\s*)([\u2022\-\*]\s*)/);
-        if (bulletMatch) {
-            ev.preventDefault();
-            const indent = bulletMatch[1];
-            const contentAfterBullet = currentLine.substring(bulletMatch[0].length).trim();
-
-            if (!contentAfterBullet) {
-                ta.value = val.substring(0, lineStart) + val.substring(pos);
-                ta.setSelectionRange(lineStart, lineStart);
-            } else {
-                const insertText = "\n" + indent + "• ";
-                ta.value = val.substring(0, pos) + insertText + val.substring(pos);
-                const newPos = pos + insertText.length;
-                ta.setSelectionRange(newPos, newPos);
+        // Ctrl+B (Bold) or Ctrl+U (Underline)
+        if (ev.ctrlKey || ev.metaKey) {
+            const k = (ev.key || "").toLowerCase();
+            if (k === "b") {
+                ev.preventDefault();
+                formatItemText(+ta.dataset.i, "bold");
+                return;
             }
-            const idx = +ta.dataset.i;
-            if (ED && ED.items && ED.items[idx]) {
-                ED.items[idx].description = ta.value;
+            if (k === "u") {
+                ev.preventDefault();
+                formatItemText(+ta.dataset.i, "underline");
+                return;
             }
-            renderLivePreview();
+        }
+
+        // Enter key bullet continuation
+        if (ev.key === "Enter" && !ev.shiftKey && !ev.ctrlKey && !ev.altKey) {
+            const val = ta.value;
+            const pos = ta.selectionStart;
+            const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+            const currentLine = val.substring(lineStart, pos);
+
+            const bulletMatch = currentLine.match(/^(\s*)([\u2022\-\*]\s*)/);
+            if (bulletMatch) {
+                ev.preventDefault();
+                const indent = bulletMatch[1];
+                const contentAfterBullet = currentLine.substring(bulletMatch[0].length).trim();
+
+                if (!contentAfterBullet) {
+                    ta.value = val.substring(0, lineStart) + val.substring(pos);
+                    ta.setSelectionRange(lineStart, lineStart);
+                } else {
+                    const insertText = "\n" + indent + "• ";
+                    ta.value = val.substring(0, pos) + insertText + val.substring(pos);
+                    const newPos = pos + insertText.length;
+                    ta.setSelectionRange(newPos, newPos);
+                }
+                const idx = +ta.dataset.i;
+                if (ED && ED.items && ED.items[idx]) {
+                    ED.items[idx].description = ta.value;
+                }
+                renderLivePreview();
+            }
         }
     }
 
@@ -2142,15 +2263,23 @@
             return `
             <div class="it">
                 <div style="grid-column:1/-1;margin-bottom:6px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                         <span style="font-size:11.5px;font-weight:700;color:#0A4174;text-transform:uppercase;letter-spacing:0.3px;">
                             ${itemLabel}
                         </span>
-                        <button type="button" class="btn-toggle-bullet" data-bullet-idx="${i}" title="Insert bullet point (•) or toggle bulleted list in description" style="padding:2px 8px;font-size:11px;background:#eef6fc;border:1px solid #7BBDE8;border-radius:4px;color:#0A4174;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
-                            <span style="font-size:13px;line-height:1;">&bull;</span> Bullet Point
-                        </button>
+                        <div style="display:inline-flex;align-items:center;gap:4px;">
+                            <button type="button" class="btn-toggle-bold" data-bold-idx="${i}" title="Bold selected text (Ctrl+B)" style="padding:2px 8px;font-size:11.5px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;color:#0A4174;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;">
+                                <b>B</b>
+                            </button>
+                            <button type="button" class="btn-toggle-underline" data-underline-idx="${i}" title="Underline selected text (Ctrl+U)" style="padding:2px 8px;font-size:11.5px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;color:#0A4174;font-weight:600;text-decoration:underline;cursor:pointer;display:inline-flex;align-items:center;">
+                                <u>U</u>
+                            </button>
+                            <button type="button" class="btn-toggle-bullet" data-bullet-idx="${i}" title="Insert bullet point (•) or toggle bulleted list in description" style="padding:2px 8px;font-size:11px;background:#eef6fc;border:1px solid #7BBDE8;border-radius:4px;color:#0A4174;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                                <span style="font-size:13px;line-height:1;">&bull;</span> Bullet
+                            </button>
+                        </div>
                     </div>
-                    <textarea data-i="${i}" data-f="desc" rows="2" placeholder="Description of work (supports bullet points •)..." spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(desc)}</textarea>
+                    <textarea data-i="${i}" data-f="desc" rows="2" placeholder="Description of work (select text to Bold / Underline)..." spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(desc)}</textarea>
                 </div>
                 <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}">
                 <select data-i="${i}" data-f="unit">

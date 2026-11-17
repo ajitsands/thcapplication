@@ -1672,7 +1672,7 @@ class QuotationModuleController
 
             $itemsSummary = [];
             foreach (($x['items'] ?? []) as $i => $it) {
-                $desc = $it['description'] ?? ($it[0] ?? '');
+                $desc = strip_tags(str_replace(['**', '__'], '', $it['description'] ?? ($it[0] ?? '')));
                 $qty = $it['quantity'] ?? ($it[1] ?? 1);
                 $unit = $it['unit'] ?? ($it[2] ?? 'Lumpsum');
                 $price = $it['unit_price'] ?? ($it[3] ?? 0);

@@ -865,8 +865,14 @@ if ($isLoggedIn) {
             outline: none !important;
             box-shadow: 0 0 0 2px rgba(10, 65, 116, 0.12) !important;
         }
-        .btn-toggle-bullet {
+        .btn-toggle-bold, .btn-toggle-underline, .btn-toggle-bullet {
             transition: all 0.15s ease;
+            user-select: none;
+        }
+        .btn-toggle-bold:hover, .btn-toggle-underline:hover {
+            background: #e2e8f0 !important;
+            border-color: #0A4174 !important;
+            color: #0A4174 !important;
         }
         .btn-toggle-bullet:hover {
             background: #e0f0fc !important;

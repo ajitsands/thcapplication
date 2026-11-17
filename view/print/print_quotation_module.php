@@ -277,6 +277,24 @@ foreach ($candStamp as $cst) {
 $hasSig = !empty($stampSignConfig['show_signature']) && $sigFile;
 $hasStamp = !empty($stampSignConfig['show_stamp']) && $stampFile;
 
+if (!function_exists('renderFormattedInline')) {
+    function renderFormattedInline($str) {
+        if ($str === null || $str === '') return '';
+        $s = htmlspecialchars((string)$str);
+        $s = preg_replace('/&lt;b&gt;/i', '<b>', $s);
+        $s = preg_replace('/&lt;\/b&gt;/i', '</b>', $s);
+        $s = preg_replace('/&lt;strong&gt;/i', '<b>', $s);
+        $s = preg_replace('/&lt;\/strong&gt;/i', '</b>', $s);
+        $s = preg_replace('/&lt;u&gt;/i', '<u>', $s);
+        $s = preg_replace('/&lt;\/u&gt;/i', '</u>', $s);
+        $s = preg_replace('/&lt;i&gt;/i', '<i>', $s);
+        $s = preg_replace('/&lt;\/i&gt;/i', '</i>', $s);
+        $s = preg_replace('/\*\*([^*]+)\*\*/', '<b>$1</b>', $s);
+        $s = preg_replace('/__([^_]+)__/', '<u>$1</u>', $s);
+        return $s;
+    }
+}
+
 if (!function_exists('formatQuotationDescPdf')) {
     function formatQuotationDescPdf($desc) {
         if (empty($desc)) return '';
@@ -285,9 +303,9 @@ if (!function_exists('formatQuotationDescPdf')) {
         foreach ($lines as $line) {
             $trimmed = trim($line);
             if (preg_match('/^[\x{2022}\-\*]\s*(.*)$/u', $trimmed, $m)) {
-                $formatted[] = '&nbsp;&nbsp;&bull;&nbsp;' . htmlspecialchars($m[1]);
+                $formatted[] = '&nbsp;&nbsp;&bull;&nbsp;' . renderFormattedInline($m[1]);
             } else {
-                $formatted[] = htmlspecialchars($line);
+                $formatted[] = renderFormattedInline($line);
             }
         }
         return implode('<br>', $formatted);
@@ -302,9 +320,9 @@ if (!function_exists('formatQuotationDescHtml')) {
         foreach ($lines as $line) {
             $trimmed = trim($line);
             if (preg_match('/^[\x{2022}\-\*]\s*(.*)$/u', $trimmed, $m)) {
-                $out[] = '<div style="padding-left:14px;text-indent:-10px;margin:2px 0;">&bull;&nbsp;' . htmlspecialchars($m[1]) . '</div>';
+                $out[] = '<div style="padding-left:14px;text-indent:-10px;margin:2px 0;">&bull;&nbsp;' . renderFormattedInline($m[1]) . '</div>';
             } else {
-                $out[] = '<div>' . htmlspecialchars($line) . '</div>';
+                $out[] = '<div>' . renderFormattedInline($line) . '</div>';
             }
         }
         return implode('', $out);
