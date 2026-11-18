@@ -100,6 +100,7 @@ class QuotationModuleController
 
     public function __construct()
     {
+        @date_default_timezone_set('Asia/Bahrain');
         $this->jsonFallbackFile = __DIR__ . '/../../scratch/quotations_data.json';
         $this->unitsFallbackFile = __DIR__ . '/../../scratch/quotation_units.json';
         $this->footerConfigFile = __DIR__ . '/../../scratch/quotation_footer_config.json';
@@ -1950,7 +1951,7 @@ class QuotationModuleController
 
             if ($chkStatusVal !== null && $chkStatusVal !== 'Draft') {
                 if ($chkStatusVal === 'Approved') {
-                    echo json_encode(["status" => "error", "message" => "This quotation is Approved and locked. It cannot be edited unless reopened by a Manager."]);
+                    echo json_encode(["status" => "error", "message" => "This quotation is Approved and locked. It cannot be edited unless reopened by Admin."]);
                 } else {
                     echo json_encode(["status" => "error", "message" => "Issued quotations are immutable. Only drafts can be edited. Changes to an issued quote must be created as a new revision or variation."]);
                 }
@@ -2333,10 +2334,10 @@ class QuotationModuleController
         $activity = json_decode($qRow['activity_json'] ?? '', true);
         if (!is_array($activity)) $activity = [];
 
-        // Rule 6: Reopen approval (Manager permission required)
-        if ($action === 'reopen' || ($currentStatus === 'Approved' && strtolower($status) === 'pending')) {
-            if (!$this->isSessionUserManager()) {
-                echo json_encode(["status" => "error", "message" => "Reopening an approved quote requires Manager or Administrator permission."]);
+        // Rule 6: Reopen approval (Administrator permission required)
+        if ($action === 'reopen' || ($currentStatus === 'Approved' && in_array(strtolower($status), ['draft', 'pending']))) {
+            if (!$this->isSessionUserAdmin()) {
+                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can reopen an approved quotation."]);
                 return;
             }
             if (empty($reason)) {
@@ -2345,16 +2346,16 @@ class QuotationModuleController
             }
 
             $prevApprover = !empty($qRow['approval_by']) ? $qRow['approval_by'] : "Client representative";
-            $logMsg = "Reopened. Previous approval by {$prevApprover} cleared. Reason: {$reason}";
-            $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+            $logMsg = "Reopened by Administrator. Previous approval by {$prevApprover} cleared. Reason: {$reason}";
+            $activity[] = ["d" => date('Y-m-d H:i:s'), "u" => $userName, "t" => $logMsg];
             $actJson = json_encode($activity);
-            $fullRemark = "Reopened: " . $reason;
+            $fullRemark = "Reopened by Admin: " . $reason;
 
             if ($this->isDbConnected) {
                 $escRem = mysqli_real_escape_string($this->db, $fullRemark);
                 $escAct = mysqli_real_escape_string($this->db, $actJson);
                 mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
-                    status = 'Pending',
+                    status = 'Draft',
                     approval_by = NULL,
                     approval_date = NULL,
                     client_po_ref = '',
@@ -2364,8 +2365,11 @@ class QuotationModuleController
             } else {
                 foreach ($quotes as &$q) {
                     if ($q['id'] == $id) {
-                        $q['status'] = 'Pending';
+                        $q['status'] = 'Draft';
                         $q['appr'] = null;
+                        $q['approval_by'] = null;
+                        $q['approval_date'] = null;
+                        $q['client_po_ref'] = '';
                         $q['remark'] = $fullRemark;
                         $q['activity'] = $activity;
                         break;
@@ -2377,9 +2381,9 @@ class QuotationModuleController
 
             echo json_encode([
                 "status" => "success",
-                "message" => "Approval reopened and logged. Status returned to Pending.",
+                "message" => "Approval reopened by Administrator. Status returned to Draft for authorized editing.",
                 "id" => $id,
-                "new_status" => "Pending",
+                "new_status" => "Draft",
                 "remark" => $fullRemark
             ]);
             return;
@@ -2387,19 +2391,23 @@ class QuotationModuleController
 
         // Prevent unauthorized status modification of an Approved quote
         if ($currentStatus === 'Approved' && strtolower($status) !== 'completed') {
-            echo json_encode(["status" => "error", "message" => "This quotation is Approved and locked. It cannot be modified without Manager reopening."]);
+            echo json_encode(["status" => "error", "message" => "This quotation is Approved and locked. It cannot be modified without Administrator reopening."]);
             return;
         }
 
-        // Rule 4: Mark Approved & Void other open revisions in group
+        // Rule 4: Mark Approved (Administrator permission required) & Void other open revisions in group
         if (strtolower($status) === 'approved') {
+            if (!$this->isSessionUserAdmin()) {
+                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can record quotation approvals."]);
+                return;
+            }
             if (empty($approvedBy)) {
                 echo json_encode(["status" => "error", "message" => "Client approver name is mandatory to confirm approval."]);
                 return;
             }
             $appDate = !empty($approvedOn) ? $approvedOn : $today;
             $logMsg = "Approved by " . $approvedBy . ($clientPo ? " (" . $clientPo . ")" : "");
-            $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+            $activity[] = ["d" => date('Y-m-d H:i:s'), "u" => $userName, "t" => $logMsg];
             $actJson = json_encode($activity);
 
             if ($this->isDbConnected) {
@@ -2467,15 +2475,19 @@ class QuotationModuleController
             return;
         }
 
-        // Rule 7: Not approved
+        // Rule 7: Not approved (Administrator permission required)
         if (strtolower($status) === 'not approved' || strtolower($status) === 'rejected') {
+            if (!$this->isSessionUserAdmin()) {
+                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can mark quotations as not approved."]);
+                return;
+            }
             if (empty($reason)) {
                 echo json_encode(["status" => "error", "message" => "A reason is required when marking not approved."]);
                 return;
             }
             $fullRemark = $reason . ($remark ? " – " . $remark : "");
             $logMsg = "Not approved: " . $fullRemark;
-            $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+            $activity[] = ["d" => date('Y-m-d H:i:s'), "u" => $userName, "t" => $logMsg];
             $actJson = json_encode($activity);
 
             if ($this->isDbConnected) {

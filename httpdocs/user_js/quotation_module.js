@@ -26,12 +26,44 @@
         return null;
     }
 
-    // Date formatting helper: "27th October 2026"
+    // Standard system date helper: "12-11-2026" (or "12-11-2026 14:30")
+    function dmy(s, withTime = false) {
+        if (!s) return "—";
+        const str = String(s).trim();
+        if (!str || str === "0000-00-00") return "—";
+        const clean = str.replace("T", " ");
+        const parts = clean.split(" ");
+        const datePart = parts[0];
+        const timePart = parts[1] || "";
+        const dp = datePart.split("-");
+        if (dp.length === 3 && dp[0].length === 4) {
+            const dmyDate = `${dp[2]}-${dp[1]}-${dp[0]}`;
+            if (withTime && timePart) {
+                const tp = timePart.split(":");
+                return `${dmyDate} ${tp[0]}:${tp[1]}`;
+            }
+            return dmyDate;
+        }
+        const dpSlash = datePart.split("/");
+        if (dpSlash.length === 3 && dpSlash[0].length === 4) {
+            const dmyDate = `${dpSlash[2]}-${dpSlash[1]}-${dpSlash[0]}`;
+            if (withTime && timePart) {
+                const tp = timePart.split(":");
+                return `${dmyDate} ${tp[0]}:${tp[1]}`;
+            }
+            return dmyDate;
+        }
+        return str;
+    }
+
+    // Date formatting helper for formal quotation sheet: "27th October 2026"
     function fd(s) {
         if (!s) return "—";
-        const parts = s.split("-");
+        const clean = String(s).trim().replace("T", " ").split(" ")[0];
+        const parts = clean.split("-");
         if (parts.length < 3) return s;
-        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        if (isNaN(d.getTime())) return s;
         const n = d.getDate();
         const o = (n % 100 > 10 && n % 100 < 14) || n % 10 > 3 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th";
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -809,7 +841,7 @@
                             const code = x.client_code || x.code || "—";
                             const isAmc = x.is_amc !== undefined ? !!x.is_amc : !!x.amc;
                             const subj = x.subject || x.subj || "—";
-                            const date = x.quotation_date || x.date || "—";
+                            const date = dmy(x.quotation_date || x.date);
                             const userCode = x.user_code || x.user || "—";
                             let userName = x.user_name || (USERS[userCode] ? (Array.isArray(USERS[userCode]) ? USERS[userCode][0] : USERS[userCode].name) : "") || userCode;
                             if (userName === "Adminstrator") userName = "Administrator";
@@ -888,7 +920,7 @@
         list.forEach((x, idx) => {
             const qNo = x.quotation_no || x.no || "Draft";
             const version = lab(x);
-            const date = x.quotation_date || x.date || "";
+            const date = dmy(x.quotation_date || x.date);
             const clientName = x.client_name || x.client || "";
             const clientCode = x.client_code || x.code || "";
             const isAmc = x.is_amc !== undefined ? (x.is_amc ? "AMC" : "Non-AMC") : (x.amc ? "AMC" : "Non-AMC");
@@ -910,14 +942,14 @@
             const status = x.status || x.st || "Draft";
             let decisionInfo = "";
             if (status === "Completed") {
-                decisionInfo = `Completed on ${x.completion_date || ''}${x.completion_by ? ' by ' + x.completion_by : ''}${x.completion_notes ? ' (' + x.completion_notes + ')' : ''}`;
+                decisionInfo = `Completed on ${dmy(x.completion_date)}${x.completion_by ? ' by ' + x.completion_by : ''}${x.completion_notes ? ' (' + x.completion_notes + ')' : ''}`;
             } else if (status === "Expired") {
                 decisionInfo = `Expired (Validity: ${x.validity_days || 30} days)${x.remark ? ' - ' + x.remark : ''}`;
             } else if (status === "Approved") {
                 const apprBy = x.approval_by || (x.appr && x.appr.by) || "";
-                const apprDate = x.approval_date || (x.appr && x.appr.on) || "";
+                const apprDate = dmy(x.approval_date || (x.appr && x.appr.on));
                 const poRef = x.client_po_ref || (x.appr && x.appr.po) || "";
-                decisionInfo = `Approved by ${apprBy}${apprDate ? ' on ' + apprDate : ''}${poRef ? ' (PO: ' + poRef + ')' : ''}`;
+                decisionInfo = `Approved by ${apprBy}${apprDate && apprDate !== '—' ? ' on ' + apprDate : ''}${poRef ? ' (PO: ' + poRef + ')' : ''}`;
             } else if (status === "Not approved") {
                 const reason = x.rejection_reason || x.remark || "";
                 decisionInfo = `Rejected: ${reason}`;
@@ -1110,15 +1142,14 @@
 
         const st = q.status || q.st;
         const adminUser = isSessionAdmin();
-        const managerUser = isSessionManager();
         const can = {
-            ed: st === "Draft" && adminUser,
+            ed: st === "Draft",
             del: st === "Draft" && adminUser,
             rev: ["Pending", "Not approved"].includes(st) && adminUser && !apGrp,
-            ap: ["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp),
-            no: ["Pending", "Not approved"].includes(st),
+            ap: (["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp)) && adminUser,
+            no: ["Pending", "Not approved"].includes(st) && adminUser,
             vr: st === "Approved",
-            ro: st === "Approved" && managerUser,
+            ro: st === "Approved" && adminUser,
             cm: st === "Approved",
             rvv: st === "Expired"
         };
@@ -1151,7 +1182,7 @@
                 </div>
             </div>
             
-            ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval, or request Manager approval to reopen.</div>' : ""}
+            ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval, or request Admin approval to reopen.</div>' : ""}
             ${st === "Completed" ? '<div class="lock" style="background:#ecfdf5;border-color:#6ee7b7;color:#065f46;">✅ Work for this quotation has been marked as <b>Completed</b>.</div>' : ""}
             ${st === "Expired" ? '<div class="lock" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;">⚠️ This quotation has <b>Expired</b> based on its validity period. Click "Revive Quote" to refresh the quotation date and restore it to Pending.</div>' : ""}
 
@@ -1180,7 +1211,7 @@
 
                             ${(q.approval_by || (q.appr && q.appr.by)) ? `
                                 <span>Approved by</span>
-                                <div>${H(q.approval_by || q.appr.by)} on ${q.approval_date || (q.appr && q.appr.on)}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}</div>
+                                <div>${H(q.approval_by || q.appr.by)} on ${dmy(q.approval_date || (q.appr && q.appr.on))}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}</div>
                             ` : ''}
 
                             ${(q.completion_date || st === "Completed") ? `
@@ -1189,7 +1220,7 @@
                                     <div style="font-weight:700;color:#047857;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                                         <i class="icon-checkmark-circle2" style="font-size:15px;color:#059669;"></i> Work Completed
                                     </div>
-                                    <div><b>Completed Date:</b> ${q.completion_date || TODAY}</div>
+                                    <div><b>Completed Date:</b> ${dmy(q.completion_date || TODAY)}</div>
                                     ${q.completion_by ? `<div><b>Recorded By:</b> ${H(q.completion_by)}</div>` : ''}
                                     ${q.completion_notes ? `<div style="margin-top:4px;background:#ffffff;padding:4px 8px;border-radius:4px;border:1px solid #bbf7d0;"><b>Notes:</b> ${H(q.completion_notes)}</div>` : ''}
                                     ${q.completion_attachment ? `
@@ -1228,7 +1259,7 @@
                     <div class="card pad">
                         <h2>Revisions &amp; variations</h2>
                         ${M(h, x => {
-                            const xDate = x.quotation_date || x.date;
+                            const xDate = dmy(x.quotation_date || x.date);
                             return `
                             <div style="margin-top:8px;">
                                 <a href="#" data-r="${x.id}" style="${x.id == q.id ? 'font-weight:700;' : ''}">${lab(x)}</a>
@@ -1243,7 +1274,7 @@
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                             ${can.ap ? `<button class="p" id="ya">${st === "Superseded" ? "Client approved this older revision" : "Mark approved"}</button>` : ""}
                             ${can.no ? '<button class="d" id="no">Mark not approved</button>' : ""}
-                            ${can.ro ? '<button id="ro">Reopen approval (manager only)</button>' : ""}
+                            ${can.ro ? '<button id="ro">Reopen approval (Admin only)</button>' : ""}
                         </div>
                         <div id="apb" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Approved By (Client Contact Name) <span style="color:var(--bad);">*</span></label>
@@ -1264,7 +1295,7 @@
                             <button class="d btn ladda-button" id="cf" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm not approved</span></button>
                         </div>
                         <div id="rob" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
-                            <label style="display:block;margin-bottom:4px;font-weight:600;">Reason for reopening <span style="color:var(--bad);">*</span></label>
+                            <label style="display:block;margin-bottom:4px;font-weight:600;">Reason for reopening (Admin approval) <span style="color:var(--bad);">*</span></label>
                             <textarea id="rr" rows="2" placeholder="Reason for reopening (required, logged)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
                             <button class="d btn ladda-button" id="cro" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm reopen</span></button>
                         </div>
@@ -1275,7 +1306,7 @@
                         <h2>Activity</h2>
                         ${M((q.activity || q.log), l => `
                             <div style="margin-top:6px;border-bottom:1px solid var(--line);padding-bottom:6px;">
-                                <small style="color:var(--mut);">${H(l.d || l.at)} · ${H(l.u || l.user_id || "")}</small><br>
+                                <small style="color:var(--mut);">${H(dmy(l.d || l.at, true))} · ${H(l.u || l.user_id || "")}</small><br>
                                 <span>${H(l.t || l.note || "")}</span>
                             </div>`
                         )}
@@ -1358,7 +1389,7 @@
             $("#btn_revive_quote").onclick = () => {
                 if ($("#revive_quote_id")) $("#revive_quote_id").value = q.id;
                 if ($("#revive_quote_summary")) $("#revive_quote_summary").innerHTML = `<b>${H(qNo || "Draft")}</b> · ${H(clientName)} · Expired Quotation`;
-                if ($("#revive_today_label")) $("#revive_today_label").textContent = TODAY;
+                if ($("#revive_today_label")) $("#revive_today_label").textContent = dmy(TODAY);
                 showModal("#modal_revive_quote");
             };
         }
@@ -4012,7 +4043,7 @@
         const R = [
             ["Draft", Y, N, N, N, N, N, Y, "No"],
             ["Pending", N, Y, Y, Y, N, N, Y, "Sent"],
-            ["Approved", N, N, "—", N, Y, '<span class="m">Manager only</span>', Y, "Sent + approved"],
+            ["Approved", N, N, "—", N, Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
             ["Not approved", N, Y, Y, "—", N, N, Y, "Sent"],
             ["Superseded", N, N, "Only if no revision in its group is approved", N, N, N, Y, "No"],
             ["Void", N, N, N, N, N, N, Y, "No"]
@@ -4061,7 +4092,7 @@
                     <li><b>3. Superseded</b> means an older revision replaced by a newer issued one in the same group (quote number + variation). An Approved revision can never become Superseded.</li>
                     <li><b>4. One approved revision per group.</b> Approving a revision voids any other open (Draft or Pending) revision in that group. If the client approves an older Superseded revision (when no other revision in its group is approved), allow it and void the newer open ones.</li>
                     <li><b>5. Variations.</b> Changes after approval are issued from the approved quote as V1, V2… with their own revision chain and their own approval. Number: <code>CG/THC/MA/QTN/7074/1126/V1/R1</code>. PDF: <code>MA-QTN-7074-V1-R1.pdf</code>.</li>
-                    <li><b>6. Reopen.</b> Manager permission and a reason are required. Status returns to Pending, the approval details are cleared from the record but kept in the activity log. Intended for approving the wrong quote by mistake.</li>
+                    <li><b>6. Reopen.</b> Administrator permission and a reason are required. Status returns to Draft, the approval details are cleared from the record but kept in the activity log. Intended for approving the wrong quote by mistake or unlocking it for authorized editing.</li>
                     <li><b>7. Mandatory fields.</b> Approval: client approver name and date (PO/LPO ref optional). Not approved: reason. Void: automatic system reason.</li>
                     <li><b>8. Totals.</b> Sent = Pending + Approved + Not approved. Approved = Approved only. Draft, Superseded and Void are excluded. An approved variation counts as its own approved quote.</li>
                     <li><b>9. Activity log.</b> Every status change records user, time, action and reason.</li>
@@ -4092,7 +4123,7 @@
                     <li>✓ Approved totals stay the same after a variation is created.</li>
                     <li>✓ Revise a Pending quote: the older revision becomes Superseded and leaves the totals.</li>
                     <li>✓ Approve an older Superseded revision while a newer one is Pending: the newer one becomes Void.</li>
-                    <li>✓ Reopen without manager permission, or without a reason: denied.</li>
+                    <li>✓ Reopen without administrator permission, or without a reason: denied.</li>
                     <li>✓ Variation of an approved quote gets a V1 number and needs its own approval.</li>
                     <li>✓ Draft, Superseded and Void never appear in sent or approved totals.</li>
                 </ul>

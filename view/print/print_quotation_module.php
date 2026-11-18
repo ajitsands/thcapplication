@@ -127,7 +127,8 @@ if (!$q) {
 
 function fDate($str) {
     if (!$str) return "—";
-    $parts = explode("-", $str);
+    $clean = trim(explode(" ", str_replace("T", " ", $str))[0]);
+    $parts = explode("-", $clean);
     if (count($parts) < 3) return $str;
     $time = mktime(0, 0, 0, (int)$parts[1], (int)$parts[2], (int)$parts[0]);
     $day = date('j', $time);
@@ -612,7 +613,7 @@ if ($download) {
 
     $apprBoxHtml = '<b>Approved By:</b><br><br>Name:<br><br>Date:';
     if ($isApproved && !empty($apprBy)) {
-        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><br><b>Date:</b> ' . htmlspecialchars($apprDate ?: fDate($q['quotation_date'])) . (!empty($apprPo) ? '<br><br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
+        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><br><b>Date:</b> ' . htmlspecialchars(fDate($apprDate ?: $q['quotation_date'])) . (!empty($apprPo) ? '<br><br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
     }
 
     $closingNote = '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p><br>';
@@ -1024,7 +1025,7 @@ if ($download) {
         <div class="ap">
             <?php if ($isApproved && !empty($apprBy)): ?>
                 <b>Approved By:</b> <?= htmlspecialchars($apprBy) ?><br><br>
-                <b>Date:</b> <?= htmlspecialchars($apprDate ?: fDate($q['quotation_date'])) ?>
+                <b>Date:</b> <?= htmlspecialchars(fDate($apprDate ?: $q['quotation_date'])) ?>
                 <?php if (!empty($apprPo)): ?>
                     <br><br><b>PO Ref:</b> <?= htmlspecialchars($apprPo) ?>
                 <?php endif; ?>
