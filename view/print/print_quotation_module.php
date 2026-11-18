@@ -378,7 +378,7 @@ if ($download) {
                 $this->SetFont('helvetica', '', 8);
                 $this->SetTextColor(71, 85, 105);
                 $pageNumStr = $showPageNo ? ('Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages()) : '';
-                $docNumStr = $showRefNo ? (!empty($cfg['doc_number']) ? $cfg['doc_number'] : 'CINQO/THC/QTN/01/2020/REV3') : '';
+                $docNumStr = !empty($cfg['doc_number']) ? $cfg['doc_number'] : 'CINQO/THC/QTN/01/2020/REV3';
                 $this->Cell(90, 5, $pageNumStr, 0, 0, 'L', false);
                 $this->Cell(90, 5, $docNumStr, 0, 1, 'R', false);
 
@@ -615,8 +615,7 @@ if ($download) {
         $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><br><b>Date:</b> ' . htmlspecialchars($apprDate ?: fDate($q['quotation_date'])) . (!empty($apprPo) ? '<br><br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
     }
 
-    $html .= '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p>
-    <br><br>';
+    $closingNote = '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p><br>';
 
     // Prepare Stamp & Signature for PDF
     $stampSignHtml = '';
@@ -632,7 +631,10 @@ if ($download) {
 
     $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
         <tr>
-            <td width="55%" style="line-height:1.4;">
+            <td colspan="3" style="line-height:1.4;padding-bottom:12px;">' . $closingNote . '</td>
+        </tr>
+        <tr>
+            <td width="55%" style="line-height:1.4;vertical-align:top;">
                 <b>Thanking you,</b><br><br>
                 <b>Yours sincerely,</b><br>
                 <b>THC Facility Management W.L.L</b><br>
@@ -641,7 +643,7 @@ if ($download) {
                 <span style="color:#475569;">' . htmlspecialchars($signerTitle) . '</span>
             </td>
             <td width="5%"></td>
-            <td width="40%" style="border:1px solid #cbd5e1;background-color:#f8fafc;padding:8px;line-height:1.8;">
+            <td width="40%" style="border:1px solid #cbd5e1;background-color:#f8fafc;padding:8px;line-height:1.8;vertical-align:top;">
                 ' . $apprBoxHtml . '
             </td>
         </tr>
@@ -1038,7 +1040,7 @@ if ($download) {
     <div class="divFooter page-break-inside-avoid" style="margin-top:28px;">
         <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#475569;margin-bottom:4px;font-family:'Montserrat',sans-serif;padding:0 2px;">
             <div><?= (!empty($footerConfig['show_page_no']) || !isset($footerConfig['show_page_no'])) ? 'Page 1 of 1' : '' ?></div>
-            <div><?= (!isset($footerConfig['show_ref_no']) || !empty($footerConfig['show_ref_no'])) ? htmlspecialchars($footerConfig['doc_number'] ?? 'CINQO/THC/QTN/01/2020/REV3') : '' ?></div>
+            <div><?= htmlspecialchars(!empty($footerConfig['doc_number']) ? $footerConfig['doc_number'] : 'CINQO/THC/QTN/01/2020/REV3') ?></div>
         </div>
         <table style="width: 100%; border: none; border-collapse: collapse; background-color: <?= htmlspecialchars($footerConfig['bg_color'] ?? '#1e2560') ?>; border-radius: 4px; overflow: hidden;">
             <tbody>

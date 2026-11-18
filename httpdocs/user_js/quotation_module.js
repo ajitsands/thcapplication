@@ -67,21 +67,30 @@
         const rate = q.vat_rate !== undefined ? +q.vat_rate : (q.vat !== undefined ? +q.vat : 10);
         return net * (1 + rate / 100);
     };
-    const SENT = ["Pending", "Approved", "Not approved"];
+    const SENT = ["Pending", "Approved", "Not approved", "Completed", "Expired"];
     const sm = (a, f) => a.reduce((t, x) => t + f(x), 0);
 
-    // Expired helper: Pending > 15 days
+    // Expired helper: Pending > validity_days (default 30 days)
     const exp = q => {
-        if (q.status !== "Pending" && q.st !== "Pending") return false;
+        const st = q.status || q.st;
+        if (st === "Expired") return true;
+        if (st !== "Pending") return false;
         const qDate = new Date(q.quotation_date || q.date);
         const diffDays = (new Date() - qDate) / (1000 * 60 * 60 * 24);
-        return diffDays > 15;
+        const maxDays = q.validity_days !== undefined ? +q.validity_days : 30;
+        return diffDays > maxDays;
     };
 
     // Status tag renderer
     const tg = q => {
         const status = q.status || q.st || "Draft";
         const cleanClass = status.replace(/\s+/g, "");
+        if (status === "Completed") {
+            return `<span class="tag tag-completed" style="background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;font-weight:600;"><i class="icon-checkmark3 mr-1"></i> Completed</span>`;
+        }
+        if (status === "Expired") {
+            return `<span class="tag tag-expired" style="background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;font-weight:600;"><i class="icon-hour-glass2 mr-1"></i> Expired</span>`;
+        }
         const isExp = exp(q);
         return `<span class="tag ${cleanClass}">${H(status)}${isExp ? " · expired" : ""}</span>`;
     };
@@ -93,11 +102,27 @@
         return (vn ? "V" + vn : "") + (rev ? (vn ? "/" : "") + "R" + rev : "") || "Original";
     };
 
-    // Manager permission checker
+    // Administrator permission checker (strictly checks the authenticated session user)
+    const isSessionAdmin = () => {
+        if (!currentUserObj) return false;
+        if (currentUserObj.is_admin || currentUserObj.isAdmin) return true;
+        const t = (currentUserObj.title || "").toLowerCase();
+        const n = (currentUserObj.name || "").toLowerCase();
+        const c = (currentUserObj.code || "").toUpperCase();
+        return t === "administrator" || t === "admin" || n === "administrator" || n === "admin" || n === "adminstrator" || c === "ADM" || (currentUserObj.user || "").toUpperCase() === "CGTHCFM";
+    };
+
+    // Manager permission checker (strictly checks the authenticated session user)
+    const isSessionManager = () => {
+        if (isSessionAdmin()) return true;
+        if (!currentUserObj) return false;
+        if (currentUserObj.is_manager || currentUserObj.isManager) return true;
+        const t = (currentUserObj.title || "").toLowerCase();
+        return /manager|director|head/i.test(t);
+    };
+
     const mgr = u => {
-        const uInfo = USERS[u];
-        const title = Array.isArray(uInfo) ? uInfo[1] : (uInfo ? uInfo.title : currentUserObj.title);
-        return /manager|administrator|director|head/i.test(title || "") || /manager|administrator|director|head/i.test(currentUserObj.title || "");
+        return isSessionManager();
     };
 
     // Formatted PDF filename
@@ -582,13 +607,13 @@
 
                 <div class="search-input-wrapper">
                     <i class="icon-search4" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:#94a3b8;pointer-events:none;z-index:2;"></i>
-                    <input type="search" id="fq" name="quote_search_filter_query_prevent_autofill" placeholder="Search number, client or subject…" value="${H(F.q)}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <input type="search" id="fq" name="quote_search_query_nocred" placeholder="Search number, client or subject…" value="${H(F.q)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly');" onclick="this.removeAttribute('readonly');" data-lpignore="true">
                     <button type="button" id="btn_clear_search" title="Clear search" style="display:${F.q ? 'flex' : 'none'};">
                         <i class="icon-cross2" style="font-size:11px;"></i>
                     </button>
                 </div>
                 ${sel("fc", "All clients", uniqueClients.map(c => [c, c]))}
-                ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved"].map(c => [c, c]))}
+                ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved", "Completed", "Expired"].map(c => [c, c]))}
                 ${sel("ft", "AMC & non-AMC", [["AMC", "AMC clients"], ["Non-AMC", "Non-AMC clients"]])}
                 ${sel("fu", "All users", userList)}
                 <label>
@@ -613,11 +638,22 @@
             btnClear.style.display = hasVal ? "flex" : "none";
         };
 
-        if (elFq) {
+        const purgeAutofill = () => {
+            if (!elFq) return;
+            const val = elFq.value || "";
             if (!F.q) {
+                if (val.length > 0) {
+                    elFq.value = "";
+                }
+            } else if (val === "CGTHCFM" || val === (currentUserObj.name || "") || val === (currentUserObj.code || "")) {
                 elFq.value = "";
+                F.q = "";
             }
             updateClearButton();
+        };
+
+        if (elFq) {
+            purgeAutofill();
 
             elFq.oninput = e => {
                 F.q = e.target.value;
@@ -639,14 +675,8 @@
             };
 
             // Watchdog against late browser autofills that inject credentials on refresh
-            [40, 120, 250, 500].forEach(delay => {
-                setTimeout(() => {
-                    if (!F.q && elFq && elFq.value) {
-                        elFq.value = "";
-                        updateClearButton();
-                        res();
-                    }
-                }, delay);
+            [30, 80, 150, 300, 600, 1200].forEach(delay => {
+                setTimeout(purgeAutofill, delay);
             });
         }
 
@@ -737,7 +767,7 @@
         }
 
         const S = L.filter(x => SENT.includes(x.status || x.st));
-        const A = L.filter(x => (x.status || x.st) === "Approved");
+        const A = L.filter(x => ["Approved", "Completed"].includes(x.status || x.st));
 
         $("#res").innerHTML = `
             <div class="kpis">
@@ -879,7 +909,11 @@
 
             const status = x.status || x.st || "Draft";
             let decisionInfo = "";
-            if (status === "Approved") {
+            if (status === "Completed") {
+                decisionInfo = `Completed on ${x.completion_date || ''}${x.completion_by ? ' by ' + x.completion_by : ''}${x.completion_notes ? ' (' + x.completion_notes + ')' : ''}`;
+            } else if (status === "Expired") {
+                decisionInfo = `Expired (Validity: ${x.validity_days || 30} days)${x.remark ? ' - ' + x.remark : ''}`;
+            } else if (status === "Approved") {
                 const apprBy = x.approval_by || (x.appr && x.appr.by) || "";
                 const apprDate = x.approval_date || (x.appr && x.appr.on) || "";
                 const poRef = x.client_po_ref || (x.appr && x.appr.po) || "";
@@ -1075,12 +1109,18 @@
         const nextRev = Math.max(...grp.map(x => (x.rev_no !== undefined ? x.rev_no : (x.rev || 0))), 0) + 1;
 
         const st = q.status || q.st;
+        const adminUser = isSessionAdmin();
+        const managerUser = isSessionManager();
         const can = {
-            rev: ["Pending", "Not approved"].includes(st),
+            ed: st === "Draft" && adminUser,
+            del: st === "Draft" && adminUser,
+            rev: ["Pending", "Not approved"].includes(st) && adminUser && !apGrp,
             ap: ["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp),
-            no: st === "Pending",
+            no: ["Pending", "Not approved"].includes(st),
             vr: st === "Approved",
-            ro: st === "Approved" && mgr(CU)
+            ro: st === "Approved" && managerUser,
+            cm: st === "Approved",
+            rvv: st === "Expired"
         };
 
         const qNo = q.quotation_no || q.no;
@@ -1100,15 +1140,20 @@
                 <h1>${qNo ? H(qNo) + (lab(q) !== "Original" ? " / " + lab(q) : "") : "Draft quotation"} ${tg(q)}</h1>
                 <div>
                     <button id="bk">← Log</button>
-                    ${st === "Draft" ? '<button id="ed">Edit draft</button> <button class="d" id="del">Delete draft</button>' : ""}
+                    ${can.ed ? '<button id="ed">Edit draft</button>' : ""}
+                    ${can.del ? '<button class="d" id="del">Delete draft</button>' : ""}
                     ${can.rev ? `<button id="rv">Revise (R${nextRev})</button>` : ""}
+                    ${can.cm ? '<button id="btn_mark_completed" class="p" style="background:linear-gradient(135deg, #059669 0%, #047857 100%);border-color:#059669;color:#fff;"><i class="icon-checkmark4 mr-1"></i> Completed</button>' : ""}
+                    ${can.rvv ? '<button id="btn_revive_quote" class="p" style="background:linear-gradient(135deg, #ea580c 0%, #c2410c 100%);border-color:#ea580c;color:#fff;"><i class="icon-history mr-1"></i> Revive Quote</button>' : ""}
                     ${can.vr ? '<button id="vr">Create variation</button>' : ""}
                     <button id="dp">Duplicate</button>
                     <button class="p" id="dl">⬇ Download PDF</button>
                 </div>
             </div>
             
-            ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval.</div>' : ""}
+            ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval, or request Manager approval to reopen.</div>' : ""}
+            ${st === "Completed" ? '<div class="lock" style="background:#ecfdf5;border-color:#6ee7b7;color:#065f46;">✅ Work for this quotation has been marked as <b>Completed</b>.</div>' : ""}
+            ${st === "Expired" ? '<div class="lock" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;">⚠️ This quotation has <b>Expired</b> based on its validity period. Click "Revive Quote" to refresh the quotation date and restore it to Pending.</div>' : ""}
 
             <div class="two">
                 <div>
@@ -1136,6 +1181,30 @@
                             ${(q.approval_by || (q.appr && q.appr.by)) ? `
                                 <span>Approved by</span>
                                 <div>${H(q.approval_by || q.appr.by)} on ${q.approval_date || (q.appr && q.appr.on)}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}</div>
+                            ` : ''}
+
+                            ${(q.completion_date || st === "Completed") ? `
+                                <span>Completion Status</span>
+                                <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 12px;color:#065f46;font-size:12.5px;line-height:1.45;">
+                                    <div style="font-weight:700;color:#047857;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                                        <i class="icon-checkmark-circle2" style="font-size:15px;color:#059669;"></i> Work Completed
+                                    </div>
+                                    <div><b>Completed Date:</b> ${q.completion_date || TODAY}</div>
+                                    ${q.completion_by ? `<div><b>Recorded By:</b> ${H(q.completion_by)}</div>` : ''}
+                                    ${q.completion_notes ? `<div style="margin-top:4px;background:#ffffff;padding:4px 8px;border-radius:4px;border:1px solid #bbf7d0;"><b>Notes:</b> ${H(q.completion_notes)}</div>` : ''}
+                                    ${q.completion_attachment ? `
+                                        <div style="margin-top:6px;">
+                                            <a href="../${H(q.completion_attachment)}" target="_blank" class="btn btn-sm font-weight-semibold" style="background:#059669;color:#ffffff;padding:4px 10px;font-size:11.5px;border-radius:6px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;box-shadow:0 1px 3px rgba(5,150,105,0.25);">
+                                                <i class="icon-attachment mr-1"></i> View Attachment (${H(q.completion_attachment.split('/').pop())})
+                                            </a>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+
+                            ${(q.validity_days || q.quotation_date) ? `
+                                <span>Validity</span>
+                                <div>${q.validity_days || 30} days ${st === "Expired" ? '<span style="color:#ea580c;font-weight:600;">(Expired)</span>' : ''}</div>
                             ` : ''}
 
                             ${q.merge_items ? `
@@ -1271,6 +1340,26 @@
                 ED.user = CU;
                 edit();
                 toast("Revision R" + nextRev + " started from " + (qNo || "quote"));
+            };
+        }
+
+        if ($("#btn_mark_completed")) {
+            $("#btn_mark_completed").onclick = () => {
+                if ($("#comp_quote_id")) $("#comp_quote_id").value = q.id;
+                if ($("#comp_quote_summary")) $("#comp_quote_summary").innerHTML = `<b>${H(qNo || "Draft")}</b> · ${H(clientName)} · Total: <b>${f3(tot(q))} BD</b>`;
+                if ($("#comp_date")) $("#comp_date").value = TODAY;
+                if ($("#comp_notes")) $("#comp_notes").value = q.completion_notes || "";
+                if ($("#comp_attachment")) $("#comp_attachment").value = "";
+                showModal("#modal_quote_completion");
+            };
+        }
+
+        if ($("#btn_revive_quote")) {
+            $("#btn_revive_quote").onclick = () => {
+                if ($("#revive_quote_id")) $("#revive_quote_id").value = q.id;
+                if ($("#revive_quote_summary")) $("#revive_quote_summary").innerHTML = `<b>${H(qNo || "Draft")}</b> · ${H(clientName)} · Expired Quotation`;
+                if ($("#revive_today_label")) $("#revive_today_label").textContent = TODAY;
+                showModal("#modal_revive_quote");
             };
         }
 
@@ -3606,6 +3695,7 @@
         setupFooterSettingsModalEvents();
         setupStampSignModalEvents();
         initGrammarCheckModalListeners();
+        setupCompletionAndReviveModalEvents();
         // Build user switcher options
         const us = $("#us");
         if (us) {
@@ -3644,6 +3734,114 @@
             go(initialView);
         } else {
             go("log");
+        }
+    }
+
+    function setupCompletionAndReviveModalEvents() {
+        $$("#modal_quote_completion [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_quote_completion");
+        });
+
+        $$("#modal_revive_quote [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_revive_quote");
+        });
+
+        const btnComp = $("#btn_confirm_completion");
+        if (btnComp) {
+            btnComp.onclick = () => {
+                const quoteId = parseInt($("#comp_quote_id") ? $("#comp_quote_id").value : 0) || 0;
+                if (!quoteId) return toast("Invalid quotation selected");
+                const cDate = ($("#comp_date") ? $("#comp_date").value : "") || TODAY;
+                const cNotes = ($("#comp_notes") ? $("#comp_notes").value : "").trim();
+                const fileInput = $("#comp_attachment");
+
+                const formData = new FormData();
+                formData.append("action", "mark_completed");
+                formData.append("id", quoteId);
+                formData.append("completion_date", cDate);
+                formData.append("completion_notes", cNotes);
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    formData.append("completion_attachment", fileInput.files[0]);
+                }
+
+                btnComp.disabled = true;
+                btnComp.innerHTML = `<i class="icon-spinner2 spinner mr-1"></i> Saving...`;
+
+                fetch(API_URL, {
+                    method: "POST",
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(res => {
+                    btnComp.disabled = false;
+                    btnComp.innerHTML = `<i class="icon-checkmark4 mr-1"></i> Confirm Completed`;
+                    hideModal("#modal_quote_completion");
+
+                    if (res && res.status === "success") {
+                        toast(res.message || "Quotation marked as Completed!");
+                        apiCall("get_quotation", { id: quoteId }, "GET").then(fresh => {
+                            if (fresh && fresh.quotation) {
+                                const idx = Q.findIndex(x => x.id == quoteId);
+                                if (idx !== -1) Q[idx] = fresh.quotation;
+                                vq(quoteId);
+                            } else {
+                                go("log");
+                            }
+                        }).catch(() => go("log"));
+                    } else {
+                        toast((res && res.message) || "Failed to mark as completed");
+                    }
+                })
+                .catch(err => {
+                    btnComp.disabled = false;
+                    btnComp.innerHTML = `<i class="icon-checkmark4 mr-1"></i> Confirm Completed`;
+                    toast("Network error while recording completion.");
+                });
+            };
+        }
+
+        const btnRevive = $("#btn_confirm_revive");
+        if (btnRevive) {
+            btnRevive.onclick = () => {
+                const quoteId = parseInt($("#revive_quote_id") ? $("#revive_quote_id").value : 0) || 0;
+                if (!quoteId) return toast("Invalid quotation selected");
+                const valDays = parseInt($("#revive_validity_days") ? $("#revive_validity_days").value : 30) || 30;
+                const resetDate = ($("#revive_reset_date") && $("#revive_reset_date").checked) ? 1 : 0;
+
+                btnRevive.disabled = true;
+                btnRevive.innerHTML = `<i class="icon-spinner2 spinner mr-1"></i> Reviving...`;
+
+                apiCall("revive_quotation", {
+                    id: quoteId,
+                    validity_days: valDays,
+                    reset_date: resetDate
+                }, "POST")
+                .then(res => {
+                    btnRevive.disabled = false;
+                    btnRevive.innerHTML = `<i class="icon-history mr-1"></i> Confirm Revive`;
+                    hideModal("#modal_revive_quote");
+
+                    if (res && res.status === "success") {
+                        toast(res.message || "Quotation revived successfully!");
+                        apiCall("get_quotation", { id: quoteId }, "GET").then(fresh => {
+                            if (fresh && fresh.quotation) {
+                                const idx = Q.findIndex(x => x.id == quoteId);
+                                if (idx !== -1) Q[idx] = fresh.quotation;
+                                vq(quoteId);
+                            } else {
+                                go("log");
+                            }
+                        }).catch(() => go("log"));
+                    } else {
+                        toast((res && res.message) || "Failed to revive quotation");
+                    }
+                })
+                .catch(err => {
+                    btnRevive.disabled = false;
+                    btnRevive.innerHTML = `<i class="icon-history mr-1"></i> Confirm Revive`;
+                    toast("Network error while reviving quotation.");
+                });
+            };
         }
     }
 

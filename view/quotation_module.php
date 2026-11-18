@@ -479,12 +479,33 @@ if ($isLoggedIn) {
             cursor: pointer !important;
             box-shadow: none !important;
             transition: all 0.15s ease !important;
-            z-index: 2 !important;
+            z-index: 5 !important;
         }
         .card.bar #btn_clear_search:hover,
         .filter-toolbar #btn_clear_search:hover {
             color: #ef4444 !important;
             background: #fee2e2 !important;
+        }
+        /* Prevent autofill styling on search box */
+        input#fq:-webkit-autofill,
+        input#fq:-webkit-autofill:hover, 
+        input#fq:-webkit-autofill:focus,
+        .filter-toolbar input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+            -webkit-text-fill-color: #001D39 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        .tag-completed {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+            border: 1px solid #a7f3d0 !important;
+            font-weight: 600 !important;
+        }
+        .tag-expired {
+            background: #ffedd5 !important;
+            color: #9a3412 !important;
+            border: 1px solid #fed7aa !important;
+            font-weight: 600 !important;
         }
         .card.bar select,
         .filter-toolbar select {
@@ -1681,6 +1702,113 @@ if ($isLoggedIn) {
                         </button>
                         <button type="button" id="btn_save_customer_master" class="btn btn-primary btn-sm font-weight-semibold" style="background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);border:none;border-radius:6px;padding:7px 20px;box-shadow:0 2px 6px rgba(10,65,116,0.3);">
                             <i class="icon-checkmark3 mr-1"></i> Save Customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quotation Work Completion Modal -->
+        <div id="modal_quote_completion" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="completionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:540px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #065f46 0%, #059669 100%);color:#ffffff;padding:16px 22px;border:none;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="completionModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-checkmark-circle2 mr-2" style="font-size:20px;color:#6ee7b7;"></i> Record Work Completion
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;">
+                        <p class="text-muted mb-3" style="font-size:12.5px;">
+                            Record that the physical work for this approved quotation is completed. You can attach a completion certificate, signed work order, or site inspection photos.
+                        </p>
+                        <form id="form_quote_completion" enctype="multipart/form-data" onsubmit="return false;">
+                            <input type="hidden" id="comp_quote_id" value="0">
+                            
+                            <div class="card p-2 mb-3" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                                <div style="font-size:11.5px;color:#166534;font-weight:600;" id="comp_quote_summary">
+                                    Quotation: —
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Completion Date <span class="text-danger">*</span></label>
+                                <input type="date" id="comp_date" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Completion Attachment (Certificate / Work Order / Site Photos)</label>
+                                <input type="file" id="comp_attachment" class="form-control-file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx" style="font-size:12px;padding:4px 0;">
+                                <small class="text-muted" style="font-size:11px;">Supported formats: PDF, PNG, JPG, DOC, DOCX, XLSX (Max 15MB)</small>
+                            </div>
+
+                            <div class="form-group mb-1">
+                                <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Completion Notes / Remarks</label>
+                                <textarea id="comp_notes" rows="3" class="form-control" placeholder="e.g. Work completed on site as per scope. Client signed job sheet." style="font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;" spellcheck="true"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between align-items-center" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:12px 22px;">
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:6px;padding:6px 16px;">
+                            Cancel
+                        </button>
+                        <button type="button" id="btn_confirm_completion" class="btn btn-success btn-sm font-weight-semibold" style="background:linear-gradient(135deg, #059669 0%, #047857 100%);border:none;border-radius:6px;padding:7px 20px;box-shadow:0 2px 6px rgba(5,150,105,0.3);">
+                            <i class="icon-checkmark4 mr-1"></i> Confirm Completed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quotation Revive Modal -->
+        <div id="modal_revive_quote" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="reviveModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:480px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #9a3412 0%, #ea580c 100%);color:#ffffff;padding:16px 22px;border:none;">
+                        <h5 class="modal-title font-weight-bold d-flex align-items-center" id="reviveModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                            <i class="icon-history mr-2" style="font-size:20px;color:#fdba74;"></i> Revive Expired Quotation
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;">
+                        <p class="text-muted mb-3" style="font-size:12.5px;">
+                            This quotation has expired. Reviving it will restore its status back to <b>Pending</b> and refresh its quotation date so the client can approve it.
+                        </p>
+                        <input type="hidden" id="revive_quote_id" value="0">
+                        <div class="card p-2 mb-3" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;">
+                            <div style="font-size:11.5px;color:#9a3412;font-weight:600;" id="revive_quote_summary">
+                                Quotation: —
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="font-weight-semibold text-dark" style="font-size:12px;margin-bottom:4px;">Extend Validity Period (Days)</label>
+                            <select id="revive_validity_days" class="form-control" style="height:36px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;">
+                                <option value="15">15 Days</option>
+                                <option value="30" selected>30 Days (Recommended)</option>
+                                <option value="45">45 Days</option>
+                                <option value="60">60 Days</option>
+                                <option value="90">90 Days</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <label class="form-check-label" style="font-size:12.5px;cursor:pointer;color:#334155;">
+                                <input type="checkbox" id="revive_reset_date" class="form-check-input" checked style="cursor:pointer;">
+                                Refresh Quotation Date to Today (<b id="revive_today_label"></b>)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between align-items-center" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:12px 22px;">
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:6px;padding:6px 16px;">
+                            Cancel
+                        </button>
+                        <button type="button" id="btn_confirm_revive" class="btn btn-warning btn-sm font-weight-semibold text-white" style="background:linear-gradient(135deg, #ea580c 0%, #c2410c 100%);border:none;border-radius:6px;padding:7px 20px;box-shadow:0 2px 6px rgba(234,88,12,0.3);">
+                            <i class="icon-history mr-1"></i> Confirm Revive
                         </button>
                     </div>
                 </div>

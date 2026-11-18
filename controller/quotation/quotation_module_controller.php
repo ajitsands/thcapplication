@@ -176,11 +176,11 @@ class QuotationModuleController
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `variation_no` INT(11) NOT NULL DEFAULT 0 AFTER `rev_no`");
             }
 
-            // Migration check: Update status enum to include 'Void'
+            // Migration check: Update status enum to include 'Void', 'Completed', 'Expired'
             $chkStatus = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'status'");
             if ($chkStatus && ($col = mysqli_fetch_assoc($chkStatus))) {
-                if (strpos($col['Type'], 'Void') === false) {
-                    @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Approved','Not approved','Superseded','Void') NOT NULL DEFAULT 'Draft'");
+                if (strpos($col['Type'], 'Completed') === false || strpos($col['Type'], 'Expired') === false || strpos($col['Type'], 'Void') === false) {
+                    @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft'");
                 }
             }
 
@@ -191,6 +191,25 @@ class QuotationModuleController
                     ADD COLUMN `approval_by` VARCHAR(255) DEFAULT '' AFTER `status`,
                     ADD COLUMN `approval_date` DATE DEFAULT NULL AFTER `approval_by`,
                     ADD COLUMN `client_po_ref` VARCHAR(100) DEFAULT '' AFTER `approval_date`");
+            }
+
+            // Migration check: Add completion fields if missing
+            $chkComp = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'completion_date'");
+            if ($chkComp && mysqli_num_rows($chkComp) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
+                    ADD COLUMN `completion_date` DATETIME DEFAULT NULL AFTER `approval_date`,
+                    ADD COLUMN `completion_by` VARCHAR(255) DEFAULT '' AFTER `completion_date`,
+                    ADD COLUMN `completion_notes` TEXT DEFAULT NULL AFTER `completion_by`,
+                    ADD COLUMN `completion_attachment` VARCHAR(500) DEFAULT '' AFTER `completion_notes`");
+            }
+
+            // Migration check: Add validity_days and revival fields if missing
+            $chkVal = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'validity_days'");
+            if ($chkVal && mysqli_num_rows($chkVal) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
+                    ADD COLUMN `validity_days` INT(11) NOT NULL DEFAULT 30 AFTER `quotation_date`,
+                    ADD COLUMN `revived_at` DATETIME DEFAULT NULL AFTER `validity_days`,
+                    ADD COLUMN `revived_by` VARCHAR(255) DEFAULT '' AFTER `revived_at`");
             }
 
             // Migration check: Add activity_json column if missing
@@ -519,7 +538,28 @@ class QuotationModuleController
         }
         $content = file_get_contents($this->jsonFallbackFile);
         $data = json_decode($content, true);
-        return is_array($data) ? $data : [];
+        $quotes = is_array($data) ? $data : [];
+
+        $todayStr = date('Y-m-d');
+        $changed = false;
+        foreach ($quotes as &$q) {
+            if (($q['status'] ?? '') === 'Pending') {
+                $qDate = $q['quotation_date'] ?? $q['date'] ?? $todayStr;
+                $valDays = isset($q['validity_days']) ? (int)$q['validity_days'] : 30;
+                $expDate = date('Y-m-d', strtotime($qDate . " + {$valDays} days"));
+                if ($expDate < $todayStr) {
+                    $q['status'] = 'Expired';
+                    $q['remark'] = (!empty($q['remark']) ? $q['remark'] . ' | ' : '') . 'Expired: validity period exceeded';
+                    $changed = true;
+                }
+            }
+        }
+        unset($q);
+        if ($changed) {
+            $this->saveJsonQuotations($quotes);
+        }
+
+        return $quotes;
     }
 
     private function saveJsonQuotations(array $quotes)
@@ -586,6 +626,14 @@ class QuotationModuleController
                 case 'update_status':
                 case 'reopen':
                     $this->updateStatus();
+                    break;
+
+                case 'mark_completed':
+                    $this->markCompleted();
+                    break;
+
+                case 'revive_quotation':
+                    $this->reviveQuotation();
                     break;
 
                 case 'delete_draft':
@@ -681,12 +729,53 @@ class QuotationModuleController
         return !empty($initials) ? $initials : 'ADM';
     }
 
+    public function isSessionUserAdmin(): bool
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        $sessUserType = strtolower(trim($_SESSION['user_type'] ?? ''));
+        $sessUserName = strtolower(trim($_SESSION['user_name'] ?? ''));
+        $sessUsername = strtoupper(trim($_SESSION['username'] ?? ''));
+
+        if (in_array($sessUserType, ['administrator', 'admin']) ||
+            in_array($sessUserName, ['administrator', 'admin', 'adminstrator']) ||
+            $sessUsername === 'CGTHCFM') {
+            return true;
+        }
+
+        $userTitle = !empty($_SESSION['user_type']) ? strtolower(trim($_SESSION['user_type'])) : '';
+        if (in_array($userTitle, ['administrator', 'admin'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isSessionUserManager(): bool
+    {
+        if ($this->isSessionUserAdmin()) {
+            return true;
+        }
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        $sessUserType = strtolower(trim($_SESSION['user_type'] ?? ''));
+        if (preg_match('/manager|head|director/i', $sessUserType)) {
+            return true;
+        }
+
+        return false;
+    }
+
     private function getCurrentSessionUser()
     {
         $userCode = "MA";
         $userName = "Mohammed Ali";
         $userTitle = "Operations Manager";
         $userId = 1;
+        $isAdmin = false;
+        $isManager = true;
 
         if (!empty($_SESSION['username'])) {
             $empCode = $_SESSION['username'];
@@ -697,13 +786,26 @@ class QuotationModuleController
             $userCode = $this->deriveUserInitials($userName, $empCode);
             $userTitle = !empty($_SESSION['user_type']) ? $_SESSION['user_type'] : "Operations Manager";
             $userId = !empty($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 1;
+
+            $sessUserType = strtolower(trim($_SESSION['user_type'] ?? ''));
+            $sessUserName = strtolower(trim($_SESSION['user_name'] ?? ''));
+            $sessUsername = strtoupper(trim($_SESSION['username'] ?? ''));
+            $isAdmin = in_array($sessUserType, ['administrator', 'admin']) ||
+                in_array($sessUserName, ['administrator', 'admin', 'adminstrator']) ||
+                $sessUsername === 'CGTHCFM';
+            $isManager = $isAdmin || (bool)preg_match('/manager|head|director/i', $sessUserType);
+        } else {
+            $isAdmin = in_array(strtolower(trim($userTitle)), ['administrator', 'admin']) || $userCode === 'ADM';
+            $isManager = $isAdmin || (bool)preg_match('/manager|head|director/i', $userTitle);
         }
 
         return [
             "code" => $userCode,
             "name" => $userName,
             "title" => $userTitle,
-            "id" => $userId
+            "id" => $userId,
+            "is_admin" => $isAdmin,
+            "is_manager" => $isManager
         ];
     }
 
@@ -997,6 +1099,14 @@ class QuotationModuleController
     {
         if ($this->isDbConnected) {
             $list = [];
+
+            // Auto-expire pending quotations that exceeded their validity period
+            @mysqli_query($this->db, "UPDATE tbl_quotations_v2 
+                SET status = 'Expired', 
+                    remark = CONCAT(IF(remark IS NOT NULL AND remark != '', CONCAT(remark, ' | '), ''), 'Expired: validity period exceeded')
+                WHERE status = 'Pending' 
+                AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < CURDATE()");
+
             $qRes = @mysqli_query($this->db, "SELECT * FROM tbl_quotations_v2 ORDER BY id DESC");
             if ($qRes) {
                 $itemsByQuote = [];
@@ -1048,6 +1158,13 @@ class QuotationModuleController
                         "attention" => $r['attention'],
                         "subject" => $r['subject'],
                         "quotation_date" => $r['quotation_date'],
+                        "validity_days" => (int)($r['validity_days'] ?? 30),
+                        "completion_date" => $r['completion_date'] ?? null,
+                        "completion_by" => $r['completion_by'] ?? '',
+                        "completion_notes" => $r['completion_notes'] ?? '',
+                        "completion_attachment" => $r['completion_attachment'] ?? '',
+                        "revived_at" => $r['revived_at'] ?? null,
+                        "revived_by" => $r['revived_by'] ?? '',
                         "user_code" => $r['user_code'],
                         "user_name" => $r['user_name'],
                         "user_designation" => $r['user_designation'],
@@ -1657,7 +1774,15 @@ class QuotationModuleController
 
             $status = $x['status'] ?? 'Draft';
             $decisionInfo = '';
-            if ($status === 'Approved') {
+            if ($status === 'Completed') {
+                $compBy = $x['completion_by'] ?? '';
+                $compDate = $x['completion_date'] ?? '';
+                $compNotes = $x['completion_notes'] ?? '';
+                $decisionInfo = 'Completed' . ($compDate ? ' on ' . $compDate : '') . ($compBy ? ' by ' . $compBy : '') . ($compNotes ? ' (' . $compNotes . ')' : '');
+            } elseif ($status === 'Expired') {
+                $valDays = $x['validity_days'] ?? 30;
+                $decisionInfo = 'Expired (Validity: ' . $valDays . ' days)' . (!empty($x['remark']) ? ' - ' . $x['remark'] : '');
+            } elseif ($status === 'Approved') {
                 $apprBy = $x['approval_by'] ?? '';
                 $apprDate = $x['approval_date'] ?? '';
                 $poRef = $x['client_po_ref'] ?? '';
@@ -1798,21 +1923,60 @@ class QuotationModuleController
         $mergedLumpSumPrice = isset($input['merged_lump_sum_price']) ? (float)$input['merged_lump_sum_price'] : 0.0;
         $bulletItems = !empty($input['bullet_items']) ? 1 : 0;
 
+        // Enforce: Only Admin can edit drafts or create revisions
+        if ($id > 0 && !$this->isSessionUserAdmin()) {
+            echo json_encode(["status" => "error", "message" => "Permission denied: Only administrators are permitted to edit quotation drafts."]);
+            return;
+        }
+        if ($revNo > 0 && !$this->isSessionUserAdmin()) {
+            echo json_encode(["status" => "error", "message" => "Permission denied: Only administrators are permitted to create quotation revisions."]);
+            return;
+        }
+
         // Rule 1: Issued quotes are immutable. Edit exists only for Draft.
-        if ($id > 0 && $this->isDbConnected) {
-            $chkRes = mysqli_query($this->db, "SELECT status, quotation_no FROM tbl_quotations_v2 WHERE id = $id");
-            if ($chkRes && ($chkRow = mysqli_fetch_assoc($chkRes))) {
-                if ($chkRow['status'] !== 'Draft') {
-                    echo json_encode(["status" => "error", "message" => "Issued quotations are immutable. Only drafts can be edited. Changes to an issued quote must be created as a new revision or variation."]);
-                    return;
+        if ($id > 0) {
+            $chkStatusVal = null;
+            if ($this->isDbConnected) {
+                $chkRes = mysqli_query($this->db, "SELECT status, quotation_no FROM tbl_quotations_v2 WHERE id = $id");
+                if ($chkRes && ($chkRow = mysqli_fetch_assoc($chkRes))) {
+                    $chkStatusVal = $chkRow['status'];
                 }
+            } else {
+                $quotes = $this->getJsonQuotations();
+                foreach ($quotes as $q) {
+                    if ($q['id'] == $id) { $chkStatusVal = $q['status']; break; }
+                }
+            }
+
+            if ($chkStatusVal !== null && $chkStatusVal !== 'Draft') {
+                if ($chkStatusVal === 'Approved') {
+                    echo json_encode(["status" => "error", "message" => "This quotation is Approved and locked. It cannot be edited unless reopened by a Manager."]);
+                } else {
+                    echo json_encode(["status" => "error", "message" => "Issued quotations are immutable. Only drafts can be edited. Changes to an issued quote must be created as a new revision or variation."]);
+                }
+                return;
             }
         }
 
         // Rule 2: Approved quotes are final. Revisions of approved quotes are rejected.
-        if ($isIssue && $seqNo !== null && $revNo > 0 && $this->isDbConnected) {
-            $chkAppr = mysqli_query($this->db, "SELECT id FROM tbl_quotations_v2 WHERE seq_no = $seqNo AND variation_no = $variationNo AND status = 'Approved' LIMIT 1");
-            if ($chkAppr && mysqli_num_rows($chkAppr) > 0) {
+        if ($seqNo !== null && $revNo > 0) {
+            $hasApprovedInSeq = false;
+            if ($this->isDbConnected) {
+                $chkAppr = mysqli_query($this->db, "SELECT id FROM tbl_quotations_v2 WHERE seq_no = $seqNo AND variation_no = $variationNo AND status = 'Approved' LIMIT 1");
+                if ($chkAppr && mysqli_num_rows($chkAppr) > 0) {
+                    $hasApprovedInSeq = true;
+                }
+            } else {
+                $quotes = $this->getJsonQuotations();
+                foreach ($quotes as $q) {
+                    if (($q['seq_no'] ?? null) == $seqNo && ($q['variation_no'] ?? 0) == $variationNo && ($q['status'] ?? '') === 'Approved') {
+                        $hasApprovedInSeq = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($hasApprovedInSeq) {
                 echo json_encode(["status" => "error", "message" => "Approved quotations are final and locked. They cannot be revised. Please create a variation (V1, V2...) for any changes after approval."]);
                 return;
             }
@@ -2171,12 +2335,8 @@ class QuotationModuleController
 
         // Rule 6: Reopen approval (Manager permission required)
         if ($action === 'reopen' || ($currentStatus === 'Approved' && strtolower($status) === 'pending')) {
-            $isManager = (bool)preg_match('/manager|administrator|director|head|admin/i', $userTitle)
-                || (bool)preg_match('/manager|administrator|director|head|admin/i', $userName)
-                || (isset($_SESSION['user_type']) && (bool)preg_match('/manager|administrator|director|head|admin/i', $_SESSION['user_type']))
-                || (isset($_SESSION['user_name']) && (bool)preg_match('/manager|administrator|director|head|admin/i', $_SESSION['user_name']));
-            if (!$isManager) {
-                echo json_encode(["status" => "error", "message" => "Reopening an approved quote requires Manager permission."]);
+            if (!$this->isSessionUserManager()) {
+                echo json_encode(["status" => "error", "message" => "Reopening an approved quote requires Manager or Administrator permission."]);
                 return;
             }
             if (empty($reason)) {
@@ -2222,6 +2382,12 @@ class QuotationModuleController
                 "new_status" => "Pending",
                 "remark" => $fullRemark
             ]);
+            return;
+        }
+
+        // Prevent unauthorized status modification of an Approved quote
+        if ($currentStatus === 'Approved' && strtolower($status) !== 'completed') {
+            echo json_encode(["status" => "error", "message" => "This quotation is Approved and locked. It cannot be modified without Manager reopening."]);
             return;
         }
 
@@ -2372,6 +2538,215 @@ class QuotationModuleController
             "id" => $id,
             "new_status" => $status,
             "remark" => $remark
+        ]);
+    }
+
+    private function markCompleted()
+    {
+        $id = (int)$this->getInputParam('id', 0);
+        if ($id <= 0) {
+            echo json_encode(["status" => "error", "message" => "Invalid quotation ID"]);
+            return;
+        }
+
+        $curUser = $this->getCurrentSessionUser();
+        $userName = $curUser['name'];
+        $notes = trim((string)$this->getInputParam('completion_notes', ''));
+        $compDate = trim((string)$this->getInputParam('completion_date', date('Y-m-d H:i:s')));
+        if (strlen($compDate) === 10) {
+            $compDate .= ' ' . date('H:i:s');
+        }
+
+        // Handle attachment file upload
+        $attachmentPath = '';
+        if (!empty($_FILES['completion_attachment']['name'])) {
+            $file = $_FILES['completion_attachment'];
+            if ($file['error'] === UPLOAD_ERR_OK) {
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $allowed = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'];
+                if (!in_array($ext, $allowed)) {
+                    echo json_encode(["status" => "error", "message" => "Invalid file format. Allowed: PDF, PNG, JPG, DOCX, XLSX"]);
+                    return;
+                }
+                $uploadDir = __DIR__ . '/../../uploads/quotation_completions/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                $safeName = 'comp_' . $id . '_' . time() . '.' . $ext;
+                $targetFile = $uploadDir . $safeName;
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    $attachmentPath = 'uploads/quotation_completions/' . $safeName;
+                }
+            }
+        }
+
+        $qRow = null;
+        if ($this->isDbConnected) {
+            $qRes = mysqli_query($this->db, "SELECT * FROM tbl_quotations_v2 WHERE id = $id");
+            if ($qRes) $qRow = mysqli_fetch_assoc($qRes);
+        } else {
+            $quotes = $this->getJsonQuotations();
+            foreach ($quotes as $q) {
+                if ($q['id'] == $id) { $qRow = $q; break; }
+            }
+        }
+
+        if (!$qRow) {
+            echo json_encode(["status" => "error", "message" => "Quotation not found"]);
+            return;
+        }
+
+        if ($qRow['status'] !== 'Approved' && $qRow['status'] !== 'Completed') {
+            echo json_encode(["status" => "error", "message" => "Only approved quotations can be marked as completed."]);
+            return;
+        }
+
+        if (empty($attachmentPath) && !empty($qRow['completion_attachment'])) {
+            $attachmentPath = $qRow['completion_attachment'];
+        }
+
+        $activity = json_decode($qRow['activity_json'] ?? '', true);
+        if (!is_array($activity)) $activity = [];
+        $todayStr = date('Y-m-d');
+        $logMsg = "Work marked as Completed by {$userName}" . ($attachmentPath ? " with attachment (" . basename($attachmentPath) . ")" : "") . ($notes ? ". Notes: {$notes}" : "");
+        $activity[] = ["d" => $todayStr, "u" => $userName, "t" => $logMsg];
+        $actJson = json_encode($activity);
+
+        if ($this->isDbConnected) {
+            $escBy = mysqli_real_escape_string($this->db, $userName);
+            $escDate = mysqli_real_escape_string($this->db, $compDate);
+            $escNotes = mysqli_real_escape_string($this->db, $notes);
+            $escAtt = mysqli_real_escape_string($this->db, $attachmentPath);
+            $escAct = mysqli_real_escape_string($this->db, $actJson);
+
+            $upd = mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                status = 'Completed',
+                completion_date = '$escDate',
+                completion_by = '$escBy',
+                completion_notes = '$escNotes',
+                completion_attachment = '$escAtt',
+                activity_json = '$escAct'
+                WHERE id = $id");
+
+            if (!$upd) {
+                echo json_encode(["status" => "error", "message" => "Failed to update quotation: " . mysqli_error($this->db)]);
+                return;
+            }
+        } else {
+            foreach ($quotes as &$q) {
+                if ($q['id'] == $id) {
+                    $q['status'] = 'Completed';
+                    $q['completion_date'] = $compDate;
+                    $q['completion_by'] = $userName;
+                    $q['completion_notes'] = $notes;
+                    $q['completion_attachment'] = $attachmentPath;
+                    $q['activity'] = $activity;
+                    break;
+                }
+            }
+            unset($q);
+            $this->saveJsonQuotations($quotes);
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Quotation marked as Completed successfully.",
+            "id" => $id,
+            "new_status" => "Completed",
+            "completion_date" => $compDate,
+            "completion_by" => $userName,
+            "completion_notes" => $notes,
+            "completion_attachment" => $attachmentPath
+        ]);
+    }
+
+    private function reviveQuotation()
+    {
+        $id = (int)$this->getInputParam('id', 0);
+        if ($id <= 0) {
+            echo json_encode(["status" => "error", "message" => "Invalid quotation ID"]);
+            return;
+        }
+
+        $validityDays = (int)$this->getInputParam('validity_days', 30);
+        if ($validityDays <= 0) $validityDays = 30;
+        $resetDate = !empty($this->getInputParam('reset_date', 1));
+
+        $curUser = $this->getCurrentSessionUser();
+        $userName = $curUser['name'];
+        $today = date('Y-m-d');
+        $now = date('Y-m-d H:i:s');
+
+        $qRow = null;
+        if ($this->isDbConnected) {
+            $qRes = mysqli_query($this->db, "SELECT * FROM tbl_quotations_v2 WHERE id = $id");
+            if ($qRes) $qRow = mysqli_fetch_assoc($qRes);
+        } else {
+            $quotes = $this->getJsonQuotations();
+            foreach ($quotes as $q) {
+                if ($q['id'] == $id) { $qRow = $q; break; }
+            }
+        }
+
+        if (!$qRow) {
+            echo json_encode(["status" => "error", "message" => "Quotation not found"]);
+            return;
+        }
+
+        if ($qRow['status'] !== 'Expired') {
+            echo json_encode(["status" => "error", "message" => "Only expired quotations can be revived."]);
+            return;
+        }
+
+        $activity = json_decode($qRow['activity_json'] ?? '', true);
+        if (!is_array($activity)) $activity = [];
+        $logMsg = "Quotation revived from Expired status by {$userName}. Validity: {$validityDays} days." . ($resetDate ? " Quotation date refreshed to {$today}." : "");
+        $activity[] = ["d" => $today, "u" => $userName, "t" => $logMsg];
+        $actJson = json_encode($activity);
+
+        if ($this->isDbConnected) {
+            $escBy = mysqli_real_escape_string($this->db, $userName);
+            $escNow = mysqli_real_escape_string($this->db, $now);
+            $escAct = mysqli_real_escape_string($this->db, $actJson);
+            $dateClause = $resetDate ? ", quotation_date = '$today'" : "";
+
+            $upd = mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                status = 'Pending',
+                validity_days = $validityDays,
+                revived_at = '$escNow',
+                revived_by = '$escBy',
+                remark = CONCAT(IF(remark IS NOT NULL AND remark != '', CONCAT(remark, ' | '), ''), 'Revived on $today'),
+                activity_json = '$escAct'
+                $dateClause
+                WHERE id = $id");
+
+            if (!$upd) {
+                echo json_encode(["status" => "error", "message" => "Failed to revive quotation: " . mysqli_error($this->db)]);
+                return;
+            }
+        } else {
+            foreach ($quotes as &$q) {
+                if ($q['id'] == $id) {
+                    $q['status'] = 'Pending';
+                    $q['validity_days'] = $validityDays;
+                    $q['revived_at'] = $now;
+                    $q['revived_by'] = $userName;
+                    if ($resetDate) $q['quotation_date'] = $today;
+                    $q['activity'] = $activity;
+                    break;
+                }
+            }
+            unset($q);
+            $this->saveJsonQuotations($quotes);
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Quotation successfully revived and restored to Pending status.",
+            "id" => $id,
+            "new_status" => "Pending",
+            "quotation_date" => $resetDate ? $today : ($qRow['quotation_date'] ?? $today),
+            "validity_days" => $validityDays
         ]);
     }
 
