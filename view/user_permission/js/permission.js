@@ -1,7 +1,10 @@
 $(document).ready(function() {
-    // Your JavaScript code here
+    // Permission check supporting case-insensitive lookup
     function hasPermission(permission) {
-        return permissions.includes(permission);
+        if (typeof permissions === 'undefined' || !Array.isArray(permissions)) return false;
+        return permissions.includes(permission) || permissions.some(function(p) {
+            return typeof p === 'string' && p.toLowerCase() === (permission || '').toLowerCase();
+        });
     }
     window.hasPermission=hasPermission;
 
@@ -616,6 +619,20 @@ $(document).ready(function() {
 	var eventJanitorExecutionReport = document.querySelectorAll(".classJanitorExecutionReport");
 	eventJanitorExecutionReport.forEach(function(obj) {if (!hasPermission("JanitorExecutionReport")) {obj.style.display = "none";}});
 	
+	// Automatically hide empty topnav dropdown containers if all their child links are hidden
+	document.querySelectorAll('.thc-nav .thc-has-dropdown').forEach(function(item) {
+		var subLinks = item.querySelectorAll('.thc-dropdown li a');
+		if (subLinks.length > 0) {
+			var hasAnyVisible = Array.from(subLinks).some(function(a) {
+				var parentLi = a.closest('li');
+				return parentLi && window.getComputedStyle(parentLi).display !== 'none';
+			});
+			if (!hasAnyVisible) {
+				item.style.display = 'none';
+			}
+		}
+	});
+
 	// adding_new_permission
 	
 		// Donot Remove The above line 

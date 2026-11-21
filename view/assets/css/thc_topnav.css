@@ -172,6 +172,7 @@ body {
   top: calc(100% + 0px);
   left: 0;
   min-width: 230px;
+  max-width: 90vw;
   background: var(--thc-drop-bg);
   border: 1px solid var(--thc-navy-light);
   border-top: 2px solid var(--thc-white);
@@ -180,15 +181,25 @@ body {
   list-style: none;
   margin: 0;
   padding: 6px 0;
-  z-index: 1100;
+  z-index: 99999;
   animation: thcDropIn 0.15s ease;
   max-height: calc(100vh - 70px);
   overflow-y: auto;
 }
 
-.thc-dropdown-right {
-  left: auto;
-  right: 0;
+/* Ensure navbar dropdowns default to opening to the right */
+.thc-nav .thc-dropdown {
+  left: 0 !important;
+  right: auto !important;
+  z-index: 99999 !important;
+}
+
+/* Right-aligned navigation dropdowns (e.g. User Profile dropdown in corner) */
+.thc-nav-right .thc-dropdown,
+.thc-dropdown.thc-dropdown-right {
+  left: auto !important;
+  right: 0 !important;
+  z-index: 99999 !important;
 }
 
 @keyframes thcDropIn {
@@ -197,7 +208,9 @@ body {
 }
 
 .thc-has-dropdown.open > .thc-dropdown {
-  display: block;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Dropdown items */

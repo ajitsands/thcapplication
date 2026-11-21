@@ -177,12 +177,19 @@ require_once(__DIR__ . '/thc_logo.php');
         </ul>
       </li>
 
+      <!-- Quotation Module (Direct Top Nav) -->
+      <li class="thc-nav-item classQuotation classQuotationModule">
+        <a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>" class="thc-nav-link<?= menuActive($params,'head','quotation') ? ' active' : '' ?>">
+          <i class="icon-file-text2"></i> Quotation
+        </a>
+      </li>
+
       <!-- More (Feedback, Logs, Quotation, Local PO) -->
       <li class="thc-nav-item thc-has-dropdown">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= (menuActive($params,'head','feedback') || menuActive($params,'head','log') || menuActive($params,'head','quotation') || menuActive($params,'head','localpo') || menuActive($params,'head','janitor')) ? ' active' : '' ?>">
           <i class="icon-more2"></i> More <i class="thc-arrow icon-arrow-down22"></i>
         </a>
-        <ul class="thc-dropdown thc-dropdown-right">
+        <ul class="thc-dropdown">
 
           <li class="thc-dropdown-section-header classJanitorModule">Janitor Operations</li>
           <li class="classChecklistMaster classJanitorModule"><a href="janitor_checklist_master.php?param=<?= $OBJ->URLEncode('head=janitor&open=1&title=checklist_master') ?>" class="<?= menuActive($params,'open','1') ? 'active' : '' ?>"><i class="icon-list3"></i> Checklist Master</a></li>
@@ -197,6 +204,7 @@ require_once(__DIR__ . '/thc_logo.php');
           <li class="classLogsView"><a href="admin_log.php?param=<?= $OBJ->URLEncode('head=log&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-enter3"></i> Login &amp; Logout</a></li>
           <li class="classLogsView"><a href="amc_event_log.php?param=<?= $OBJ->URLEncode('head=log&open=2&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-calculator3"></i> AMC Log</a></li>
 
+          <li class="thc-dropdown-section-header classQuotation classQuotationModule">Quotation</li>
           <li class="classQuotation classQuotationModule"><a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>" class="<?= menuActive($params,'head','quotation') ? 'active' : '' ?>"><i class="icon-file-text2"></i> Quotation</a></li>
 
           <li class="thc-dropdown-section-header d-none">Local PO</li>
@@ -257,6 +265,22 @@ document.getElementById('thcNavToggle').addEventListener('click', function() {
   document.getElementById('thcNavMenu').classList.toggle('open');
 });
 
+// Helper to ensure dropdowns never render off-screen or clipped
+function adjustDropdownPosition(item) {
+  var dropdown = item.querySelector('.thc-dropdown');
+  if (!dropdown) return;
+  dropdown.style.left = '';
+  dropdown.style.right = '';
+  var rect = dropdown.getBoundingClientRect();
+  if (rect.left < 10) {
+    dropdown.style.setProperty('left', '0px', 'important');
+    dropdown.style.setProperty('right', 'auto', 'important');
+  } else if (rect.right > window.innerWidth - 10) {
+    dropdown.style.setProperty('left', 'auto', 'important');
+    dropdown.style.setProperty('right', '0px', 'important');
+  }
+}
+
 // Dropdown click handler for all dropdowns (including right-corner user menu)
 document.querySelectorAll('.thc-has-dropdown').forEach(function(item) {
   var link = item.querySelector('.thc-dropdown-toggle');
@@ -271,6 +295,7 @@ document.querySelectorAll('.thc-has-dropdown').forEach(function(item) {
       });
       if (!isOpen) {
         item.classList.add('open');
+        adjustDropdownPosition(item);
       } else {
         item.classList.remove('open');
       }

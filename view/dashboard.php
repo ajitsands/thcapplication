@@ -274,71 +274,89 @@ if (pie_donut_element) {
     // Initialize chart
     var pie_donut = echarts.init(pie_donut_element);
 
-    // Options
+    // Options with high contrast, modern THC theme styling
     var options = {
-        // Colors
         color: [
-            '#2ec7c9', '#b6a2de', '#5ab1ef', '#ffb980', '#d87a80',
-            '#8d98b3', '#e5cf0d', '#97b552', '#95706d', '#dc69aa',
-            '#07a2a4', '#9a7fd1', '#588dd5', '#f5994e', '#c05050',
-            '#59678c', '#c9ab00', '#7eb00a', '#6f5553', '#c14089'
+            '#0A4174', '#4E8EA2', '#001D39', '#F59E0B', '#10B981',
+            '#8B5CF6', '#EC4899', '#06B6D4', '#64748B', '#F97316'
         ],
 
-        // Global text styles
         textStyle: {
-            fontFamily: 'Roboto, Arial, Verdana, sans-serif',
-            fontSize: 13
+            fontFamily: "'Outfit', 'Inter', Roboto, sans-serif",
+            fontSize: 13,
+            color: '#1e293b'
         },
 
-        // Add title
         title: {
             text: 'Employee Statistics',
             subtext: 'Category Wise',
             left: 'center',
             textStyle: {
-                fontSize: 17,
-                fontWeight: 500
+                fontSize: 16,
+                fontWeight: 600,
+                color: '#001D39'
             },
             subtextStyle: {
-                fontSize: 12
+                fontSize: 12,
+                color: '#64748b'
             }
         },
 
-        // Add tooltip
         tooltip: {
             trigger: 'item',
-            backgroundColor: 'rgba(0,0,0,0.75)',
+            backgroundColor: 'rgba(0, 29, 57, 0.92)',
+            borderColor: '#0A4174',
+            borderWidth: 1,
             padding: [10, 15],
             textStyle: {
                 fontSize: 13,
-                fontFamily: 'Roboto, sans-serif'
+                color: '#ffffff',
+                fontFamily: "'Outfit', sans-serif"
             },
-            formatter: "{a} <br/>{b}: {c} ({d}%)"
+            formatter: "{a} <br/><b>{b}</b>: {c} ({d}%)"
         },
 
-        // Add legend
         legend: {
             orient: 'vertical',
             top: 'center',
-            left: 0,
+            left: 10,
             data: ['Mgnt. Staffs', 'Technicians', 'Drivers', 'Cleaners', 'Others'],
-            itemHeight: 8,
-            itemWidth: 8
+            textStyle: {
+                color: '#334155',
+                fontSize: 12,
+                fontWeight: 500
+            },
+            itemHeight: 10,
+            itemWidth: 10
         },
 
-        // Add series
         series: [{
             name: 'Employees',
             type: 'pie',
-            radius: ['50%', '70%'],
-            center: ['50%', '57.5%'],
+            radius: ['45%', '68%'],
+            center: ['56%', '55%'],
+            avoidLabelOverlap: true,
             itemStyle: {
-                normal: {
-                    borderWidth: 1,
-                    borderColor: '#fff'
+                borderRadius: 4,
+                borderColor: '#ffffff',
+                borderWidth: 2
+            },
+            label: {
+                show: true,
+                color: '#1e293b',
+                fontSize: 12,
+                fontWeight: 600,
+                formatter: '{b}: {c}'
+            },
+            labelLine: {
+                show: true,
+                length: 10,
+                length2: 12,
+                lineStyle: {
+                    color: '#94a3b8',
+                    width: 1.5
                 }
             },
-
             data: <?PHP echo $emparray;?>
         }]
     };
@@ -351,6 +369,13 @@ if (pie_donut_element) {
       var clickedData = param.data.ids; 
       console.log("Clicked data:", clickedData);
       window.open("employee-type.php?ids="+clickedData, '_blank');
+    });
+
+    // Resize on tab change
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function(e) {
+        if (typeof pie_donut !== 'undefined' && pie_donut_element) {
+            pie_donut.resize();
+        }
     });
  
 

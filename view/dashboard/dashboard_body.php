@@ -122,7 +122,25 @@
                 $graph_year=$row_graph_month_year["graph_year"];
             }
         }
+
+        // Live quotation metrics for dashboard overview
+        $qtn_counts = ['Draft' => 0, 'Pending' => 0, 'Approved' => 0, 'Completed' => 0, 'Expired' => 0, 'Total' => 0];
+        $result_qtn = @mysqli_query($varDBConnection, "SELECT status, COUNT(*) as cnt FROM tbl_quotations_v2 GROUP BY status");
+        if ($result_qtn && $result_qtn instanceof mysqli_result) {
+            while ($row_qc = mysqli_fetch_assoc($result_qtn)) {
+                $st = trim($row_qc['status'] ?? '');
+                $cnt = (int)$row_qc['cnt'];
+                $qtn_counts['Total'] += $cnt;
+                if (isset($qtn_counts[$st])) {
+                    $qtn_counts[$st] = $cnt;
+                }
+            }
+        }
     }
+
+    $session_user_type = $_SESSION['user_type'] ?? '';
+    $is_admin_or_director = in_array(strtolower(trim($session_user_type)), ['administrator', 'director', 'superadmin']);
+    $is_operations_engineer = (stripos($session_user_type, 'engineer') !== false || stripos($session_user_type, 'operation') !== false);
 
     if (!function_exists('format_dashboard_complaints')) {
         function format_dashboard_complaints($desc) {
@@ -333,27 +351,79 @@
             </div>
         </div>
 
-        <div class="col-sm-12 col-xl-5 col-md-4" style="position:realtive;">
+        <div class="col-sm-12 col-xl-5 col-md-4" style="position:relative;">
             <div id="divDashboardTHCEmps"></div>
             <div id="divDashboardCalender"></div>
-            <!-- Basic donut -->
-            <div class="card">
-                <div class="card-header header-elements-inline">
-                    <h5 class="card-title">THC Employees</h5>
-                    <div class="header-elements">
-                        <a target="_blank" href="amc_shedule_calender.php?param=<?PHP echo $OBJ->URLEncode('title=amc_calendar');?>" class="btn btn-sm font-weight-bold ml-auto" style="border-radius:50px; padding:5px 16px; background:linear-gradient(135deg, #eef6fc 0%, #bdd8e9 100%); border:1.5px solid #7BBDE8; color:#001D39; font-size:0.8rem; box-shadow:0 3px 8px rgba(0,29,57,0.1); display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
-                            <i class="icon-calendar5" style="color:#0A4174; font-size:0.95rem;"></i> CALENDER
-                        </a>
-                    </div>
+            <!-- Card 3: Quotation Overview & THC Employees -->
+            <div class="card" style="min-height: 480px; display: flex; flex-direction: column;">
+                <div class="card-header header-elements-inline pb-2">
+                    <?php if ($is_admin_or_director): ?>
+                        <ul class="nav nav-pills card-header-pills mb-0" id="card3Tabs" role="tablist" style="gap: 6px;">
+                            <li class="nav-item">
+                                <a class="nav-link active py-1 px-3 font-weight-semibold font-size-sm" id="tab-quotations-link" data-toggle="tab" href="#tab-quotations" role="tab" style="border-radius: 20px;">
+                                    <i class="icon-file-text2 mr-1"></i> Quotations
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link py-1 px-3 font-weight-semibold font-size-sm" id="tab-employees-link" data-toggle="tab" href="#tab-employees" role="tab" style="border-radius: 20px;">
+                                    <i class="icon-users mr-1"></i> Employees
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="header-elements">
+                            <a target="_blank" href="amc_shedule_calender.php?param=<?PHP echo $OBJ->URLEncode('title=amc_calendar');?>" class="btn btn-sm font-weight-bold ml-auto" style="border-radius:50px; padding:4px 14px; background:linear-gradient(135deg, #eef6fc 0%, #bdd8e9 100%); border:1.5px solid #7BBDE8; color:#001D39; font-size:0.75rem; box-shadow:0 2px 6px rgba(0,29,57,0.08); display:inline-flex; align-items:center; gap:5px; text-decoration:none;">
+                                <i class="icon-calendar5" style="color:#0A4174; font-size:0.85rem;"></i> CALENDAR
+                            </a>
+                        </div>
+                    <?php elseif ($is_operations_engineer): ?>
+                        <h5 class="card-title font-weight-bold mb-0" style="color: #001D39; font-size: 15px;">
+                            <i class="icon-file-text2 mr-2" style="color: #0A4174;"></i> Quotation Overview
+                        </h5>
+                        <div class="header-elements">
+                            <a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>" class="btn btn-sm btn-primary" style="border-radius:50px; padding:4px 14px; font-weight:600; font-size:12px; background:linear-gradient(135deg, #0A4174 0%, #001D39 100%); border:none; box-shadow:0 2px 6px rgba(0,29,57,0.25);">
+                                <i class="icon-plus2 mr-1"></i> Manage Quotes
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <h5 class="card-title font-weight-bold mb-0" style="color: #001D39; font-size: 15px;">
+                            <i class="icon-users mr-2" style="color: #0A4174;"></i> THC Employees
+                        </h5>
+                        <div class="header-elements">
+                            <a target="_blank" href="amc_shedule_calender.php?param=<?PHP echo $OBJ->URLEncode('title=amc_calendar');?>" class="btn btn-sm font-weight-bold ml-auto" style="border-radius:50px; padding:5px 16px; background:linear-gradient(135deg, #eef6fc 0%, #bdd8e9 100%); border:1.5px solid #7BBDE8; color:#001D39; font-size:0.8rem; box-shadow:0 3px 8px rgba(0,29,57,0.1); display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                                <i class="icon-calendar5" style="color:#0A4174; font-size:0.95rem;"></i> CALENDAR
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
-                <div class="card-body" style="height: 479px;">
-                    <div class="chart-container">
-                        <div class="chart has-fixed-height" id="pie_donut"></div>
-                    </div>
+                <div class="card-body p-0 flex-grow-1" style="overflow-y: auto;">
+                    <?php if ($is_admin_or_director): ?>
+                        <div class="tab-content h-100">
+                            <!-- Quotations Tab Pane -->
+                            <div class="tab-pane fade show active p-3" id="tab-quotations" role="tabpanel">
+                                <?php include __DIR__ . '/dashboard_quotation_widget.php'; ?>
+                            </div>
+                            <!-- Employees Tab Pane -->
+                            <div class="tab-pane fade p-3" id="tab-employees" role="tabpanel">
+                                <div class="chart-container" style="height: 440px;">
+                                    <div class="chart has-fixed-height" id="pie_donut" style="height: 440px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php elseif ($is_operations_engineer): ?>
+                        <div class="p-3">
+                            <?php include __DIR__ . '/dashboard_quotation_widget.php'; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-3">
+                            <div class="chart-container" style="height: 440px;">
+                                <div class="chart has-fixed-height" id="pie_donut" style="height: 440px;"></div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <!-- /basic donut -->
+            <!-- /Card 3 -->
         </div>
         <div class="col-sm-12 col-xl-12" style="position:realtive;">
             <div id="divWORaisedMonthly"></div>
