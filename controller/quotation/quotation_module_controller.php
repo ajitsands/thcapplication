@@ -693,10 +693,6 @@ class QuotationModuleController
                     $this->exportQuotationsExcel();
                     break;
 
-                case 'clear_quotations':
-                    $this->handleClearQuotations();
-                    break;
-
                 case 'seed_demo_data':
                     $this->seedInitialData();
                     echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
