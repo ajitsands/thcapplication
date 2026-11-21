@@ -38,17 +38,8 @@ INSERT IGNORE INTO `permissions` (`name`, `class_name`, `module_id`) VALUES
 ('Quotation', 'classQuotation', 16),
 ('QuotationModule', 'classQuotationModule', 16);
 
--- 4. Pre-assign Quotation permission strictly to Administrator, Operation Coordinator, Operation Manager, and Operations Manager (Maintenance) only
--- First, revoke Quotation permission from all other roles:
-DELETE FROM `role_permissions_v1`
-WHERE (`module_id` = 16 OR `sub_module_name` IN ('Quotation', 'QuotationModule'))
-  AND `role_id` NOT IN (1, 2, 5, 11);
-
-DELETE FROM `role_permissions`
-WHERE `module_id` = 16
-  AND `role_id` NOT IN (1, 2, 5, 11);
-
--- Then grant strictly to the authorized roles:
+-- 4. Pre-assign Quotation permission to Administrator, Operation Coordinator, Operation Manager, and Operations Manager
+-- (Admins can also assign/toggle via Permission Settings UI in roll_and_permissions.php)
 INSERT IGNORE INTO `role_permissions_v1` (`role_id`, `permission_id`, `module_id`, `sub_module_name`, `module_name`)
 SELECT r.role_id, mp.ids, 16, 'Quotation', 'Quotation'
 FROM `module_permissions` mp

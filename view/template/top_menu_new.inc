@@ -67,7 +67,7 @@ require_once(__DIR__ . '/thc_logo.php');
       </li>
 
       <!-- HR Module -->
-      <li class="thc-nav-item thc-has-dropdown classHRModule">
+      <li class="thc-nav-item thc-has-dropdown classHRModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','hr') ? ' active' : '' ?>">
           <i class="icon-users"></i> HR Module <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -84,7 +84,7 @@ require_once(__DIR__ . '/thc_logo.php');
       </li>
 
       <!-- Assets & Services Master -->
-      <li class="thc-nav-item thc-has-dropdown classAssetsAndServiceModule">
+      <li class="thc-nav-item thc-has-dropdown classAssetsAndServiceModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','master') ? ' active' : '' ?>">
           <i class="icon-target2"></i> Masters <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -97,7 +97,7 @@ require_once(__DIR__ . '/thc_logo.php');
       </li>
 
       <!-- Customers & Assets -->
-      <li class="thc-nav-item thc-has-dropdown classCustomerAndAssetsModule">
+      <li class="thc-nav-item thc-has-dropdown classCustomerAndAssetsModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','customer_master') ? ' active' : '' ?>">
           <i class="icon-vcard"></i> Customers <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -113,7 +113,7 @@ require_once(__DIR__ . '/thc_logo.php');
       </li>
 
       <!-- Work Orders -->
-      <li class="thc-nav-item thc-has-dropdown classWorkOrderManagementModule">
+      <li class="thc-nav-item thc-has-dropdown classWorkOrderManagementModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','tickets') ? ' active' : '' ?>">
           <i class="icon-shutter"></i> Work Orders <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -131,7 +131,7 @@ require_once(__DIR__ . '/thc_logo.php');
       </li>
 
       <!-- WO Reports -->
-      <li class="thc-nav-item thc-has-dropdown classWorkOrderReportsModule">
+      <li class="thc-nav-item thc-has-dropdown classWorkOrderReportsModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','daily_reports') ? ' active' : '' ?>">
           <i class="icon-hour-glass"></i> WO Reports <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -144,7 +144,7 @@ require_once(__DIR__ . '/thc_logo.php');
       </li>
 
       <!-- AMC -->
-      <li class="thc-nav-item thc-has-dropdown classAmcModule">
+      <li class="thc-nav-item thc-has-dropdown classAmcModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','amc') ? ' active' : '' ?>">
           <i class="icon-calculator3"></i> AMC <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -164,7 +164,7 @@ require_once(__DIR__ . '/thc_logo.php');
 
 
       <!-- Material Requisition -->
-      <li class="thc-nav-item thc-has-dropdown classMaterialRequisitionModule">
+      <li class="thc-nav-item thc-has-dropdown classMaterialRequisitionModule thc-main-module">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= menuActive($params,'head','requisition') ? ' active' : '' ?>">
           <i class="icon-folder-plus2"></i> Material Request <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -177,15 +177,15 @@ require_once(__DIR__ . '/thc_logo.php');
         </ul>
       </li>
 
-      <!-- Quotation Module (Direct Top Nav) -->
-      <li class="thc-nav-item classQuotation classQuotationModule">
+      <!-- Quotation Module (Promoted to Main Nav ONLY when user has no other main modules) -->
+      <li class="thc-nav-item classQuotation classQuotationModule" id="thcNavQuotationStandalone" style="display: none;">
         <a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>" class="thc-nav-link<?= menuActive($params,'head','quotation') ? ' active' : '' ?>">
           <i class="icon-file-text2"></i> Quotation
         </a>
       </li>
 
       <!-- More (Feedback, Logs, Quotation, Local PO) -->
-      <li class="thc-nav-item thc-has-dropdown">
+      <li class="thc-nav-item thc-has-dropdown" id="thcNavMoreItem">
         <a href="#" class="thc-nav-link thc-dropdown-toggle<?= (menuActive($params,'head','feedback') || menuActive($params,'head','log') || menuActive($params,'head','quotation') || menuActive($params,'head','localpo') || menuActive($params,'head','janitor')) ? ' active' : '' ?>">
           <i class="icon-more2"></i> More <i class="thc-arrow icon-arrow-down22"></i>
         </a>
@@ -204,8 +204,8 @@ require_once(__DIR__ . '/thc_logo.php');
           <li class="classLogsView"><a href="admin_log.php?param=<?= $OBJ->URLEncode('head=log&open=1&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-enter3"></i> Login &amp; Logout</a></li>
           <li class="classLogsView"><a href="amc_event_log.php?param=<?= $OBJ->URLEncode('head=log&open=2&title=view_log') ?>" class="<?= (menuActive($params,'head','log') && menuActive($params,'open','2')) ? 'active' : '' ?>"><i class="icon-calculator3"></i> AMC Log</a></li>
 
-          <li class="thc-dropdown-section-header classQuotation classQuotationModule">Quotation</li>
-          <li class="classQuotation classQuotationModule"><a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>" class="<?= menuActive($params,'head','quotation') ? 'active' : '' ?>"><i class="icon-file-text2"></i> Quotation</a></li>
+          <li class="thc-dropdown-section-header classQuotation classQuotationModule" id="thcNavQuotationHeaderInMore">Quotation</li>
+          <li class="classQuotation classQuotationModule" id="thcNavQuotationInMore"><a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>" class="<?= menuActive($params,'head','quotation') ? 'active' : '' ?>"><i class="icon-file-text2"></i> Quotation</a></li>
 
           <li class="thc-dropdown-section-header d-none">Local PO</li>
           <li class="classCreateLocalPO d-none"><a href="localpo.php?param=<?= $OBJ->URLEncode('head=localpo&open=1&title=add_localpo') ?>" class="<?= (menuActive($params,'head','localpo') && menuActive($params,'open','1')) ? 'active' : '' ?>"><i class="icon-pencil6"></i> Create Local PO</a></li>
@@ -343,6 +343,15 @@ if (window.jQuery) {
   jQuery(document).ready(function() {
     detachModalsToBody();
     jQuery('.modal-dialog').addClass('modal-dialog-centered');
+    if (typeof window.syncQuotationMenuPosition === 'function') {
+      window.syncQuotationMenuPosition();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.syncQuotationMenuPosition === 'function') {
+      window.syncQuotationMenuPosition();
+    }
   });
 
   jQuery(document).on('show.bs.modal', '.modal', function() {

@@ -619,19 +619,61 @@ $(document).ready(function() {
 	var eventJanitorExecutionReport = document.querySelectorAll(".classJanitorExecutionReport");
 	eventJanitorExecutionReport.forEach(function(obj) {if (!hasPermission("JanitorExecutionReport")) {obj.style.display = "none";}});
 	
-	// Automatically hide empty topnav dropdown containers if all their child links are hidden
-	document.querySelectorAll('.thc-nav .thc-has-dropdown').forEach(function(item) {
-		var subLinks = item.querySelectorAll('.thc-dropdown li a');
-		if (subLinks.length > 0) {
-			var hasAnyVisible = Array.from(subLinks).some(function(a) {
-				var parentLi = a.closest('li');
-				return parentLi && window.getComputedStyle(parentLi).display !== 'none';
-			});
-			if (!hasAnyVisible) {
-				item.style.display = 'none';
+	// Dynamic topnav positioning for Quotation & More:
+	// If the user has other main menu modules (Administrator, Operation Coordinator, etc.),
+	// keep Quotation inside "More" to prevent navbar layout distortion.
+	// If the user has access ONLY to submenus in "More" (Operations Engineer, etc.),
+	// promote Quotation to the main navbar and hide it from "More".
+	function syncQuotationMenuPosition() {
+		var standaloneQtn = document.getElementById("thcNavQuotationStandalone");
+		var moreQtn = document.getElementById("thcNavQuotationInMore");
+		var moreQtnHeader = document.getElementById("thcNavQuotationHeaderInMore");
+		var moreNav = document.getElementById("thcNavMoreItem");
+
+		var hasQuotation = hasPermission("Quotation") || hasPermission("QuotationModule");
+
+		if (!hasQuotation) {
+			if (standaloneQtn) standaloneQtn.style.display = "none";
+			if (moreQtn) moreQtn.style.display = "none";
+			if (moreQtnHeader) moreQtnHeader.style.display = "none";
+			var hasOtherMore = hasPermission("JanitorModule") || hasPermission("CustomerFeedbackModule") || hasPermission("LogsView");
+			if (moreNav) moreNav.style.display = hasOtherMore ? "" : "none";
+			return;
+		}
+
+		// Check if any of the main modules (HR, Masters, Customers, Work Orders, WO Reports, AMC, Material Request) are visible
+		var mainModules = document.querySelectorAll('.thc-nav-item.thc-main-module');
+		var hasOtherMainMenu = false;
+		mainModules.forEach(function(el) {
+			if (el && el.style.display !== 'none') {
+				hasOtherMainMenu = true;
+			}
+		});
+
+		var hasJanitor = hasPermission("JanitorModule");
+		var hasFeedback = hasPermission("CustomerFeedbackModule");
+		var hasLogs = hasPermission("LogsView");
+
+		if (hasOtherMainMenu) {
+			// User has other main modules (Admin, Coordinator): keep Quotation in More to keep navbar clean and undistorted
+			if (standaloneQtn) standaloneQtn.style.display = "none";
+			if (moreQtn) moreQtn.style.display = "";
+			if (moreQtnHeader) moreQtnHeader.style.display = "";
+			if (moreNav) moreNav.style.display = "";
+		} else {
+			// User has access only to submenus in More (e.g. Operations Engineer): promote Quotation to main navbar
+			if (standaloneQtn) {
+				standaloneQtn.style.display = "flex";
+			}
+			if (moreQtn) moreQtn.style.display = "none";
+			if (moreQtnHeader) moreQtnHeader.style.display = "none";
+			if (moreNav) {
+				moreNav.style.display = (hasJanitor || hasFeedback || hasLogs) ? "" : "none";
 			}
 		}
-	});
+	}
+	window.syncQuotationMenuPosition = syncQuotationMenuPosition;
+	syncQuotationMenuPosition();
 
 	// adding_new_permission
 	

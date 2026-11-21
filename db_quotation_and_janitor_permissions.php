@@ -62,14 +62,16 @@ if ($qRes && mysqli_num_rows($qRes) > 0) {
 mysqli_query($conn, "INSERT IGNORE INTO permissions (name, class_name, module_id) VALUES ('Quotation', 'classQuotation', 16)");
 mysqli_query($conn, "INSERT IGNORE INTO permissions (name, class_name, module_id) VALUES ('QuotationModule', 'classQuotationModule', 16)");
 
-// 4. Assign Quotation permission STRICTLY to: Administrator, Operation Manager, Operations Manager, and Operation Coordinator ONLY
+// 4. Assign Quotation permission to: Administrator, Operation Manager, Operations Manager, Operation Coordinator, and Operation Engineer
 $targetRoleNames = [
     'Administrator',
     'Operation Coordinator',
     'Operations Coordinator',
     'Operation Manager',
     'Operations Manager',
-    'Operations Manager (Maintenance)'
+    'Operations Manager (Maintenance)',
+    'Operation Engineer',
+    'Operations Engineer'
 ];
 
 $allowedRoleIds = [];
@@ -88,12 +90,7 @@ if ($roleRes) {
 $allowedRoleIds = array_values(array_unique(array_merge($allowedRoleIds, [1, 2, 5, 11])));
 $allowedIdsStr = implode(',', $allowedRoleIds);
 
-// 4a. Revoke Quotation permission from ALL other roles (so it is accessible ONLY to the allowed roles)
-mysqli_query($conn, "DELETE FROM role_permissions_v1 WHERE (module_id = 16 OR sub_module_name IN ('Quotation', 'QuotationModule')) AND role_id NOT IN ($allowedIdsStr)");
-mysqli_query($conn, "DELETE FROM role_permissions WHERE module_id = 16 AND role_id NOT IN ($allowedIdsStr)");
-echo "[+] Revoked Quotation permission from all other roles (strictly restricted to Roles: $allowedIdsStr)\n";
-
-// 4b. Grant Quotation permission strictly to the allowed roles
+// 4b. Grant Quotation permission to the default allowed roles (if not already granted)
 foreach ($allowedRoleIds as $roleId) {
     // role_permissions_v1
     $rChk = mysqli_query($conn, "SELECT ids FROM role_permissions_v1 WHERE role_id = $roleId AND permission_id = $qPermId AND sub_module_name = 'Quotation'");

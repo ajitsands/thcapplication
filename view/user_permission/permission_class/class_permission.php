@@ -11,6 +11,8 @@ class UserPermisssion
 					//$arr =  json_encode($this->getUserPermissions($roll_id_from_user_table)); // V1 Function Call 
 				    $arr =  json_encode($this->getUserPermissionsByUserID($roll_id_from_user_table)); //V2 Function Call
 					echo "<script>var permissions = $arr;</script>";
+				} else {
+					echo "<script>var permissions = [];</script>";
 				}
 			}
             function DatabaseConnection()
