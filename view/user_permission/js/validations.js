@@ -1,4 +1,5 @@
    $(document).ready(function() {
+       if ($('#dataTable').length === 0) return;
        //let UrlPostclassPath = 'permission_class/class_permission.php';
        let UrlPostclassPath = PermissionClassNamespace.varUrlPostclassPath;
         var dataTable = $('#dataTable').DataTable({

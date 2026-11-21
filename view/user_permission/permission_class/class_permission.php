@@ -4,15 +4,16 @@ include('db_variables.php');
 class UserPermisssion
 {
             
-			function __construct($roll_id_from_user_table)
+			function __construct($roll_id_from_user_table = null)
 			{
+				// If called as an AJAX action, NEVER output HTML or script tags!
+				if (!empty($_POST['action']) || !empty($_GET['action'])) {
+					return;
+				}
 				if ($roll_id_from_user_table != null) {
-				    
 					//$arr =  json_encode($this->getUserPermissions($roll_id_from_user_table)); // V1 Function Call 
 				    $arr =  json_encode($this->getUserPermissionsByUserID($roll_id_from_user_table)); //V2 Function Call
 					echo "<script>var permissions = $arr;</script>";
-				} else {
-					echo "<script>var permissions = [];</script>";
 				}
 			}
             function DatabaseConnection()

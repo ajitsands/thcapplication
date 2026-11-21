@@ -260,6 +260,11 @@ require_once(__DIR__ . '/thc_logo.php');
 </nav>
 
 <script>
+// Ensure permissions array is always defined
+if (typeof window.permissions === 'undefined') {
+  window.permissions = [];
+}
+
 // Toggle mobile hamburger
 document.getElementById('thcNavToggle').addEventListener('click', function() {
   document.getElementById('thcNavMenu').classList.toggle('open');
