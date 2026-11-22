@@ -299,6 +299,11 @@ class QuotationModuleController
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             @mysqli_query($this->db, $settingsSql);
 
+            // Ensure starting sequence setting commences from 9866
+            @mysqli_query($this->db, "INSERT INTO `tbl_quotation_settings_v2` (`setting_key`, `setting_value`) 
+                VALUES ('quotation_starting_seq', '9866') 
+                ON DUPLICATE KEY UPDATE `setting_value` = IF(CAST(`setting_value` AS UNSIGNED) < 9866, '9866', `setting_value`)");
+
             // Do not automatically re-seed demo data if the administrator clears the table.
             // Demo data can be manually seeded by visiting with ?action=seed_demo_data if needed.
         } else {
@@ -1920,6 +1925,35 @@ class QuotationModuleController
         ]);
     }
 
+    private function getNextSequenceNumber(): int
+    {
+        $startSeq = 9866;
+        if ($this->isDbConnected) {
+            $sRes = @mysqli_query($this->db, "SELECT `setting_value` FROM `tbl_quotation_settings_v2` WHERE `setting_key` = 'quotation_starting_seq' LIMIT 1");
+            if ($sRes && ($sRow = mysqli_fetch_assoc($sRes))) {
+                $customStart = (int)$sRow['setting_value'];
+                if ($customStart > 0) $startSeq = $customStart;
+            }
+
+            $maxRes = @mysqli_query($this->db, "SELECT MAX(seq_no) as max_seq FROM tbl_quotations_v2");
+            if ($maxRes && ($mRow = mysqli_fetch_assoc($maxRes))) {
+                $dbMax = !empty($mRow['max_seq']) ? (int)$mRow['max_seq'] : 0;
+                return ($dbMax >= $startSeq) ? ($dbMax + 1) : $startSeq;
+            }
+            return $startSeq;
+        }
+
+        // JSON fallback persistence
+        $quotes = $this->getJsonQuotations();
+        $maxSeq = $startSeq - 1;
+        foreach ($quotes as $q) {
+            if (!empty($q['seq_no']) && (int)$q['seq_no'] > $maxSeq) {
+                $maxSeq = (int)$q['seq_no'];
+            }
+        }
+        return $maxSeq + 1;
+    }
+
     private function saveQuotation()
     {
         $input = $this->getInputData();
@@ -2080,9 +2114,7 @@ class QuotationModuleController
         if ($this->isDbConnected) {
             if ($isIssue) {
                 if ($seqNo === null) {
-                    $maxRes = mysqli_query($this->db, "SELECT MAX(seq_no) as max_seq FROM tbl_quotations_v2");
-                    $mRow = mysqli_fetch_assoc($maxRes);
-                    $seqNo = !empty($mRow['max_seq']) ? ((int)$mRow['max_seq'] + 1) : 7073;
+                    $seqNo = $this->getNextSequenceNumber();
                 }
                 if (empty($clientCode) && !$isAmc) {
                     $cntRes = mysqli_query($this->db, "SELECT COUNT(*) as na_cnt FROM tbl_quotations_v2 WHERE is_amc = 0");
@@ -2210,13 +2242,7 @@ class QuotationModuleController
 
             if ($isIssue) {
                 if ($seqNo === null) {
-                    $maxSeq = 7072;
-                    foreach ($quotes as $q) {
-                        if (!empty($q['seq_no']) && $q['seq_no'] > $maxSeq) {
-                            $maxSeq = (int)$q['seq_no'];
-                        }
-                    }
-                    $seqNo = $maxSeq + 1;
+                    $seqNo = $this->getNextSequenceNumber();
                 }
                 if (empty($clientCode) && !$isAmc) {
                     $naCount = 0;
