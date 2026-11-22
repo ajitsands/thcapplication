@@ -256,9 +256,11 @@
     const DEFAULT_STAMP_SIGN_CONFIG = {
         show_stamp: 1,
         show_signature: 1,
+        show_user_phone: 1,
         company_stamp_url: "uploads/quotation_signatures/default_thc_stamp.png",
         default_signature_url: "uploads/quotation_signatures/default_signature.png",
-        user_signatures: {}
+        user_signatures: {},
+        user_phones: {}
     };
     let STAMP_SIGN_CONFIG = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG);
 
@@ -319,6 +321,11 @@
         let uName = q.user_name || (Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || "Authorized Signatory"));
         if (uName === "Adminstrator") uName = "Administrator";
         const uTitle = q.user_designation || (Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC Facility Management"));
+
+        const showPhone = q.include_user_phone !== undefined 
+            ? (!!q.include_user_phone && !!(q.user_phone || (uInfo && (uInfo.phone || uInfo[2]))))
+            : !!(q.user_phone);
+        const uPhone = q.user_phone || (uInfo ? (uInfo.phone || uInfo[2] || "") : "");
 
         const qNo = q.quotation_no || q.no;
         const qVn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
@@ -471,6 +478,7 @@
                     ` : `<br><br>`}
                     <b>${H(uName)}<br>
                     <span style="font-weight:400;color:#444;">${H(uTitle)}</span></b>
+                    ${showPhone && uPhone ? `<br><span style="font-weight:500;color:#1e293b;font-size:11px;">Mob: ${H(uPhone)}</span>` : ""}
                 </div>
                 <div class="ap">
                     ${(q.status === 'Approved' || q.st === 'Approved') && (q.approval_by || (q.appr && q.appr.by)) ? `
@@ -567,6 +575,12 @@
         else if (v === "rules") vrules();
         else if (v === "A" || v === "N") {
             const isAmc = v === "A";
+            const curUserPhone = (USERS[CU] && (USERS[CU].phone || USERS[CU][2])) 
+                || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[CU]) 
+                || (currentUserObj && currentUserObj.phone) 
+                || "";
+            const defaultShowPhone = (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false);
+
             ED = {
                 id: null,
                 seq_no: null,
@@ -584,6 +598,8 @@
                 user_code: CU,
                 user_name: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name,
                 user_designation: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title,
+                user_phone: curUserPhone,
+                include_user_phone: defaultShowPhone ? 1 : 0,
                 items: [{ description: "", quantity: 1, unit: "Lumpsum", unit_price: 0, total_price: 0 }],
                 vat_rate: 10,
                 discount_type: "amount",
@@ -1503,6 +1519,18 @@
         const uName = Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || currentUserObj.name);
         const uTitle = Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || currentUserObj.title);
 
+        const defaultPhone = (uInfo && (uInfo.phone || uInfo[2])) 
+            || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) 
+            || (currentUserObj && currentUserObj.phone) 
+            || "";
+        const userPhone = e.user_phone !== undefined ? e.user_phone : defaultPhone;
+        const includePhone = e.include_user_phone !== undefined 
+            ? !!e.include_user_phone 
+            : (e.user_phone !== undefined ? !!e.user_phone : (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false));
+
+        ED.include_user_phone = includePhone ? 1 : 0;
+        ED.user_phone = userPhone;
+
         const clientName = e.client_name || e.client || "";
         const clientCode = e.client_code || e.code || "";
         const clientAddr = e.client_address || e.addr || "";
@@ -1637,6 +1665,20 @@
                                 <i class="icon-stamp" style="font-size:12px;"></i> Stamp & Sign
                             </a>
                         </p>
+                        
+                        <!-- Sender Mobile Number Option -->
+                        <div style="margin-top:10px;padding:9px 12px;background:#f0f7fc;border:1.5px solid #c2daeb;border-radius:8px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                                <label style="display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
+                                    <input type="checkbox" id="chk_include_user_phone" ${includePhone ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
+                                    <span>Include sender mobile number under name</span>
+                                </label>
+                                <div id="wrap_user_phone" style="display:${includePhone ? 'inline-flex' : 'none'};align-items:center;gap:6px;">
+                                    <label style="font-size:11.5px;font-weight:600;color:#0A4174;margin:0;">Mob / Tel:</label>
+                                    <input type="text" id="inp_user_phone" data-k="user_phone" placeholder="e.g. +973 3944 1015" value="${H(userPhone)}" style="width:160px;height:32px;font-size:12px;margin:0;padding:4px 8px;font-weight:600;color:#0A4174;">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Scope of Works Card -->
@@ -1780,6 +1822,7 @@
                 if (k === "quotation_date") ED.date = t.value;
                 if (k === "subject") ED.subj = t.value;
                 if (k === "internal_notes") ED.internal_notes = t.value;
+                if (k === "user_phone") ED.user_phone = t.value;
                 if (k === "merged_lump_sum_price") ED.merged_lump_sum_price = +t.value || 0;
             } else if (t.dataset.f !== undefined) {
                 const idx = +t.dataset.i;
@@ -1827,6 +1870,27 @@
         if (inpMerged) {
             inpMerged.oninput = e => {
                 ED.merged_lump_sum_price = +e.target.value || 0;
+                renderLivePreview();
+            };
+        }
+
+        const chkSenderPhone = $("#chk_include_user_phone");
+        const wrapSenderPhone = $("#wrap_user_phone");
+        const inpSenderPhone = $("#inp_user_phone");
+        if (chkSenderPhone) {
+            chkSenderPhone.onchange = ev => {
+                ED.include_user_phone = ev.target.checked ? 1 : 0;
+                if (wrapSenderPhone) wrapSenderPhone.style.display = ev.target.checked ? "inline-flex" : "none";
+                if (ev.target.checked && inpSenderPhone && !inpSenderPhone.value.trim() && defaultPhone) {
+                    inpSenderPhone.value = defaultPhone;
+                    ED.user_phone = defaultPhone;
+                }
+                renderLivePreview();
+            };
+        }
+        if (inpSenderPhone) {
+            inpSenderPhone.oninput = ev => {
+                ED.user_phone = ev.target.value;
                 renderLivePreview();
             };
         }
@@ -3197,6 +3261,26 @@
             };
         }
 
+        const chkPhone = $("#cfg_show_user_phone");
+        if (chkPhone) {
+            chkPhone.onchange = e => {
+                const prev = $("#live_prev_user_phone");
+                const inp = $("#cfg_user_phone");
+                if (prev) prev.style.display = (e.target.checked && inp && inp.value.trim()) ? "block" : "none";
+            };
+        }
+
+        const inpPhone = $("#cfg_user_phone");
+        if (inpPhone) {
+            inpPhone.oninput = e => {
+                const prev = $("#live_prev_user_phone");
+                if (prev) {
+                    prev.textContent = e.target.value.trim() ? ("Mob: " + e.target.value.trim()) : "";
+                    prev.style.display = (chkPhone && chkPhone.checked && e.target.value.trim()) ? "block" : "none";
+                }
+            };
+        }
+
         // File uploaders
         const uplStamp = $("#upload_stamp_input");
         if (uplStamp) {
@@ -3253,9 +3337,18 @@
         const cur = USERS[uCode];
         const cName = cur ? (Array.isArray(cur) ? cur[0] : cur.name) : currentUserObj.name;
         const cTitle = cur ? (Array.isArray(cur) ? cur[1] : cur.title) : currentUserObj.title;
+        const cPhone = (cur && (cur.phone || cur[2])) || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) || currentUserObj.phone || "";
 
         if ($("#live_prev_user_name")) $("#live_prev_user_name").textContent = cName;
         if ($("#live_prev_user_title")) $("#live_prev_user_title").textContent = cTitle;
+        if ($("#cfg_user_phone")) $("#cfg_user_phone").value = cPhone;
+        const chkUserPhone = $("#cfg_show_user_phone");
+        if (chkUserPhone) chkUserPhone.checked = (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false);
+        const livePhone = $("#live_prev_user_phone");
+        if (livePhone) {
+            livePhone.textContent = cPhone ? ("Mob: " + cPhone) : "";
+            livePhone.style.display = (chkUserPhone && chkUserPhone.checked && cPhone) ? "block" : "none";
+        }
 
         showModal("#modal_stamp_sign_settings");
     }
@@ -3302,10 +3395,15 @@
         const payload = {
             show_stamp: $("#cfg_show_stamp") && $("#cfg_show_stamp").checked ? 1 : 0,
             show_signature: $("#cfg_show_signature") && $("#cfg_show_signature").checked ? 1 : 0,
+            show_user_phone: $("#cfg_show_user_phone") && $("#cfg_show_user_phone").checked ? 1 : 0,
             company_stamp_url: STAMP_SIGN_CONFIG.company_stamp_url || "uploads/quotation_signatures/default_thc_stamp.png",
             default_signature_url: STAMP_SIGN_CONFIG.default_signature_url || "uploads/quotation_signatures/default_signature.png",
-            user_signatures: STAMP_SIGN_CONFIG.user_signatures || {}
+            user_signatures: STAMP_SIGN_CONFIG.user_signatures || {},
+            user_phones: STAMP_SIGN_CONFIG.user_phones || {}
         };
+        if ($("#cfg_user_phone")) {
+            payload.user_phones[CU] = $("#cfg_user_phone").value.trim();
+        }
 
         const btnSave = $("#btn_save_stamp_sign_cfg");
         if (btnSave) {
@@ -3926,6 +4024,14 @@
         if (mergedPriceEl) {
             ED.merged_lump_sum_price = +mergedPriceEl.value || 0;
         }
+        const chkPhoneEl = $('#chk_include_user_phone');
+        if (chkPhoneEl) {
+            ED.include_user_phone = chkPhoneEl.checked ? 1 : 0;
+        }
+        const phoneEl = $('#inp_user_phone');
+        if (phoneEl) {
+            ED.user_phone = phoneEl.value.trim();
+        }
 
         const payload = {
             id: ED.id || null,
@@ -3944,6 +4050,8 @@
             user_code: CU,
             user_name: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name,
             user_designation: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title,
+            user_phone: ED.user_phone || "",
+            include_user_phone: ED.include_user_phone ? 1 : 0,
             vat_rate: ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10),
             discount_type: ED.discount_type || "amount",
             discount_value: ED.discount_value !== undefined ? +ED.discount_value : (ED.discount !== undefined ? +ED.discount : 0),

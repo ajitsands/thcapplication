@@ -93,9 +93,11 @@ class QuotationModuleController
     private $defaultStampSignConfig = [
         'show_stamp' => 1,
         'show_signature' => 1,
+        'show_user_phone' => 1,
         'company_stamp_url' => 'uploads/quotation_signatures/default_thc_stamp.png',
         'default_signature_url' => 'uploads/quotation_signatures/default_signature.png',
-        'user_signatures' => []
+        'user_signatures' => [],
+        'user_phones' => []
     ];
 
     public function __construct()
@@ -238,6 +240,14 @@ class QuotationModuleController
             $chkBullet = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'bullet_items'");
             if ($chkBullet && mysqli_num_rows($chkBullet) == 0) {
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `bullet_items` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merged_lump_sum_price`");
+            }
+
+            // Migration check: Add user_phone and include_user_phone columns if missing
+            $chkPhone = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'user_phone'");
+            if ($chkPhone && mysqli_num_rows($chkPhone) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
+                    ADD COLUMN `user_phone` VARCHAR(50) DEFAULT '' AFTER `user_designation`,
+                    ADD COLUMN `include_user_phone` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_phone`");
             }
 
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
@@ -773,6 +783,7 @@ class QuotationModuleController
         $userId = 1;
         $isAdmin = false;
         $isManager = true;
+        $userPhone = "";
 
         if (!empty($_SESSION['username'])) {
             $empCode = $_SESSION['username'];
@@ -783,6 +794,13 @@ class QuotationModuleController
             $userCode = $this->deriveUserInitials($userName, $empCode);
             $userTitle = !empty($_SESSION['user_type']) ? $_SESSION['user_type'] : "Operations Manager";
             $userId = !empty($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 1;
+
+            if ($this->isDbConnected) {
+                $cRes = @mysqli_query($this->db, "SELECT employee_contact_no FROM tbl_employees WHERE employee_code = '" . mysqli_real_escape_string($this->db, $empCode) . "' LIMIT 1");
+                if ($cRes && ($cRow = mysqli_fetch_assoc($cRes))) {
+                    $userPhone = trim($cRow['employee_contact_no'] ?? '');
+                }
+            }
 
             $sessUserType = strtolower(trim($_SESSION['user_type'] ?? ''));
             $sessUserName = strtolower(trim($_SESSION['user_name'] ?? ''));
@@ -800,6 +818,7 @@ class QuotationModuleController
             "code" => $userCode,
             "name" => $userName,
             "title" => $userTitle,
+            "phone" => $userPhone,
             "id" => $userId,
             "is_admin" => $isAdmin,
             "is_manager" => $isManager
@@ -818,7 +837,7 @@ class QuotationModuleController
         // 2. Fetch Users / Estimators (strictly users with Quotation permissions: Administrator, Operation Manager, Operation Coordinator)
         $users = [];
         if ($this->isDbConnected) {
-            $uSql = "SELECT DISTINCT e.employee_id, e.employee_code, e.employee_name, e.employee_type_name 
+            $uSql = "SELECT DISTINCT e.employee_id, e.employee_code, e.employee_name, e.employee_type_name, e.employee_contact_no 
                      FROM tbl_employees e 
                      WHERE e.employee_status='Active' 
                      AND (
@@ -857,7 +876,8 @@ class QuotationModuleController
                     }
                     $users[$initials] = [
                         "name" => $cleanName,
-                        "title" => $title
+                        "title" => $title,
+                        "phone" => trim($u['employee_contact_no'] ?? '')
                     ];
                 }
             }
@@ -870,7 +890,8 @@ class QuotationModuleController
         if (!isset($users[$curUser['code']])) {
             $users[$curUser['code']] = [
                 "name" => $curUser['name'],
-                "title" => $curUser['title']
+                "title" => $curUser['title'],
+                "phone" => $curUser['phone'] ?? ''
             ];
         }
 
@@ -1165,6 +1186,8 @@ class QuotationModuleController
                         "user_code" => $r['user_code'],
                         "user_name" => $r['user_name'],
                         "user_designation" => $r['user_designation'],
+                        "user_phone" => $r['user_phone'] ?? '',
+                        "include_user_phone" => (int)($r['include_user_phone'] ?? 0),
                         "vat_rate" => (float)$r['vat_rate'],
                         "discount_type" => isset($r['discount_type']) ? $r['discount_type'] : 'amount',
                         "discount_value" => isset($r['discount_value']) ? (float)$r['discount_value'] : 0.0,
@@ -1488,6 +1511,12 @@ class QuotationModuleController
         }
         if (isset($input['show_signature'])) {
             $curCfg['show_signature'] = (int)(bool)$input['show_signature'];
+        }
+        if (isset($input['show_user_phone'])) {
+            $curCfg['show_user_phone'] = (int)(bool)$input['show_user_phone'];
+        }
+        if (isset($input['user_phones']) && is_array($input['user_phones'])) {
+            $curCfg['user_phones'] = array_merge($curCfg['user_phones'] ?? [], $input['user_phones']);
         }
         if (!empty($input['company_stamp_url'])) {
             $curCfg['company_stamp_url'] = trim((string)$input['company_stamp_url']);
@@ -1908,6 +1937,8 @@ class QuotationModuleController
         $userCode = trim($input['user_code'] ?? 'MA');
         $userName = trim($input['user_name'] ?? 'Mohammed Ali');
         $userDesignation = trim($input['user_designation'] ?? 'Operations Manager');
+        $userPhone = trim($input['user_phone'] ?? '');
+        $includeUserPhone = !empty($input['include_user_phone']) ? 1 : 0;
         $vatRate = isset($input['vat_rate']) ? (float)$input['vat_rate'] : 10.0;
         $terms = isset($input['terms']) && is_array($input['terms']) ? $input['terms'] : $this->defaultTerms;
         $items = isset($input['items']) && is_array($input['items']) ? $input['items'] : [];
@@ -2088,6 +2119,7 @@ class QuotationModuleController
             $escUserCode = mysqli_real_escape_string($this->db, $userCode);
             $escUserName = mysqli_real_escape_string($this->db, $userName);
             $escUserDesig = mysqli_real_escape_string($this->db, $userDesignation);
+            $escUserPhone = mysqli_real_escape_string($this->db, $userPhone);
             $escQNo = mysqli_real_escape_string($this->db, $quotationNo);
             $escNotes = mysqli_real_escape_string($this->db, $internalNotes);
             $seqVal = $seqNo !== null ? (int)$seqNo : "NULL";
@@ -2122,6 +2154,8 @@ class QuotationModuleController
                     user_code = '$escUserCode',
                     user_name = '$escUserName',
                     user_designation = '$escUserDesig',
+                    user_phone = '$escUserPhone',
+                    include_user_phone = $includeUserPhone,
                     vat_rate = $vatRate,
                     discount_type = '$discountType',
                     discount_value = $discountValue,
@@ -2144,12 +2178,12 @@ class QuotationModuleController
             } else {
                 $ins = "INSERT INTO tbl_quotations_v2 
                     (seq_no, rev_no, variation_no, quotation_no, is_amc, client_code, client_name, client_address,
-                     contact_no, attention, subject, quotation_date, user_code, user_name, user_designation,
+                     contact_no, attention, subject, quotation_date, user_code, user_name, user_designation, user_phone, include_user_phone,
                      vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat,
                      internal_notes, merge_items, merge_qty, merged_lump_sum_price, bullet_items, terms_json, status, activity_json)
                     VALUES 
                     ($seqVal, $revNo, $variationNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
-                     '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig',
+                     '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig', '$escUserPhone', $includeUserPhone,
                      $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat,
                      '$escNotes', $mergeItems, $mergeQty, $mergedLumpSumPrice, $bulletItems, '$termsJson', '$status', '$actJson')";
                 mysqli_query($this->db, $ins);
@@ -2225,6 +2259,8 @@ class QuotationModuleController
                 "user_code" => $userCode,
                 "user_name" => $userName,
                 "user_designation" => $userDesignation,
+                "user_phone" => $userPhone,
+                "include_user_phone" => $includeUserPhone,
                 "vat_rate" => $vatRate,
                 "discount_type" => $discountType,
                 "discount_value" => $discountValue,

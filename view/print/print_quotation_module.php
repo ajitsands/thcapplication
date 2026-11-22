@@ -52,6 +52,12 @@ try {
         if ($chkBullet && mysqli_num_rows($chkBullet) === 0) {
             @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `bullet_items` TINYINT(1) NOT NULL DEFAULT 0 AFTER `merged_lump_sum_price`");
         }
+        $chkPhone = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'user_phone'");
+        if ($chkPhone && mysqli_num_rows($chkPhone) === 0) {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` 
+                ADD COLUMN `user_phone` VARCHAR(50) DEFAULT '' AFTER `user_designation`,
+                ADD COLUMN `include_user_phone` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_phone`");
+        }
         $chkItmMerge = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotation_items_v2` LIKE 'merge_with_prev'");
         if ($chkItmMerge && mysqli_num_rows($chkItmMerge) === 0) {
             @mysqli_query($db, "ALTER TABLE `tbl_quotation_items_v2` ADD COLUMN `merge_with_prev` TINYINT(1) NOT NULL DEFAULT 0 AFTER `total_price`");
@@ -100,6 +106,8 @@ if (!$q) {
                         'user_code' => $item['user_code'],
                         'user_name' => $item['user_name'],
                         'user_designation' => $item['user_designation'],
+                        'user_phone' => $item['user_phone'] ?? '',
+                        'include_user_phone' => $item['include_user_phone'] ?? 0,
                         'vat_rate' => $item['vat_rate'],
                         'discount_type' => $item['discount_type'] ?? 'amount',
                         'discount_value' => $item['discount_value'] ?? 0,
@@ -483,6 +491,12 @@ if ($download) {
         $signerName = 'Administrator';
     }
     $signerTitle = $q['user_designation'] ?? 'THC Facility Management';
+    $signerPhone = '';
+    if (!empty($q['include_user_phone']) && !empty($q['user_phone'])) {
+        $signerPhone = trim($q['user_phone']);
+    } elseif (!isset($q['include_user_phone']) && !empty($q['user_phone'])) {
+        $signerPhone = trim($q['user_phone']);
+    }
 
     // Build HTML for TCPDF writeHTML with strict zero-indent formatting to ensure perfect flush-left alignment
     $html = '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9.5pt;color:#1e293b;">'
@@ -641,7 +655,8 @@ if ($download) {
                 <b>THC Facility Management W.L.L</b><br>
                 ' . $stampSignHtml . '
                 <b>' . htmlspecialchars($signerName) . '</b><br>
-                <span style="color:#475569;">' . htmlspecialchars($signerTitle) . '</span>
+                <span style="color:#475569;">' . htmlspecialchars($signerTitle) . '</span>'
+                . (!empty($signerPhone) ? '<br><span style="color:#1e293b;font-size:8.5pt;">Mob: ' . htmlspecialchars($signerPhone) . '</span>' : '') . '
             </td>
             <td width="5%"></td>
             <td width="40%" style="border:1px solid #cbd5e1;background-color:#f8fafc;padding:8px;line-height:1.8;vertical-align:top;">
@@ -1031,6 +1046,16 @@ if ($download) {
             ?>
             <b><?= htmlspecialchars($signer) ?><br>
             <span style="font-weight: 400; color: #475569;"><?= htmlspecialchars($q['user_designation']) ?></span></b>
+            <?php
+            $signerPhone = '';
+            if (!empty($q['include_user_phone']) && !empty($q['user_phone'])) {
+                $signerPhone = trim($q['user_phone']);
+            } elseif (!isset($q['include_user_phone']) && !empty($q['user_phone'])) {
+                $signerPhone = trim($q['user_phone']);
+            }
+            if (!empty($signerPhone)): ?>
+                <br><span style="font-weight: 500; color: #1e293b; font-size: 11px;">Mob: <?= htmlspecialchars($signerPhone) ?></span>
+            <?php endif; ?>
         </div>
         <div class="ap">
             <?php if ($isApproved && !empty($apprBy)): ?>

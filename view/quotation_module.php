@@ -1488,9 +1488,19 @@ if ($isLoggedIn) {
                                     <div class="text-center my-3 p-2" style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;min-height:130px;display:flex;align-items:center;justify-content:center;">
                                         <img id="sig_preview_img" src="uploads/quotation_signatures/default_signature.png" onerror="this.src='../view/uploads/quotation_signatures/default_signature.png';" alt="Signature" style="max-height:80px;max-width:170px;object-fit:contain;">
                                     </div>
-                                    <div class="form-group mb-0">
+                                    <div class="form-group mb-2">
                                         <label class="font-weight-semibold font-size-xs text-muted mb-1">Upload Signature for Current Estimator (PNG / JPG):</label>
                                         <input type="file" id="upload_sig_input" class="form-control-file form-control-sm" accept="image/png,image/jpeg,image/webp">
+                                    </div>
+                                    <div class="form-group mb-0 pt-2" style="border-top:1px dashed #cbd5e1;">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label class="font-weight-semibold font-size-xs text-muted mb-0">Estimator Mobile Number:</label>
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="cfg_show_user_phone" checked>
+                                                <label class="custom-control-label font-weight-semibold font-size-xs" for="cfg_show_user_phone">Display Mobile</label>
+                                            </div>
+                                        </div>
+                                        <input type="text" id="cfg_user_phone" class="form-control form-control-sm" placeholder="e.g. +973 3944 1015" style="font-size:12px;">
                                     </div>
                                 </div>
                             </div>
@@ -1512,6 +1522,7 @@ if ($isLoggedIn) {
                                     </div>
                                     <div id="live_prev_user_name" class="font-weight-bold">Parthiban Jayaraman</div>
                                     <div id="live_prev_user_title" class="text-muted font-size-xs">Operations Engineer</div>
+                                    <div id="live_prev_user_phone" class="font-size-xs" style="color:#0A4174;font-weight:600;display:none;"></div>
                                 </div>
                             </div>
                         </div>
