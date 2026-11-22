@@ -940,6 +940,22 @@ if ($isLoggedIn) {
             background-color: #f0f7fc;
         }
 
+        .import-quote-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .import-quote-item:hover {
+            background-color: #f0f7fc !important;
+        }
+
+        .import-quote-item.active {
+            background-color: #e0f2fe !important;
+            border-left: 4px solid #0284c7 !important;
+        }
+
         .tr textarea { flex: 1; margin: 0 !important; }
 
         /* Live Preview Sticky Container */
@@ -1612,7 +1628,7 @@ if ($isLoggedIn) {
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body p-3" style="background:#f8fafc;max-height:calc(85vh - 120px);overflow-y:auto;">
+                    <div class="modal-body p-3" style="background:#f8fafc;min-height:520px;max-height:calc(85vh - 120px);overflow-y:auto;">
                         <!-- Tab Pills -->
                         <ul class="nav nav-pills mb-3" id="import_tabs" role="tablist" style="background:#e2e8f0;padding:4px;border-radius:10px;gap:4px;">
                             <li class="nav-item flex-fill text-center" role="presentation">
@@ -1669,13 +1685,38 @@ if ($isLoggedIn) {
                             <!-- Tab 2: Existing Quote -->
                             <div class="tab-pane fade" id="tab_import_quote" role="tabpanel">
                                 <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
-                                    <label class="font-weight-bold text-dark mb-1" style="font-size:12.5px;">
-                                        <i class="icon-search4 mr-1 text-primary"></i> Select Existing Quotation to Copy Line Items
-                                    </label>
-                                    <select id="select_import_quote_source" class="form-control" style="height:38px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;width:100%;">
-                                        <option value="">-- Choose a quotation --</option>
-                                    </select>
-                                    <small class="text-muted mt-1" style="font-size:11.5px;">Select any quotation from your database to load its scope of work items below.</small>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <label class="font-weight-bold text-dark mb-0" style="font-size:12.5px;">
+                                            <i class="icon-search4 mr-1 text-primary"></i> Select Existing Quotation to Copy Line Items
+                                        </label>
+                                        <span class="text-muted font-weight-semibold" style="font-size:11.5px;" id="import_quote_count_label">0 quotations</span>
+                                    </div>
+
+                                    <!-- Quick Search Input -->
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0" style="border-color:#c2daeb;border-radius:6px 0 0 6px;">
+                                                <i class="icon-search4 text-muted" style="font-size:12px;"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" id="import_quote_search_input" class="form-control border-left-0" placeholder="Type to filter quotations (e.g. quote #, client name, subject)..." style="height:36px;font-size:12.5px;border-color:#c2daeb;border-radius:0 6px 6px 0;padding-left:0;">
+                                    </div>
+
+                                    <!-- Interactive list of quotations -->
+                                    <div id="import_quote_list_container" style="max-height:190px;overflow-y:auto;border:1.5px solid #e2e8f0;border-radius:8px;background:#ffffff;margin-bottom:6px;">
+                                        <!-- Dynamically populated quote items -->
+                                    </div>
+
+                                    <!-- Synchronized dropdown (hidden fallback) -->
+                                    <div style="display:none;">
+                                        <select id="select_import_quote_source" class="form-control">
+                                            <option value="">-- Choose a quotation --</option>
+                                        </select>
+                                    </div>
+
+                                    <small class="text-muted d-block" style="font-size:11px;">
+                                        <i class="icon-info22 mr-1 text-info"></i> Click any quotation above to preview and select its line items.
+                                    </small>
                                 </div>
                             </div>
                         </div>

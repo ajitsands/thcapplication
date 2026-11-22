@@ -2901,6 +2901,58 @@
     // ==========================================
     let importedItemsPreview = [];
     let importModalEventsBound = false;
+    let selectedImportQuoteId = null;
+
+    function renderImportQuoteList(filterText) {
+        const listCont = $("#import_quote_list_container");
+        const countLabel = $("#import_quote_count_label");
+        if (!listCont) return;
+
+        const term = (filterText || "").trim().toLowerCase();
+        const quotes = (Q || []).filter(q => {
+            if (!term) return true;
+            const qNo = (q.quotation_no || ("QTN-" + (q.seq_no || q.id))).toLowerCase();
+            const cName = (q.client_name || q.client || "").toLowerCase();
+            const sSubj = (q.subject || q.subj || "").toLowerCase();
+            return qNo.includes(term) || cName.includes(term) || sSubj.includes(term);
+        });
+
+        if (countLabel) {
+            countLabel.textContent = `${quotes.length} of ${(Q || []).length} quotations`;
+        }
+
+        if (quotes.length === 0) {
+            listCont.innerHTML = `<div class="p-3 text-center text-muted" style="font-size:12px;">No quotations match "${H(term)}".</div>`;
+            return;
+        }
+
+        listCont.innerHTML = quotes.map(q => {
+            const qNo = q.quotation_no || ("QTN-" + (q.seq_no || q.id));
+            const cName = q.client_name || q.client || "Client";
+            const sSubj = q.subject || q.subj || "No subject";
+            const count = (q.items && q.items.length) || 0;
+            const total = amt(q);
+            const val = q.id || qNo;
+            const isSelected = (selectedImportQuoteId !== null && String(selectedImportQuoteId) === String(val));
+
+            return `
+            <div class="import-quote-item p-2 d-flex align-items-center justify-content-between ${isSelected ? 'active' : ''}" data-qid="${H(String(val))}">
+                <div style="flex:1;min-width:0;padding-right:12px;">
+                    <div class="d-flex align-items-center" style="gap:6px;">
+                        <span class="font-weight-bold" style="color:#0A4174;font-size:12.5px;">${H(qNo)}</span>
+                        <span class="text-truncate font-weight-semibold" style="color:#1e293b;font-size:12px;">· ${H(cName)}</span>
+                    </div>
+                    <div class="text-muted text-truncate" style="font-size:11.5px;color:#64748b;margin-top:2px;">
+                        ${H(sSubj)}
+                    </div>
+                </div>
+                <div class="text-right" style="flex-shrink:0;">
+                    <span class="badge badge-info" style="font-size:11px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">${count} item${count === 1 ? '' : 's'}</span>
+                    <div class="font-weight-bold" style="font-size:11.5px;color:#0A4174;margin-top:2px;">${f3(total)} BD</div>
+                </div>
+            </div>`;
+        }).join("");
+    }
 
     function openImportItemsModal() {
         if (!ED) {
@@ -2910,6 +2962,7 @@
 
         // Reset state & fields
         importedItemsPreview = [];
+        selectedImportQuoteId = null;
         const fileInput = $("#input_import_file");
         if (fileInput) fileInput.value = "";
         const fileInfo = $("#file_selected_info");
@@ -2919,6 +2972,9 @@
         }
         const pasteArea = $("#import_paste_area");
         if (pasteArea) pasteArea.value = "";
+
+        const searchInp = $("#import_quote_search_input");
+        if (searchInp) searchInp.value = "";
 
         // Reset radio to append
         const radAppend = $('input[name="import_mode"][value="append"]');
@@ -2950,7 +3006,7 @@
             }
         }
 
-        // Populate Existing Quotation Dropdown
+        // Populate Existing Quotation Dropdown and Interactive List
         const selQuote = $("#select_import_quote_source");
         if (selQuote) {
             let opts = '<option value="">-- Choose a quotation to copy items --</option>';
@@ -2963,17 +3019,10 @@
                 opts += `<option value="${H(String(val))}">${H(qNo)} · ${H(cName)} · ${H(sSubj)} (${count} items)</option>`;
             });
             selQuote.innerHTML = opts;
-
-            if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
-                const $sq = window.jQuery(selQuote);
-                if ($sq.data('select2')) $sq.select2('destroy');
-                $sq.select2({
-                    width: '100%',
-                    placeholder: '-- Choose a quotation to copy items --',
-                    allowClear: true
-                }).val('').trigger('change.select2');
-            }
+            selQuote.value = "";
         }
+
+        renderImportQuoteList("");
 
         showModal("#modal_import_items");
     }
@@ -3434,40 +3483,78 @@
             };
         }
 
-        // Existing quotation select handler
+        // Existing quotation search and list handlers
+        const quoteSearchInp = $("#import_quote_search_input");
+        if (quoteSearchInp) {
+            quoteSearchInp.oninput = () => {
+                renderImportQuoteList(quoteSearchInp.value);
+            };
+        }
+
+        const tabQuoteBtn = $("#tab_import_quote_btn");
+        if (tabQuoteBtn) {
+            tabQuoteBtn.onclick = () => {
+                renderImportQuoteList(quoteSearchInp ? quoteSearchInp.value : "");
+            };
+        }
+
+        const handleQuoteChange = val => {
+            selectedImportQuoteId = val ? String(val) : null;
+
+            // Highlight selected card in list
+            $$(".import-quote-item").forEach(el => {
+                el.classList.toggle("active", selectedImportQuoteId !== null && el.dataset.qid === selectedImportQuoteId);
+            });
+
+            // Sync hidden dropdown if needed
+            const selEl = $("#select_import_quote_source");
+            if (selEl && selEl.value !== (val || "")) {
+                selEl.value = val || "";
+            }
+
+            if (!val) {
+                importedItemsPreview = [];
+                renderImportPreview();
+                return;
+            }
+
+            const found = (Q || []).find(q => String(q.id) === String(val) || String(q.quotation_no) === String(val));
+            if (found && Array.isArray(found.items) && found.items.length) {
+                importedItemsPreview = found.items.map(it => {
+                    const desc = it.description !== undefined ? it.description : (it[0] || "");
+                    const qty = it.quantity !== undefined ? it.quantity : (it[1] !== undefined ? it[1] : 1);
+                    const unit = it.unit !== undefined ? it.unit : (it[2] || "Lumpsum");
+                    const price = it.unit_price !== undefined ? it.unit_price : (it[3] || 0);
+                    return {
+                        description: desc,
+                        quantity: +qty || 1,
+                        unit: unit || "Lumpsum",
+                        unit_price: +price || 0,
+                        total_price: (+qty || 1) * (+price || 0),
+                        selected: true
+                    };
+                });
+                renderImportPreview();
+            } else {
+                notifySwal("Notice", "The selected quotation contains no line items.", "info");
+                importedItemsPreview = [];
+                renderImportPreview();
+            }
+        };
+
+        const quoteListCont = $("#import_quote_list_container");
+        if (quoteListCont) {
+            quoteListCont.onclick = ev => {
+                const row = ev.target.closest(".import-quote-item");
+                if (!row) return;
+                const qid = row.dataset.qid;
+                if (!qid) return;
+                handleQuoteChange(qid);
+            };
+        }
+
         const selQuote = $("#select_import_quote_source");
         if (selQuote) {
-            const handleQuoteChange = val => {
-                if (!val) {
-                    importedItemsPreview = [];
-                    renderImportPreview();
-                    return;
-                }
-
-                const found = (Q || []).find(q => String(q.id) === String(val) || String(q.quotation_no) === String(val));
-                if (found && Array.isArray(found.items) && found.items.length) {
-                    importedItemsPreview = found.items.map(it => {
-                        const desc = it.description !== undefined ? it.description : (it[0] || "");
-                        const qty = it.quantity !== undefined ? it.quantity : (it[1] !== undefined ? it[1] : 1);
-                        const unit = it.unit !== undefined ? it.unit : (it[2] || "Lumpsum");
-                        const price = it.unit_price !== undefined ? it.unit_price : (it[3] || 0);
-                        return {
-                            description: desc,
-                            quantity: +qty || 1,
-                            unit: unit || "Lumpsum",
-                            unit_price: +price || 0,
-                            total_price: (+qty || 1) * (+price || 0),
-                            selected: true
-                        };
-                    });
-                    renderImportPreview();
-                } else {
-                    notifySwal("Notice", "The selected quotation contains no line items.", "info");
-                    importedItemsPreview = [];
-                    renderImportPreview();
-                }
-            };
-
             selQuote.onchange = ev => handleQuoteChange(ev.target.value);
             if (window.jQuery) {
                 window.jQuery(selQuote).on("change", function () {
@@ -3491,6 +3578,8 @@
         if (btnClear) {
             btnClear.onclick = () => {
                 importedItemsPreview = [];
+                selectedImportQuoteId = null;
+                $$(".import-quote-item").forEach(el => el.classList.remove("active"));
                 renderImportPreview();
                 if (fileInput) fileInput.value = "";
                 if (fileInfo) {
@@ -3498,6 +3587,8 @@
                     fileInfo.textContent = "";
                 }
                 if (pasteArea) pasteArea.value = "";
+                if (quoteSearchInp) quoteSearchInp.value = "";
+                renderImportQuoteList("");
             };
         }
 
