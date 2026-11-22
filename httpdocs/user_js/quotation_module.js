@@ -382,10 +382,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width:38px;text-align:center;">${isBullet ? '&bull;' : 'Sl.'}</th>
-                        <th>Description</th>
-                        <th style="width:${isMerged && mergeQty ? '120px' : '100px'};text-align:center;">Qty.</th>
-                        <th style="width:110px;text-align:right;">Total (BD)</th>
+                        <th style="width:48px;text-align:center;">${isBullet ? '&bull;' : 'Sl. No.'}</th>
+                        <th style="text-align:center;">Description</th>
+                        <th style="width:${isMerged && mergeQty ? '120px' : '110px'};text-align:center;">Units</th>
+                        <th style="width:120px;text-align:center;">Amount (BD)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -397,10 +397,10 @@
                             const qtyStr = `${qty} ${H(unit)}`;
                             return `
                             <tr>
-                                <td class="c">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
-                                <td>${formatDescHtml(desc)}</td>
-                                ${mergeQty ? (i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;font-weight:600;">1 Lumpsum</td>` : '') : `<td class="c">${qtyStr}</td>`}
-                                ${i === 0 ? `<td class="r" rowspan="${items.length}" style="vertical-align:middle;font-weight:600;">${f3(lumpSumTot)}</td>` : ''}
+                                <td class="c" style="text-align:center;">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
+                                <td style="text-align:left;">${formatDescHtml(desc)}</td>
+                                ${mergeQty ? (i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;text-align:center;font-weight:600;">1 Lumpsum</td>` : '') : `<td class="c" style="text-align:center;">${qtyStr}</td>`}
+                                ${i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;text-align:center;font-weight:600;">${f3(lumpSumTot)}</td>` : ''}
                             </tr>`;
                         }).join("")
                     ) : (
@@ -412,10 +412,10 @@
                             const qtyStr = `${qty} ${H(unit)}`;
                             return `
                             <tr>
-                                <td class="c">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
-                                <td>${formatDescHtml(desc)}</td>
-                                <td class="c">${qtyStr}</td>
-                                <td class="r">${f3(lineTot)}</td>
+                                <td class="c" style="text-align:center;">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
+                                <td style="text-align:left;">${formatDescHtml(desc)}</td>
+                                <td class="c" style="text-align:center;">${qtyStr}</td>
+                                <td class="c" style="text-align:center;">${f3(lineTot)}</td>
                             </tr>`;
                         }).join("")
                     )}
@@ -423,30 +423,30 @@
                 <tfoot>
                     ${discAmt > 0 ? `
                         <tr>
-                            <td colspan="3" class="c"><b>Gross Amount Excluding VAT</b></td>
-                            <td class="r"><b>${f3(sub)}</b></td>
+                            <td colspan="3" class="c" style="text-align:center;"><b>Gross Amount Excluding VAT</b></td>
+                            <td class="c" style="text-align:center;"><b>${f3(sub)}</b></td>
                         </tr>
                         <tr>
-                            <td colspan="3" class="c" style="color:#b91c1c;"><b>Discount ${discType === "percent" ? `(${discVal}%)` : ""}</b></td>
-                            <td class="r" style="color:#b91c1c;"><b>-${f3(discAmt)}</b></td>
+                            <td colspan="3" class="c" style="text-align:center;color:#b91c1c;"><b>Discount ${discType === "percent" ? `(${discVal}%)` : ""}</b></td>
+                            <td class="c" style="text-align:center;color:#b91c1c;"><b>-${f3(discAmt)}</b></td>
                         </tr>
                         <tr>
-                            <td colspan="3" class="c"><b>Net Amount Excluding VAT</b></td>
-                            <td class="r"><b>${f3(netSub)}</b></td>
+                            <td colspan="3" class="c" style="text-align:center;"><b>Net Amount Excluding VAT</b></td>
+                            <td class="c" style="text-align:center;"><b>${f3(netSub)}</b></td>
                         </tr>
                     ` : `
                         <tr>
-                            <td colspan="3" class="c"><b>Amount Excluding VAT</b></td>
-                            <td class="r"><b>${f3(sub)}</b></td>
+                            <td colspan="3" class="c" style="text-align:center;"><b>Amount Excluding VAT</b></td>
+                            <td class="c" style="text-align:center;"><b>${f3(sub)}</b></td>
                         </tr>
                     `}
                     <tr>
-                        <td colspan="3" class="c"><b>VAT ${vatRate}%</b></td>
-                        <td class="r"><b>${f3(vatVal)}</b></td>
+                        <td colspan="3" class="c" style="text-align:center;"><b>VAT ${vatRate}%</b></td>
+                        <td class="c" style="text-align:center;"><b>${f3(vatVal)}</b></td>
                     </tr>
                     <tr>
-                        <td colspan="3" class="c"><b>Total Amount (BD)</b></td>
-                        <td class="r"><b>${f3(grandTot)}</b></td>
+                        <td colspan="3" class="c" style="text-align:center;"><b>Total Amount (BD)</b></td>
+                        <td class="c" style="text-align:center;"><b>${f3(grandTot)}</b></td>
                     </tr>
                 </tfoot>
             </table>
@@ -1674,10 +1674,10 @@
                             </div>
                         </div>
                         <div class="it h">
-                            <span>Qty</span>
-                            <span>Unit</span>
-                            <span>Unit price (BD)</span>
-                            <span>Total (BD)</span>
+                            <span style="text-align:center;">Qty</span>
+                            <span style="text-align:center;">Unit</span>
+                            <span style="text-align:center;">Unit price (BD)</span>
+                            <span style="text-align:center;">Total (BD)</span>
                             <span></span>
                         </div>
                         <div id="its"></div>
@@ -2384,12 +2384,12 @@
                     </div>
                     <textarea data-i="${i}" data-f="desc" rows="2" placeholder="Description of work (select text to Bold / Underline)..." spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(desc)}</textarea>
                 </div>
-                <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}">
-                <select data-i="${i}" data-f="unit">
+                <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}" style="text-align:center;">
+                <select data-i="${i}" data-f="unit" style="text-align:center;text-align-last:center;">
                     ${M(unitOptions, u => `<option value="${H(u)}"${u === unit ? " selected" : ""}>${H(u)}</option>`)}
                 </select>
-                <input type="number" min="0" step="0.001" data-i="${i}" data-f="price" value="${price}">
-                <b id="rt${i}">${f3(lineTot)}</b>
+                <input type="number" min="0" step="0.001" data-i="${i}" data-f="price" value="${price}" style="text-align:center;">
+                <b id="rt${i}" style="text-align:center;">${f3(lineTot)}</b>
                 <button data-rm="${i}" title="Remove item" style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;border-radius:6px;width:34px;height:34px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;">✕</button>
             </div>`;
         });

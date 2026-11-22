@@ -914,8 +914,15 @@ if ($isLoggedIn) {
             letter-spacing: 0.4px;
             padding-bottom: 4px;
             border-bottom: 1px solid #e2e8f0;
+            text-align: center;
         }
-        .it b { text-align: right; }
+        .it input[data-f="qty"],
+        .it select[data-f="unit"],
+        .it input[data-f="price"],
+        .it b {
+            text-align: center;
+            text-align-last: center;
+        }
 
         /* Terms Rows */
         .tr {
@@ -1075,7 +1082,7 @@ if ($isLoggedIn) {
             letter-spacing: 0.3px;
             text-transform: uppercase;
             border: 1px solid #2e2e79;
-            text-align: left;
+            text-align: center;
         }
         .sheet td {
             border: 1px solid #cbd5e1;
@@ -1084,10 +1091,18 @@ if ($isLoggedIn) {
             color: #1e293b;
             vertical-align: middle;
         }
+        .sheet td:first-child,
+        .sheet td:nth-child(3),
+        .sheet td:nth-child(4) {
+            text-align: center;
+        }
+        .sheet td:nth-child(2) {
+            text-align: left;
+        }
         .sheet tbody tr:nth-child(even) {
             background-color: #f8fafc;
         }
-        .sheet .r { text-align: right; }
+        .sheet .r { text-align: center; }
         .sheet .c { text-align: center; }
         .sheet ol { padding-left: 20px; margin: 6px 0; }
         .sheet ol li { margin-bottom: 3px; }

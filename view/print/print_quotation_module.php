@@ -510,10 +510,10 @@ if ($download) {
     $html .= '<table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
         <thead>
             <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
-                <th width="7%" align="center"><b>' . ($isBullet ? '&bull;' : 'SL.') . '</b></th>
-                <th width="' . ($isMerged && $mergeQty ? '60%' : '57%') . '" align="left"><b>DESCRIPTION</b></th>
-                <th width="' . ($isMerged && $mergeQty ? '15%' : '18%') . '" align="center"><b>QTY.</b></th>
-                <th width="18%" align="right"><b>TOTAL (BD)</b></th>
+                <th width="8%" align="center"><b>' . ($isBullet ? '&bull;' : 'SL. NO.') . '</b></th>
+                <th width="' . ($isMerged && $mergeQty ? '58%' : '56%') . '" align="center"><b>DESCRIPTION</b></th>
+                <th width="' . ($isMerged && $mergeQty ? '16%' : '18%') . '" align="center"><b>UNITS</b></th>
+                <th width="18%" align="center"><b>AMOUNT (BD)</b></th>
             </tr>
         </thead>
         <tbody>';
@@ -527,19 +527,19 @@ if ($download) {
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
             $html .= '<tr style="background-color:' . $bg . ';">
-                <td width="7%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
-                <td width="' . ($mergeQty ? '60%' : '57%') . '">' . formatQuotationDescPdf($desc) . '</td>';
+                <td width="8%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
+                <td width="' . ($mergeQty ? '58%' : '56%') . '" align="left">' . formatQuotationDescPdf($desc) . '</td>';
 
             if ($mergeQty) {
                 if ($idx === 0) {
-                    $html .= '<td width="15%" align="center" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>1 Lumpsum</b></td>';
+                    $html .= '<td width="16%" align="center" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>1 Lumpsum</b></td>';
                 }
             } else {
                 $html .= '<td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>';
             }
 
             if ($idx === 0) {
-                $html .= '<td width="18%" align="right" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>' . number_format($calcLumpSum, 3) . '</b></td>';
+                $html .= '<td width="18%" align="center" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>' . number_format($calcLumpSum, 3) . '</b></td>';
             }
 
             $html .= '</tr>';
@@ -556,10 +556,10 @@ if ($download) {
 
             $html .= '
                 <tr style="background-color:' . $bg . ';">
-                    <td width="7%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
-                    <td width="57%">' . formatQuotationDescPdf($desc) . '</td>
+                    <td width="8%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
+                    <td width="56%" align="left">' . formatQuotationDescPdf($desc) . '</td>
                     <td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>
-                    <td width="18%" align="right">' . number_format($lineTot, 3) . '</td>
+                    <td width="18%" align="center">' . number_format($lineTot, 3) . '</td>
                 </tr>';
         }
     }
@@ -572,32 +572,32 @@ if ($download) {
         $html .= '
             <tr style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>Gross Amount Excluding VAT</b></td>
-                <td align="right"><b>' . number_format($subtotal, 3) . '</b></td>
+                <td align="center"><b>' . number_format($subtotal, 3) . '</b></td>
             </tr>
             <tr style="background-color:#ffffff;color:#b91c1c;">
                 <td colspan="3" align="center"><b>Discount ' . ($discountType === 'percent' ? "({$discountVal}%)" : "") . '</b></td>
-                <td align="right"><b>-' . number_format($discountAmt, 3) . '</b></td>
+                <td align="center"><b>-' . number_format($discountAmt, 3) . '</b></td>
             </tr>
             <tr style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>Net Amount Excluding VAT</b></td>
-                <td align="right"><b>' . number_format($netSubtotal, 3) . '</b></td>
+                <td align="center"><b>' . number_format($netSubtotal, 3) . '</b></td>
             </tr>';
     } else {
         $html .= '
             <tr style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>Amount Excluding VAT</b></td>
-                <td align="right"><b>' . number_format($subtotal, 3) . '</b></td>
+                <td align="center"><b>' . number_format($subtotal, 3) . '</b></td>
             </tr>';
     }
 
     $html .= '
             <tr style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>VAT ' . $vatRate . '%</b></td>
-                <td align="right"><b>' . number_format($vatAmt, 3) . '</b></td>
+                <td align="center"><b>' . number_format($vatAmt, 3) . '</b></td>
             </tr>
             <tr style="background-color:#f1f5f9;font-weight:bold;">
                 <td colspan="3" align="center"><b>Total Amount (BD)</b></td>
-                <td align="right"><b>' . number_format($total, 3) . '</b></td>
+                <td align="center"><b>' . number_format($total, 3) . '</b></td>
             </tr>
         </tfoot>
     </table>
@@ -778,7 +778,7 @@ if ($download) {
             text-transform: uppercase;
             border: 1px solid #2e2e79;
             vertical-align: middle;
-            text-align: left;
+            text-align: center;
         }
 
         table.tbl-quotation td {
@@ -787,6 +787,16 @@ if ($download) {
             font-size: 11.5px;
             vertical-align: middle;
             color: #1e293b;
+        }
+
+        table.tbl-quotation td:first-child,
+        table.tbl-quotation td:nth-child(3),
+        table.tbl-quotation td:nth-child(4) {
+            text-align: center;
+        }
+
+        table.tbl-quotation td:nth-child(2) {
+            text-align: left;
         }
 
         table.tbl-quotation tbody tr:nth-child(even) {
@@ -909,10 +919,10 @@ if ($download) {
     <table class="tbl-quotation">
         <thead>
             <tr>
-                <th style="width: 38px; text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : 'Sl.' ?></th>
-                <th>Description</th>
-                <th style="width: 120px; text-align: center;">Qty.</th>
-                <th style="width: 120px; text-align: right;">Total (BD)</th>
+                <th style="width: 48px; text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : 'Sl. No.' ?></th>
+                <th style="text-align: center;">Description</th>
+                <th style="width: <?= ($isMerged && $mergeQty) ? '120px' : '110px' ?>; text-align: center;">Units</th>
+                <th style="width: 120px; text-align: center;">Amount (BD)</th>
             </tr>
         </thead>
         <tbody>
@@ -924,17 +934,17 @@ if ($download) {
                     $qtyStr = $qty . ' ' . $unit;
                 ?>
                 <tr>
-                    <td class="c"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
-                    <td><?= formatQuotationDescHtml($desc) ?></td>
+                    <td class="c" style="text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
+                    <td style="text-align: left;"><?= formatQuotationDescHtml($desc) ?></td>
                     <?php if ($mergeQty): ?>
                         <?php if ($idx === 0): ?>
-                            <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle;"><b>1 Lumpsum</b></td>
+                            <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle; text-align: center; font-weight: 600;">1 Lumpsum</td>
                         <?php endif; ?>
                     <?php else: ?>
-                        <td class="c"><?= htmlspecialchars($qtyStr) ?></td>
+                        <td class="c" style="text-align: center;"><?= htmlspecialchars($qtyStr) ?></td>
                     <?php endif; ?>
                     <?php if ($idx === 0): ?>
-                        <td class="r" rowspan="<?= $itemCount ?>" style="vertical-align: middle; font-weight: 700;"><?= number_format($calcLumpSum, 3) ?></td>
+                        <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle; text-align: center; font-weight: 700;"><?= number_format($calcLumpSum, 3) ?></td>
                     <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>
@@ -948,10 +958,10 @@ if ($download) {
                     $qtyStr = $qty . ' ' . $unit;
                 ?>
                 <tr>
-                    <td class="c"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
-                    <td><?= formatQuotationDescHtml($desc) ?></td>
-                    <td class="c"><?= htmlspecialchars($qtyStr) ?></td>
-                    <td class="r"><?= number_format($lineTot, 3) ?></td>
+                    <td class="c" style="text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
+                    <td style="text-align: left;"><?= formatQuotationDescHtml($desc) ?></td>
+                    <td class="c" style="text-align: center;"><?= htmlspecialchars($qtyStr) ?></td>
+                    <td class="c" style="text-align: center;"><?= number_format($lineTot, 3) ?></td>
                 </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -959,30 +969,30 @@ if ($download) {
         <tfoot>
             <?php if ($discountAmt > 0): ?>
             <tr style="background: #ffffff;">
-                <td colspan="3" class="c"><b>Gross Amount Excluding VAT</b></td>
-                <td class="r"><b><?= number_format($subtotal, 3) ?></b></td>
+                <td colspan="3" class="c" style="text-align: center;"><b>Gross Amount Excluding VAT</b></td>
+                <td class="c" style="text-align: center;"><b><?= number_format($subtotal, 3) ?></b></td>
             </tr>
             <tr style="background: #ffffff; color: #b91c1c;">
-                <td colspan="3" class="c"><b>Discount <?= $discountType === 'percent' ? "({$discountVal}%)" : "" ?></b></td>
-                <td class="r"><b>-<?= number_format($discountAmt, 3) ?></b></td>
+                <td colspan="3" class="c" style="text-align: center; color: #b91c1c;"><b>Discount <?= $discountType === 'percent' ? "({$discountVal}%)" : "" ?></b></td>
+                <td class="c" style="text-align: center; color: #b91c1c;"><b>-<?= number_format($discountAmt, 3) ?></b></td>
             </tr>
             <tr style="background: #ffffff;">
-                <td colspan="3" class="c"><b>Net Amount Excluding VAT</b></td>
-                <td class="r"><b><?= number_format($netSubtotal, 3) ?></b></td>
+                <td colspan="3" class="c" style="text-align: center;"><b>Net Amount Excluding VAT</b></td>
+                <td class="c" style="text-align: center;"><b><?= number_format($netSubtotal, 3) ?></b></td>
             </tr>
             <?php else: ?>
             <tr style="background: #ffffff;">
-                <td colspan="3" class="c"><b>Amount Excluding VAT</b></td>
-                <td class="r"><b><?= number_format($subtotal, 3) ?></b></td>
+                <td colspan="3" class="c" style="text-align: center;"><b>Amount Excluding VAT</b></td>
+                <td class="c" style="text-align: center;"><b><?= number_format($subtotal, 3) ?></b></td>
             </tr>
             <?php endif; ?>
             <tr style="background: #ffffff;">
-                <td colspan="3" class="c"><b>VAT <?= $vatRate ?>%</b></td>
-                <td class="r"><b><?= number_format($vatAmt, 3) ?></b></td>
+                <td colspan="3" class="c" style="text-align: center;"><b>VAT <?= $vatRate ?>%</b></td>
+                <td class="c" style="text-align: center;"><b><?= number_format($vatAmt, 3) ?></b></td>
             </tr>
             <tr style="background: #f1f5f9; font-weight: 700;">
-                <td colspan="3" class="c"><b>Total Amount (BD)</b></td>
-                <td class="r"><b><?= number_format($total, 3) ?></b></td>
+                <td colspan="3" class="c" style="text-align: center;"><b>Total Amount (BD)</b></td>
+                <td class="c" style="text-align: center;"><b><?= number_format($total, 3) ?></b></td>
             </tr>
         </tfoot>
     </table>
