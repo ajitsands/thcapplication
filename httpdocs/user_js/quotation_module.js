@@ -1708,6 +1708,9 @@
                         <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:2px solid var(--q-blue-ice);">
                             <h2 style="margin:0;border:none;padding:0;">Scope of works</h2>
                             <div style="display:flex;gap:6px;align-items:center;">
+                                <button type="button" id="btn_import_items" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" title="Import line items from Excel, CSV, clipboard, or existing quote">
+                                    <i class="icon-file-download2" style="font-size:13px;color:#0A4174;"></i> Import Items
+                                </button>
                                 <button type="button" id="btn_check_grammar_items" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
                                     <i class="icon-spell-check" style="font-size:13px;color:#0A4174;"></i> Spell & Grammar Check
                                 </button>
@@ -1745,8 +1748,11 @@
                             <span></span>
                         </div>
                         <div id="its"></div>
-                        <div style="display:flex;justify-content:flex-start;align-items:center;margin-top:10px;">
+                        <div style="display:flex;justify-content:flex-start;align-items:center;gap:8px;margin-top:10px;">
                             <button id="ai">+ Add item</button>
+                            <button type="button" id="btn_import_items_bottom" class="btn btn-sm" style="font-size:12px;padding:5px 12px;border-radius:6px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" title="Import line items from Excel, CSV, clipboard, or existing quote">
+                                <i class="icon-file-download2" style="font-size:13px;color:#0A4174;"></i> Import Items
+                            </button>
                         </div>
 
                         <!-- VAT & Discount (Positioned at bottom after all line items) -->
@@ -2094,6 +2100,16 @@
             renderItems();
             renderLivePreview();
         };
+
+        const btnImportTop = $("#btn_import_items");
+        if (btnImportTop) {
+            btnImportTop.onclick = () => openImportItemsModal();
+        }
+
+        const btnImportBottom = $("#btn_import_items_bottom");
+        if (btnImportBottom) {
+            btnImportBottom.onclick = () => openImportItemsModal();
+        }
 
         const btnManageUnits = $("#btn_manage_units");
         if (btnManageUnits) {
@@ -2877,6 +2893,667 @@
         // Close buttons inside modal
         $$("#modal_unit_master [data-dismiss='modal']").forEach(btn => {
             btn.onclick = () => hideModal("#modal_unit_master");
+        });
+    }
+
+    // ==========================================
+    // IMPORT LINE ITEMS MODAL
+    // ==========================================
+    let importedItemsPreview = [];
+    let importModalEventsBound = false;
+
+    function openImportItemsModal() {
+        if (!ED) {
+            notifySwal("Notice", "Please open or create a quotation before importing line items.", "info");
+            return;
+        }
+
+        // Reset state & fields
+        importedItemsPreview = [];
+        const fileInput = $("#input_import_file");
+        if (fileInput) fileInput.value = "";
+        const fileInfo = $("#file_selected_info");
+        if (fileInfo) {
+            fileInfo.style.display = "none";
+            fileInfo.textContent = "";
+        }
+        const pasteArea = $("#import_paste_area");
+        if (pasteArea) pasteArea.value = "";
+
+        // Reset radio to append
+        const radAppend = $('input[name="import_mode"][value="append"]');
+        if (radAppend) radAppend.checked = true;
+
+        // Reset preview container
+        const prevCont = $("#import_preview_container");
+        if (prevCont) prevCont.style.display = "none";
+        const btnConfirm = $("#btn_confirm_import_items");
+        if (btnConfirm) {
+            btnConfirm.disabled = true;
+            const btnLabel = $("#btn_confirm_import_label");
+            if (btnLabel) btnLabel.textContent = "Import Line Items";
+        }
+
+        // Switch to Tab 1 (File/Paste)
+        if (window.jQuery && typeof window.jQuery.fn.tab === "function") {
+            window.jQuery("#tab_import_file_btn").tab("show");
+        } else {
+            const tabFileBtn = $("#tab_import_file_btn");
+            const tabQuoteBtn = $("#tab_import_quote_btn");
+            const paneFile = $("#tab_import_file");
+            const paneQuote = $("#tab_import_quote");
+            if (tabFileBtn && tabQuoteBtn && paneFile && paneQuote) {
+                tabFileBtn.classList.add("active");
+                tabQuoteBtn.classList.remove("active");
+                paneFile.classList.add("show", "active");
+                paneQuote.classList.remove("show", "active");
+            }
+        }
+
+        // Populate Existing Quotation Dropdown
+        const selQuote = $("#select_import_quote_source");
+        if (selQuote) {
+            let opts = '<option value="">-- Choose a quotation to copy items --</option>';
+            (Q || []).forEach(q => {
+                const qNo = q.quotation_no || ("QTN-" + (q.seq_no || q.id));
+                const cName = q.client_name || q.client || "Client";
+                const sSubj = q.subject || q.subj || "No subject";
+                const count = (q.items && q.items.length) || 0;
+                const val = q.id || qNo;
+                opts += `<option value="${H(String(val))}">${H(qNo)} · ${H(cName)} · ${H(sSubj)} (${count} items)</option>`;
+            });
+            selQuote.innerHTML = opts;
+
+            if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
+                const $sq = window.jQuery(selQuote);
+                if ($sq.data('select2')) $sq.select2('destroy');
+                $sq.select2({
+                    width: '100%',
+                    placeholder: '-- Choose a quotation to copy items --',
+                    allowClear: true
+                }).val('').trigger('change.select2');
+            }
+        }
+
+        showModal("#modal_import_items");
+    }
+
+    // Robust CSV & TSV parser (handles quotes, commas, tabs, semicolons, and multiline)
+    function parseCsvToRows(text) {
+        if (!text || !text.trim()) return [];
+        const firstLine = text.split(/\r?\n/)[0] || "";
+        let delim = ",";
+        if (firstLine.includes("\t")) delim = "\t";
+        else if (firstLine.includes(";") && !firstLine.includes(",")) delim = ";";
+
+        const rows = [];
+        let row = [];
+        let field = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+            const next = text[i + 1];
+
+            if (inQuotes) {
+                if (c === '"') {
+                    if (next === '"') {
+                        field += '"';
+                        i++;
+                    } else {
+                        inQuotes = false;
+                    }
+                } else {
+                    field += c;
+                }
+            } else {
+                if (c === '"') {
+                    inQuotes = true;
+                } else if (c === delim) {
+                    row.push(field.trim());
+                    field = "";
+                } else if (c === '\r') {
+                    if (next === '\n') i++;
+                    row.push(field.trim());
+                    if (row.some(cell => cell !== "")) rows.push(row);
+                    row = [];
+                    field = "";
+                } else if (c === '\n') {
+                    row.push(field.trim());
+                    if (row.some(cell => cell !== "")) rows.push(row);
+                    row = [];
+                    field = "";
+                } else {
+                    field += c;
+                }
+            }
+        }
+        if (field !== "" || row.length > 0) {
+            row.push(field.trim());
+            if (row.some(cell => cell !== "")) rows.push(row);
+        }
+        return rows;
+    }
+
+    // Process parsed 2D raw rows into quotation items
+    function processRawRows(rawRows) {
+        if (!Array.isArray(rawRows) || rawRows.length === 0) {
+            notifySwal("No Data", "No rows found in the provided file or text.", "warning");
+            return;
+        }
+
+        // Filter out empty rows
+        const cleanRows = rawRows.filter(r => Array.isArray(r) && r.some(c => String(c).trim() !== ""));
+        if (cleanRows.length === 0) {
+            notifySwal("Empty Data", "The file or pasted content contains no valid data rows.", "warning");
+            return;
+        }
+
+        // Check if first row is header row
+        let colDesc = -1, colQty = -1, colUnit = -1, colPrice = -1;
+        const firstRow = cleanRows[0];
+        let isHeader = false;
+
+        firstRow.forEach((cell, idx) => {
+            const c = String(cell).trim().toLowerCase();
+            if (/^(sl\.?\s*no\.?|s\.?\s*no\.?|no\.?|#)$/i.test(c)) {
+                // Sl No column, ignore
+            } else if (/desc|particular|scope|work|item/i.test(c) && colDesc === -1) {
+                colDesc = idx;
+                isHeader = true;
+            } else if (/qty|quantity|count|nos/i.test(c) && colQty === -1) {
+                colQty = idx;
+                isHeader = true;
+            } else if (/unit|uom|measure/i.test(c) && colUnit === -1) {
+                colUnit = idx;
+                isHeader = true;
+            } else if (/price|rate|amount|cost/i.test(c) && colPrice === -1) {
+                colPrice = idx;
+                isHeader = true;
+            }
+        });
+
+        const startIdx = isHeader ? 1 : 0;
+        const parsedItems = [];
+
+        for (let i = startIdx; i < cleanRows.length; i++) {
+            const row = cleanRows[i];
+            let desc = "";
+            let qty = 1;
+            let unit = "Lumpsum";
+            let price = 0;
+
+            if (colDesc !== -1) {
+                desc = String(row[colDesc] || "").trim();
+                if (colQty !== -1 && row[colQty] !== undefined && String(row[colQty]).trim() !== "") {
+                    const qClean = String(row[colQty]).replace(/[^0-9.]/g, "");
+                    const qVal = parseFloat(qClean);
+                    if (!isNaN(qVal) && qVal > 0) qty = qVal;
+                }
+                if (colUnit !== -1 && row[colUnit] !== undefined && String(row[colUnit]).trim() !== "") {
+                    unit = String(row[colUnit]).trim();
+                }
+                if (colPrice !== -1 && row[colPrice] !== undefined && String(row[colPrice]).trim() !== "") {
+                    const pClean = String(row[colPrice]).replace(/[^0-9.]/g, "");
+                    const pVal = parseFloat(pClean);
+                    if (!isNaN(pVal) && pVal >= 0) price = pVal;
+                }
+            } else {
+                // Heuristic column matching
+                const cellCount = row.length;
+                if (cellCount >= 5) {
+                    desc = String(row[1] || "").trim();
+                    const qVal = parseFloat(String(row[2] || "").replace(/[^0-9.]/g, ""));
+                    if (!isNaN(qVal) && qVal > 0) qty = qVal;
+                    unit = String(row[3] || "").trim() || "Lumpsum";
+                    const pVal = parseFloat(String(row[4] || "").replace(/[^0-9.]/g, ""));
+                    if (!isNaN(pVal) && pVal >= 0) price = pVal;
+                } else if (cellCount === 4) {
+                    if (/^\d+$/.test(String(row[0]).trim()) && isNaN(parseFloat(String(row[1]).trim()))) {
+                        desc = String(row[1] || "").trim();
+                        const qVal = parseFloat(String(row[2] || "").replace(/[^0-9.]/g, ""));
+                        if (!isNaN(qVal) && qVal > 0) qty = qVal;
+                        const pVal = parseFloat(String(row[3] || "").replace(/[^0-9.]/g, ""));
+                        if (!isNaN(pVal) && pVal >= 0) price = pVal;
+                    } else {
+                        desc = String(row[0] || "").trim();
+                        const qVal = parseFloat(String(row[1] || "").replace(/[^0-9.]/g, ""));
+                        if (!isNaN(qVal) && qVal > 0) qty = qVal;
+                        unit = String(row[2] || "").trim() || "Lumpsum";
+                        const pVal = parseFloat(String(row[3] || "").replace(/[^0-9.]/g, ""));
+                        if (!isNaN(pVal) && pVal >= 0) price = pVal;
+                    }
+                } else if (cellCount === 3) {
+                    desc = String(row[0] || "").trim();
+                    const qVal = parseFloat(String(row[1] || "").replace(/[^0-9.]/g, ""));
+                    if (!isNaN(qVal) && qVal > 0) qty = qVal;
+                    const pVal = parseFloat(String(row[2] || "").replace(/[^0-9.]/g, ""));
+                    if (!isNaN(pVal) && pVal >= 0) price = pVal;
+                } else if (cellCount >= 1) {
+                    desc = String(row[0] || "").trim();
+                }
+            }
+
+            if (!desc) continue;
+
+            // Unit standardization
+            const uLow = unit.toLowerCase();
+            const matchedUnit = UNITS.find(u => u.toLowerCase() === uLow);
+            if (matchedUnit) {
+                unit = matchedUnit;
+            } else if (uLow === "ls" || uLow === "lump" || uLow === "lump sum" || uLow === "lumpsum") {
+                unit = "Lumpsum";
+            } else if (uLow === "mtr" || uLow === "meter" || uLow === "metre") {
+                unit = "m";
+            } else if (uLow === "sqm" || uLow === "sq.m" || uLow === "m2") {
+                unit = "m²";
+            } else if (uLow === "cum" || uLow === "m3") {
+                unit = "m³";
+            }
+
+            parsedItems.push({
+                description: desc,
+                quantity: qty,
+                unit: unit || "Lumpsum",
+                unit_price: price,
+                total_price: qty * price,
+                selected: true
+            });
+        }
+
+        if (parsedItems.length === 0) {
+            notifySwal("Notice", "No valid items could be parsed from the provided data. Please ensure Description and Price are provided.", "warning");
+            return;
+        }
+
+        importedItemsPreview = parsedItems;
+        renderImportPreview();
+    }
+
+    // Render preview table in modal
+    function renderImportPreview() {
+        const prevContainer = $("#import_preview_container");
+        const tbody = $("#tbody_import_preview");
+        const countBadge = $("#import_items_count_badge");
+        const totalBadge = $("#import_subtotal_badge");
+        const btnConfirm = $("#btn_confirm_import_items");
+        const btnLabel = $("#btn_confirm_import_label");
+
+        if (!prevContainer || !tbody) return;
+
+        if (importedItemsPreview.length === 0) {
+            prevContainer.style.display = "none";
+            if (btnConfirm) btnConfirm.disabled = true;
+            return;
+        }
+
+        prevContainer.style.display = "block";
+
+        let selectedCount = 0;
+        let selectedTotal = 0;
+
+        tbody.innerHTML = importedItemsPreview.map((item, idx) => {
+            if (item.selected) {
+                selectedCount++;
+                selectedTotal += (+item.quantity || 1) * (+item.unit_price || 0);
+            }
+
+            const unitOpts = [...UNITS];
+            if (item.unit && !unitOpts.includes(item.unit)) {
+                unitOpts.unshift(item.unit);
+            }
+
+            const lineTotal = (+item.quantity || 1) * (+item.unit_price || 0);
+
+            return `
+            <tr class="${item.selected ? 'selected-row' : ''}">
+                <td style="text-align:center;vertical-align:middle;">
+                    <input type="checkbox" class="chk-import-row" data-idx="${idx}" ${item.selected ? 'checked' : ''} style="cursor:pointer;">
+                </td>
+                <td style="text-align:center;font-weight:600;color:#0A4174;vertical-align:middle;">
+                    ${idx + 1}
+                </td>
+                <td style="vertical-align:middle;">
+                    <input type="text" class="form-control form-control-sm inp-import-desc" data-idx="${idx}" value="${H(item.description)}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;">
+                </td>
+                <td style="text-align:center;vertical-align:middle;">
+                    <input type="number" min="0" step="any" class="form-control form-control-sm inp-import-qty" data-idx="${idx}" value="${item.quantity}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;text-align:center;">
+                </td>
+                <td style="text-align:center;vertical-align:middle;">
+                    <select class="form-control form-control-sm sel-import-unit" data-idx="${idx}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:2px 4px;text-align:center;">
+                        ${M(unitOpts, u => `<option value="${H(u)}"${u === item.unit ? " selected" : ""}>${H(u)}</option>`)}
+                    </select>
+                </td>
+                <td style="text-align:center;vertical-align:middle;">
+                    <input type="number" min="0" step="0.001" class="form-control form-control-sm inp-import-price" data-idx="${idx}" value="${item.unit_price}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;text-align:center;">
+                </td>
+                <td style="text-align:center;font-weight:700;color:#0A4174;vertical-align:middle;" id="import_line_tot_${idx}">
+                    ${f3(lineTotal)}
+                </td>
+                <td style="text-align:center;vertical-align:middle;">
+                    <button type="button" class="btn btn-sm btn-del-import-row text-danger p-0" data-idx="${idx}" title="Remove item" style="background:none;border:none;cursor:pointer;font-size:14px;font-weight:bold;line-height:1;">
+                        ✕
+                    </button>
+                </td>
+            </tr>`;
+        }).join("");
+
+        if (countBadge) countBadge.textContent = `${selectedCount} of ${importedItemsPreview.length}`;
+        if (totalBadge) totalBadge.textContent = `Total: ${f3(selectedTotal)} BD`;
+
+        const allChecked = (selectedCount === importedItemsPreview.length && importedItemsPreview.length > 0);
+        const chkSelectAll = $("#chk_import_select_all");
+        if (chkSelectAll) chkSelectAll.checked = allChecked;
+
+        if (btnConfirm) {
+            btnConfirm.disabled = (selectedCount === 0);
+        }
+        if (btnLabel) {
+            btnLabel.textContent = selectedCount > 0 ? `Import ${selectedCount} Item(s)` : `Import Line Items`;
+        }
+    }
+
+    // Download Sample CSV template
+    function downloadSampleImportCsv() {
+        const csvContent =
+            'Sl No,Description,Quantity,Unit,Unit Price (BD)\r\n' +
+            '1,"Supply and installation of 2.0 TR Split AC unit including copper piping and brackets",2,Set,280.000\r\n' +
+            '2,"Deep cleaning, chemical washing and disinfection of evaporator and condenser coils",2,No.,35.000\r\n' +
+            '3,"Replacement of 45uF dual run capacitor and testing compressor load current",1,No.,18.500\r\n' +
+            '4,"Preventive maintenance and inspection visit of main distribution board (DB panels)",1,Visit,45.000\r\n';
+
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "thc_quotation_line_items_template.csv");
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // Confirm and insert imported items into quotation editor
+    function confirmImportItems() {
+        if (!ED) return;
+        const selected = importedItemsPreview.filter(x => x.selected);
+        if (selected.length === 0) {
+            notifySwal("Notice", "Please select at least one item to import.", "info");
+            return;
+        }
+
+        const modeEl = $('input[name="import_mode"]:checked');
+        const mode = modeEl ? modeEl.value : "append";
+
+        const cleanItems = selected.map(it => {
+            const qty = parseFloat(it.quantity) || 1;
+            const price = parseFloat(it.unit_price) || 0;
+            const unit = it.unit || "Lumpsum";
+
+            // Add any novel unit to global UNITS list
+            if (unit && !UNITS.includes(unit)) {
+                UNITS.push(unit);
+                unitMasterList.push({ id: unitMasterList.length + 1, name: unit });
+            }
+
+            return {
+                description: it.description || "",
+                quantity: qty,
+                unit: unit,
+                unit_price: price,
+                total_price: qty * price
+            };
+        });
+
+        if (mode === "replace") {
+            ED.items = cleanItems;
+        } else {
+            // If current quote has only 1 blank item, replace it instead of appending after blank
+            const hasSingleEmptyItem = (ED.items.length === 1 && (!ED.items[0].description || ED.items[0].description.trim() === "") && (!ED.items[0].unit_price || +ED.items[0].unit_price === 0));
+            if (hasSingleEmptyItem) {
+                ED.items = cleanItems;
+            } else {
+                ED.items = ED.items.concat(cleanItems);
+            }
+        }
+
+        hideModal("#modal_import_items");
+        renderItems();
+        renderLivePreview();
+        toast(`${cleanItems.length} line item(s) imported successfully!`);
+    }
+
+    // Event binding for Import Modal components
+    function setupImportItemsModalEvents() {
+        if (importModalEventsBound) return;
+        importModalEventsBound = true;
+
+        const dropzone = $("#dropzone_import_file");
+        const fileInput = $("#input_import_file");
+        const fileInfo = $("#file_selected_info");
+
+        // Handle file processing (Excel or CSV)
+        const handleFileSelected = file => {
+            if (!file) return;
+            const name = file.name;
+            const sizeKb = (file.size / 1024).toFixed(1);
+            const ext = name.split(".").pop().toLowerCase();
+
+            if (fileInfo) {
+                fileInfo.style.display = "block";
+                fileInfo.textContent = `Selected: ${name} (${sizeKb} KB)`;
+            }
+
+            if (ext === "xlsx" || ext === "xls") {
+                if (window.XLSX) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = window.XLSX.read(data, { type: "array" });
+                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                            const rawRows = window.XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                            processRawRows(rawRows);
+                        } catch (err) {
+                            notifySwal("Parsing Error", "Failed to parse Excel workbook: " + err.message, "error");
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else {
+                    notifySwal("Excel Parser Missing", "Excel library is not loaded. Please save the sheet as CSV and upload.", "warning");
+                }
+            } else if (ext === "csv" || ext === "tsv" || ext === "txt") {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        const text = e.target.result;
+                        const rawRows = parseCsvToRows(text);
+                        processRawRows(rawRows);
+                    } catch (err) {
+                        notifySwal("Parsing Error", "Failed to parse CSV file: " + err.message, "error");
+                    }
+                };
+                reader.readAsText(file, "UTF-8");
+            } else {
+                notifySwal("Unsupported Format", "Please select an Excel (.xlsx, .xls) or CSV (.csv) file.", "warning");
+            }
+        };
+
+        if (dropzone && fileInput) {
+            dropzone.onclick = () => fileInput.click();
+
+            dropzone.ondragover = ev => {
+                ev.preventDefault();
+                dropzone.classList.add("dragover");
+            };
+
+            dropzone.ondragleave = ev => {
+                ev.preventDefault();
+                dropzone.classList.remove("dragover");
+            };
+
+            dropzone.ondrop = ev => {
+                ev.preventDefault();
+                dropzone.classList.remove("dragover");
+                if (ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files.length) {
+                    fileInput.files = ev.dataTransfer.files;
+                    handleFileSelected(ev.dataTransfer.files[0]);
+                }
+            };
+
+            fileInput.onchange = ev => {
+                if (ev.target.files && ev.target.files.length) {
+                    handleFileSelected(ev.target.files[0]);
+                }
+            };
+        }
+
+        // Paste area parse button
+        const btnParsePaste = $("#btn_parse_pasted_data");
+        const pasteArea = $("#import_paste_area");
+        if (btnParsePaste && pasteArea) {
+            btnParsePaste.onclick = () => {
+                const text = pasteArea.value.trim();
+                if (!text) {
+                    toast("Please paste spreadsheet rows into the textarea first");
+                    pasteArea.focus();
+                    return;
+                }
+                const rawRows = parseCsvToRows(text);
+                processRawRows(rawRows);
+            };
+        }
+
+        // Download template button
+        const btnTpl = $("#btn_download_sample_template");
+        if (btnTpl) {
+            btnTpl.onclick = ev => {
+                ev.preventDefault();
+                downloadSampleImportCsv();
+            };
+        }
+
+        // Existing quotation select handler
+        const selQuote = $("#select_import_quote_source");
+        if (selQuote) {
+            const handleQuoteChange = val => {
+                if (!val) {
+                    importedItemsPreview = [];
+                    renderImportPreview();
+                    return;
+                }
+
+                const found = (Q || []).find(q => String(q.id) === String(val) || String(q.quotation_no) === String(val));
+                if (found && Array.isArray(found.items) && found.items.length) {
+                    importedItemsPreview = found.items.map(it => {
+                        const desc = it.description !== undefined ? it.description : (it[0] || "");
+                        const qty = it.quantity !== undefined ? it.quantity : (it[1] !== undefined ? it[1] : 1);
+                        const unit = it.unit !== undefined ? it.unit : (it[2] || "Lumpsum");
+                        const price = it.unit_price !== undefined ? it.unit_price : (it[3] || 0);
+                        return {
+                            description: desc,
+                            quantity: +qty || 1,
+                            unit: unit || "Lumpsum",
+                            unit_price: +price || 0,
+                            total_price: (+qty || 1) * (+price || 0),
+                            selected: true
+                        };
+                    });
+                    renderImportPreview();
+                } else {
+                    notifySwal("Notice", "The selected quotation contains no line items.", "info");
+                    importedItemsPreview = [];
+                    renderImportPreview();
+                }
+            };
+
+            selQuote.onchange = ev => handleQuoteChange(ev.target.value);
+            if (window.jQuery) {
+                window.jQuery(selQuote).on("change", function () {
+                    handleQuoteChange(this.value);
+                });
+            }
+        }
+
+        // Check All checkbox
+        const chkAll = $("#chk_import_select_all");
+        if (chkAll) {
+            chkAll.onchange = ev => {
+                const isChecked = ev.target.checked;
+                importedItemsPreview.forEach(it => it.selected = isChecked);
+                renderImportPreview();
+            };
+        }
+
+        // Clear preview button
+        const btnClear = $("#btn_clear_imported_preview");
+        if (btnClear) {
+            btnClear.onclick = () => {
+                importedItemsPreview = [];
+                renderImportPreview();
+                if (fileInput) fileInput.value = "";
+                if (fileInfo) {
+                    fileInfo.style.display = "none";
+                    fileInfo.textContent = "";
+                }
+                if (pasteArea) pasteArea.value = "";
+            };
+        }
+
+        // Event delegation on table body (checkbox, text edit, qty/price change, delete)
+        const tbody = $("#tbody_import_preview");
+        if (tbody) {
+            tbody.onchange = ev => {
+                const t = ev.target;
+                const idx = +t.dataset.idx;
+                if (isNaN(idx) || !importedItemsPreview[idx]) return;
+
+                if (t.classList.contains("chk-import-row")) {
+                    importedItemsPreview[idx].selected = t.checked;
+                    renderImportPreview();
+                } else if (t.classList.contains("inp-import-desc")) {
+                    importedItemsPreview[idx].description = t.value;
+                } else if (t.classList.contains("inp-import-qty")) {
+                    const qVal = parseFloat(t.value) || 1;
+                    importedItemsPreview[idx].quantity = qVal;
+                    importedItemsPreview[idx].total_price = qVal * importedItemsPreview[idx].unit_price;
+                    const totEl = $(`#import_line_tot_${idx}`);
+                    if (totEl) totEl.textContent = f3(importedItemsPreview[idx].total_price);
+                    renderImportPreview();
+                } else if (t.classList.contains("sel-import-unit")) {
+                    importedItemsPreview[idx].unit = t.value;
+                } else if (t.classList.contains("inp-import-price")) {
+                    const pVal = parseFloat(t.value) || 0;
+                    importedItemsPreview[idx].unit_price = pVal;
+                    importedItemsPreview[idx].total_price = importedItemsPreview[idx].quantity * pVal;
+                    const totEl = $(`#import_line_tot_${idx}`);
+                    if (totEl) totEl.textContent = f3(importedItemsPreview[idx].total_price);
+                    renderImportPreview();
+                }
+            };
+
+            tbody.onclick = ev => {
+                const delBtn = ev.target.closest(".btn-del-import-row");
+                if (delBtn) {
+                    const idx = +delBtn.dataset.idx;
+                    if (!isNaN(idx) && importedItemsPreview[idx]) {
+                        importedItemsPreview.splice(idx, 1);
+                        renderImportPreview();
+                    }
+                }
+            };
+        }
+
+        // Confirm Import Button
+        const btnConfirm = $("#btn_confirm_import_items");
+        if (btnConfirm) {
+            btnConfirm.onclick = () => confirmImportItems();
+        }
+
+        // Close buttons inside modal
+        $$("#modal_import_items [data-dismiss='modal']").forEach(btn => {
+            btn.onclick = () => hideModal("#modal_import_items");
         });
     }
 
@@ -3836,6 +4513,7 @@
 
     function initAppUi() {
         setupUnitMasterEvents();
+        setupImportItemsModalEvents();
         setupCustomerMasterEvents();
         setupFooterSettingsModalEvents();
         setupStampSignModalEvents();

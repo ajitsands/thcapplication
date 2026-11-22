@@ -931,6 +931,15 @@ if ($isLoggedIn) {
             margin-top: 10px;
             align-items: flex-start;
         }
+        #dropzone_import_file.dragover {
+            background-color: #dbeafe !important;
+            border-color: #2563eb !important;
+        }
+
+        #tbody_import_preview tr.selected-row {
+            background-color: #f0f7fc;
+        }
+
         .tr textarea { flex: 1; margin: 0 !important; }
 
         /* Live Preview Sticky Container */
@@ -1588,6 +1597,156 @@ if ($isLoggedIn) {
             </div>
         </div>
 
+        <!-- Import Line Items Modal -->
+        <div id="modal_import_items" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importItemsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:920px;">
+                <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 12px 40px rgba(0,29,57,0.22);overflow:hidden;">
+                    <div class="modal-header" style="background:linear-gradient(135deg, #001D39 0%, #0A4174 100%);color:#ffffff;padding:16px 22px;border:none;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <h5 class="modal-title font-weight-bold d-flex align-items-center" id="importItemsModalLabel" style="font-size:16px;letter-spacing:0.3px;color:#ffffff;margin:0;">
+                                <i class="icon-file-download2 mr-2" style="font-size:20px;color:#7BBDE8;"></i> Import Line Items
+                            </h5>
+                            <small style="color:#b2d5f0;font-size:11.5px;">Import scope of work line items from Excel / CSV, paste from clipboard, or copy from an existing quotation</small>
+                        </div>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.85;font-size:22px;outline:none;margin:0;padding:0;line-height:1;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-3" style="background:#f8fafc;max-height:calc(85vh - 120px);overflow-y:auto;">
+                        <!-- Tab Pills -->
+                        <ul class="nav nav-pills mb-3" id="import_tabs" role="tablist" style="background:#e2e8f0;padding:4px;border-radius:10px;gap:4px;">
+                            <li class="nav-item flex-fill text-center" role="presentation">
+                                <a class="nav-link active font-weight-bold py-2" id="tab_import_file_btn" data-toggle="pill" href="#tab_import_file" role="tab" style="border-radius:8px;font-size:13px;">
+                                    <i class="icon-file-excel mr-1"></i> From Excel / CSV File or Paste
+                                </a>
+                            </li>
+                            <li class="nav-item flex-fill text-center" role="presentation">
+                                <a class="nav-link font-weight-bold py-2" id="tab_import_quote_btn" data-toggle="pill" href="#tab_import_quote" role="tab" style="border-radius:8px;font-size:13px;">
+                                    <i class="icon-copy3 mr-1"></i> From Existing Quotation
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="import_tab_content">
+                            <!-- Tab 1: File / Paste -->
+                            <div class="tab-pane fade show active" id="tab_import_file" role="tabpanel">
+                                <!-- Upload Box -->
+                                <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px dashed #7BBDE8;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="font-weight-bold text-dark" style="font-size:12.5px;">
+                                            <i class="icon-upload mr-1 text-primary"></i> Upload File (.xlsx, .xls, .csv, .txt)
+                                        </span>
+                                        <button type="button" id="btn_download_sample_template" class="btn btn-sm btn-outline-primary" style="font-size:11.5px;padding:3px 12px;border-radius:6px;font-weight:600;">
+                                            <i class="icon-download4 mr-1"></i> Download Sample CSV Template
+                                        </button>
+                                    </div>
+                                    <div id="dropzone_import_file" style="background:#f0f7fc;border:1px dashed #93c5fd;border-radius:8px;padding:22px;text-align:center;cursor:pointer;transition:all 0.2s ease;">
+                                        <i class="icon-file-upload2 text-primary mb-2" style="font-size:32px;display:block;"></i>
+                                        <span class="d-block font-weight-semibold text-dark" style="font-size:13px;">Click to browse file or drag & drop here</span>
+                                        <small class="text-muted d-block mt-1" style="font-size:11.5px;">Expected columns: <b>Description, Quantity, Unit, Unit Price</b> (with or without Sl No)</small>
+                                        <input type="file" id="input_import_file" accept=".xlsx,.xls,.csv,.tsv,.txt" style="display:none;">
+                                    </div>
+                                    <div id="file_selected_info" class="mt-2 text-success font-weight-semibold" style="font-size:12px;display:none;"></div>
+                                </div>
+
+                                <!-- Paste Area Box -->
+                                <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <label class="font-weight-bold text-dark mb-0" style="font-size:12.5px;">
+                                            <i class="icon-paste mr-1 text-secondary"></i> Or Paste Copied Spreadsheet Cells Directly
+                                        </label>
+                                        <small class="text-muted" style="font-size:11px;">Copy rows from Excel or Google Sheets and paste below</small>
+                                    </div>
+                                    <textarea id="import_paste_area" rows="3" class="form-control" placeholder="Paste copied spreadsheet rows here... (Columns: Description [tab] Qty [tab] Unit [tab] Unit Price)" style="font-family:monospace;font-size:12px;border:1.5px solid #c2daeb;border-radius:6px;"></textarea>
+                                    <div class="d-flex justify-content-end mt-2">
+                                        <button type="button" id="btn_parse_pasted_data" class="btn btn-sm btn-secondary font-weight-semibold" style="font-size:12px;padding:4px 16px;border-radius:6px;">
+                                            <i class="icon-cog3 mr-1"></i> Parse Pasted Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Existing Quote -->
+                            <div class="tab-pane fade" id="tab_import_quote" role="tabpanel">
+                                <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size:12.5px;">
+                                        <i class="icon-search4 mr-1 text-primary"></i> Select Existing Quotation to Copy Line Items
+                                    </label>
+                                    <select id="select_import_quote_source" class="form-control" style="height:38px;font-size:13px;border-radius:6px;border:1.5px solid #c2daeb;width:100%;">
+                                        <option value="">-- Choose a quotation --</option>
+                                    </select>
+                                    <small class="text-muted mt-1" style="font-size:11.5px;">Select any quotation from your database to load its scope of work items below.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div id="import_preview_container" style="display:none;">
+                            <div class="card p-3 mb-3" style="border-radius:10px;border:1.5px solid #c2daeb;background:#ffffff;box-shadow:0 2px 8px rgba(0,29,57,0.04);">
+                                <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:1px solid #e2e8f0;">
+                                    <span class="font-weight-bold text-dark" style="font-size:13px;">
+                                        <i class="icon-list-numbered mr-1 text-success"></i> Items Preview (<span id="import_items_count_badge">0</span> selected)
+                                    </span>
+                                    <div class="d-flex align-items-center" style="gap:10px;">
+                                        <span class="badge badge-primary px-2 py-1" style="font-size:12px;font-weight:600;background:#0A4174;" id="import_subtotal_badge">Total: 0.000 BD</span>
+                                        <button type="button" id="btn_clear_imported_preview" class="btn btn-sm btn-outline-danger" style="font-size:11px;padding:2px 8px;border-radius:4px;">
+                                            Clear
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style="max-height:280px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;">
+                                    <table class="table table-sm table-bordered table-striped mb-0" id="table_import_preview" style="font-size:12px;">
+                                        <thead style="background:#0A4174;color:#ffffff;position:sticky;top:0;z-index:2;">
+                                            <tr>
+                                                <th style="width:36px;text-align:center;">
+                                                    <input type="checkbox" id="chk_import_select_all" checked style="cursor:pointer;">
+                                                </th>
+                                                <th style="width:40px;text-align:center;">#</th>
+                                                <th>Description</th>
+                                                <th style="width:80px;text-align:center;">Qty</th>
+                                                <th style="width:110px;text-align:center;">Unit</th>
+                                                <th style="width:115px;text-align:center;">Unit Price (BD)</th>
+                                                <th style="width:115px;text-align:center;">Total (BD)</th>
+                                                <th style="width:36px;text-align:center;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody_import_preview">
+                                            <!-- Dynamically populated rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Import Mode: Append vs Replace -->
+                            <div class="card p-3 mb-0" style="border-radius:10px;border:1.5px solid #d4e4f0;background:#ffffff;">
+                                <span class="font-weight-bold text-dark mb-2 d-block" style="font-size:12.5px;">Choose Import Action:</span>
+                                <div class="d-flex align-items-center" style="gap:24px;">
+                                    <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#0A4174;margin:0;">
+                                        <input type="radio" name="import_mode" value="append" checked style="cursor:pointer;width:16px;height:16px;">
+                                        <span>Append to current quotation items</span>
+                                    </label>
+                                    <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#b91c1c;margin:0;">
+                                        <input type="radio" name="import_mode" value="replace" style="cursor:pointer;width:16px;height:16px;">
+                                        <span>Replace existing quotation items</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer d-flex justify-content-between align-items-center" style="background:#ffffff;border-top:1px solid #e8f0f6;padding:12px 22px;">
+                        <button type="button" class="btn btn-light btn-sm font-weight-semibold" data-dismiss="modal" style="border-radius:6px;padding:6px 16px;">
+                            Cancel
+                        </button>
+                        <button type="button" id="btn_confirm_import_items" class="btn btn-primary btn-sm font-weight-semibold" disabled style="background:linear-gradient(135deg, #0A4174 0%, #001D39 100%);border:none;border-radius:6px;padding:7px 22px;box-shadow:0 2px 6px rgba(10,65,116,0.3);">
+                            <i class="icon-checkmark3 mr-1"></i> <span id="btn_confirm_import_label">Import Line Items</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Spelling & Grammar Review Modal -->
         <div id="modal_grammar_check" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="grammarCheckModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:720px;">
@@ -1876,6 +2035,9 @@ if ($isLoggedIn) {
         <option>Kg</option>
         <option>Ltr</option>
     </datalist>
+
+    <!-- SheetJS XLSX Library for Excel File Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Select2 (Ensured for Searchable Dropdowns) -->
     <script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>

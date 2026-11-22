@@ -711,6 +711,14 @@ class QuotationModuleController
                     $this->exportQuotationsExcel();
                     break;
 
+                case 'parse_import_items_file':
+                    $this->parseImportItemsFile();
+                    break;
+
+                case 'download_import_template':
+                    $this->downloadImportTemplate();
+                    break;
+
                 case 'seed_demo_data':
                     $this->seedInitialData();
                     echo json_encode(["status" => "success", "message" => "Demo data seeded successfully"]);
@@ -2955,6 +2963,180 @@ class QuotationModuleController
             "status" => "success",
             "matches" => isset($result['matches']) && is_array($result['matches']) ? $result['matches'] : []
         ]);
+    }
+
+    private function downloadImportTemplate()
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="thc_quotation_line_items_template.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        // Add UTF-8 BOM so Excel opens it with proper UTF-8 encoding
+        fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        fputcsv($out, ['Sl No', 'Description', 'Quantity', 'Unit', 'Unit Price (BD)']);
+        fputcsv($out, [1, 'Supply and installation of 2.0 TR Split AC unit including copper piping and brackets', 2, 'Set', '280.000']);
+        fputcsv($out, [2, 'Deep cleaning, chemical washing and disinfection of evaporator and condenser coils', 2, 'No.', '35.000']);
+        fputcsv($out, [3, 'Replacement of 45uF dual run capacitor and testing compressor load current', 1, 'No.', '18.500']);
+        fputcsv($out, [4, 'Preventive maintenance and inspection visit of main distribution board (DB panels)', 1, 'Visit', '45.000']);
+        fclose($out);
+        exit;
+    }
+
+    private function parseImportItemsFile()
+    {
+        $rawRows = [];
+
+        // Check if uploaded as file
+        if (!empty($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
+            $tmpFile = $_FILES['file']['tmp_name'];
+            $fileName = $_FILES['file']['name'] ?? '';
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+            if (in_array($ext, ['csv', 'txt', 'tsv'])) {
+                $handle = fopen($tmpFile, 'r');
+                $firstLine = fgets($handle);
+                rewind($handle);
+                $delim = ',';
+                if (strpos($firstLine, "\t") !== false) {
+                    $delim = "\t";
+                } elseif (strpos($firstLine, ';') !== false && strpos($firstLine, ',') === false) {
+                    $delim = ';';
+                }
+
+                while (($row = fgetcsv($handle, 4096, $delim)) !== false) {
+                    if (!empty(array_filter($row, function ($c) { return trim((string)$c) !== ''; }))) {
+                        $rawRows[] = $row;
+                    }
+                }
+                fclose($handle);
+            }
+        } elseif (!empty($_POST['content'])) {
+            $lines = preg_split('/\r?\n/', trim($_POST['content']));
+            foreach ($lines as $line) {
+                if (trim($line) === '') continue;
+                $delim = (strpos($line, "\t") !== false) ? "\t" : (strpos($line, ';') !== false && strpos($line, ',') === false ? ';' : ',');
+                $rawRows[] = str_getcsv($line, $delim);
+            }
+        }
+
+        if (empty($rawRows)) {
+            echo json_encode(["status" => "error", "message" => "No readable line items found in file or pasted content"]);
+            return;
+        }
+
+        $items = $this->extractItemsFromRawRows($rawRows);
+        if (empty($items)) {
+            echo json_encode(["status" => "error", "message" => "Could not extract valid line items. Please ensure columns include Description and Unit Price."]);
+            return;
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "count" => count($items),
+            "items" => $items
+        ]);
+    }
+
+    private function extractItemsFromRawRows($rawRows)
+    {
+        if (empty($rawRows)) return [];
+
+        $colDesc = -1;
+        $colQty = -1;
+        $colUnit = -1;
+        $colPrice = -1;
+
+        $firstRow = $rawRows[0];
+        $isHeader = false;
+
+        foreach ($firstRow as $idx => $cell) {
+            $c = strtolower(trim((string)$cell));
+            if (preg_match('/desc|particular|scope|work|item/i', $c) && $colDesc === -1) {
+                $colDesc = $idx;
+                $isHeader = true;
+            } elseif (preg_match('/qty|quantity|count|nos/i', $c) && $colQty === -1) {
+                $colQty = $idx;
+                $isHeader = true;
+            } elseif (preg_match('/unit|uom|measure/i', $c) && $colUnit === -1) {
+                $colUnit = $idx;
+                $isHeader = true;
+            } elseif (preg_match('/price|rate|amount|cost/i', $c) && $colPrice === -1) {
+                $colPrice = $idx;
+                $isHeader = true;
+            }
+        }
+
+        $startIdx = $isHeader ? 1 : 0;
+        $items = [];
+
+        for ($i = $startIdx; $i < count($rawRows); $i++) {
+            $row = $rawRows[$i];
+            if (empty(array_filter($row, function ($c) { return trim((string)$c) !== ''; }))) {
+                continue;
+            }
+
+            $desc = '';
+            $qty = 1.0;
+            $unit = 'Lumpsum';
+            $price = 0.0;
+
+            if ($colDesc !== -1) {
+                $desc = trim((string)($row[$colDesc] ?? ''));
+                if ($colQty !== -1 && isset($row[$colQty])) {
+                    $qVal = (float)filter_var(trim((string)$row[$colQty]), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                    if ($qVal > 0) $qty = $qVal;
+                }
+                if ($colUnit !== -1 && isset($row[$colUnit]) && trim((string)$row[$colUnit]) !== '') {
+                    $unit = trim((string)$row[$colUnit]);
+                }
+                if ($colPrice !== -1 && isset($row[$colPrice])) {
+                    $cleanP = preg_replace('/[^0-9.]/', '', trim((string)$row[$colPrice]));
+                    $price = (float)$cleanP;
+                }
+            } else {
+                $cellCount = count($row);
+                if ($cellCount >= 5) {
+                    $desc = trim((string)($row[1] ?? ''));
+                    $qty = (float)filter_var(trim((string)($row[2] ?? 1)), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) ?: 1;
+                    $unit = trim((string)($row[3] ?? 'Lumpsum')) ?: 'Lumpsum';
+                    $price = (float)preg_replace('/[^0-9.]/', '', trim((string)($row[4] ?? 0)));
+                } elseif ($cellCount == 4) {
+                    if (is_numeric(trim((string)$row[0])) && !is_numeric(trim((string)$row[1]))) {
+                        $desc = trim((string)$row[1]);
+                        $qty = (float)filter_var(trim((string)$row[2]), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) ?: 1;
+                        $price = (float)preg_replace('/[^0-9.]/', '', trim((string)$row[3]));
+                    } else {
+                        $desc = trim((string)$row[0]);
+                        $qty = (float)filter_var(trim((string)$row[1]), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) ?: 1;
+                        $unit = trim((string)$row[2]) ?: 'Lumpsum';
+                        $price = (float)preg_replace('/[^0-9.]/', '', trim((string)$row[3]));
+                    }
+                } elseif ($cellCount == 3) {
+                    $desc = trim((string)$row[0]);
+                    $qty = (float)filter_var(trim((string)$row[1]), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) ?: 1;
+                    $price = (float)preg_replace('/[^0-9.]/', '', trim((string)$row[2]));
+                } elseif ($cellCount >= 1) {
+                    $desc = trim((string)$row[0]);
+                }
+            }
+
+            if ($desc === '') continue;
+
+            $items[] = [
+                'description' => $desc,
+                'quantity' => $qty > 0 ? $qty : 1,
+                'unit' => $unit !== '' ? $unit : 'Lumpsum',
+                'unit_price' => $price >= 0 ? $price : 0,
+                'total_price' => ($qty > 0 ? $qty : 1) * ($price >= 0 ? $price : 0)
+            ];
+        }
+
+        return $items;
     }
 }
 }
