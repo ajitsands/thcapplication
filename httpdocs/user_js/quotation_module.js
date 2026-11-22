@@ -389,7 +389,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width:48px;text-align:center;">${isBullet ? '&bull;' : 'Sl. No.'}</th>
+                        <th style="width:55px;white-space:nowrap;text-align:center;">${isBullet ? '&bull;' : 'Sl.&nbsp;No.'}</th>
                         <th style="text-align:center;">Description</th>
                         <th style="width:${isMerged && mergeQty ? '120px' : '110px'};text-align:center;">Units</th>
                         <th style="width:120px;text-align:center;">Amount (BD)</th>

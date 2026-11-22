@@ -524,8 +524,8 @@ if ($download) {
     $html .= '<table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
         <thead>
             <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
-                <th width="8%" align="center"><b>' . ($isBullet ? '&bull;' : 'SL. NO.') . '</b></th>
-                <th width="' . ($isMerged && $mergeQty ? '58%' : '56%') . '" align="center"><b>DESCRIPTION</b></th>
+                <th width="10%" align="center"><b>' . ($isBullet ? '&bull;' : 'Sl.&nbsp;No.') . '</b></th>
+                <th width="' . ($isMerged && $mergeQty ? '56%' : '54%') . '" align="center"><b>DESCRIPTION</b></th>
                 <th width="' . ($isMerged && $mergeQty ? '16%' : '18%') . '" align="center"><b>UNITS</b></th>
                 <th width="18%" align="center"><b>AMOUNT (BD)</b></th>
             </tr>
@@ -541,8 +541,8 @@ if ($download) {
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
             $html .= '<tr style="background-color:' . $bg . ';">
-                <td width="8%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
-                <td width="' . ($mergeQty ? '58%' : '56%') . '" align="left">' . formatQuotationDescPdf($desc) . '</td>';
+                <td width="10%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
+                <td width="' . ($mergeQty ? '56%' : '54%') . '" align="left">' . formatQuotationDescPdf($desc) . '</td>';
 
             if ($mergeQty) {
                 if ($idx === 0) {
@@ -570,8 +570,8 @@ if ($download) {
 
             $html .= '
                 <tr style="background-color:' . $bg . ';">
-                    <td width="8%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
-                    <td width="56%" align="left">' . formatQuotationDescPdf($desc) . '</td>
+                    <td width="10%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
+                    <td width="54%" align="left">' . formatQuotationDescPdf($desc) . '</td>
                     <td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>
                     <td width="18%" align="center">' . number_format($lineTot, 3) . '</td>
                 </tr>';
@@ -646,7 +646,10 @@ if ($download) {
 
     $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9pt;">
         <tr>
-            <td colspan="3" style="line-height:1.4;padding-bottom:12px;">' . $closingNote . '</td>
+            <td colspan="3" style="line-height:1.4;">' . $closingNote . '</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="height:12px;"></td>
         </tr>
         <tr>
             <td width="55%" style="line-height:1.4;vertical-align:top;">
@@ -659,8 +662,12 @@ if ($download) {
                 . (!empty($signerPhone) ? '<br><span style="color:#1e293b;font-size:8.5pt;">Mob: ' . htmlspecialchars($signerPhone) . '</span>' : '') . '
             </td>
             <td width="5%"></td>
-            <td width="40%" style="border:1px solid #cbd5e1;background-color:#f8fafc;padding:8px;line-height:1.8;vertical-align:top;">
-                ' . $apprBoxHtml . '
+            <td width="40%" style="vertical-align:top;">
+                <table cellpadding="10" cellspacing="0" border="0" style="width:100%;">
+                    <tr>
+                        <td style="border:1px solid #cbd5e1;background-color:#f8fafc;line-height:1.8;vertical-align:top;">' . $apprBoxHtml . '</td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>';
@@ -934,7 +941,7 @@ if ($download) {
     <table class="tbl-quotation">
         <thead>
             <tr>
-                <th style="width: 48px; text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : 'Sl. No.' ?></th>
+                <th style="width: 55px; white-space: nowrap; text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : 'Sl.&nbsp;No.' ?></th>
                 <th style="text-align: center;">Description</th>
                 <th style="width: <?= ($isMerged && $mergeQty) ? '120px' : '110px' ?>; text-align: center;">Units</th>
                 <th style="width: 120px; text-align: center;">Amount (BD)</th>
