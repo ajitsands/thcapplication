@@ -56,7 +56,10 @@ try {
         if ($chkPhone && mysqli_num_rows($chkPhone) === 0) {
             @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` 
                 ADD COLUMN `user_phone` VARCHAR(50) DEFAULT '' AFTER `user_designation`,
-                ADD COLUMN `include_user_phone` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_phone`");
+                ADD COLUMN `include_user_phone` TINYINT(1) NOT NULL DEFAULT 1 AFTER `user_phone`");
+        } else {
+            @mysqli_query($db, "ALTER TABLE `tbl_quotations_v2` ALTER COLUMN `include_user_phone` SET DEFAULT 1");
+            @mysqli_query($db, "UPDATE `tbl_quotations_v2` SET `include_user_phone` = 1 WHERE `include_user_phone` = 0");
         }
         $chkItmMerge = @mysqli_query($db, "SHOW COLUMNS FROM `tbl_quotation_items_v2` LIKE 'merge_with_prev'");
         if ($chkItmMerge && mysqli_num_rows($chkItmMerge) === 0) {
@@ -491,11 +494,35 @@ if ($download) {
         $signerName = 'Administrator';
     }
     $signerTitle = $q['user_designation'] ?? 'THC Facility Management';
+    $uCode = $q['user_code'] ?? '';
     $signerPhone = '';
-    if (!empty($q['include_user_phone']) && !empty($q['user_phone'])) {
+    if (!empty($q['user_phone'])) {
         $signerPhone = trim($q['user_phone']);
-    } elseif (!isset($q['include_user_phone']) && !empty($q['user_phone'])) {
-        $signerPhone = trim($q['user_phone']);
+    }
+    if (empty($signerPhone)) {
+        if (!empty($stampSignConfig['user_phones'][$uCode])) {
+            $signerPhone = trim($stampSignConfig['user_phones'][$uCode]);
+        } elseif (isset($db) && $db && !mysqli_connect_errno()) {
+            $escCode = mysqli_real_escape_string($db, $uCode);
+            $escName = mysqli_real_escape_string($db, $signerName);
+            $phRes = @mysqli_query($db, "SELECT employee_contact_no FROM tbl_employees 
+                WHERE (employee_code = '{$escCode}' OR employee_name = '{$escName}') 
+                AND employee_contact_no IS NOT NULL AND employee_contact_no != '' AND employee_contact_no != 'NA' 
+                LIMIT 1");
+            if ($phRes && ($phRow = mysqli_fetch_assoc($phRes))) {
+                $signerPhone = trim($phRow['employee_contact_no']);
+            }
+        }
+    }
+    if (empty($signerPhone)) {
+        if ($uCode === 'ADM' || stripos($signerName, 'Admin') !== false) {
+            $signerPhone = '+973 17 100 190';
+        } elseif ($uCode === 'MA' || stripos($signerName, 'Mohammed Ali') !== false) {
+            $signerPhone = '+973 3944 1015';
+        }
+    }
+    if (isset($q['include_user_phone']) && (int)$q['include_user_phone'] === 0 && !empty($q['user_phone'])) {
+        $signerPhone = '';
     }
 
     // Build HTML for TCPDF writeHTML with strict zero-indent formatting to ensure perfect flush-left alignment
@@ -1053,14 +1080,7 @@ if ($download) {
             ?>
             <b><?= htmlspecialchars($signer) ?><br>
             <span style="font-weight: 400; color: #475569;"><?= htmlspecialchars($q['user_designation']) ?></span></b>
-            <?php
-            $signerPhone = '';
-            if (!empty($q['include_user_phone']) && !empty($q['user_phone'])) {
-                $signerPhone = trim($q['user_phone']);
-            } elseif (!isset($q['include_user_phone']) && !empty($q['user_phone'])) {
-                $signerPhone = trim($q['user_phone']);
-            }
-            if (!empty($signerPhone)): ?>
+            <?php if (!empty($signerPhone)): ?>
                 <br><span style="font-weight: 500; color: #1e293b; font-size: 11px;">Mob: <?= htmlspecialchars($signerPhone) ?></span>
             <?php endif; ?>
         </div>

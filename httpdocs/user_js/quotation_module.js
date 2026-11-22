@@ -322,10 +322,12 @@
         if (uName === "Adminstrator") uName = "Administrator";
         const uTitle = q.user_designation || (Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC Facility Management"));
 
-        const showPhone = q.include_user_phone !== undefined 
-            ? (!!q.include_user_phone && !!(q.user_phone || (uInfo && (uInfo.phone || uInfo[2]))))
-            : !!(q.user_phone);
-        const uPhone = q.user_phone || (uInfo ? (uInfo.phone || uInfo[2] || "") : "");
+        const uPhone = q.user_phone 
+            || (uInfo ? (uInfo.phone || uInfo[2] || "") : "") 
+            || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) 
+            || (currentUserObj && currentUserObj.phone) 
+            || (uCode === 'ADM' ? '+973 17 100 190' : (uCode === 'MA' ? '+973 3944 1015' : ''));
+        const showPhone = (q.include_user_phone === undefined || parseInt(q.include_user_phone) === 1 || !q.user_phone) && !!uPhone;
 
         const qNo = q.quotation_no || q.no;
         const qVn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
@@ -1522,11 +1524,19 @@
         const defaultPhone = (uInfo && (uInfo.phone || uInfo[2])) 
             || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) 
             || (currentUserObj && currentUserObj.phone) 
-            || "";
-        const userPhone = e.user_phone !== undefined ? e.user_phone : defaultPhone;
-        const includePhone = e.include_user_phone !== undefined 
-            ? !!e.include_user_phone 
-            : (e.user_phone !== undefined ? !!e.user_phone : (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false));
+            || (uCode === 'ADM' ? '+973 17 100 190' : (uCode === 'MA' ? '+973 3944 1015' : ''));
+        const userPhone = (e.user_phone !== undefined && e.user_phone !== null && e.user_phone !== '') 
+            ? e.user_phone 
+            : defaultPhone;
+        let includePhone = true;
+        if (e.include_user_phone !== undefined && e.include_user_phone !== null) {
+            includePhone = (parseInt(e.include_user_phone) === 1);
+        } else if (STAMP_SIGN_CONFIG.show_user_phone !== undefined) {
+            includePhone = (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false);
+        }
+        if (parseInt(e.include_user_phone) === 0 && !e.user_phone && defaultPhone) {
+            includePhone = true;
+        }
 
         ED.include_user_phone = includePhone ? 1 : 0;
         ED.user_phone = userPhone;
@@ -1659,24 +1669,36 @@
                             <textarea id="inp_internal_notes" data-k="internal_notes" rows="2" placeholder="e.g. Approved discount by GM, site visit reference, supplier quotation ref, etc." style="width:100%;font-size:12.5px;background:#fffdfa;border-color:#fde68a;" spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(e.internal_notes || "")}</textarea>
                         </div>
                         
-                        <p style="color:var(--mut);margin:12px 0 0;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
-                            <span>Signed as <b>${H(uName)}</b>, ${H(uTitle)} (from the logged-in profile)</span>
-                            <a href="#" id="btn_quick_stamp_sign" style="color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:underline;">
-                                <i class="icon-stamp" style="font-size:12px;"></i> Stamp & Sign
-                            </a>
-                        </p>
-                        
-                        <!-- Sender Mobile Number Option -->
-                        <div style="margin-top:10px;padding:9px 12px;background:#f0f7fc;border:1.5px solid #c2daeb;border-radius:8px;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                        <!-- Quote Sender / Estimator Card -->
+                        <div style="margin-top:14px;background:#f0f7fc;border:1.5px solid #b9d8ee;border-radius:8px;padding:12px 14px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;border-bottom:1px solid #d0e4f4;padding-bottom:8px;">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <i class="icon-user-check" style="color:#0A4174;font-size:15px;"></i>
+                                    <span style="font-weight:700;color:#0A4174;font-size:12.5px;">Quote Sender / Estimator</span>
+                                </div>
+                                <a href="#" id="btn_quick_stamp_sign" style="color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:4px;font-size:11.5px;text-decoration:underline;">
+                                    <i class="icon-stamp" style="font-size:12px;"></i> Stamp & Sign Settings
+                                </a>
+                            </div>
+
+                            <div class="g2" style="margin-bottom:8px;">
+                                <div>
+                                    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Sender Name & Designation</label>
+                                    <div style="font-size:12.5px;font-weight:600;color:#1e293b;padding:6px 0;">
+                                        <b>${H(uName)}</b> &nbsp;·&nbsp; <span style="font-weight:500;color:#475569;">${H(uTitle)}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:3px;">Sender Mobile Number</label>
+                                    <input type="text" id="inp_user_phone" data-k="user_phone" placeholder="e.g. +973 3944 1015" value="${H(userPhone)}" style="width:100%;height:34px;font-size:12.5px;padding:5px 9px;font-weight:600;color:#0A4174;background:#ffffff;border:1.5px solid #93c5fd;border-radius:6px;">
+                                </div>
+                            </div>
+
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
                                 <label style="display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#0A4174;cursor:pointer;margin:0;">
                                     <input type="checkbox" id="chk_include_user_phone" ${includePhone ? "checked" : ""} style="cursor:pointer;width:16px;height:16px;">
-                                    <span>Include sender mobile number under name</span>
+                                    <span>Display mobile number under sender name on quotation & PDF</span>
                                 </label>
-                                <div id="wrap_user_phone" style="display:${includePhone ? 'inline-flex' : 'none'};align-items:center;gap:6px;">
-                                    <label style="font-size:11.5px;font-weight:600;color:#0A4174;margin:0;">Mob / Tel:</label>
-                                    <input type="text" id="inp_user_phone" data-k="user_phone" placeholder="e.g. +973 3944 1015" value="${H(userPhone)}" style="width:160px;height:32px;font-size:12px;margin:0;padding:4px 8px;font-weight:600;color:#0A4174;">
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1875,22 +1897,16 @@
         }
 
         const chkSenderPhone = $("#chk_include_user_phone");
-        const wrapSenderPhone = $("#wrap_user_phone");
         const inpSenderPhone = $("#inp_user_phone");
         if (chkSenderPhone) {
             chkSenderPhone.onchange = ev => {
                 ED.include_user_phone = ev.target.checked ? 1 : 0;
-                if (wrapSenderPhone) wrapSenderPhone.style.display = ev.target.checked ? "inline-flex" : "none";
-                if (ev.target.checked && inpSenderPhone && !inpSenderPhone.value.trim() && defaultPhone) {
-                    inpSenderPhone.value = defaultPhone;
-                    ED.user_phone = defaultPhone;
-                }
                 renderLivePreview();
             };
         }
         if (inpSenderPhone) {
             inpSenderPhone.oninput = ev => {
-                ED.user_phone = ev.target.value;
+                ED.user_phone = ev.target.value.trim();
                 renderLivePreview();
             };
         }

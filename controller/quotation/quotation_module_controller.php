@@ -51,10 +51,10 @@ class QuotationModuleController
 
     // Default Fallback Users
     private $defaultUsers = [
-        "ADM" => ["name" => "Administrator", "title" => "Administrator"],
-        "MA" => ["name" => "Mohammed Ali", "title" => "Operations Manager"],
-        "RM" => ["name" => "Reghilal Munambeth", "title" => "Operation Coordinator"],
-        "SKP" => ["name" => "Satish Kumar Palanimuthu", "title" => "Operation Coordinator"]
+        "ADM" => ["name" => "Administrator", "title" => "Administrator", "phone" => "+973 17 100 190"],
+        "MA" => ["name" => "Mohammed Ali", "title" => "Operations Manager", "phone" => "+973 3944 1015"],
+        "RM" => ["name" => "Reghilal Munambeth", "title" => "Operation Coordinator", "phone" => "+973 3728 3293"],
+        "SKP" => ["name" => "Satish Kumar Palanimuthu", "title" => "Operation Coordinator", "phone" => "+973 3689 8333"]
     ];
 
     // Default Fallback AMC Clients
@@ -247,7 +247,10 @@ class QuotationModuleController
             if ($chkPhone && mysqli_num_rows($chkPhone) == 0) {
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
                     ADD COLUMN `user_phone` VARCHAR(50) DEFAULT '' AFTER `user_designation`,
-                    ADD COLUMN `include_user_phone` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_phone`");
+                    ADD COLUMN `include_user_phone` TINYINT(1) NOT NULL DEFAULT 1 AFTER `user_phone`");
+            } else {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ALTER COLUMN `include_user_phone` SET DEFAULT 1");
+                @mysqli_query($this->db, "UPDATE `tbl_quotations_v2` SET `include_user_phone` = 1 WHERE `include_user_phone` = 0");
             }
 
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
@@ -805,6 +808,22 @@ class QuotationModuleController
                 if ($cRes && ($cRow = mysqli_fetch_assoc($cRes))) {
                     $userPhone = trim($cRow['employee_contact_no'] ?? '');
                 }
+                if (empty($userPhone) && !empty($userName)) {
+                    $cRes2 = @mysqli_query($this->db, "SELECT employee_contact_no FROM tbl_employees WHERE employee_name = '" . mysqli_real_escape_string($this->db, $userName) . "' AND employee_contact_no != '' LIMIT 1");
+                    if ($cRes2 && ($cRow2 = mysqli_fetch_assoc($cRes2))) {
+                        $userPhone = trim($cRow2['employee_contact_no'] ?? '');
+                    }
+                }
+            }
+            if (empty($userPhone) && !empty($_SESSION['user_phone'])) {
+                $userPhone = trim($_SESSION['user_phone']);
+            }
+            if (empty($userPhone)) {
+                if ($userCode === 'ADM' || stripos($userName, 'Admin') !== false) {
+                    $userPhone = '+973 17 100 190';
+                } elseif ($userCode === 'MA' || stripos($userName, 'Mohammed Ali') !== false) {
+                    $userPhone = '+973 3944 1015';
+                }
             }
 
             $sessUserType = strtolower(trim($_SESSION['user_type'] ?? ''));
@@ -1191,8 +1210,8 @@ class QuotationModuleController
                         "user_code" => $r['user_code'],
                         "user_name" => $r['user_name'],
                         "user_designation" => $r['user_designation'],
-                        "user_phone" => $r['user_phone'] ?? '',
-                        "include_user_phone" => (int)($r['include_user_phone'] ?? 0),
+                        "user_phone" => !empty($r['user_phone']) ? $r['user_phone'] : ($users[$r['user_code']]['phone'] ?? ($r['user_code'] === 'ADM' ? '+973 17 100 190' : ($r['user_code'] === 'MA' ? '+973 3944 1015' : ''))),
+                        "include_user_phone" => (!isset($r['include_user_phone']) || (int)$r['include_user_phone'] === 1 || empty($r['user_phone'])) ? 1 : (int)$r['include_user_phone'],
                         "vat_rate" => (float)$r['vat_rate'],
                         "discount_type" => isset($r['discount_type']) ? $r['discount_type'] : 'amount',
                         "discount_value" => isset($r['discount_value']) ? (float)$r['discount_value'] : 0.0,
