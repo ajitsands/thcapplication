@@ -152,7 +152,7 @@ class QuotationModuleController
                 `vat_amount` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `total_incl_vat` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `terms_json` LONGTEXT,
-                `status` ENUM('Draft','Pending','Approved','Not approved','Superseded') NOT NULL DEFAULT 'Draft',
+                `status` ENUM('Draft','Pending','Pending approval','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft',
                 `rejection_reason` VARCHAR(255) DEFAULT '',
                 `remark` TEXT,
                 `created_by_id` INT(11) DEFAULT 0,
@@ -179,11 +179,12 @@ class QuotationModuleController
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `variation_no` INT(11) NOT NULL DEFAULT 0 AFTER `rev_no`");
             }
 
-            // Migration check: Update status enum to include 'Void', 'Completed', 'Expired'
+            // Migration check: Update status enum to include 'Pending approval', 'Void', 'Completed', 'Expired'
             $chkStatus = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'status'");
             if ($chkStatus && ($col = mysqli_fetch_assoc($chkStatus))) {
-                if (strpos($col['Type'], 'Completed') === false || strpos($col['Type'], 'Expired') === false || strpos($col['Type'], 'Void') === false) {
-                    @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft'");
+                if (strpos($col['Type'], 'Pending approval') === false || strpos($col['Type'], 'Completed') === false || strpos($col['Type'], 'Expired') === false || strpos($col['Type'], 'Void') === false) {
+                    @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Pending approval','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft'");
+                    @mysqli_query($this->db, "UPDATE `tbl_quotations_v2` SET `status` = 'Pending approval' WHERE `status` = 'Pending'");
                 }
             }
 
@@ -562,7 +563,7 @@ class QuotationModuleController
         $todayStr = date('Y-m-d');
         $changed = false;
         foreach ($quotes as &$q) {
-            if (($q['status'] ?? '') === 'Pending') {
+            if (in_array($q['status'] ?? '', ['Pending', 'Pending approval'])) {
                 $qDate = $q['quotation_date'] ?? $q['date'] ?? $todayStr;
                 $valDays = isset($q['validity_days']) ? (int)$q['validity_days'] : 30;
                 $expDate = date('Y-m-d', strtotime($qDate . " + {$valDays} days"));
@@ -1159,7 +1160,7 @@ class QuotationModuleController
             @mysqli_query($this->db, "UPDATE tbl_quotations_v2 
                 SET status = 'Expired', 
                     remark = CONCAT(IF(remark IS NOT NULL AND remark != '', CONCAT(remark, ' | '), ''), 'Expired: validity period exceeded')
-                WHERE status = 'Pending' 
+                WHERE status IN ('Pending', 'Pending approval') 
                 AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < CURDATE()");
 
             $qRes = @mysqli_query($this->db, "SELECT * FROM tbl_quotations_v2 ORDER BY id DESC");
@@ -2144,7 +2145,7 @@ class QuotationModuleController
         $totalInclVat = $netSubtotal + $vatAmount;
 
         // Quotation Number & Status Logic
-        $status = $isIssue ? 'Pending' : 'Draft';
+        $status = $isIssue ? 'Pending approval' : 'Draft';
         $quotationNo = '';
 
         if ($this->isDbConnected) {
@@ -2432,7 +2433,7 @@ class QuotationModuleController
         if (!is_array($activity)) $activity = [];
 
         // Rule 6: Reopen approval (Administrator permission required)
-        if ($action === 'reopen' || (in_array($currentStatus, ['Approved', 'Void']) && in_array(strtolower($status), ['draft', 'pending']))) {
+        if ($action === 'reopen' || (in_array($currentStatus, ['Approved', 'Void']) && in_array(strtolower($status), ['draft', 'pending', 'pending approval']))) {
             if (!$this->isSessionUserAdmin()) {
                 echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can reopen an approved or voided quotation."]);
                 return;
@@ -2530,7 +2531,7 @@ class QuotationModuleController
                     $escVoidRem = mysqli_real_escape_string($this->db, $voidReason);
 
                     $otherRes = mysqli_query($this->db, "SELECT id, activity_json FROM tbl_quotations_v2 
-                        WHERE seq_no = $seqNo AND variation_no = $varNo AND id != $id AND status IN ('Pending', 'Draft')");
+                        WHERE seq_no = $seqNo AND variation_no = $varNo AND id != $id AND status IN ('Pending', 'Pending approval', 'Draft')");
                     if ($otherRes) {
                         while ($oth = mysqli_fetch_assoc($otherRes)) {
                             $othId = (int)$oth['id'];
@@ -2553,7 +2554,7 @@ class QuotationModuleController
                         $q['appr'] = ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo];
                         $q['remark'] = '';
                         $q['activity'] = $activity;
-                    } elseif (($q['seq_no'] ?? null) == $seqNo && ($q['variation_no'] ?? 0) == $varNo && in_array($q['status'] ?? '', ['Pending', 'Draft'])) {
+                    } elseif (($q['seq_no'] ?? null) == $seqNo && ($q['variation_no'] ?? 0) == $varNo && in_array($q['status'] ?? '', ['Pending', 'Pending approval', 'Draft'])) {
                         $q['status'] = 'Void';
                         $q['remark'] = "Voided: " . $qLabel . " was approved";
                     }
@@ -2863,7 +2864,7 @@ class QuotationModuleController
             $dateClause = $resetDate ? ", quotation_date = '$today'" : "";
 
             $upd = mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
-                status = 'Pending',
+                status = 'Pending approval',
                 validity_days = $validityDays,
                 revived_at = '$escNow',
                 revived_by = '$escBy',
@@ -2879,7 +2880,7 @@ class QuotationModuleController
         } else {
             foreach ($quotes as &$q) {
                 if ($q['id'] == $id) {
-                    $q['status'] = 'Pending';
+                    $q['status'] = 'Pending approval';
                     $q['validity_days'] = $validityDays;
                     $q['revived_at'] = $now;
                     $q['revived_by'] = $userName;
@@ -2894,9 +2895,9 @@ class QuotationModuleController
 
         echo json_encode([
             "status" => "success",
-            "message" => "Quotation successfully revived and restored to Pending status.",
+            "message" => "Quotation successfully revived and restored to Pending approval status.",
             "id" => $id,
-            "new_status" => "Pending",
+            "new_status" => "Pending approval",
             "quotation_date" => $resetDate ? $today : ($qRow['quotation_date'] ?? $today),
             "validity_days" => $validityDays
         ]);
@@ -2946,7 +2947,7 @@ class QuotationModuleController
                 ];
             }
 
-            if (in_array($q['status'], ['Pending', 'Approved', 'Not approved'])) {
+            if (in_array($q['status'], ['Pending', 'Pending approval', 'Approved', 'Not approved', 'Completed'])) {
                 $users[$u]['sent']++;
                 $sentExcl = max(0, (float)$q['subtotal_excl_vat'] - (float)($q['discount_amount'] ?? 0));
                 $users[$u]['sent_excl_vat'] += $sentExcl;
@@ -2957,7 +2958,7 @@ class QuotationModuleController
                     $users[$u]['approved_incl_vat'] += (float)$q['total_incl_vat'];
                 } elseif ($q['status'] === 'Not approved') {
                     $users[$u]['not_approved']++;
-                } elseif ($q['status'] === 'Pending') {
+                } elseif ($q['status'] === 'Pending' || $q['status'] === 'Pending approval') {
                     $users[$u]['pending']++;
                 }
             }

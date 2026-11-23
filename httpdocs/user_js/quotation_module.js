@@ -113,14 +113,15 @@
         const rate = q.vat_rate !== undefined ? +q.vat_rate : (q.vat !== undefined ? +q.vat : 10);
         return net * (1 + rate / 100);
     };
-    const SENT = ["Pending", "Approved", "Not approved", "Completed", "Expired"];
+    const isPending = st => (st === "Pending approval" || st === "Pending");
+    const SENT = ["Pending approval", "Pending", "Approved", "Not approved", "Completed", "Expired"];
     const sm = (a, f) => a.reduce((t, x) => t + f(x), 0);
 
-    // Expired helper: Pending > validity_days (default 30 days)
+    // Expired helper: Pending approval > validity_days (default 30 days)
     const exp = q => {
         const st = q.status || q.st;
         if (st === "Expired") return true;
-        if (st !== "Pending") return false;
+        if (!isPending(st)) return false;
         const qDate = new Date(q.quotation_date || q.date);
         const diffDays = (new Date() - qDate) / (1000 * 60 * 60 * 24);
         const maxDays = q.validity_days !== undefined ? +q.validity_days : 30;
@@ -129,7 +130,8 @@
 
     // Status tag renderer
     const tg = q => {
-        const status = q.status || q.st || "Draft";
+        let status = q.status || q.st || "Draft";
+        if (status === "Pending") status = "Pending approval";
         const cleanClass = status.replace(/\s+/g, "");
         if (status === "Completed") {
             return `<span class="tag tag-completed" style="background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;font-weight:600;"><i class="icon-checkmark3 mr-1"></i> Completed</span>`;
@@ -704,7 +706,7 @@
                     </button>
                 </div>
                 ${sel("fc", "All clients", uniqueClients.map(c => [c, c]))}
-                ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved", "Completed", "Expired", "Void"].map(c => [c, c]))}
+                ${sel("fs", "All statuses", ["Draft", "Pending approval", "Approved", "Not approved", "Completed", "Expired", "Void"].map(c => [c, c]))}
                 ${sel("ft", "AMC & non-AMC", [["AMC", "AMC clients"], ["Non-AMC", "Non-AMC clients"]])}
                 ${sel("fu", "All users", userList)}
                 <label>
@@ -835,7 +837,13 @@
             const subj = x.subject || x.subj || "";
 
             if (!F.sup && !["Superseded", "Void"].includes(F.st) && (status === "Superseded" || status === "Void")) return false;
-            if (F.st && status !== F.st) return false;
+            if (F.st) {
+                if (F.st === "Pending approval" || F.st === "Pending") {
+                    if (!isPending(status)) return false;
+                } else if (status !== F.st) {
+                    return false;
+                }
+            }
             if (F.client && client !== F.client) return false;
             if (F.type && (F.type === "AMC") !== isAmc) return false;
             if (F.user && user !== F.user) return false;
@@ -1335,9 +1343,9 @@
         const can = {
             ed: st === "Draft",
             del: st === "Draft" && adminUser,
-            rev: ["Pending", "Not approved"].includes(st) && !apGrp,
-            ap: (["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp)) && adminUser,
-            no: ["Pending", "Not approved"].includes(st) && adminUser,
+            rev: (isPending(st) || st === "Not approved") && !apGrp,
+            ap: (isPending(st) || st === "Not approved" || (st === "Superseded" && !apGrp)) && adminUser,
+            no: (isPending(st) || st === "Not approved") && adminUser,
             vr: st === "Approved",
             ro: (st === "Approved" || st === "Void") && adminUser,
             cm: st === "Approved",
@@ -1375,7 +1383,7 @@
             
             ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval, or request Admin approval to reopen.</div>' : ""}
             ${st === "Completed" ? '<div class="lock" style="background:#ecfdf5;border-color:#6ee7b7;color:#065f46;">✅ Work for this quotation has been marked as <b>Completed</b>.</div>' : ""}
-            ${st === "Expired" ? '<div class="lock" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;">⚠️ This quotation has <b>Expired</b> based on its validity period. Click "Revive Quote" to refresh the quotation date and restore it to Pending.</div>' : ""}
+            ${st === "Expired" ? '<div class="lock" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;">⚠️ This quotation has <b>Expired</b> based on its validity period. Click "Revive Quote" to refresh the quotation date and restore it to Pending approval.</div>' : ""}
             ${st === "Void" ? `<div class="lock" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;">🚫 This quotation has been marked as <b>Void</b>${q.remark ? `: ${H(q.remark)}` : ""}. Voided quotations are cancelled and cannot be edited, approved, or revised.</div>` : ""}
 
             <div class="two">
@@ -1681,7 +1689,7 @@
             $("#cro").onclick = () => {
                 const r = $("#rr").value.trim();
                 if (!r) return toast("A reason is required to reopen");
-                updateStatus(q.id, "Pending", r, r, { action: "reopen" }, $("#cro"));
+                updateStatus(q.id, "Pending approval", r, r, { action: "reopen" }, $("#cro"));
             };
         }
 
@@ -2751,7 +2759,7 @@
             const S = Q.filter(x => (x.user_code || x.user) === u && SENT.includes(x.status || x.st));
             const A = S.filter(x => (x.status || x.st) === "Approved");
             const NA = S.filter(x => (x.status || x.st) === "Not approved");
-            const P = S.filter(x => (x.status || x.st) === "Pending");
+            const P = S.filter(x => isPending(x.status || x.st));
 
             return {
                 u,
@@ -2780,7 +2788,7 @@
                     ["Quotes sent", activeUser.n],
                     ["Approved", activeUser.a],
                     ["Not approved", activeUser.r],
-                    ["Pending", activeUser.p],
+                    ["Pending approval", activeUser.p],
                     ["Approval rate", appRate],
                     ["Approved value · incl. VAT", f3(activeUser.av)]
                 ], k => `
@@ -2800,7 +2808,7 @@
                             <th>Sent</th>
                             <th>Approved</th>
                             <th>Not approved</th>
-                            <th>Pending</th>
+                            <th>Pending approval</th>
                             <th>Sent · excl. VAT</th>
                             <th>Sent · incl. VAT</th>
                             <th>Approved · incl. VAT</th>
@@ -5388,7 +5396,7 @@
         const Y = '<span class="y">✓</span>', N = '<span class="n">✗</span>';
         const R = [
             ["Draft", '<span class="m">Any user</span>', N, N, N, '<span class="y">✓</span> with remark', N, N, N, Y, "No"],
-            ["Pending", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', '<span class="m">Admin only</span>', '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
+            ["Pending approval", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', '<span class="m">Admin only</span>', '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
             ["Approved", N, N, "—", N, '<span class="y">✓</span> with remark', '<span class="y">✓</span> post-work', Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
             ["Not approved", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', "—", '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
             ["Superseded", N, N, "Only if no other revision approved", N, '<span class="y">✓</span> with remark', N, N, N, Y, "No"],
@@ -5437,16 +5445,16 @@
             <div class="card pad">
                 <h2>Rules</h2>
                 <ul class="r">
-                    <li><b>1. Draft & Revision Access:</b> Any authenticated user can create, edit quotation drafts, and initiate revisions (R1, R2…) from Pending or Not Approved quotes. There is no administrator restriction on editing drafts or starting revisions. Once issued, direct editing of quotation contents is locked and must proceed through revision or variation.</li>
+                    <li><b>1. Draft & Revision Access:</b> Any authenticated user can create, edit quotation drafts, and initiate revisions (R1, R2…) from Pending approval or Not Approved quotes. There is no administrator restriction on editing drafts or starting revisions. Once issued, direct editing of quotation contents is locked and must proceed through revision or variation.</li>
                     <li><b>2. Line Items, Lumpsum & Import:</b> Scope of work items support standard units (Nos, Hours, Sets, Mtr, Days, Lumpsum). When the unit is <b>Lumpsum</b>, the quantity input is disabled / omitted (no numerical value required), and prints cleanly as <code>Lumpsum</code> without a numerical prefix. Line items can be imported via clipboard paste (Excel / CSV) or copied directly from existing quotations in the system.</li>
                     <li><b>3. Approved is Final & Work Completion:</b> Approved quotes are locked from direct editing and revising. When approved work is carried out, the quotation can be marked as <b>Completed</b>, capturing completion date, executed by, notes, and completion attachment (PDF/image). Completed quotations count in Sent and Approved totals.</li>
                     <li><b>4. Void Quotations with Mandatory Remarks:</b> Any quotation (except Completed) can be marked as <b>Void</b>. Unlike permanently deleting unissued drafts, Void preserves the quotation number, scope, and audit trail, but formally cancels the offer and excludes it from sales KPIs/pipeline figures. A <b>mandatory remark / reason</b> is strictly required when voiding and is permanently recorded.</li>
-                    <li><b>5. Group Revisions & Automatic Voiding:</b> Only one revision per quotation group (number + variation) can be approved. Approving any revision automatically marks all other open (Draft or Pending) revisions in that group as Void with a logged system remark. If a client approves an older Superseded revision (and no other revision in that group is approved), the system allows it and voids any newer open revisions.</li>
+                    <li><b>5. Group Revisions & Automatic Voiding:</b> Only one revision per quotation group (number + variation) can be approved. Approving any revision automatically marks all other open (Draft or Pending approval) revisions in that group as Void with a logged system remark. If a client approves an older Superseded revision (and no other revision in that group is approved), the system allows it and voids any newer open revisions.</li>
                     <li><b>6. Variations for Post-Approval Scope:</b> Work additions, omissions, or scope changes after approval are issued from the approved quotation as Variations (V1, V2…) with their own revision chain, independent pricing, and separate approval.</li>
                     <li><b>7. Reopening (Admin Only):</b> If an Approved or Voided quotation was marked by mistake or requires unlocking, only an Administrator can reopen it back to Draft. A mandatory reason is required, previous approval/void data is cleared, and the action is logged in the audit trail.</li>
-                    <li><b>8. Validity Period & Expiry:</b> Quotations carry validity days (default 30 days). Expired quotations display an Expired badge and lock banner; they can be refreshed back to Pending status using the <b>Revive Quote</b> action.</li>
+                    <li><b>8. Validity Period & Expiry:</b> Quotations carry validity days (default 30 days). Expired quotations display an Expired badge and lock banner; they can be refreshed back to Pending approval status using the <b>Revive Quote</b> action.</li>
                     <li><b>9. Comprehensive Activity Audit Trail:</b> Every status update, draft revision, void remark, client approval, rejection reason, execution completion, and admin reopening is timestamped and logged with the authenticated user's name in <code>activity_json</code>.</li>
-                    <li><b>10. Totals & Reporting:</b> Sent = Pending + Approved + Not approved + Completed. Approved = Approved + Completed. Draft, Superseded, and Void are strictly excluded from sales pipeline totals.</li>
+                    <li><b>10. Totals & Reporting:</b> Sent = Pending approval + Approved + Not approved + Completed. Approved = Approved + Completed. Draft, Superseded, and Void are strictly excluded from sales pipeline totals.</li>
                     <li><b>11. Automatic Draft Preservation (Autosave):</b> When a user is composing or editing a quotation and closes the browser window, navigates away, or leaves halfway, the system automatically saves the quotation to the database as a <b>Draft</b> via continuous background autosave and unload keepalive hooks. Unfinished work is never lost and remains accessible to any user in the Quotation Log.</li>
                 </ul>
             </div>
@@ -5456,7 +5464,7 @@
                 <pre class="data-model">quotation {
   id, seq_no, rev_no (0=original), variation_no (0=original)
   quotation_no            // CG/THC/{initials}/QTN/{seq}/{MMYY}[/V{v}][/R{r}]
-  status                  // Draft | Pending | Approved | Not approved | Superseded | Void | Completed | Expired
+  status                  // Draft | Pending approval | Approved | Not approved | Superseded | Void | Completed | Expired
   client_type: amc | non_amc, client_code, client_name, client_address, contact_no, attention
   subject, quotation_date, validity_days, vat_rate (default 10%)
   discount_type (amount|percent), discount_value

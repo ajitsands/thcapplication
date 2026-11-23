@@ -864,7 +864,7 @@ if ($isLoggedIn) {
             color: #065f46 !important;
             border: 1px solid #a7f3d0;
         }
-        .tag.Pending {
+        .tag.Pending, .tag.Pendingapproval {
             background: #fef3c7 !important;
             color: #92400e !important;
             border: 1px solid #fde68a;
@@ -2145,7 +2145,7 @@ if ($isLoggedIn) {
                     </div>
                     <div class="modal-body p-3" style="background:#f8fafc;">
                         <p class="text-muted mb-3" style="font-size:12.5px;">
-                            This quotation has expired. Reviving it will restore its status back to <b>Pending</b> and refresh its quotation date so the client can approve it.
+                            This quotation has expired. Reviving it will restore its status back to <b>Pending approval</b> and refresh its quotation date so the client can approve it.
                         </p>
                         <input type="hidden" id="revive_quote_id" value="0">
                         <div class="card p-2 mb-3" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;">
