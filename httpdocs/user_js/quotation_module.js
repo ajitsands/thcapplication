@@ -70,8 +70,22 @@
         return n + o + " " + months[d.getMonth()] + " " + d.getFullYear();
     }
 
+    // Helper to check if unit is Lumpsum (requires no numerical value)
+    const isLump = u => {
+        if (!u) return false;
+        const s = String(u).trim().toLowerCase();
+        return s === "lumpsum" || s === "lump sum" || s === "ls";
+    };
+
     // Amount calculation helpers
-    const itemTotal = it => (+it.quantity || +it[1] || 0) * (+it.unit_price || +it[3] || 0);
+    const itemTotal = it => {
+        const u = it.unit !== undefined ? it.unit : (it[2] || "Lumpsum");
+        const isL = isLump(u);
+        const qVal = (it.quantity !== undefined && it.quantity !== null && it.quantity !== "") ? +it.quantity : (+it[1] || 0);
+        const qty = isL ? (qVal > 0 ? qVal : 1) : qVal;
+        const price = +it.unit_price || +it[3] || 0;
+        return qty * price;
+    };
     const amt = q => {
         if (q && q.merge_items && +q.merged_lump_sum_price > 0) {
             return +q.merged_lump_sum_price;
@@ -403,12 +417,13 @@
                             const desc = r.description || r[0] || "";
                             const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : 1);
                             const unit = r.unit || r[2] || "Lumpsum";
-                            const qtyStr = `${qty} ${H(unit)}`;
+                            const isL = isLump(unit);
+                            const qtyStr = isL ? H(unit) : `${qty} ${H(unit)}`;
                             return `
                             <tr>
                                 <td class="c" style="text-align:center;">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
                                 <td style="text-align:left;">${formatDescHtml(desc)}</td>
-                                ${mergeQty ? (i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;text-align:center;font-weight:600;">1 Lumpsum</td>` : '') : `<td class="c" style="text-align:center;">${qtyStr}</td>`}
+                                ${mergeQty ? (i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;text-align:center;font-weight:600;">Lumpsum</td>` : '') : `<td class="c" style="text-align:center;">${qtyStr}</td>`}
                                 ${i === 0 ? `<td class="c" rowspan="${items.length}" style="vertical-align:middle;text-align:center;font-weight:600;">${f3(lumpSumTot)}</td>` : ''}
                             </tr>`;
                         }).join("")
@@ -418,7 +433,8 @@
                             const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : 1);
                             const unit = r.unit || r[2] || "Lumpsum";
                             const lineTot = itemTotal(r);
-                            const qtyStr = `${qty} ${H(unit)}`;
+                            const isL = isLump(unit);
+                            const qtyStr = isL ? H(unit) : `${qty} ${H(unit)}`;
                             return `
                             <tr>
                                 <td class="c" style="text-align:center;">${isBullet ? '&bull;' : (i + 1) + '.'}</td>
@@ -1730,7 +1746,7 @@
                                 <div id="merge_qty_wrap" style="display:${e.merge_items ? 'inline-flex' : 'none'};align-items:center;gap:6px;">
                                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#475569;cursor:pointer;margin:0;">
                                         <input type="checkbox" id="chk_merge_qty" ${e.merge_qty ? "checked" : ""} style="cursor:pointer;width:15px;height:15px;">
-                                        <span>Merge Qty into '1 Lumpsum'</span>
+                                        <span>Merge Qty into 'Lumpsum'</span>
                                     </label>
                                 </div>
                             </div>
@@ -1858,7 +1874,34 @@
                 const item = ED.items[idx];
                 if (field === "desc") item.description = t.value;
                 else if (field === "qty") item.quantity = +t.value || 0;
-                else if (field === "unit") item.unit = t.value;
+                else if (field === "unit") {
+                    item.unit = t.value;
+                    const isL = isLump(t.value);
+                    const qtyInp = $(`input[data-i="${idx}"][data-f="qty"]`);
+                    if (qtyInp) {
+                        if (isL) {
+                            qtyInp.value = "";
+                            qtyInp.placeholder = "—";
+                            qtyInp.disabled = true;
+                            qtyInp.style.background = "#f1f5f9";
+                            qtyInp.style.color = "#94a3b8";
+                            qtyInp.style.cursor = "not-allowed";
+                            qtyInp.title = "No numerical value required for Lumpsum";
+                            item.quantity = 1;
+                        } else {
+                            qtyInp.disabled = false;
+                            qtyInp.placeholder = "1";
+                            qtyInp.style.background = "";
+                            qtyInp.style.color = "";
+                            qtyInp.style.cursor = "";
+                            qtyInp.title = "";
+                            if (!item.quantity || item.quantity <= 0) {
+                                item.quantity = 1;
+                            }
+                            qtyInp.value = item.quantity;
+                        }
+                    }
+                }
                 else if (field === "price") item.unit_price = +t.value || 0;
 
                 const lineTot = itemTotal(item);
@@ -2447,8 +2490,9 @@
         if (!el || !ED) return;
         el.innerHTML = M(ED.items, (r, i) => {
             const desc = r.description !== undefined ? r.description : (r[0] || "");
-            const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : 1);
             const unit = r.unit !== undefined ? r.unit : (r[2] || "Lumpsum");
+            const isL = isLump(unit);
+            const qty = r.quantity !== undefined ? r.quantity : (r[1] !== undefined ? r[1] : (isL ? 1 : 1));
             const price = r.unit_price !== undefined ? r.unit_price : (r[3] || 0);
             const lineTot = itemTotal(r);
 
@@ -2480,7 +2524,7 @@
                     </div>
                     <textarea data-i="${i}" data-f="desc" rows="2" placeholder="Description of work (select text to Bold / Underline)..." spellcheck="true" lang="en" autocomplete="off" autocorrect="on" autocapitalize="sentences">${H(desc)}</textarea>
                 </div>
-                <input type="number" min="0" data-i="${i}" data-f="qty" value="${qty}" style="text-align:center;">
+                <input type="number" min="0" data-i="${i}" data-f="qty" value="${isL ? '' : qty}" placeholder="${isL ? '—' : '1'}" ${isL ? 'disabled style="text-align:center;background:#f1f5f9;color:#94a3b8;cursor:not-allowed;" title="No numerical value required for Lumpsum"' : 'style="text-align:center;"'}>
                 <select data-i="${i}" data-f="unit" style="text-align:center;text-align-last:center;">
                     ${M(unitOptions, u => `<option value="${H(u)}"${u === unit ? " selected" : ""}>${H(u)}</option>`)}
                 </select>
@@ -3242,9 +3286,11 @@
         let selectedTotal = 0;
 
         tbody.innerHTML = importedItemsPreview.map((item, idx) => {
+            const isL = isLump(item.unit);
+            const lineQty = isL ? 1 : (+item.quantity || 1);
             if (item.selected) {
                 selectedCount++;
-                selectedTotal += (+item.quantity || 1) * (+item.unit_price || 0);
+                selectedTotal += lineQty * (+item.unit_price || 0);
             }
 
             const unitOpts = [...UNITS];
@@ -3252,7 +3298,7 @@
                 unitOpts.unshift(item.unit);
             }
 
-            const lineTotal = (+item.quantity || 1) * (+item.unit_price || 0);
+            const lineTotal = lineQty * (+item.unit_price || 0);
 
             return `
             <tr class="${item.selected ? 'selected-row' : ''}">
@@ -3266,7 +3312,7 @@
                     <input type="text" class="form-control form-control-sm inp-import-desc" data-idx="${idx}" value="${H(item.description)}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;">
                 </td>
                 <td style="text-align:center;vertical-align:middle;">
-                    <input type="number" min="0" step="any" class="form-control form-control-sm inp-import-qty" data-idx="${idx}" value="${item.quantity}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;text-align:center;">
+                    <input type="number" min="0" step="any" class="form-control form-control-sm inp-import-qty" data-idx="${idx}" value="${isL ? '' : item.quantity}" placeholder="${isL ? '—' : '1'}" ${isL ? 'disabled style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;text-align:center;background:#f1f5f9;color:#94a3b8;cursor:not-allowed;" title="No numerical value required for Lumpsum"' : 'style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;text-align:center;"'}>
                 </td>
                 <td style="text-align:center;vertical-align:middle;">
                     <select class="form-control form-control-sm sel-import-unit" data-idx="${idx}" style="font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:2px 4px;text-align:center;">
@@ -3336,9 +3382,10 @@
         const mode = modeEl ? modeEl.value : "append";
 
         const cleanItems = selected.map(it => {
-            const qty = parseFloat(it.quantity) || 1;
-            const price = parseFloat(it.unit_price) || 0;
             const unit = it.unit || "Lumpsum";
+            const isL = isLump(unit);
+            const qty = isL ? 1 : (parseFloat(it.quantity) || 1);
+            const price = parseFloat(it.unit_price) || 0;
 
             // Add any novel unit to global UNITS list
             if (unit && !UNITS.includes(unit)) {
@@ -4847,7 +4894,12 @@
             merged_lump_sum_price: ED.merged_lump_sum_price !== undefined ? +ED.merged_lump_sum_price : 0,
             bullet_items: ED.bullet_items ? 1 : 0,
             terms: ED.terms || T0,
-            items: ED.items || []
+            items: (ED.items || []).map(it => {
+                const isL = isLump(it.unit);
+                return Object.assign({}, it, {
+                    quantity: isL ? 1 : (+it.quantity || 1)
+                });
+            })
         };
 
         apiCall("save_quotation", payload, "POST").then(res => {

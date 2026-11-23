@@ -1856,10 +1856,12 @@ class QuotationModuleController
             $itemsSummary = [];
             foreach (($x['items'] ?? []) as $i => $it) {
                 $desc = strip_tags(str_replace(['**', '__'], '', $it['description'] ?? ($it[0] ?? '')));
-                $qty = $it['quantity'] ?? ($it[1] ?? 1);
                 $unit = $it['unit'] ?? ($it[2] ?? 'Lumpsum');
+                $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+                $qty = $it['quantity'] ?? ($it[1] ?? 1);
                 $price = $it['unit_price'] ?? ($it[3] ?? 0);
-                $itemsSummary[] = ($i + 1) . '. ' . $desc . ' (' . $qty . ' ' . $unit . ' @ ' . number_format((float)$price, 3) . ')';
+                $unitLabel = $isLump ? $unit : ($qty . ' ' . $unit);
+                $itemsSummary[] = ($i + 1) . '. ' . $desc . ' (' . $unitLabel . ' @ ' . number_format((float)$price, 3) . ')';
             }
             $itemsSummaryStr = implode(' | ', $itemsSummary);
 
@@ -2090,8 +2092,13 @@ class QuotationModuleController
         $cleanItems = [];
         foreach ($items as $it) {
             $desc = trim($it['description'] ?? ($it[0] ?? ''));
-            $qty = (float)($it['quantity'] ?? ($it[1] ?? 1));
             $unit = trim($it['unit'] ?? ($it[2] ?? 'Lumpsum'));
+            $isLump = (stripos($unit, 'lump') !== false || strcasecmp($unit, 'ls') === 0);
+            $qtyRaw = $it['quantity'] ?? ($it[1] ?? ($isLump ? 1 : 0));
+            $qty = (float)$qtyRaw;
+            if ($isLump && $qty <= 0) {
+                $qty = 1.0;
+            }
             $price = (float)($it['unit_price'] ?? ($it[3] ?? 0));
             $lineTotal = (isset($it['total_price']) && (float)$it['total_price'] > 0) ? (float)$it['total_price'] : ($qty * $price);
             $subtotal += $lineTotal;

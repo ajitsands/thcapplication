@@ -564,7 +564,8 @@ if ($download) {
             $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
             $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
             $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
-            $qtyStr = $qty . ' ' . $unit;
+            $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+            $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
             $html .= '<tr style="background-color:' . $bg . ';">
@@ -573,10 +574,10 @@ if ($download) {
 
             if ($mergeQty) {
                 if ($idx === 0) {
-                    $html .= '<td width="16%" align="center" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>1 Lumpsum</b></td>';
+                    $html .= '<td width="16%" align="center" rowspan="' . $itemCount . '" style="vertical-align:middle;"><b>Lumpsum</b></td>';
                 }
             } else {
-                $html .= '<td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>';
+                $html .= '<td width="18%" align="center">' . $qtyStr . '</td>';
             }
 
             if ($idx === 0) {
@@ -592,14 +593,15 @@ if ($download) {
             $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
             $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
             $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
-            $qtyStr = $qty . ' ' . $unit;
+            $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+            $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
             $html .= '
                 <tr style="background-color:' . $bg . ';">
                     <td width="10%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
                     <td width="54%" align="left">' . formatQuotationDescPdf($desc) . '</td>
-                    <td width="18%" align="center">' . htmlspecialchars($qtyStr) . '</td>
+                    <td width="18%" align="center">' . $qtyStr . '</td>
                     <td width="18%" align="center">' . number_format($lineTot, 3) . '</td>
                 </tr>';
         }
@@ -974,17 +976,18 @@ if ($download) {
                     $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
                     $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
                     $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
-                    $qtyStr = $qty . ' ' . $unit;
+                    $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+                    $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
                 ?>
                 <tr>
                     <td class="c" style="text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
                     <td style="text-align: left;"><?= formatQuotationDescHtml($desc) ?></td>
                     <?php if ($mergeQty): ?>
                         <?php if ($idx === 0): ?>
-                            <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle; text-align: center; font-weight: 600;">1 Lumpsum</td>
+                            <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle; text-align: center; font-weight: 600;">Lumpsum</td>
                         <?php endif; ?>
                     <?php else: ?>
-                        <td class="c" style="text-align: center;"><?= htmlspecialchars($qtyStr) ?></td>
+                        <td class="c" style="text-align: center;"><?= $qtyStr ?></td>
                     <?php endif; ?>
                     <?php if ($idx === 0): ?>
                         <td class="c" rowspan="<?= $itemCount ?>" style="vertical-align: middle; text-align: center; font-weight: 700;"><?= number_format($calcLumpSum, 3) ?></td>
@@ -998,12 +1001,13 @@ if ($download) {
                     $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
                     $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
                     $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
-                    $qtyStr = $qty . ' ' . $unit;
+                    $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+                    $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
                 ?>
                 <tr>
                     <td class="c" style="text-align: center;"><?= !empty($q['bullet_items']) ? '&bull;' : ($idx + 1) . '.' ?></td>
                     <td style="text-align: left;"><?= formatQuotationDescHtml($desc) ?></td>
-                    <td class="c" style="text-align: center;"><?= htmlspecialchars($qtyStr) ?></td>
+                    <td class="c" style="text-align: center;"><?= $qtyStr ?></td>
                     <td class="c" style="text-align: center;"><?= number_format($lineTot, 3) ?></td>
                 </tr>
                 <?php endforeach; ?>
