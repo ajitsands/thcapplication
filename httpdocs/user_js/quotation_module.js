@@ -5006,12 +5006,14 @@
         $$("aside a[data-v], .thc-subnav-btn[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === "rules"));
         const Y = '<span class="y">✓</span>', N = '<span class="n">✗</span>';
         const R = [
-            ["Draft", Y, N, N, N, N, N, Y, "No"],
-            ["Pending", N, Y, Y, Y, N, N, Y, "Sent"],
-            ["Approved", N, N, "—", N, Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
-            ["Not approved", N, Y, Y, "—", N, N, Y, "Sent"],
-            ["Superseded", N, N, "Only if no revision in its group is approved", N, N, N, Y, "No"],
-            ["Void", N, N, N, N, N, N, Y, "No"]
+            ["Draft", '<span class="m">Any user</span>', N, N, N, '<span class="y">✓</span> with remark', N, N, N, Y, "No"],
+            ["Pending", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', '<span class="m">Admin only</span>', '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
+            ["Approved", N, N, "—", N, '<span class="y">✓</span> with remark', '<span class="y">✓</span> post-work', Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
+            ["Not approved", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', "—", '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
+            ["Superseded", N, N, "Only if no other revision approved", N, '<span class="y">✓</span> with remark', N, N, N, Y, "No"],
+            ["Completed", N, N, "—", N, N, "—", Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
+            ["Expired", N, "Via Revive Quote", N, N, '<span class="y">✓</span> with remark', N, N, N, Y, "Pending revival"],
+            ["Void", N, N, N, N, "—", N, N, '<span class="m">Admin only</span>', Y, "No"]
         ];
 
         $("#v").innerHTML = `
@@ -5027,14 +5029,16 @@
                         <thead>
                             <tr>
                                 <th>Status</th>
-                                <th>Edit</th>
+                                <th>Edit Draft</th>
                                 <th>Revise</th>
-                                <th>Mark approved</th>
-                                <th>Mark not approved</th>
-                                <th>Create variation</th>
+                                <th>Mark Approved</th>
+                                <th>Mark Not Approved</th>
+                                <th>Mark Void</th>
+                                <th>Mark Completed</th>
+                                <th>Variation</th>
                                 <th>Reopen</th>
-                                <th>PDF</th>
-                                <th>Counted in totals</th>
+                                <th>PDF / Print</th>
+                                <th>Counted in Totals</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -5052,45 +5056,52 @@
             <div class="card pad">
                 <h2>Rules</h2>
                 <ul class="r">
-                    <li><b>1. Issued quotes are immutable.</b> Edit exists only for Draft. Any change to an issued quote is a new revision (R1, R2…) under the same quote number.</li>
-                    <li><b>2. Approved is final.</b> Edit and Revise are blocked in the UI and rejected by the API. Approval is never lost by creating another revision.</li>
-                    <li><b>3. Superseded</b> means an older revision replaced by a newer issued one in the same group (quote number + variation). An Approved revision can never become Superseded.</li>
-                    <li><b>4. One approved revision per group.</b> Approving a revision voids any other open (Draft or Pending) revision in that group. If the client approves an older Superseded revision (when no other revision in its group is approved), allow it and void the newer open ones.</li>
-                    <li><b>5. Variations.</b> Changes after approval are issued from the approved quote as V1, V2… with their own revision chain and their own approval. Number: <code>CG/THC/MA/QTN/9866/1126/V1/R1</code>. PDF: <code>MA-QTN-9866-V1-R1.pdf</code>.</li>
-                    <li><b>6. Reopen.</b> Administrator permission and a reason are required. Status returns to Draft, the approval details are cleared from the record but kept in the activity log. Intended for approving the wrong quote by mistake or unlocking it for authorized editing.</li>
-                    <li><b>7. Mandatory fields.</b> Approval: client approver name and date (PO/LPO ref optional). Not approved: reason. Void: automatic system reason.</li>
-                    <li><b>8. Totals.</b> Sent = Pending + Approved + Not approved. Approved = Approved only. Draft, Superseded and Void are excluded. An approved variation counts as its own approved quote.</li>
-                    <li><b>9. Activity log.</b> Every status change records user, time, action and reason.</li>
-                    <li><b>10. Permissions to add</b> in Role Management: <code>quotation.approve</code>, <code>quotation.reopen</code>, <code>quotation.variation</code>.</li>
+                    <li><b>1. Draft & Revision Access:</b> Any authenticated user can create, edit quotation drafts, and initiate revisions (R1, R2…) from Pending or Not Approved quotes. There is no administrator restriction on editing drafts or starting revisions. Once issued, direct editing of quotation contents is locked and must proceed through revision or variation.</li>
+                    <li><b>2. Line Items, Lumpsum & Import:</b> Scope of work items support standard units (Nos, Hours, Sets, Mtr, Days, Lumpsum). When the unit is <b>Lumpsum</b>, the quantity input is disabled / omitted (no numerical value required), and prints cleanly as <code>Lumpsum</code> without a numerical prefix. Line items can be imported via clipboard paste (Excel / CSV) or copied directly from existing quotations in the system.</li>
+                    <li><b>3. Approved is Final & Work Completion:</b> Approved quotes are locked from direct editing and revising. When approved work is carried out, the quotation can be marked as <b>Completed</b>, capturing completion date, executed by, notes, and completion attachment (PDF/image). Completed quotations count in Sent and Approved totals.</li>
+                    <li><b>4. Void Quotations with Mandatory Remarks:</b> Any quotation (except Completed) can be marked as <b>Void</b>. Unlike permanently deleting unissued drafts, Void preserves the quotation number, scope, and audit trail, but formally cancels the offer and excludes it from sales KPIs/pipeline figures. A <b>mandatory remark / reason</b> is strictly required when voiding and is permanently recorded.</li>
+                    <li><b>5. Group Revisions & Automatic Voiding:</b> Only one revision per quotation group (number + variation) can be approved. Approving any revision automatically marks all other open (Draft or Pending) revisions in that group as Void with a logged system remark. If a client approves an older Superseded revision (and no other revision in that group is approved), the system allows it and voids any newer open revisions.</li>
+                    <li><b>6. Variations for Post-Approval Scope:</b> Work additions, omissions, or scope changes after approval are issued from the approved quotation as Variations (V1, V2…) with their own revision chain, independent pricing, and separate approval.</li>
+                    <li><b>7. Reopening (Admin Only):</b> If an Approved or Voided quotation was marked by mistake or requires unlocking, only an Administrator can reopen it back to Draft. A mandatory reason is required, previous approval/void data is cleared, and the action is logged in the audit trail.</li>
+                    <li><b>8. Validity Period & Expiry:</b> Quotations carry validity days (default 30 days). Expired quotations display an Expired badge and lock banner; they can be refreshed back to Pending status using the <b>Revive Quote</b> action.</li>
+                    <li><b>9. Comprehensive Activity Audit Trail:</b> Every status update, draft revision, void remark, client approval, rejection reason, execution completion, and admin reopening is timestamped and logged with the authenticated user's name in <code>activity_json</code>.</li>
+                    <li><b>10. Totals & Reporting:</b> Sent = Pending + Approved + Not approved + Completed. Approved = Approved + Completed. Draft, Superseded, and Void are strictly excluded from sales pipeline totals.</li>
                 </ul>
             </div>
 
             <div class="card pad">
                 <h2>Suggested data model</h2>
                 <pre class="data-model">quotation {
-  id, quote_no            // CG/THC/{initials}/QTN/{seq}/{MMYY}
-  variation_no (0=original), revision_no (0=original)
-  status: draft | pending | approved | not_approved | superseded | void
-  client_type: amc | non_amc, client_code, client_name, client_address
-  attention, subject, quote_date, vat_percent
-  items[{description, qty, unit, unit_price}], terms[]
-  created_by_user_id      // signer name + designation come from users table
-  approval {approved_by, approved_on, client_po_ref}
-  remark                  // not-approved or void reason
-  activity[{at, user_id, action, from_status, to_status, note}]
+  id, seq_no, rev_no (0=original), variation_no (0=original)
+  quotation_no            // CG/THC/{initials}/QTN/{seq}/{MMYY}[/V{v}][/R{r}]
+  status                  // Draft | Pending | Approved | Not approved | Superseded | Void | Completed | Expired
+  client_type: amc | non_amc, client_code, client_name, client_address, contact_no, attention
+  subject, quotation_date, validity_days, vat_rate (default 10%)
+  discount_type (amount|percent), discount_value
+  items [{ description, quantity, unit, unit_price, total_price }]  // quantity omitted for unit="Lumpsum"
+  merge_items, merge_qty, merged_lump_sum_price, bullet_items
+  terms [], internal_notes
+  created_by_user_code, user_name, user_designation, user_phone
+  approval { approved_by, approval_date, client_po_ref }
+  completion { completion_date, completion_by, completion_notes, completion_attachment }
+  remark                  // rejection reason, void reason, or admin reopen note
+  activity_json [{ d, u, t }]  // audit log of user, datetime, and action/remark
 }</pre>
             </div>
 
             <div class="card pad">
                 <h2>Acceptance checks</h2>
                 <ul class="r">
-                    <li>✓ Approve a quote, then try Revise and Edit from the UI and the API: both are blocked.</li>
-                    <li>✓ Approved totals stay the same after a variation is created.</li>
-                    <li>✓ Revise a Pending quote: the older revision becomes Superseded and leaves the totals.</li>
-                    <li>✓ Approve an older Superseded revision while a newer one is Pending: the newer one becomes Void.</li>
-                    <li>✓ Reopen without administrator permission, or without a reason: denied.</li>
-                    <li>✓ Variation of an approved quote gets a V1 number and needs its own approval.</li>
-                    <li>✓ Draft, Superseded and Void never appear in sent or approved totals.</li>
+                    <li>✓ Any user can edit a draft and create a revision without administrator permission restrictions.</li>
+                    <li>✓ Setting item unit to Lumpsum disables/omits the quantity field and prints cleanly as 'Lumpsum' without a numerical prefix.</li>
+                    <li>✓ Line items can be imported via clipboard paste (Excel / CSV) or copied from an existing quotation.</li>
+                    <li>✓ Marking a quotation as Void requires a non-empty remark; attempts to submit an empty remark are rejected.</li>
+                    <li>✓ Voided quotations display a distinct red badge and lock banner, and cannot be edited, revised, or approved.</li>
+                    <li>✓ Admin can reopen an Approved or Voided quotation back to Draft with a mandatory logged reason.</li>
+                    <li>✓ Approving a revision automatically marks other open revisions in the same group as Void.</li>
+                    <li>✓ Approved quotations can be marked as Completed with execution date, notes, and attachment.</li>
+                    <li>✓ Filter toolbar allows filtering directly by 'Void' status or toggling 'Show superseded / void'.</li>
+                    <li>✓ Draft, Superseded, and Void quotations never appear in sent or approved totals.</li>
                 </ul>
             </div>
         `;
