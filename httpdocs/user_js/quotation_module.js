@@ -1346,7 +1346,7 @@
                     ${can.cm ? '<button id="btn_mark_completed" class="p" style="background:linear-gradient(135deg, #059669 0%, #047857 100%);border-color:#059669;color:#fff;"><i class="icon-checkmark4 mr-1"></i> Completed</button>' : ""}
                     ${can.rvv ? '<button id="btn_revive_quote" class="p" style="background:linear-gradient(135deg, #ea580c 0%, #c2410c 100%);border-color:#ea580c;color:#fff;"><i class="icon-history mr-1"></i> Revive Quote</button>' : ""}
                     ${can.vr ? '<button id="vr">Create variation</button>' : ""}
-                    <button id="dp">Duplicate</button>
+                    <button id="dp">Copy</button>
                     <button class="p" id="dl">⬇ Download PDF</button>
                 </div>
             </div>
