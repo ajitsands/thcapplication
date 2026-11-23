@@ -2014,16 +2014,6 @@ class QuotationModuleController
         $mergedLumpSumPrice = isset($input['merged_lump_sum_price']) ? (float)$input['merged_lump_sum_price'] : 0.0;
         $bulletItems = !empty($input['bullet_items']) ? 1 : 0;
 
-        // Enforce: Only Admin can edit drafts or create revisions
-        if ($id > 0 && !$this->isSessionUserAdmin()) {
-            echo json_encode(["status" => "error", "message" => "Permission denied: Only administrators are permitted to edit quotation drafts."]);
-            return;
-        }
-        if ($revNo > 0 && !$this->isSessionUserAdmin()) {
-            echo json_encode(["status" => "error", "message" => "Permission denied: Only administrators are permitted to create quotation revisions."]);
-            return;
-        }
-
         // Rule 1: Issued quotes are immutable. Edit exists only for Draft.
         if ($id > 0) {
             $chkStatusVal = null;

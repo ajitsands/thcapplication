@@ -1179,7 +1179,7 @@
         const can = {
             ed: st === "Draft",
             del: st === "Draft" && adminUser,
-            rev: ["Pending", "Not approved"].includes(st) && adminUser && !apGrp,
+            rev: ["Pending", "Not approved"].includes(st) && !apGrp,
             ap: (["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp)) && adminUser,
             no: ["Pending", "Not approved"].includes(st) && adminUser,
             vr: st === "Approved",
