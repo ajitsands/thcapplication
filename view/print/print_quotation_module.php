@@ -379,7 +379,7 @@ if ($download) {
             }
 
             public function Footer() {
-                $curY = -25;
+                $curY = -26;
                 $this->SetY($curY);
 
                 $cfg = $this->footerConfig;
@@ -391,8 +391,8 @@ if ($download) {
                 $this->SetTextColor(71, 85, 105);
                 $pageNumStr = $showPageNo ? ('Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages()) : '';
                 $docNumStr = !empty($cfg['doc_number']) ? $cfg['doc_number'] : 'CINQO/THC/QTN/01/2020/REV3';
-                $this->Cell(90, 5, $pageNumStr, 0, 0, 'L', false);
-                $this->Cell(90, 5, $docNumStr, 0, 1, 'R', false);
+                $this->Cell(90, 4.5, $pageNumStr, 0, 0, 'L', false);
+                $this->Cell(90, 4.5, $docNumStr, 0, 1, 'R', false);
 
                 // 2. Dark Blue Bar
                 $barY = $this->GetY() + 0.5;
@@ -458,8 +458,8 @@ if ($download) {
     $pdf->SetTitle($pdfFilename);
     $pdf->setPrintHeader(true);
     $pdf->setPrintFooter(true);
-    $pdf->SetMargins(15, 16, 15);
-    $pdf->SetAutoPageBreak(TRUE, 27);
+    $pdf->SetMargins(15, 18, 15);
+    $pdf->SetAutoPageBreak(TRUE, 38);
     $pdf->SetFont('helvetica', '', 9);
     $pdf->AddPage();
 
@@ -568,7 +568,7 @@ if ($download) {
             $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
-            $html .= '<tr style="background-color:' . $bg . ';">
+            $html .= '<tr nobr="true" style="background-color:' . $bg . ';">
                 <td width="10%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
                 <td width="' . ($mergeQty ? '56%' : '54%') . '" align="left">' . formatQuotationDescPdf($desc) . '</td>';
 
@@ -598,7 +598,7 @@ if ($download) {
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
             $html .= '
-                <tr style="background-color:' . $bg . ';">
+                <tr nobr="true" style="background-color:' . $bg . ';">
                     <td width="10%" align="center">' . ($isBullet ? '<b>&bull;</b>' : ($idx + 1) . '.') . '</td>
                     <td width="54%" align="left">' . formatQuotationDescPdf($desc) . '</td>
                     <td width="18%" align="center">' . $qtyStr . '</td>
@@ -613,32 +613,32 @@ if ($download) {
 
     if ($discountAmt > 0) {
         $html .= '
-            <tr style="background-color:#ffffff;">
+            <tr nobr="true" style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>Gross Amount Excluding VAT</b></td>
                 <td align="center"><b>' . number_format($subtotal, 3) . '</b></td>
             </tr>
-            <tr style="background-color:#ffffff;color:#b91c1c;">
+            <tr nobr="true" style="background-color:#ffffff;color:#b91c1c;">
                 <td colspan="3" align="center"><b>Discount ' . ($discountType === 'percent' ? "({$discountVal}%)" : "") . '</b></td>
                 <td align="center"><b>-' . number_format($discountAmt, 3) . '</b></td>
             </tr>
-            <tr style="background-color:#ffffff;">
+            <tr nobr="true" style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>Net Amount Excluding VAT</b></td>
                 <td align="center"><b>' . number_format($netSubtotal, 3) . '</b></td>
             </tr>';
     } else {
         $html .= '
-            <tr style="background-color:#ffffff;">
+            <tr nobr="true" style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>Amount Excluding VAT</b></td>
                 <td align="center"><b>' . number_format($subtotal, 3) . '</b></td>
             </tr>';
     }
 
     $html .= '
-            <tr style="background-color:#ffffff;">
+            <tr nobr="true" style="background-color:#ffffff;">
                 <td colspan="3" align="center"><b>VAT ' . $vatRate . '%</b></td>
                 <td align="center"><b>' . number_format($vatAmt, 3) . '</b></td>
             </tr>
-            <tr style="background-color:#f1f5f9;font-weight:bold;">
+            <tr nobr="true" style="background-color:#f1f5f9;font-weight:bold;">
                 <td colspan="3" align="center"><b>Total Amount (BD)</b></td>
                 <td align="center"><b>' . number_format($total, 3) . '</b></td>
             </tr>
@@ -647,11 +647,11 @@ if ($download) {
     <br><br>';
 
     if (!empty($terms)) {
-        $html .= '<p style="font-size:9.5pt;margin-bottom:4px;"><b><u>Terms and Condition:</u></b></p><ol style="font-size:9pt;line-height:1.4;">';
+        $html .= '<div nobr="true"><p style="font-size:9.5pt;margin-bottom:4px;"><b><u>Terms and Condition:</u></b></p><ol style="font-size:9pt;line-height:1.4;">';
         foreach ($terms as $t) {
             $html .= '<li>' . htmlspecialchars($t) . '</li>';
         }
-        $html .= '</ol><br>';
+        $html .= '</ol><br></div>';
     }
 
     $apprBoxHtml = '<b>Approved By:</b><br><br>Name:<br><br>Date:';
@@ -881,10 +881,21 @@ if ($download) {
             letter-spacing: 0.4px;
         }
 
+        .page-break-inside-avoid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm 15mm 22mm 15mm;
+            }
             body {
                 background: #ffffff !important;
                 padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .report-container {
                 width: 100% !important;
@@ -899,6 +910,26 @@ if ($download) {
             body, table, td, th {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            table.tbl-quotation {
+                page-break-inside: auto;
+                break-inside: auto;
+            }
+            table.tbl-quotation thead {
+                display: table-header-group !important;
+            }
+            table.tbl-quotation tfoot {
+                display: table-footer-group !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            table.tbl-quotation tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .sg, .ap, .divFooter, .terms-block, .page-break-inside-avoid {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
     </style>
@@ -1046,18 +1077,20 @@ if ($download) {
 
     <!-- Terms & Conditions -->
     <?php if (!empty($terms)): ?>
-        <p style="margin-top: 16px;"><b><u>Terms and Condition:</u></b></p>
-        <ol>
-            <?php foreach ($terms as $t): ?>
-                <li><?= htmlspecialchars($t) ?></li>
-            <?php endforeach; ?>
-        </ol>
+        <div class="terms-block page-break-inside-avoid">
+            <p style="margin-top: 16px;"><b><u>Terms and Condition:</u></b></p>
+            <ol>
+                <?php foreach ($terms as $t): ?>
+                    <li><?= htmlspecialchars($t) ?></li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
     <?php endif; ?>
 
     <p style="margin-top: 14px;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p>
 
     <!-- Signatures -->
-    <div class="sg">
+    <div class="sg page-break-inside-avoid">
         <div>
             <b>Thanking you,<br><br>
             Yours sincerely,<br>
