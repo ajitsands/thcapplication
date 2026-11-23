@@ -619,9 +619,12 @@ class QuotationModuleController
     public function handleRequest()
     {
         $data = $this->getInputData();
-        $action = isset($data['action']) ? trim((string)$data['action']) : '';
-        if ($action === '' && !empty($_GET['action'])) {
+        $action = '';
+        if (!empty($_GET['action'])) {
             $action = trim($_GET['action']);
+        }
+        if ($action === '' && isset($data['action'])) {
+            $action = trim((string)$data['action']);
         }
 
         try {
@@ -644,6 +647,8 @@ class QuotationModuleController
 
                 case 'update_status':
                 case 'reopen':
+                case 'void':
+                case 'mark_void':
                     $this->updateStatus();
                     break;
 
