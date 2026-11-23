@@ -106,8 +106,16 @@ SET @sql_act = IF(@has_act = 0,
     'SELECT 1');
 PREPARE stmt FROM @sql_act; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- (Update status enum to support all state transitions)
-ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft';
+-- (Update status enum to support Pending approval and void/completed/expired transitions)
+ALTER TABLE `tbl_quotations_v2` MODIFY COLUMN `status` ENUM('Draft','Pending','Pending approval','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft';
+UPDATE `tbl_quotations_v2` SET `status` = 'Pending approval' WHERE `status` = 'Pending';
+
+-- (Add is_autosaved column if not existing)
+SET @has_auto = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_quotations_v2' AND COLUMN_NAME = 'is_autosaved');
+SET @sql_auto = IF(@has_auto = 0, 
+    'ALTER TABLE `tbl_quotations_v2` ADD COLUMN `is_autosaved` TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`', 
+    'SELECT 1');
+PREPARE stmt FROM @sql_auto; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 5. Upgrade tbl_quotation_items_v2 columns
 SET @has_itm_merge = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_quotation_items_v2' AND COLUMN_NAME = 'merge_with_prev');
