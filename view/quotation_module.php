@@ -507,6 +507,12 @@ if ($isLoggedIn) {
             border: 1px solid #fed7aa !important;
             font-weight: 600 !important;
         }
+        .tag-void {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            border: 1px solid #fca5a5 !important;
+            font-weight: 600 !important;
+        }
         .card.bar select,
         .filter-toolbar select {
             flex: 1 1 135px !important;
@@ -732,15 +738,16 @@ if ($isLoggedIn) {
             color: #991b1b !important;
             border: 1px solid #fecaca;
         }
-        .tag.Draft, .tag.Superseded, .tag.Void {
+        .tag.Draft, .tag.Superseded {
             background: #f1f5f9 !important;
             color: #475569 !important;
             border: 1px solid #cbd5e1;
         }
         .tag.Void {
-            text-decoration: line-through;
-            color: #94a3b8 !important;
-            background: #f8fafc !important;
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            border: 1px solid #fca5a5 !important;
+            font-weight: 600 !important;
         }
 
         .lock {

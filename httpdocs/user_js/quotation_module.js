@@ -137,6 +137,9 @@
         if (status === "Expired") {
             return `<span class="tag tag-expired" style="background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;font-weight:600;"><i class="icon-hour-glass2 mr-1"></i> Expired</span>`;
         }
+        if (status === "Void") {
+            return `<span class="tag tag-void" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-weight:600;"><i class="icon-blocked mr-1"></i> Void</span>`;
+        }
         const isExp = exp(q);
         return `<span class="tag ${cleanClass}">${H(status)}${isExp ? " · expired" : ""}</span>`;
     };
@@ -679,7 +682,7 @@
                     </button>
                 </div>
                 ${sel("fc", "All clients", uniqueClients.map(c => [c, c]))}
-                ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved", "Completed", "Expired"].map(c => [c, c]))}
+                ${sel("fs", "All statuses", ["Draft", "Pending", "Approved", "Not approved", "Completed", "Expired", "Void"].map(c => [c, c]))}
                 ${sel("ft", "AMC & non-AMC", [["AMC", "AMC clients"], ["Non-AMC", "Non-AMC clients"]])}
                 ${sel("fu", "All users", userList)}
                 <label>
@@ -809,7 +812,7 @@
             const qNo = x.quotation_no || x.no || "";
             const subj = x.subject || x.subj || "";
 
-            if (!F.sup && (status === "Superseded" || status === "Void")) return false;
+            if (!F.sup && !["Superseded", "Void"].includes(F.st) && (status === "Superseded" || status === "Void")) return false;
             if (F.st && status !== F.st) return false;
             if (F.client && client !== F.client) return false;
             if (F.type && (F.type === "AMC") !== isAmc) return false;
@@ -1183,9 +1186,10 @@
             ap: (["Pending", "Not approved"].includes(st) || (st === "Superseded" && !apGrp)) && adminUser,
             no: ["Pending", "Not approved"].includes(st) && adminUser,
             vr: st === "Approved",
-            ro: st === "Approved" && adminUser,
+            ro: (st === "Approved" || st === "Void") && adminUser,
             cm: st === "Approved",
-            rvv: st === "Expired"
+            rvv: st === "Expired",
+            vd: !["Void", "Completed"].includes(st)
         };
 
         const qNo = q.quotation_no || q.no;
@@ -1219,6 +1223,7 @@
             ${st === "Approved" ? '<div class="lock">🔒 Approved quotes are locked. They cannot be edited or revised. Use a variation for any change after approval, or request Admin approval to reopen.</div>' : ""}
             ${st === "Completed" ? '<div class="lock" style="background:#ecfdf5;border-color:#6ee7b7;color:#065f46;">✅ Work for this quotation has been marked as <b>Completed</b>.</div>' : ""}
             ${st === "Expired" ? '<div class="lock" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;">⚠️ This quotation has <b>Expired</b> based on its validity period. Click "Revive Quote" to refresh the quotation date and restore it to Pending.</div>' : ""}
+            ${st === "Void" ? `<div class="lock" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;">🚫 This quotation has been marked as <b>Void</b>${q.remark ? `: ${H(q.remark)}` : ""}. Voided quotations are cancelled and cannot be edited, approved, or revised.</div>` : ""}
 
             <div class="two">
                 <div>
@@ -1302,13 +1307,14 @@
                         })}
                     </div>` : ""}
                     
-                    ${can.ap || can.no || can.ro ? `
+                    ${can.ap || can.no || can.ro || can.vd ? `
                     <div class="card pad">
-                        <h2>Client decision</h2>
+                        <h2>Client decision & status</h2>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                             ${can.ap ? `<button class="p" id="ya">${st === "Superseded" ? "Client approved this older revision" : "Mark approved"}</button>` : ""}
                             ${can.no ? '<button class="d" id="no">Mark not approved</button>' : ""}
-                            ${can.ro ? '<button id="ro">Reopen approval (Admin only)</button>' : ""}
+                            ${can.ro ? `<button id="ro">Reopen ${st === "Void" ? "void quotation" : "approval"} (Admin only)</button>` : ""}
+                            ${can.vd ? '<button class="d" id="btn_open_void" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;"><i class="icon-blocked mr-1"></i> Void quotation</button>' : ""}
                         </div>
                         <div id="apb" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Approved By (Client Contact Name) <span style="color:var(--bad);">*</span></label>
@@ -1333,6 +1339,11 @@
                             <textarea id="rr" rows="2" placeholder="Reason for reopening (required, logged)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
                             <button class="d btn ladda-button" id="cro" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm reopen</span></button>
                         </div>
+                        <div id="vdb" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
+                            <label style="display:block;margin-bottom:4px;font-weight:600;color:#991b1b;">Reason / Remark for voiding <span style="color:var(--bad);">*</span></label>
+                            <textarea id="vrd" rows="2" placeholder="Explain why this quotation is being voided (required, logged in activity)" style="width:100%;margin-bottom:8px;" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
+                            <button class="d btn ladda-button" id="cvd" data-style="expand-right" data-spinner-color="#ffffff" style="background:#dc2626;color:#fff;"><span class="ladda-label">Confirm Void</span></button>
+                        </div>
                     </div>` : ""}
 
                     ${((q.activity && q.activity.length) || (q.log && q.log.length)) ? `
@@ -1351,7 +1362,7 @@
             </div>`;
 
         const showBox = i => {
-            ["apb", "nab", "rob"].forEach(x => {
+            ["apb", "nab", "rob", "vdb"].forEach(x => {
                 const el = $("#" + x);
                 if (el) el.hidden = (x !== i);
             });
@@ -1492,6 +1503,7 @@
         if ($("#ya")) $("#ya").onclick = () => showBox("apb");
         if ($("#no")) $("#no").onclick = () => showBox("nab");
         if ($("#ro")) $("#ro").onclick = () => showBox("rob");
+        if ($("#btn_open_void")) $("#btn_open_void").onclick = () => showBox("vdb");
 
         if ($("#ca")) {
             $("#ca").onclick = () => {
@@ -1517,6 +1529,14 @@
                 const r = $("#rr").value.trim();
                 if (!r) return toast("A reason is required to reopen");
                 updateStatus(q.id, "Pending", r, r, { action: "reopen" }, $("#cro"));
+            };
+        }
+
+        if ($("#cvd")) {
+            $("#cvd").onclick = () => {
+                const r = ($("#vrd") ? $("#vrd").value.trim() : "");
+                if (!r) return toast("A remark / reason is required to void the quotation");
+                updateStatus(q.id, "Void", r, r, { action: "void" }, $("#cvd"));
             };
         }
     }

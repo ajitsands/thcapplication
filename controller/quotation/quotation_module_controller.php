@@ -2417,18 +2417,19 @@ class QuotationModuleController
         if (!is_array($activity)) $activity = [];
 
         // Rule 6: Reopen approval (Administrator permission required)
-        if ($action === 'reopen' || ($currentStatus === 'Approved' && in_array(strtolower($status), ['draft', 'pending']))) {
+        if ($action === 'reopen' || (in_array($currentStatus, ['Approved', 'Void']) && in_array(strtolower($status), ['draft', 'pending']))) {
             if (!$this->isSessionUserAdmin()) {
-                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can reopen an approved quotation."]);
+                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can reopen an approved or voided quotation."]);
                 return;
             }
             if (empty($reason)) {
-                echo json_encode(["status" => "error", "message" => "A reason is required to reopen an approved quotation (logged for auditing)."]);
+                echo json_encode(["status" => "error", "message" => "A reason is required to reopen a quotation (logged for auditing)."]);
                 return;
             }
 
             $prevApprover = !empty($qRow['approval_by']) ? $qRow['approval_by'] : "Client representative";
-            $logMsg = "Reopened by Administrator. Previous approval by {$prevApprover} cleared. Reason: {$reason}";
+            $statusLabel = $currentStatus === 'Void' ? "void status" : "approval by {$prevApprover}";
+            $logMsg = "Reopened by Administrator. Previous {$statusLabel} cleared. Reason: {$reason}";
             $activity[] = ["d" => date('Y-m-d H:i:s'), "u" => $userName, "t" => $logMsg];
             $actJson = json_encode($activity);
             $fullRemark = "Reopened by Admin: " . $reason;
@@ -2602,6 +2603,48 @@ class QuotationModuleController
                 "message" => "Quotation marked as Not approved",
                 "id" => $id,
                 "new_status" => "Not approved",
+                "remark" => $fullRemark
+            ]);
+            return;
+        }
+
+        // Void quotation (Requires mandatory reason / remark, logged in activity)
+        if (strtolower($status) === 'void' || $action === 'void') {
+            if (empty($reason)) {
+                echo json_encode(["status" => "error", "message" => "A remark / reason is required to void the quotation."]);
+                return;
+            }
+            $fullRemark = "Voided: " . $reason;
+            $logMsg = "Marked as Void by " . $userName . ". Remark: " . $reason;
+            $activity[] = ["d" => date('Y-m-d H:i:s'), "u" => $userName, "t" => $logMsg];
+            $actJson = json_encode($activity);
+
+            if ($this->isDbConnected) {
+                $escRem = mysqli_real_escape_string($this->db, $fullRemark);
+                $escAct = mysqli_real_escape_string($this->db, $actJson);
+                mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
+                    status = 'Void',
+                    remark = '$escRem',
+                    activity_json = '$escAct'
+                    WHERE id = $id");
+            } else {
+                foreach ($quotes as &$q) {
+                    if ($q['id'] == $id) {
+                        $q['status'] = 'Void';
+                        $q['remark'] = $fullRemark;
+                        $q['activity'] = $activity;
+                        break;
+                    }
+                }
+                unset($q);
+                $this->saveJsonQuotations($quotes);
+            }
+
+            echo json_encode([
+                "status" => "success",
+                "message" => "Quotation marked as Void",
+                "id" => $id,
+                "new_status" => "Void",
                 "remark" => $fullRemark
             ]);
             return;
