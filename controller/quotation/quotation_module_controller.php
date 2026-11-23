@@ -2018,6 +2018,7 @@ class QuotationModuleController
         $mergeQty = !empty($input['merge_qty']) ? 1 : 0;
         $mergedLumpSumPrice = isset($input['merged_lump_sum_price']) ? (float)$input['merged_lump_sum_price'] : 0.0;
         $bulletItems = !empty($input['bullet_items']) ? 1 : 0;
+        $isAutosave = !empty($input['is_autosave']);
 
         // Rule 1: Issued quotes are immutable. Edit exists only for Draft.
         if ($id > 0) {
@@ -2068,10 +2069,16 @@ class QuotationModuleController
             }
         }
 
-        // Validation
-        if (empty($clientName)) {
+        // Validation: For issuance, strict checks. For drafts, allow saving midway progress.
+        if ($isIssue && empty($clientName)) {
             echo json_encode(["status" => "error", "message" => $isAmc ? "Select an AMC client" : "Enter client name"]);
             return;
+        }
+        if (!$isIssue && empty($clientName)) {
+            $clientName = $isAmc ? "Draft (AMC Client Pending)" : "Draft Customer";
+        }
+        if (!$isIssue && empty($subject)) {
+            $subject = "Draft Quotation";
         }
         if ($isIssue && empty($subject)) {
             echo json_encode(["status" => "error", "message" => "Subject is required to issue quotation"]);
@@ -2194,8 +2201,11 @@ class QuotationModuleController
                     if (!is_array($activity)) $activity = [];
                 }
             }
-            $actNote = $isIssue ? ("Issued quotation " . $quotationNo . ($revNo ? "/R" . $revNo : "")) : "Draft saved";
-            $activity[] = ["d" => date('Y-m-d'), "u" => $userName, "t" => $actNote];
+            $actNote = $isIssue ? ("Issued quotation " . $quotationNo . ($revNo ? "/R" . $revNo : "")) : ($isAutosave ? "Draft auto-saved" : "Draft saved");
+            $lastAct = !empty($activity) ? end($activity) : null;
+            if (!($isAutosave && $lastAct && ($lastAct['t'] ?? '') === 'Draft auto-saved')) {
+                $activity[] = ["d" => date('Y-m-d H:i'), "u" => $userName, "t" => $actNote];
+            }
             $actJson = mysqli_real_escape_string($this->db, json_encode($activity));
 
             if ($id > 0) {

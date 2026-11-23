@@ -590,12 +590,34 @@
             window.jQuery('.select2-container--open').remove();
         }
         $$("aside a[data-v], .thc-subnav-btn[data-v]").forEach(a => a.classList.toggle("on", a.dataset.v === v));
+        
+        // Auto-save active quotation draft if user navigates away halfway
+        if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED) && isEditorDirty) {
+            sendBeaconOrKeepaliveDraft();
+        }
+
         ED = null;
         if (v === "log") vlog();
         else if (v === "perf") vperf();
         else if (v === "rules") vrules();
         else if (v === "A" || v === "N") {
             const isAmc = v === "A";
+
+            // Check if there is an unsaved recovery draft from a previous abruptly closed session
+            try {
+                const savedLocalDraft = localStorage.getItem('thc_quote_autosave_' + CU);
+                if (savedLocalDraft) {
+                    const parsed = JSON.parse(savedLocalDraft);
+                    if (parsed && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(parsed) && !parsed.id && (xIsAmc(parsed) === isAmc)) {
+                        ED = parsed;
+                        toast("Restored unsaved draft from your previous session");
+                        try { localStorage.removeItem('thc_quote_autosave_' + CU); } catch (e) {}
+                        edit();
+                        return;
+                    }
+                }
+            } catch (e) {}
+
             const curUserPhone = (USERS[CU] && (USERS[CU].phone || USERS[CU][2])) 
                 || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[CU]) 
                 || (currentUserObj && currentUserObj.phone) 
@@ -1727,6 +1749,7 @@
             <div class="top">
                 <h1>${(e.variation_no || e.vn) && !(e.rev_no || e.rev) ? "New variation" : (seq ? "Revise quotation" : "New quotation")} <span class="tag">${isAmc ? "AMC client" : "Non-AMC client"}</span></h1>
                 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    <span id="autosave_status" style="font-size:12px;display:none;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;font-weight:600;"></span>
                     <button id="cn">Cancel</button>
                     <button type="button" id="btn_check_grammar_top" style="background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;">
                         <i class="icon-spell-check" style="font-size:13px;color:#0A4174;"></i> Check Grammar
@@ -2064,6 +2087,7 @@
                 return;
             }
             renderLivePreview();
+            if (typeof markEditorDirty === "function") markEditorDirty();
         };
 
         $("#v").oninput = handleFormInput;
@@ -2081,18 +2105,21 @@
                 if (wrapQty) wrapQty.style.display = ED.merge_items ? "inline-flex" : "none";
                 if (wrapPrice) wrapPrice.style.display = ED.merge_items ? "flex" : "none";
                 renderLivePreview();
+                if (typeof markEditorDirty === "function") markEditorDirty();
             };
         }
         if (chkQty) {
             chkQty.onchange = e => {
                 ED.merge_qty = e.target.checked ? 1 : 0;
                 renderLivePreview();
+                if (typeof markEditorDirty === "function") markEditorDirty();
             };
         }
         if (inpMerged) {
             inpMerged.oninput = e => {
                 ED.merged_lump_sum_price = +e.target.value || 0;
                 renderLivePreview();
+                if (typeof markEditorDirty === "function") markEditorDirty();
             };
         }
 
@@ -2102,12 +2129,14 @@
             chkSenderPhone.onchange = ev => {
                 ED.include_user_phone = ev.target.checked ? 1 : 0;
                 renderLivePreview();
+                if (typeof markEditorDirty === "function") markEditorDirty();
             };
         }
         if (inpSenderPhone) {
             inpSenderPhone.oninput = ev => {
                 ED.user_phone = ev.target.value.trim();
                 renderLivePreview();
+                if (typeof markEditorDirty === "function") markEditorDirty();
             };
         }
 
@@ -2281,18 +2310,21 @@
             ED.terms.push("");
             renderTerms();
             renderLivePreview();
+            if (typeof markEditorDirty === "function") markEditorDirty();
         };
 
         $("#rs").onclick = () => {
             ED.terms = T0.slice();
             renderTerms();
             renderLivePreview();
+            if (typeof markEditorDirty === "function") markEditorDirty();
         };
 
         $("#ai").onclick = () => {
             ED.items.push({ description: "", quantity: 1, unit: "Lumpsum", unit_price: 0, total_price: 0 });
             renderItems();
             renderLivePreview();
+            if (typeof markEditorDirty === "function") markEditorDirty();
         };
 
         const btnImportTop = $("#btn_import_items");
@@ -2348,12 +2380,14 @@
             if (btnBold) {
                 ev.preventDefault();
                 formatItemText(+btnBold.dataset.boldIdx, "bold");
+                if (typeof markEditorDirty === "function") markEditorDirty();
                 return;
             }
             const btnUnderline = ev.target.closest(".btn-toggle-underline");
             if (btnUnderline) {
                 ev.preventDefault();
                 formatItemText(+btnUnderline.dataset.underlineIdx, "underline");
+                if (typeof markEditorDirty === "function") markEditorDirty();
                 return;
             }
         };
@@ -2368,12 +2402,20 @@
                 ED.terms.splice(+btn.dataset.x, 1);
                 renderTerms();
                 renderLivePreview();
+                if (typeof markEditorDirty === "function") markEditorDirty();
             }
         };
 
         $("#cn").onclick = () => {
-            if (ED.id) vq(ED.id);
-            else go("log");
+            if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED)) {
+                saveDraftSilently("cancel_button").then(() => {
+                    toast("Quotation automatically saved as draft");
+                    go("log");
+                }).catch(() => go("log"));
+            } else {
+                if (ED && ED.id) vq(ED.id);
+                else go("log");
+            }
         };
 
         $("#sd").onclick = (ev) => {
@@ -4957,25 +4999,64 @@
         }
     }
 
-    function saveQuotationApi(isIssue) {
+    // ==========================================
+    // QUOTATION DRAFT AUTOSAVE ENGINE
+    // ==========================================
+    let autosaveDebounceTimer = null;
+    let isEditorDirty = false;
+    let isAutosaving = false;
+    let pendingAutosave = false;
+
+    function hasQuotationMeaningfulContent(e) {
+        if (!e) return false;
+        if (e.id) return true; // Existing quote/revision/draft
+        const cName = (e.client_name || e.client || "").trim();
+        const cCode = (e.client_code || e.code || "").trim();
+        const subj = (e.subject || e.subj || "").trim();
+        const notes = (e.internal_notes || "").trim();
+        const contact = (e.contact_no || e.contact || "").trim();
+        const addr = (e.client_address || e.addr || "").trim();
+        const items = e.items || [];
+        const hasItem = items.some(it => {
+            const desc = (it.description || it[0] || "").trim();
+            const price = +(it.unit_price !== undefined ? it.unit_price : (it[3] || 0));
+            return desc.length > 0 || price > 0;
+        });
+        return !!(cName || cCode || subj || notes || contact || addr || hasItem);
+    }
+
+    function syncEditorToED() {
         if (!ED) return;
-
-        const activeBtn = isIssue ? $("#is") : $("#sd");
-        const otherBtn = isIssue ? $("#sd") : $("#is");
-        const laddaInst = createLadda(activeBtn);
-        if (laddaInst) laddaInst.start();
-        if (activeBtn) activeBtn.disabled = true;
-        if (otherBtn) otherBtn.disabled = true;
-
-        const stopLoading = () => {
-            if (laddaInst) {
-                try { laddaInst.stop(); } catch (e) {}
-            }
-            if (activeBtn) activeBtn.disabled = false;
-            if (otherBtn) otherBtn.disabled = false;
-        };
-
-        // Ensure latest values from input fields are synced
+        const nameEl = $('#inp_client_name');
+        if (nameEl && !xIsAmc(ED)) {
+            ED.client_name = nameEl.value.trim();
+            ED.client = ED.client_name;
+        }
+        const contactEl = $('#inp_contact_no');
+        if (contactEl) {
+            ED.contact_no = contactEl.value.trim();
+            ED.contact = ED.contact_no;
+        }
+        const addrEl = $('#ad');
+        if (addrEl) {
+            ED.client_address = addrEl.value.trim();
+            ED.addr = ED.client_address;
+        }
+        const attnEl = $('[data-k="attention"]');
+        if (attnEl) {
+            ED.attention = attnEl.value.trim();
+            ED.attn = ED.attention;
+        }
+        const dateEl = $('[data-k="quotation_date"]');
+        if (dateEl) {
+            ED.quotation_date = dateEl.value || TODAY;
+            ED.date = ED.quotation_date;
+        }
+        const subjEl = $('[data-k="subject"]');
+        if (subjEl) {
+            ED.subject = subjEl.value.trim();
+            ED.subj = ED.subject;
+        }
         const discValEl = $('[data-k="discount_value"]');
         if (discValEl) {
             ED.discount_value = +discValEl.value || 0;
@@ -4990,7 +5071,6 @@
             ED.vat_rate = +vatEl.value || 10;
             ED.vat = ED.vat_rate;
         }
-
         const notesEl = $('#inp_internal_notes');
         if (notesEl) {
             ED.internal_notes = notesEl.value;
@@ -5015,20 +5095,24 @@
         if (phoneEl) {
             ED.user_phone = phoneEl.value.trim();
         }
+    }
 
-        const payload = {
+    function buildQuotationPayload(isIssue, isAutoSave = false) {
+        syncEditorToED();
+        return {
             id: ED.id || null,
-            is_issue: isIssue,
+            is_issue: !!isIssue,
+            is_autosave: !!isAutoSave,
             seq_no: ED.seq_no !== undefined ? ED.seq_no : ED.seq,
             rev_no: ED.rev_no !== undefined ? ED.rev_no : (ED.rev || 0),
             variation_no: ED.variation_no !== undefined ? ED.variation_no : (ED.vn || 0),
             is_amc: xIsAmc(ED) ? 1 : 0,
-            client_name: ED.client_name || ED.client,
-            client_code: ED.client_code || ED.code,
-            client_address: ED.client_address || ED.addr,
-            contact_no: ED.contact_no || ED.contact,
-            attention: ED.attention || ED.attn,
-            subject: ED.subject || ED.subj,
+            client_name: ED.client_name || ED.client || (xIsAmc(ED) ? "Draft (AMC Client Pending)" : "Draft Customer"),
+            client_code: ED.client_code || ED.code || "",
+            client_address: ED.client_address || ED.addr || "",
+            contact_no: ED.contact_no || ED.contact || "",
+            attention: ED.attention || ED.attn || "",
+            subject: ED.subject || ED.subj || "Draft Quotation",
             quotation_date: ED.quotation_date || ED.date || TODAY,
             user_code: CU,
             user_name: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name,
@@ -5052,9 +5136,175 @@
                 });
             })
         };
+    }
+
+    function markEditorDirty() {
+        isEditorDirty = true;
+        if (autosaveDebounceTimer) clearTimeout(autosaveDebounceTimer);
+        autosaveDebounceTimer = setTimeout(() => {
+            if (isEditorDirty && ED && hasQuotationMeaningfulContent(ED)) {
+                saveDraftSilently("debounce");
+            }
+        }, 3500);
+    }
+
+    function saveDraftSilently(triggerReason = "auto") {
+        if (!ED || !hasQuotationMeaningfulContent(ED)) return Promise.resolve(null);
+        if (isAutosaving) {
+            pendingAutosave = true;
+            return Promise.resolve(null);
+        }
+
+        isAutosaving = true;
+        const payload = buildQuotationPayload(false, true);
+
+        const statusBadge = $("#autosave_status");
+        if (statusBadge) {
+            statusBadge.style.display = "inline-flex";
+            statusBadge.style.background = "#eff6ff";
+            statusBadge.style.color = "#1d4ed8";
+            statusBadge.style.border = "1px solid #bfdbfe";
+            statusBadge.innerHTML = `<i class="icon-spinner2 spinner mr-1" style="font-size:11px;"></i> Auto-saving draft…`;
+        }
+
+        return apiCall("save_quotation", payload, "POST").then(res => {
+            isAutosaving = false;
+            if (res && res.status === "success") {
+                if (res.id) {
+                    ED.id = res.id;
+                    if (res.quotation_no) {
+                        ED.quotation_no = res.quotation_no;
+                        ED.no = res.quotation_no;
+                    }
+                }
+                isEditorDirty = false;
+
+                try {
+                    localStorage.setItem('thc_quote_autosave_' + CU, JSON.stringify(ED));
+                } catch (e) {}
+
+                const curTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (statusBadge) {
+                    statusBadge.style.display = "inline-flex";
+                    statusBadge.style.background = "#f0fdf4";
+                    statusBadge.style.color = "#16a34a";
+                    statusBadge.style.border = "1px solid #bbf7d0";
+                    statusBadge.innerHTML = `<i class="icon-checkmark3 mr-1" style="font-size:11px;"></i> Draft auto-saved at ${curTime}`;
+                }
+
+                apiCall("get_quotations", {}, "GET").then(qRes => {
+                    if (qRes && qRes.status === "success" && qRes.quotations) {
+                        Q = qRes.quotations;
+                    }
+                }).catch(() => {});
+
+                if (pendingAutosave) {
+                    pendingAutosave = false;
+                    saveDraftSilently("pending");
+                }
+                return res;
+            } else {
+                if (statusBadge) {
+                    statusBadge.style.display = "inline-flex";
+                    statusBadge.style.background = "#fffbeb";
+                    statusBadge.style.color = "#b45309";
+                    statusBadge.style.border = "1px solid #fde68a";
+                    statusBadge.innerHTML = `<i class="icon-info22 mr-1" style="font-size:11px;"></i> Draft saved locally`;
+                }
+                return null;
+            }
+        }).catch(err => {
+            isAutosaving = false;
+            console.warn("Autosave notice:", err);
+            return null;
+        });
+    }
+
+    function sendBeaconOrKeepaliveDraft() {
+        if (!ED || !hasQuotationMeaningfulContent(ED)) return;
+        const payload = buildQuotationPayload(false, true);
+        const url = `${API_URL}?action=save_quotation`;
+        const bodyStr = JSON.stringify(payload);
+
+        let sent = false;
+        try {
+            if (window.fetch) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: bodyStr,
+                    keepalive: true
+                });
+                sent = true;
+            }
+        } catch (e) {}
+
+        if (!sent && navigator.sendBeacon) {
+            try {
+                const blob = new Blob([bodyStr], { type: 'application/json' });
+                navigator.sendBeacon(url, blob);
+            } catch (e) {}
+        }
+
+        try {
+            localStorage.setItem('thc_quote_autosave_' + CU, JSON.stringify(ED));
+        } catch (e) {}
+    }
+
+    // Window Unload & Navigation Listeners
+    window.addEventListener("beforeunload", function (e) {
+        if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED) && isEditorDirty) {
+            sendBeaconOrKeepaliveDraft();
+            e.preventDefault();
+            e.returnValue = "You have an unsaved quotation in progress. It will be saved as a draft.";
+            return e.returnValue;
+        }
+    });
+
+    window.addEventListener("pagehide", function () {
+        if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED)) {
+            sendBeaconOrKeepaliveDraft();
+        }
+    });
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "hidden" && ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED) && isEditorDirty) {
+            sendBeaconOrKeepaliveDraft();
+        }
+    });
+
+    setInterval(() => {
+        if (isEditorDirty && ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED) && !isAutosaving) {
+            saveDraftSilently("interval");
+        }
+    }, 20000);
+
+    function saveQuotationApi(isIssue) {
+        if (!ED) return;
+
+        const activeBtn = isIssue ? $("#is") : $("#sd");
+        const otherBtn = isIssue ? $("#sd") : $("#is");
+        const laddaInst = createLadda(activeBtn);
+        if (laddaInst) laddaInst.start();
+        if (activeBtn) activeBtn.disabled = true;
+        if (otherBtn) otherBtn.disabled = true;
+
+        const stopLoading = () => {
+            if (laddaInst) {
+                try { laddaInst.stop(); } catch (e) {}
+            }
+            if (activeBtn) activeBtn.disabled = false;
+            if (otherBtn) otherBtn.disabled = false;
+        };
+
+        const payload = buildQuotationPayload(isIssue, false);
 
         apiCall("save_quotation", payload, "POST").then(res => {
             if (res && res.status === "success") {
+                isEditorDirty = false;
+                try {
+                    localStorage.removeItem('thc_quote_autosave_' + CU);
+                } catch (e) {}
                 toast(res.message);
                 // Reload quotations
                 apiCall("get_quotations", {}, "GET").then(qRes => {
@@ -5197,6 +5447,7 @@
                     <li><b>8. Validity Period & Expiry:</b> Quotations carry validity days (default 30 days). Expired quotations display an Expired badge and lock banner; they can be refreshed back to Pending status using the <b>Revive Quote</b> action.</li>
                     <li><b>9. Comprehensive Activity Audit Trail:</b> Every status update, draft revision, void remark, client approval, rejection reason, execution completion, and admin reopening is timestamped and logged with the authenticated user's name in <code>activity_json</code>.</li>
                     <li><b>10. Totals & Reporting:</b> Sent = Pending + Approved + Not approved + Completed. Approved = Approved + Completed. Draft, Superseded, and Void are strictly excluded from sales pipeline totals.</li>
+                    <li><b>11. Automatic Draft Preservation (Autosave):</b> When a user is composing or editing a quotation and closes the browser window, navigates away, or leaves halfway, the system automatically saves the quotation to the database as a <b>Draft</b> via continuous background autosave and unload keepalive hooks. Unfinished work is never lost and remains accessible to any user in the Quotation Log.</li>
                 </ul>
             </div>
 
