@@ -153,6 +153,7 @@ class QuotationModuleController
                 `total_incl_vat` DECIMAL(18,3) NOT NULL DEFAULT 0.000,
                 `terms_json` LONGTEXT,
                 `status` ENUM('Draft','Pending','Pending approval','Approved','Not approved','Superseded','Void','Completed','Expired') NOT NULL DEFAULT 'Draft',
+                `is_autosaved` TINYINT(1) NOT NULL DEFAULT 0,
                 `rejection_reason` VARCHAR(255) DEFAULT '',
                 `remark` TEXT,
                 `created_by_id` INT(11) DEFAULT 0,
@@ -252,6 +253,12 @@ class QuotationModuleController
             } else {
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ALTER COLUMN `include_user_phone` SET DEFAULT 1");
                 @mysqli_query($this->db, "UPDATE `tbl_quotations_v2` SET `include_user_phone` = 1 WHERE `include_user_phone` = 0");
+            }
+
+            // Migration check: Add is_autosaved column if missing
+            $chkAuto = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'is_autosaved'");
+            if ($chkAuto && mysqli_num_rows($chkAuto) == 0) {
+                @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `is_autosaved` TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`");
             }
 
             $itemsSql = "CREATE TABLE IF NOT EXISTS `tbl_quotation_items_v2` (
@@ -1240,6 +1247,7 @@ class QuotationModuleController
                         "bullet_items" => (int)($r['bullet_items'] ?? 0),
                         "terms" => $terms,
                         "status" => $r['status'],
+                        "is_autosaved" => (int)($r['is_autosaved'] ?? 0),
                         "rejection_reason" => $r['rejection_reason'],
                         "remark" => $r['remark'],
                         "appr" => $appr,
@@ -1837,6 +1845,9 @@ class QuotationModuleController
             $totAmt = $netAmt + $vatAmt;
 
             $status = $x['status'] ?? 'Draft';
+            if ($status === 'Draft' && !empty($x['is_autosaved'])) {
+                $status = 'Draft (Auto saved)';
+            }
             $decisionInfo = '';
             if ($status === 'Completed') {
                 $compBy = $x['completion_by'] ?? '';
@@ -2208,6 +2219,7 @@ class QuotationModuleController
                 $activity[] = ["d" => date('Y-m-d H:i'), "u" => $userName, "t" => $actNote];
             }
             $actJson = mysqli_real_escape_string($this->db, json_encode($activity));
+            $isAutosaveVal = (!$isIssue && $isAutosave) ? 1 : 0;
 
             if ($id > 0) {
                 $upd = "UPDATE tbl_quotations_v2 SET 
@@ -2242,6 +2254,7 @@ class QuotationModuleController
                     bullet_items = $bulletItems,
                     terms_json = '$termsJson',
                     status = '$status',
+                    is_autosaved = $isAutosaveVal,
                     activity_json = '$actJson'
                     WHERE id = $id";
                 mysqli_query($this->db, $upd);
@@ -2252,12 +2265,12 @@ class QuotationModuleController
                     (seq_no, rev_no, variation_no, quotation_no, is_amc, client_code, client_name, client_address,
                      contact_no, attention, subject, quotation_date, user_code, user_name, user_designation, user_phone, include_user_phone,
                      vat_rate, discount_type, discount_value, discount_amount, subtotal_excl_vat, vat_amount, total_incl_vat,
-                     internal_notes, merge_items, merge_qty, merged_lump_sum_price, bullet_items, terms_json, status, activity_json)
+                     internal_notes, merge_items, merge_qty, merged_lump_sum_price, bullet_items, terms_json, status, is_autosaved, activity_json)
                     VALUES 
                     ($seqVal, $revNo, $variationNo, '$escQNo', $isAmc, '$escClientCode', '$escClientName', '$escClientAddress',
                      '$escContact', '$escAttn', '$escSubj', '$escDate', '$escUserCode', '$escUserName', '$escUserDesig', '$escUserPhone', $includeUserPhone,
                      $vatRate, '$discountType', $discountValue, $discountAmount, $subtotal, $vatAmount, $totalInclVat,
-                     '$escNotes', $mergeItems, $mergeQty, $mergedLumpSumPrice, $bulletItems, '$termsJson', '$status', '$actJson')";
+                     '$escNotes', $mergeItems, $mergeQty, $mergedLumpSumPrice, $bulletItems, '$termsJson', '$status', $isAutosaveVal, '$actJson')";
                 mysqli_query($this->db, $ins);
                 $savedId = mysqli_insert_id($this->db);
             }
@@ -2341,6 +2354,7 @@ class QuotationModuleController
                 "bullet_items" => $bulletItems,
                 "terms" => $terms,
                 "status" => $status,
+                "is_autosaved" => $isAutosaveVal,
                 "rejection_reason" => "",
                 "remark" => "",
                 "items" => $cleanItems
@@ -2371,7 +2385,8 @@ class QuotationModuleController
             "message" => $isIssue ? "Quotation {$quotationNo} issued successfully" : "Draft saved successfully",
             "id" => $savedId,
             "quotation_no" => $quotationNo,
-            "is_issued" => $isIssue
+            "is_issued" => $isIssue,
+            "is_autosaved" => $isAutosaveVal
         ]);
     }
 
@@ -2455,6 +2470,7 @@ class QuotationModuleController
                 $escAct = mysqli_real_escape_string($this->db, $actJson);
                 mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
                     status = 'Draft',
+                    is_autosaved = 0,
                     approval_by = NULL,
                     approval_date = NULL,
                     client_po_ref = '',
@@ -2465,6 +2481,7 @@ class QuotationModuleController
                 foreach ($quotes as &$q) {
                     if ($q['id'] == $id) {
                         $q['status'] = 'Draft';
+                        $q['is_autosaved'] = 0;
                         $q['appr'] = null;
                         $q['approval_by'] = null;
                         $q['approval_date'] = null;

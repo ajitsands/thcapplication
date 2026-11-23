@@ -142,6 +142,14 @@
         if (status === "Void") {
             return `<span class="tag tag-void" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-weight:600;"><i class="icon-blocked mr-1"></i> Void</span>`;
         }
+        if (status === "Draft") {
+            const isAuto = (q.is_autosaved == 1 || q.is_autosaved === true) ||
+                (Array.isArray(q.activity || q.log) && (q.activity || q.log).length > 0 && (q.activity || q.log)[(q.activity || q.log).length - 1].t === "Draft auto-saved");
+            if (isAuto) {
+                return `<span class="tag Draft">Draft</span> <span class="tag tag-autosaved" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:4px;margin-left:4px;display:inline-flex;align-items:center;gap:3px;text-transform:none;"><i class="icon-floppy-disk" style="font-size:10px;"></i>Auto saved</span>`;
+            }
+            return `<span class="tag Draft">Draft</span>`;
+        }
         const isExp = exp(q);
         return `<span class="tag ${cleanClass}">${H(status)}${isExp ? " · expired" : ""}</span>`;
     };
@@ -1066,6 +1074,9 @@
             const totalVal = tot(x);
 
             const status = x.status || x.st || "Draft";
+            const isAuto = (x.is_autosaved == 1 || x.is_autosaved === true) ||
+                (Array.isArray(x.activity || x.log) && (x.activity || x.log).length > 0 && (x.activity || x.log)[(x.activity || x.log).length - 1].t === "Draft auto-saved");
+            const statusText = (status === "Draft" && isAuto) ? "Draft (Auto saved)" : status;
             let decisionInfo = "";
             if (status === "Completed") {
                 decisionInfo = `Completed on ${dmy(x.completion_date)}${x.completion_by ? ' by ' + x.completion_by : ''}${x.completion_notes ? ' (' + x.completion_notes + ')' : ''}`;
@@ -1121,7 +1132,7 @@
                 Number(vatVal.toFixed(3)),
                 Number(totalVal.toFixed(3)),
                 isMerged,
-                status,
+                statusText,
                 decisionInfo,
                 internalNotes,
                 itemsSummary
@@ -1148,7 +1159,7 @@
                 <td style="text-align:right;mso-number-format:'#,##0.000';">${vatVal.toFixed(3)}</td>
                 <td style="text-align:right;font-weight:bold;color:#0A4174;mso-number-format:'#,##0.000';">${totalVal.toFixed(3)}</td>
                 <td style="text-align:center;">${isMerged}</td>
-                <td style="text-align:center;font-weight:bold;">${H(status)}</td>
+                <td style="text-align:center;font-weight:bold;">${H(statusText)}</td>
                 <td>${H(decisionInfo)}</td>
                 <td style="background:#fffbeb;color:#92400e;">${H(internalNotes)}</td>
                 <td style="font-size:10pt;color:#475569;">${H(itemsSummary)}</td>
@@ -5185,6 +5196,7 @@
                         ED.no = res.quotation_no;
                     }
                 }
+                ED.is_autosaved = 1;
                 isEditorDirty = false;
 
                 try {
@@ -5310,6 +5322,7 @@
         apiCall("save_quotation", payload, "POST").then(res => {
             if (res && res.status === "success") {
                 isEditorDirty = false;
+                if (ED) ED.is_autosaved = 0;
                 try {
                     localStorage.removeItem('thc_quote_autosave_' + CU);
                 } catch (e) {}
@@ -5455,7 +5468,7 @@
                     <li><b>8. Validity Period & Expiry:</b> Quotations carry validity days (default 30 days). Expired quotations display an Expired badge and lock banner; they can be refreshed back to Pending approval status using the <b>Revive Quote</b> action.</li>
                     <li><b>9. Comprehensive Activity Audit Trail:</b> Every status update, draft revision, void remark, client approval, rejection reason, execution completion, and admin reopening is timestamped and logged with the authenticated user's name in <code>activity_json</code>.</li>
                     <li><b>10. Totals & Reporting:</b> Sent = Pending approval + Approved + Not approved + Completed. Approved = Approved + Completed. Draft, Superseded, and Void are strictly excluded from sales pipeline totals.</li>
-                    <li><b>11. Automatic Draft Preservation (Autosave):</b> When a user is composing or editing a quotation and closes the browser window, navigates away, or leaves halfway, the system automatically saves the quotation to the database as a <b>Draft</b> via continuous background autosave and unload keepalive hooks. Unfinished work is never lost and remains accessible to any user in the Quotation Log.</li>
+                    <li><b>11. Automatic Draft Preservation (Autosave):</b> When a user is composing or editing a quotation and closes the browser window, navigates away, or leaves halfway, the system automatically saves the quotation to the database as a <b>Draft</b> via continuous background autosave and unload keepalive hooks. Autosaved drafts display a distinct <code>Auto saved</code> badge beside the <b>Draft</b> status (<code>Draft [Auto saved]</code>) in the Quotation Log and Detail view. When a draft is manually saved by clicking "Save draft", the status appears simply as <code>Draft</code> with no extra text.</li>
                 </ul>
             </div>
 
