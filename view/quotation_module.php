@@ -527,6 +527,10 @@ if ($isLoggedIn) {
             gap: 3px !important;
             text-transform: none !important;
         }
+        #btn_import_items,
+        #btn_import_items_bottom {
+            display: none !important;
+        }
         .card.bar select,
         .filter-toolbar select {
             flex: 1 1 135px !important;

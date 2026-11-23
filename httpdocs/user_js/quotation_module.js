@@ -1917,7 +1917,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom:2px solid var(--q-blue-ice);">
                             <h2 style="margin:0;border:none;padding:0;">Scope of works</h2>
                             <div style="display:flex;gap:6px;align-items:center;">
-                                <button type="button" id="btn_import_items" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" title="Import line items from Excel, CSV, clipboard, or existing quote">
+                                <button type="button" id="btn_import_items" class="btn btn-sm" style="display:none !important;" title="Import line items from Excel, CSV, clipboard, or existing quote">
                                     <i class="icon-file-download2" style="font-size:13px;color:#0A4174;"></i> Import Items
                                 </button>
                                 <button type="button" id="btn_check_grammar_items" class="btn btn-sm" style="font-size:12px;padding:4px 11px;border-radius:7px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
@@ -1959,7 +1959,7 @@
                         <div id="its"></div>
                         <div style="display:flex;justify-content:flex-start;align-items:center;gap:8px;margin-top:10px;">
                             <button id="ai">+ Add item</button>
-                            <button type="button" id="btn_import_items_bottom" class="btn btn-sm" style="font-size:12px;padding:5px 12px;border-radius:6px;background:#eef6fc;border:1.5px solid #7BBDE8;color:#0A4174;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" title="Import line items from Excel, CSV, clipboard, or existing quote">
+                            <button type="button" id="btn_import_items_bottom" class="btn btn-sm" style="display:none !important;" title="Import line items from Excel, CSV, clipboard, or existing quote">
                                 <i class="icon-file-download2" style="font-size:13px;color:#0A4174;"></i> Import Items
                             </button>
                         </div>
