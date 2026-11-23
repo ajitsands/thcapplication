@@ -1192,15 +1192,6 @@
                 <td colspan="5"></td>
             </tr>`;
 
-        const filterSummaryParts = [];
-        if (F.q) filterSummaryParts.push(`Search: "${F.q}"`);
-        if (F.client) filterSummaryParts.push(`Client: "${F.client}"`);
-        if (F.st) filterSummaryParts.push(`Status: "${F.st}"`);
-        if (F.type) filterSummaryParts.push(`Type: "${F.type}"`);
-        if (F.user) filterSummaryParts.push(`User: "${F.user}"`);
-        if (F.sup) filterSummaryParts.push(`Including Superseded/Void`);
-        const filterStr = filterSummaryParts.length ? filterSummaryParts.join(" | ") : "All Quotations (No filters)";
-
         const template = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
         <head>
