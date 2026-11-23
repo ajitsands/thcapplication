@@ -830,13 +830,20 @@
         const L = getFilteredQuotations();
         const expBtn = $("#btn_export_excel");
         if (expBtn) {
-            expBtn.innerHTML = `<i class="icon-file-excel mr-1"></i> Export to Excel (${L.length})`;
+            expBtn.innerHTML = `<i class="icon-file-excel mr-1"></i> Export to Excel`;
             expBtn.disabled = (L.length === 0);
             expBtn.style.opacity = (L.length === 0) ? "0.6" : "1";
         }
 
         const S = L.filter(x => SENT.includes(x.status || x.st));
         const A = L.filter(x => ["Approved", "Completed"].includes(x.status || x.st));
+
+        // Destroy any active DataTable instance before replacing table HTML
+        if (window.jQuery && typeof window.jQuery.fn.DataTable === "function" && window.jQuery.fn.DataTable.isDataTable('#tbl_quotation_log')) {
+            try {
+                window.jQuery('#tbl_quotation_log').DataTable().destroy();
+            } catch (err) {}
+        }
 
         $("#res").innerHTML = `
             <div class="kpis">
@@ -856,7 +863,7 @@
             </div>
             
             <div class="card tw">
-                <table class="lg">
+                <table class="lg" id="tbl_quotation_log">
                     <thead>
                         <tr>
                             <th>Quote no.</th>
@@ -894,19 +901,19 @@
                                     <small>${H(code)} · ${isAmc ? "AMC" : "Non-AMC"}</small>
                                 </td>
                                 <td class="w">${H(subj)}</td>
-                                <td>${date}</td>
+                                <td data-order="${x.quotation_date || x.date || ''}">${date}</td>
                                 <td>${H(userName)}</td>
-                                <td>
+                                <td data-order="${netAmt(x)}">
                                     ${discAmount(x) > 0 ? `
                                         <b>${f3(netAmt(x))}</b><br>
                                         <small style="color:#b91c1c;font-weight:600;">(-${f3(discAmount(x))} disc)</small>
                                     ` : f3(netAmt(x))}
                                 </td>
-                                <td><b>${f3(tot(x))}</b></td>
+                                <td data-order="${tot(x)}"><b>${f3(tot(x))}</b></td>
                                 <td style="max-width:160px;font-size:11.5px;">
                                     ${x.internal_notes ? `
                                         <div style="background:#fffbeb;border:1px solid #fef3c7;color:#92400e;padding:4px 7px;border-radius:5px;line-height:1.3;display:inline-block;max-width:100%;white-space:normal;word-break:break-word;" title="${H(x.internal_notes)}">
-                                            <i class="icon-file-text2 mr-1" style="font-size:10px;"></i>${H(x.internal_notes.length > 38 ? x.internal_notes.slice(0, 36) + '…' : x.internal_notes)}
+                                             <i class="icon-file-text2 mr-1" style="font-size:10px;"></i>${H(x.internal_notes.length > 38 ? x.internal_notes.slice(0, 36) + '…' : x.internal_notes)}
                                         </div>
                                     ` : '<span style="color:#cbd5e1;">—</span>'}
                                 </td>
@@ -925,6 +932,38 @@
             </div>
             <p style="color:var(--mut);font-size:12px;margin-top:8px;">Totals follow the filters above. Drafts, superseded revisions and void quotes are never counted.</p>`;
 
+        // Initialize jQuery DataTable with 20 entries by default
+        if (window.jQuery && typeof window.jQuery.fn.DataTable === "function" && L.length > 0) {
+            try {
+                window.jQuery('#tbl_quotation_log').DataTable({
+                    pageLength: 20,
+                    lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+                    autoWidth: false,
+                    order: [],
+                    dom: '<"datatable-header"fl><"datatable-scroll"t><"datatable-footer"ip>',
+                    language: {
+                        search: '<span>Search:</span> _INPUT_',
+                        searchPlaceholder: 'Quick filter table...',
+                        lengthMenu: '<span>Show:</span> _MENU_',
+                        info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                        infoEmpty: 'Showing 0 to 0 of 0 entries',
+                        infoFiltered: '(filtered from _MAX_ total)',
+                        paginate: {
+                            first: 'First',
+                            last: 'Last',
+                            next: window.jQuery('html').attr('dir') == 'rtl' ? '&larr;' : '&rarr;',
+                            previous: window.jQuery('html').attr('dir') == 'rtl' ? '&rarr;' : '&larr;'
+                        }
+                    },
+                    columnDefs: [
+                        { orderable: false, targets: [9] }
+                    ]
+                });
+            } catch (err) {
+                console.error("DataTables initialization error:", err);
+            }
+        }
+
         $("#res").onclick = e => {
             const pdfBtn = e.target.closest("[data-pdf]");
             const row = e.target.closest("tr[data-id]");
@@ -939,7 +978,26 @@
 
     // Export Quotation Log to Excel
     function exportQuotationLogToExcel() {
-        const list = getFilteredQuotations();
+        let list = getFilteredQuotations();
+
+        // If DataTable has an active search filter applied, honor it in export
+        if (window.jQuery && typeof window.jQuery.fn.DataTable === "function" && window.jQuery.fn.DataTable.isDataTable('#tbl_quotation_log')) {
+            try {
+                const dt = window.jQuery('#tbl_quotation_log').DataTable();
+                const matchedIds = [];
+                dt.rows({ search: 'applied' }).every(function () {
+                    const rowNode = this.node();
+                    if (rowNode && rowNode.dataset && rowNode.dataset.id) {
+                        matchedIds.push(+rowNode.dataset.id);
+                    }
+                });
+                if (matchedIds.length && matchedIds.length < list.length) {
+                    const idSet = new Set(matchedIds);
+                    list = list.filter(q => idSet.has(+q.id));
+                }
+            } catch (e) {}
+        }
+
         if (!list || !list.length) {
             toast("No quotations found matching current filters to export.");
             return;
@@ -953,6 +1011,7 @@
         let totalVat = 0;
         let grandTotal = 0;
 
+        const excelRows = [];
         let rowsHtml = "";
         list.forEach((x, idx) => {
             const qNo = x.quotation_no || x.no || "Draft";
@@ -1012,6 +1071,32 @@
             totalVat += vatVal;
             grandTotal += totalVal;
 
+            excelRows.push([
+                idx + 1,
+                qNo,
+                version,
+                date,
+                clientName,
+                clientCode,
+                isAmc,
+                contactNo,
+                attention,
+                subject,
+                userName,
+                userTitle,
+                Number(grossAmt.toFixed(3)),
+                discAmt > 0 ? Number((-discAmt).toFixed(3)) : 0,
+                Number(net.toFixed(3)),
+                vatRate + "%",
+                Number(vatVal.toFixed(3)),
+                Number(totalVal.toFixed(3)),
+                isMerged,
+                status,
+                decisionInfo,
+                internalNotes,
+                itemsSummary
+            ]);
+
             rowsHtml += `
             <tr>
                 <td style="text-align:center;">${idx + 1}</td>
@@ -1039,6 +1124,61 @@
                 <td style="font-size:10pt;color:#475569;">${H(itemsSummary)}</td>
             </tr>`;
         });
+
+        const filterSummaryParts = [];
+        if (F.q) filterSummaryParts.push(`Search: "${F.q}"`);
+        if (F.client) filterSummaryParts.push(`Client: "${F.client}"`);
+        if (F.st) filterSummaryParts.push(`Status: "${F.st}"`);
+        if (F.type) filterSummaryParts.push(`Type: "${F.type}"`);
+        if (F.user) filterSummaryParts.push(`User: "${F.user}"`);
+        if (F.sup) filterSummaryParts.push(`Including Superseded/Void`);
+        const filterStr = filterSummaryParts.length ? filterSummaryParts.join(" | ") : "All Quotations (No filters)";
+
+        // 1. Try native XLSX export via SheetJS library (loaded in header)
+        if (window.XLSX && typeof window.XLSX.utils !== "undefined") {
+            try {
+                const headerRows = [
+                    ["THC FACILITY MANAGEMENT — QUOTATION LOG EXPORT"],
+                    [`Export Date: ${new Date().toLocaleString()}`, `Total Records: ${list.length}`, `Filters: ${filterStr}`],
+                    [],
+                    [
+                        "Sl.", "Quote No.", "Version", "Date", "Client Name", "Client Code", "Type",
+                        "Contact No.", "Attention", "Subject", "Prepared By", "Designation",
+                        "Gross Excl. VAT (BHD)", "Discount (BHD)", "Net Excl. VAT (BHD)", "VAT %",
+                        "VAT Amount (BHD)", "Total Incl. VAT (BHD)", "Merged?", "Status",
+                        "Decision / Remark", "Internal Notes (Office Ref)", "Scope of Works Summary"
+                    ]
+                ];
+
+                const totalsRow = [
+                    "", `TOTALS (${list.length} Quotes)`, "", "", "", "", "", "", "", "", "", "",
+                    Number(totalGross.toFixed(3)),
+                    Number((-totalDiscount).toFixed(3)),
+                    Number(totalNet.toFixed(3)),
+                    "—",
+                    Number(totalVat.toFixed(3)),
+                    Number(grandTotal.toFixed(3)),
+                    "", "", "", "", ""
+                ];
+
+                const ws = window.XLSX.utils.aoa_to_sheet([...headerRows, ...excelRows, totalsRow]);
+                ws['!cols'] = [
+                    { wch: 6 }, { wch: 22 }, { wch: 10 }, { wch: 12 }, { wch: 24 }, { wch: 12 }, { wch: 10 },
+                    { wch: 14 }, { wch: 16 }, { wch: 28 }, { wch: 18 }, { wch: 18 },
+                    { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 8 }, { wch: 14 }, { wch: 18 },
+                    { wch: 10 }, { wch: 12 }, { wch: 26 }, { wch: 24 }, { wch: 35 }
+                ];
+
+                const wb = window.XLSX.utils.book_new();
+                window.XLSX.utils.book_append_sheet(wb, ws, "Quotation Log");
+                const fileName = `THC_Quotation_Log_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                window.XLSX.writeFile(wb, fileName);
+                toast(`Exported ${list.length} quotations to ${fileName}`);
+                return;
+            } catch (xlsxErr) {
+                console.warn("SheetJS export failed, falling back to HTML spreadsheet blob:", xlsxErr);
+            }
+        }
 
         const footerHtml = `
             <tr style="background:#f1f5f9;font-weight:bold;border-top:2px solid #0A4174;">

@@ -712,6 +712,142 @@ if ($isLoggedIn) {
         .lg td.w { white-space: normal; min-width: 220px; }
         .lg small { color: var(--q-text-muted); font-size: 12px; }
 
+        /* Modern DataTables Styling for Quotation Log */
+        .dataTables_wrapper {
+            position: relative;
+            clear: both;
+        }
+        .dataTables_wrapper .datatable-header {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid var(--q-border);
+            background: #f8fafc;
+        }
+        .dataTables_wrapper .datatable-footer {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-top: 1px solid var(--q-border);
+            background: #f8fafc;
+            color: var(--q-text-muted);
+            font-size: 12.5px;
+        }
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 12.5px;
+            color: var(--q-navy-dark);
+        }
+        .dataTables_wrapper .dataTables_length select {
+            height: 34px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--q-border);
+            background: #ffffff;
+            color: var(--q-navy-dark);
+            font-weight: 600;
+            outline: none;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            height: 34px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--q-border);
+            background: #ffffff;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: var(--q-navy-mid);
+            box-shadow: 0 0 0 3px rgba(10, 65, 116, 0.1);
+        }
+        .dataTables_wrapper .dataTables_paginate {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--q-navy-dark) !important;
+            background: #ffffff;
+            border: 1px solid var(--q-border);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #f1f5f9 !important;
+            border-color: var(--q-navy-mid) !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: var(--q-navy-main) !important;
+            border-color: var(--q-navy-main) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(10, 65, 116, 0.25);
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background: #ffffff !important;
+            border-color: var(--q-border) !important;
+        }
+
+        /* DataTables Sort Indicators on Header */
+        .lg th.sorting, .lg th.sorting_asc, .lg th.sorting_desc {
+            cursor: pointer;
+            position: relative;
+            padding-right: 28px !important;
+            user-select: none;
+        }
+        .lg th.sorting:after, .lg th.sorting_asc:after, .lg th.sorting_desc:after {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            opacity: 0.35;
+            content: "⇅";
+        }
+        .lg th.sorting_asc:after {
+            content: "▲";
+            opacity: 1;
+            color: var(--q-navy-mid);
+        }
+        .lg th.sorting_desc:after {
+            content: "▼";
+            opacity: 1;
+            color: var(--q-navy-mid);
+        }
+        .lg th.sorting_disabled {
+            cursor: default;
+            padding-right: 16px !important;
+        }
+        .lg th.sorting_disabled:after {
+            display: none;
+        }
+
         /* Status Badges */
         .tag {
             padding: 4px 11px;
@@ -2084,8 +2220,11 @@ if ($isLoggedIn) {
         <option>Ltr</option>
     </datalist>
 
-    <!-- SheetJS XLSX Library for Excel File Parsing -->
+    <!-- SheetJS XLSX Library for Excel File Parsing & Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- DataTables Library -->
+    <script src="global_assets/js/plugins/tables/datatables/datatables.min.js"></script>
 
     <!-- Select2 (Ensured for Searchable Dropdowns) -->
     <script src="global_assets/js/plugins/forms/selects/select2.min.js"></script>
