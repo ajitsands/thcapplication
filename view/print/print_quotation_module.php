@@ -697,9 +697,9 @@ if ($download) {
         $html .= '</table><table cellpadding="0" cellspacing="0" border="0" style="width:100%;"><tr><td style="height:6px;"></td></tr></table>';
     }
 
-    $apprBoxHtml = '<b>Approved By:</b><br>Name:<br>Date:';
+    $apprBoxHtml = '<b>Approved By:</b><br><br>Name:<br><br>Date:';
     if ($isApproved && !empty($apprBy)) {
-        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><b>Date:</b> ' . htmlspecialchars(fDate($apprDate ?: $q['quotation_date'])) . (!empty($apprPo) ? '<br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
+        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><br><b>Date:</b> ' . htmlspecialchars(fDate($apprDate ?: $q['quotation_date'])) . (!empty($apprPo) ? '<br><br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
     }
 
     $closingNote = 'We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.';
@@ -707,21 +707,21 @@ if ($download) {
     // Prepare Stamp & Signature for PDF
     $stampSignHtml = '';
     if ($hasSig && $hasStamp) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="38" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="' . $stampFile . '" height="44" /></td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="42" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="' . $stampFile . '" height="48" /></td></tr></table>';
     } elseif ($hasSig) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="38" /></td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="42" /></td></tr></table>';
     } elseif ($hasStamp) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $stampFile . '" height="44" /></td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $stampFile . '" height="48" /></td></tr></table>';
     } else {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td height="26">&nbsp;</td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td height="36">&nbsp;</td></tr></table>';
     }
 
-    $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:8.8pt;">'
-        . '<tr><td colspan="3" style="line-height:1.3;">' . $closingNote . '</td></tr>'
-        . '<tr><td colspan="3" style="height:6px;"></td></tr>'
+    $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9pt;">'
+        . '<tr><td colspan="3" style="line-height:1.35;">' . $closingNote . '</td></tr>'
+        . '<tr><td colspan="3" style="height:8px;"></td></tr>'
         . '<tr>'
-        . '<td width="55%" style="line-height:1.3;vertical-align:top;">'
-        . '<b>Thanking you,</b><br>'
+        . '<td width="55%" style="line-height:1.4;vertical-align:top;">'
+        . '<b>Thanking you,</b><br><br>'
         . '<b>Yours sincerely,</b><br>'
         . '<b>THC Facility Management W.L.L</b><br>'
         . $stampSignHtml
@@ -731,8 +731,8 @@ if ($download) {
         . '</td>'
         . '<td width="5%"></td>'
         . '<td width="40%" style="vertical-align:top;">'
-        . '<table cellpadding="7" cellspacing="0" border="0" style="width:100%;">'
-        . '<tr><td style="border:1px solid #cbd5e1;background-color:#f8fafc;line-height:1.6;vertical-align:top;">' . $apprBoxHtml . '</td></tr>'
+        . '<table cellpadding="10" cellspacing="0" border="0" style="width:100%;">'
+        . '<tr><td style="border:1px solid #cbd5e1;background-color:#f8fafc;line-height:1.8;vertical-align:top;">' . $apprBoxHtml . '</td></tr>'
         . '</table>'
         . '</td>'
         . '</tr>'
