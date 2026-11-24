@@ -495,8 +495,8 @@ if ($download) {
     $pdf->SetTitle($pdfFilename);
     $pdf->setPrintHeader(true);
     $pdf->setPrintFooter(true);
-    $pdf->SetMargins(15, 18, 15);
-    $pdf->SetAutoPageBreak(TRUE, 38);
+    $pdf->SetMargins(15, 16, 15);
+    $pdf->SetAutoPageBreak(TRUE, 29);
     $pdf->SetFont('helvetica', '', 9);
     $pdf->AddPage();
 
@@ -515,16 +515,16 @@ if ($download) {
         }
     }
     if ($logoFile) {
-        $pdf->Image($logoFile, 15, 11, 55, 0, 'PNG');
+        $pdf->Image($logoFile, 15, 9, 50, 0, 'PNG');
     }
-    $pdf->Ln(18);
 
     // Decorative rule under letterhead
     $pdf->SetDrawColor(46, 46, 121);
     $pdf->SetLineWidth(0.6);
-    $pdf->Line(15, 28, 195, 28);
+    $pdf->Line(15, 24.5, 195, 24.5);
     $pdf->SetDrawColor(203, 213, 225);
     $pdf->SetLineWidth(0.2);
+    $pdf->SetY(27);
 
     $signerName = $q['user_name'] ?? 'Authorized Signatory';
     if (strtolower(trim($signerName)) === 'adminstrator') {
@@ -563,18 +563,19 @@ if ($download) {
     }
 
     // Build HTML for TCPDF writeHTML with strict zero-indent formatting to ensure perfect flush-left alignment
-    $html = '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9.5pt;color:#1e293b;">'
-        . '<tr><td style="line-height:1.4;"><b>No: ' . htmlspecialchars($qNo) . '</b><br><b>Date: ' . htmlspecialchars(fDate($q['quotation_date'])) . '</b></td></tr>';
-    $html .= '<tr><td style="height:6px;"></td></tr>'
-        . '<tr><td style="line-height:1.4;"><b>To,</b><br><b>' . htmlspecialchars($q['client_name']) . '</b><br>' . nl2br(htmlspecialchars($q['client_address']))
-        . (!empty($q['client_code']) ? '<br><span style="color:#64748b;font-size:8.5pt;">Client code: ' . htmlspecialchars($q['client_code']) . '</span>' : '')
+    $html = '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9pt;color:#1e293b;">'
+        . '<tr><td style="line-height:1.3;"><b>No: ' . htmlspecialchars($qNo) . '</b><br><b>Date: ' . htmlspecialchars(fDate($q['quotation_date'])) . '</b></td></tr>';
+    $html .= '<tr><td style="height:3px;"></td></tr>'
+        . '<tr><td style="line-height:1.3;"><b>To,</b><br><b>' . htmlspecialchars($q['client_name']) . '</b><br>' . nl2br(htmlspecialchars($q['client_address']))
+        . (!empty($q['client_code']) ? '<br><span style="color:#64748b;font-size:8pt;">Client code: ' . htmlspecialchars($q['client_code']) . '</span>' : '')
         . '</td></tr>';
     if (!empty($q['attention'])) {
-        $html .= '<tr><td style="height:6px;"></td></tr><tr><td style="line-height:1.4;"><b>Kind Attn: ' . htmlspecialchars($q['attention']) . '</b></td></tr>';
+        $html .= '<tr><td style="height:3px;"></td></tr><tr><td style="line-height:1.3;"><b>Kind Attn: ' . htmlspecialchars($q['attention']) . '</b></td></tr>';
     }
-    $html .= '<tr><td style="height:6px;"></td></tr>'
-        . '<tr><td style="line-height:1.4;"><b><u>Sub: ' . htmlspecialchars($q['subject']) . '</u></b><br>With reference to subject job we are pleased to submit our offer as under: -</td></tr>'
-        . '</table><br><br>';
+    $html .= '<tr><td style="height:3px;"></td></tr>'
+        . '<tr><td style="line-height:1.3;"><b><u>Sub: ' . htmlspecialchars($q['subject']) . '</u></b><br>With reference to subject job we are pleased to submit our offer as under: -</td></tr>'
+        . '<tr><td style="height:6px;"></td></tr>'
+        . '</table>';
 
     $isMerged = !empty($q['merge_items']);
     $mergeQty = !empty($q['merge_qty']);
@@ -585,7 +586,7 @@ if ($download) {
         $calcLumpSum = $subtotal;
     }
 
-    $html .= '<table cellpadding="5" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:9pt;border-color:#cbd5e1;">
+    $html .= '<table cellpadding="4" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;font-size:8.8pt;border-color:#cbd5e1;">
         <thead>
             <tr style="background-color:#2e2e79;color:#ffffff;font-weight:bold;">
                 <th width="10%" align="center"><b>' . ($isBullet ? '&bull;' : 'Sl.&nbsp;No.') . '</b></th>
@@ -685,41 +686,42 @@ if ($download) {
             </tr>
         </tfoot>
     </table>
-    <br><br>';
+    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;"><tr><td style="height:6px;"></td></tr></table>';
 
     if (!empty($terms)) {
-        $html .= '<div nobr="true"><p style="font-size:9.5pt;margin-bottom:4px;"><b><u>Terms and Condition:</u></b></p><ol style="font-size:9pt;line-height:1.4;">';
-        foreach ($terms as $t) {
-            $html .= '<li>' . htmlspecialchars($t) . '</li>';
+        $html .= '<div style="font-size:9pt;line-height:1.25;"><b><u>Terms and Condition:</u></b></div>'
+            . '<table cellpadding="1" cellspacing="0" border="0" style="width:100%;font-size:8.5pt;line-height:1.28;color:#1e293b;">';
+        foreach ($terms as $tIdx => $t) {
+            $html .= '<tr><td width="4%" align="right" style="vertical-align:top;">' . ($tIdx + 1) . '.</td><td width="96%" style="vertical-align:top;">' . htmlspecialchars($t) . '</td></tr>';
         }
-        $html .= '</ol><br></div>';
+        $html .= '</table><table cellpadding="0" cellspacing="0" border="0" style="width:100%;"><tr><td style="height:6px;"></td></tr></table>';
     }
 
-    $apprBoxHtml = '<b>Approved By:</b><br><br>Name:<br><br>Date:';
+    $apprBoxHtml = '<b>Approved By:</b><br>Name:<br>Date:';
     if ($isApproved && !empty($apprBy)) {
-        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><br><b>Date:</b> ' . htmlspecialchars(fDate($apprDate ?: $q['quotation_date'])) . (!empty($apprPo) ? '<br><br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
+        $apprBoxHtml = '<b>Approved By:</b> ' . htmlspecialchars($apprBy) . '<br><b>Date:</b> ' . htmlspecialchars(fDate($apprDate ?: $q['quotation_date'])) . (!empty($apprPo) ? '<br><b>PO Ref:</b> ' . htmlspecialchars($apprPo) : '');
     }
 
-    $closingNote = '<p style="font-size:9pt;line-height:1.4;">We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.</p><br>';
+    $closingNote = 'We hope you will find our offer quite competitive and in line with your requirements and look forward to receiving your valued order confirmation at the earliest.';
 
     // Prepare Stamp & Signature for PDF
     $stampSignHtml = '';
     if ($hasSig && $hasStamp) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="42" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="' . $stampFile . '" height="48" /></td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="38" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="' . $stampFile . '" height="44" /></td></tr></table>';
     } elseif ($hasSig) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="42" /></td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $sigFile . '" height="38" /></td></tr></table>';
     } elseif ($hasStamp) {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $stampFile . '" height="48" /></td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td style="line-height:1;vertical-align:middle;"><img src="' . $stampFile . '" height="44" /></td></tr></table>';
     } else {
-        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;margin-bottom:6px;"><tr><td height="36">&nbsp;</td></tr></table>';
+        $stampSignHtml = '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:3px;margin-bottom:3px;"><tr><td height="26">&nbsp;</td></tr></table>';
     }
 
-    $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:9pt;">'
-        . '<tr><td colspan="3" style="line-height:1.4;">' . $closingNote . '</td></tr>'
-        . '<tr><td colspan="3" style="height:12px;"></td></tr>'
+    $html .= '<table nobr="true" cellpadding="0" cellspacing="0" border="0" style="width:100%;font-size:8.8pt;">'
+        . '<tr><td colspan="3" style="line-height:1.3;">' . $closingNote . '</td></tr>'
+        . '<tr><td colspan="3" style="height:6px;"></td></tr>'
         . '<tr>'
-        . '<td width="55%" style="line-height:1.4;vertical-align:top;">'
-        . '<b>Thanking you,</b><br><br>'
+        . '<td width="55%" style="line-height:1.3;vertical-align:top;">'
+        . '<b>Thanking you,</b><br>'
         . '<b>Yours sincerely,</b><br>'
         . '<b>THC Facility Management W.L.L</b><br>'
         . $stampSignHtml
@@ -729,8 +731,8 @@ if ($download) {
         . '</td>'
         . '<td width="5%"></td>'
         . '<td width="40%" style="vertical-align:top;">'
-        . '<table cellpadding="10" cellspacing="0" border="0" style="width:100%;">'
-        . '<tr><td style="border:1px solid #cbd5e1;background-color:#f8fafc;line-height:1.8;vertical-align:top;">' . $apprBoxHtml . '</td></tr>'
+        . '<table cellpadding="7" cellspacing="0" border="0" style="width:100%;">'
+        . '<tr><td style="border:1px solid #cbd5e1;background-color:#f8fafc;line-height:1.6;vertical-align:top;">' . $apprBoxHtml . '</td></tr>'
         . '</table>'
         . '</td>'
         . '</tr>'
