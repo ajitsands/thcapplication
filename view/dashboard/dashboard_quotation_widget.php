@@ -20,13 +20,13 @@
     <div class="row" style="margin-left: -5px; margin-right: -5px; row-gap: 10px;">
         <!-- Pending Approval -->
         <div class="col-6" style="padding-left: 5px; padding-right: 5px;">
-            <a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>&status=Pending" style="text-decoration: none; color: inherit; display: block;">
+            <a href="quotation_module.php?param=<?= $OBJ->URLEncode('head=quotation&open=1&title=quotation') ?>&status=Pending%20approval" style="text-decoration: none; color: inherit; display: block;">
                 <div style="background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 10px 12px; transition: transform 0.15s, box-shadow 0.15s; height: 100%;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 10px rgba(245,158,11,0.15)';" onmouseout="this.style.transform='';this.style.boxShadow='';">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span style="font-size: 11px; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;">Pending</span>
+                        <span style="font-size: 11px; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;">Pending Approval</span>
                         <i class="icon-clock2" style="font-size: 13px; color: #f59e0b;"></i>
                     </div>
-                    <div style="font-size: 20px; font-weight: 700; color: #b45309; line-height: 1.1; font-family: 'Outfit', sans-serif;"><?= (int)($qtn_counts['Pending'] ?? 0) ?></div>
+                    <div style="font-size: 20px; font-weight: 700; color: #b45309; line-height: 1.1; font-family: 'Outfit', sans-serif;"><?= (int)(($qtn_counts['Pending approval'] ?? 0) ?: ($qtn_counts['Pending'] ?? 0)) ?></div>
                     <div style="font-size: 11px; color: #78350f; margin-top: 2px;">Awaiting decision</div>
                 </div>
             </a>

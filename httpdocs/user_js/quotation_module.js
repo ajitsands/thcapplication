@@ -4900,8 +4900,16 @@
             };
         });
 
-        // Initialize view based on URL query parameter ?v= (log, A, N, perf, rules)
+        // Initialize view based on URL query parameter ?v= (log, A, N, perf, rules) & optional ?status= filter
         const urlParams = new URLSearchParams(window.location.search);
+        const initialStatus = urlParams.get("status") || urlParams.get("st");
+        if (initialStatus) {
+            if (initialStatus === "Pending" || initialStatus === "Pending approval") {
+                F.st = "Pending approval";
+            } else {
+                F.st = initialStatus;
+            }
+        }
         const initialView = urlParams.get("v");
         if (initialView && ["log", "A", "N", "perf", "rules"].includes(initialView)) {
             go(initialView);

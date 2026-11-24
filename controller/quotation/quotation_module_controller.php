@@ -1715,8 +1715,12 @@ class QuotationModuleController
             if (!$showSuperseded && in_array($st, ['Superseded', 'Void'])) {
                 continue;
             }
-            if ($statusFilter !== '' && $st !== $statusFilter) {
-                continue;
+            if ($statusFilter !== '') {
+                if (($statusFilter === 'Pending' || $statusFilter === 'Pending approval') && ($st === 'Pending' || $st === 'Pending approval')) {
+                    // match pending approval
+                } elseif ($st !== $statusFilter) {
+                    continue;
+                }
             }
             if ($clientFilter !== '' && $client !== $clientFilter) {
                 continue;

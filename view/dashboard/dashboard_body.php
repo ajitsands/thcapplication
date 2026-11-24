@@ -124,15 +124,27 @@
         }
 
         // Live quotation metrics for dashboard overview
-        $qtn_counts = ['Draft' => 0, 'Pending' => 0, 'Approved' => 0, 'Completed' => 0, 'Expired' => 0, 'Total' => 0];
+        $qtn_counts = [
+            'Draft' => 0,
+            'Pending' => 0,
+            'Pending approval' => 0,
+            'Approved' => 0,
+            'Completed' => 0,
+            'Expired' => 0,
+            'Void' => 0,
+            'Total' => 0
+        ];
         $result_qtn = @mysqli_query($varDBConnection, "SELECT status, COUNT(*) as cnt FROM tbl_quotations_v2 GROUP BY status");
         if ($result_qtn && $result_qtn instanceof mysqli_result) {
             while ($row_qc = mysqli_fetch_assoc($result_qtn)) {
                 $st = trim($row_qc['status'] ?? '');
                 $cnt = (int)$row_qc['cnt'];
                 $qtn_counts['Total'] += $cnt;
-                if (isset($qtn_counts[$st])) {
-                    $qtn_counts[$st] = $cnt;
+                if ($st === 'Pending' || $st === 'Pending approval') {
+                    $qtn_counts['Pending'] += $cnt;
+                    $qtn_counts['Pending approval'] += $cnt;
+                } elseif (isset($qtn_counts[$st])) {
+                    $qtn_counts[$st] += $cnt;
                 }
             }
         }
