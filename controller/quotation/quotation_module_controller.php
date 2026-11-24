@@ -2118,7 +2118,8 @@ class QuotationModuleController
                 $qty = 1.0;
             }
             $price = (float)($it['unit_price'] ?? ($it[3] ?? 0));
-            $lineTotal = (isset($it['total_price']) && (float)$it['total_price'] > 0) ? (float)$it['total_price'] : ($qty * $price);
+            $calculatedLineTotal = $qty * $price;
+            $lineTotal = ($calculatedLineTotal > 0 || !isset($it['total_price'])) ? $calculatedLineTotal : (float)$it['total_price'];
             $subtotal += $lineTotal;
 
             $cleanItems[] = [

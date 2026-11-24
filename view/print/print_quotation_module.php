@@ -68,8 +68,31 @@ try {
         if ($quoteId > 0) {
             $qRes = mysqli_query($db, "SELECT * FROM tbl_quotations_v2 WHERE id = {$quoteId}");
         } elseif ($refNo !== '') {
-            $escRef = mysqli_real_escape_string($db, $refNo);
-            $qRes = mysqli_query($db, "SELECT * FROM tbl_quotations_v2 WHERE quotation_no = '{$escRef}' ORDER BY rev_no DESC LIMIT 1");
+            $cleanRef = trim($refNo);
+            $reqRev = null;
+            $reqVar = null;
+            if (preg_match('/\/R(\d+)$/i', $cleanRef, $mRev)) {
+                $reqRev = (int)$mRev[1];
+                $cleanRef = preg_replace('/\/R\d+$/i', '', $cleanRef);
+            }
+            if (preg_match('/\/V(\d+)$/i', $cleanRef, $mVar)) {
+                $reqVar = (int)$mVar[1];
+                $cleanRef = preg_replace('/\/V\d+$/i', '', $cleanRef);
+            }
+            $escBaseRef = mysqli_real_escape_string($db, $cleanRef);
+            $escFullRef = mysqli_real_escape_string($db, $refNo);
+
+            $where = "(quotation_no = '{$escFullRef}' OR quotation_no = '{$escBaseRef}')";
+            if ($reqRev !== null) {
+                $where .= " AND rev_no = {$reqRev}";
+            }
+            if ($reqVar !== null) {
+                $where .= " AND variation_no = {$reqVar}";
+            }
+            $qRes = mysqli_query($db, "SELECT * FROM tbl_quotations_v2 WHERE {$where} ORDER BY rev_no DESC LIMIT 1");
+            if (!$qRes || mysqli_num_rows($qRes) === 0) {
+                $qRes = mysqli_query($db, "SELECT * FROM tbl_quotations_v2 WHERE quotation_no = '{$escBaseRef}' ORDER BY rev_no DESC LIMIT 1");
+            }
         } else {
             $qRes = null;
         }
@@ -94,7 +117,16 @@ if (!$q) {
         $data = json_decode(file_get_contents($jsonFile), true);
         if (is_array($data)) {
             foreach ($data as $item) {
-                if (($quoteId > 0 && $item['id'] == $quoteId) || ($refNo !== '' && $item['quotation_no'] == $refNo)) {
+                $match = false;
+                if ($quoteId > 0 && $item['id'] == $quoteId) {
+                    $match = true;
+                } elseif ($refNo !== '') {
+                    $itemFullNo = ($item['quotation_no'] ?? '') . (!empty($item['variation_no']) ? '/V' . $item['variation_no'] : '') . (!empty($item['rev_no']) ? '/R' . $item['rev_no'] : '');
+                    if (($item['quotation_no'] ?? '') === $refNo || $itemFullNo === $refNo || (($item['quotation_no'] ?? '') === $cleanRef && ($reqRev === null || (int)($item['rev_no'] ?? 0) === $reqRev))) {
+                        $match = true;
+                    }
+                }
+                if ($match) {
                     $q = [
                         'id' => $item['id'],
                         'seq_no' => $item['seq_no'],
@@ -151,18 +183,32 @@ function fDate($str) {
 
 $calcSubtotal = 0.0;
 foreach ($items as $it) {
+    $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
+    $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
     $itQty = isset($it['quantity']) ? (float)$it['quantity'] : (isset($it[1]) ? (float)$it[1] : 0.0);
+    if ($isLump && $itQty <= 0) {
+        $itQty = 1.0;
+    }
     $itPrice = isset($it['unit_price']) ? (float)$it['unit_price'] : (isset($it[3]) ? (float)$it[3] : 0.0);
-    $itTotal = isset($it['total_price']) && (float)$it['total_price'] > 0 ? (float)$it['total_price'] : ($itQty * $itPrice);
+    $calculatedLine = $itQty * $itPrice;
+    $itTotal = ($calculatedLine > 0 || !isset($it['total_price'])) ? $calculatedLine : (float)$it['total_price'];
     $calcSubtotal += $itTotal;
 }
 
 $rev = (int)$q['rev_no'];
 $varNo = (int)($q['variation_no'] ?? 0);
-$qNo = !empty($q['quotation_no']) ? $q['quotation_no'] . ($varNo > 0 && strpos($q['quotation_no'], '/V') === false ? "/V" . $varNo : "") . ($rev > 0 && strpos($q['quotation_no'], '/R') === false ? "/R" . $rev : "") : "(Draft)";
+$qNo = !empty($q['quotation_no']) ? $q['quotation_no'] . ($varNo > 0 && strpos($q['quotation_no'], '/V') === false ? "/V" . $varNo : "") . ($rev > 0 && strpos($q['quotation_no'], '/R') === false ? "/R" . $rev : "") : "";
+
+if (empty($qNo)) {
+    $userCode = !empty($q['user_code']) ? preg_replace('/\s+/', '', $q['user_code']) : 'THC';
+    $seqPad = !empty($q['seq_no']) ? $q['seq_no'] : 'DRAFT';
+    $mmyy = !empty($q['quotation_date']) ? date('my', strtotime($q['quotation_date'])) : '';
+    $qNo = "CG/THC/{$userCode}/QTN/{$seqPad}" . ($mmyy !== '' ? "/{$mmyy}" : "") . ($varNo > 0 ? "/V{$varNo}" : "") . ($rev > 0 ? "/R{$rev}" : "");
+}
+
 $vatRate = (float)$q['vat_rate'];
 $subtotal = (float)$q['subtotal_excl_vat'];
-if ($subtotal <= 0 && $calcSubtotal > 0) {
+if ($subtotal <= 0 || (empty($q['merge_items']) && abs($subtotal - $calcSubtotal) > 0.001 && $calcSubtotal > 0)) {
     $subtotal = $calcSubtotal;
 }
 
@@ -184,16 +230,7 @@ $netSubtotal = max(0, $subtotal - $discountAmt);
 $vatAmt = ($netSubtotal * $vatRate) / 100.0;
 $total = $netSubtotal + $vatAmt;
 
-$userCode = !empty($q['user_code']) ? preg_replace('/\s+/', '', $q['user_code']) : 'THC';
-$seqPad = !empty($q['seq_no']) ? str_pad($q['seq_no'], 4, '0', STR_PAD_LEFT) : 'DRAFT';
-$datePart = '';
-if (!empty($q['quotation_date'])) {
-    $cleanDate = str_replace('-', '', $q['quotation_date']);
-    if (strlen($cleanDate) >= 6) {
-        $datePart = '_' . substr($cleanDate, 2, 4);
-    }
-}
-$pdfFilename = "CG_THC_{$userCode}_QTN_{$seqPad}" . ($varNo > 0 ? "_V{$varNo}" : "") . ($rev > 0 ? "_R{$rev}" : "") . $datePart . ".pdf";
+$pdfFilename = preg_replace('/[\/\\?%*:|"<>]/', '_', $qNo) . ".pdf";
 
 $isApproved = ($q['status'] === 'Approved');
 $apprBy = $q['approval_by'] ?? '';
@@ -588,12 +625,16 @@ if ($download) {
         }
     } else {
         foreach ($items as $idx => $it) {
-            $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
-            $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
-            $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
-            $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
             $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
             $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+            $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? ($isLump ? 1 : 0));
+            if ($isLump && $qty <= 0) {
+                $qty = 1.0;
+            }
+            $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
+            $calculatedLine = $qty * $price;
+            $lineTot = ($calculatedLine > 0 || !isset($it['total_price'])) ? $calculatedLine : (float)$it['total_price'];
+            $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
             $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
             $bg = ($idx % 2 === 1) ? '#f8fafc' : '#ffffff';
 
@@ -720,7 +761,7 @@ if ($download) {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title><?= htmlspecialchars($q['user_code'] . "-QTN-" . ($q['seq_no'] ?: "DRAFT") . ($varNo ? "-V" . $varNo : "") . ($rev ? "-R" . $rev : "")) ?></title>
+    <title><?= htmlspecialchars($qNo) ?></title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1027,12 +1068,14 @@ if ($download) {
                 <?php endforeach; ?>
             <?php else: ?>
                 <?php foreach ($items as $idx => $it): 
-                    $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? 1);
-                    $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
-                    $lineTot = isset($it['total_price']) ? (float)$it['total_price'] : ($qty * $price);
-                    $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
                     $unit = isset($it['unit']) ? $it['unit'] : ($it[2] ?? 'Lumpsum');
                     $isLump = (stripos($unit, 'lump') !== false || strcasecmp(trim($unit), 'ls') === 0);
+                    $qty = isset($it['quantity']) ? (float)$it['quantity'] : (float)($it[1] ?? ($isLump ? 1 : 0));
+                    if ($isLump && $qty <= 0) $qty = 1.0;
+                    $price = isset($it['unit_price']) ? (float)$it['unit_price'] : (float)($it[3] ?? 0);
+                    $calculatedLine = $qty * $price;
+                    $lineTot = ($calculatedLine > 0 || !isset($it['total_price'])) ? $calculatedLine : (float)$it['total_price'];
+                    $desc = isset($it['description']) ? $it['description'] : ($it[0] ?? '');
                     $qtyStr = $isLump ? htmlspecialchars($unit) : ($qty . ' ' . htmlspecialchars($unit));
                 ?>
                 <tr>

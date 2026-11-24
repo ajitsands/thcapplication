@@ -184,13 +184,29 @@
         return isSessionManager();
     };
 
-    // Formatted PDF filename
+    // Formatted PDF filename matching the quotation number
     const fnm = q => {
+        let base = q.quotation_no || q.no;
         const u = q.user_code || q.user || "THC";
         const seq = q.seq_no || q.seq || "DRAFT";
         const vn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
         const rev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
-        return `${u}-QTN-${seq}${vn ? "-V" + vn : ""}${rev ? "-R" + rev : ""}`;
+        if (!base) {
+            let mmyy = "";
+            const qDate = q.quotation_date || q.date;
+            if (qDate) {
+                const d = new Date(qDate);
+                if (!isNaN(d.getTime())) {
+                    const mm = String(d.getMonth() + 1).padStart(2, "0");
+                    const yy = String(d.getFullYear()).slice(-2);
+                    mmyy = `/${mm}${yy}`;
+                }
+            }
+            base = `CG/THC/${u}/QTN/${seq}${mmyy}`;
+        }
+        if (vn > 0 && !base.includes("/V" + vn)) base += `/V${vn}`;
+        if (rev > 0 && !base.includes("/R" + rev)) base += `/R${rev}`;
+        return base.replace(/[\/\\?%*:|"<>]/g, "_");
     };
 
     // State Variables with default seed data
@@ -554,8 +570,16 @@
         const qId = q.id;
         const fn = fnm(q) + ".pdf";
 
+        let refNo = q.quotation_no || q.no || "";
+        const vn = q.variation_no !== undefined ? q.variation_no : (q.vn || 0);
+        const rev = q.rev_no !== undefined ? q.rev_no : (q.rev || 0);
+        if (refNo) {
+            if (vn > 0 && !refNo.includes("/V" + vn)) refNo += `/V${vn}`;
+            if (rev > 0 && !refNo.includes("/R" + rev)) refNo += `/R${rev}`;
+        }
+
         if (qId) {
-            const url = `print/print_quotation_module.php?id=${encodeURIComponent(qId)}&download=1`;
+            const url = `print/print_quotation_module.php?id=${encodeURIComponent(qId)}${refNo ? '&ref_no=' + encodeURIComponent(refNo) : ''}&download=1`;
             const a = document.createElement("a");
             a.href = url;
             a.setAttribute("download", fn);
@@ -569,8 +593,7 @@
             return;
         }
 
-        if (q.quotation_no || q.no) {
-            const refNo = q.quotation_no || q.no;
+        if (refNo) {
             const url = `print/print_quotation_module.php?ref_no=${encodeURIComponent(refNo)}&download=1`;
             const a = document.createElement("a");
             a.href = url;
@@ -1586,6 +1609,13 @@
                 ED.date = TODAY;
                 ED.user_code = CU;
                 ED.user = CU;
+                if (ED.items && Array.isArray(ED.items)) {
+                    ED.items.forEach(it => {
+                        delete it.item_id;
+                        delete it.quotation_id;
+                        it.total_price = itemTotal(it);
+                    });
+                }
                 edit();
                 toast("Revision R" + nextRev + " started from " + (qNo || "quote"));
             };
@@ -1635,6 +1665,13 @@
                 ED.user = CU;
                 ED.subject = "Variation: " + (q.subject || q.subj || "");
                 ED.subj = ED.subject;
+                if (ED.items && Array.isArray(ED.items)) {
+                    ED.items.forEach(it => {
+                        delete it.item_id;
+                        delete it.quotation_id;
+                        it.total_price = itemTotal(it);
+                    });
+                }
                 edit();
                 toast("Variation V" + nextVn + " linked to " + (qNo || "quote") + ". The approved quote is untouched.");
             };
@@ -1667,6 +1704,13 @@
             if (!xIsAmc(ED)) {
                 ED.client_code = "";
                 ED.code = "";
+            }
+            if (ED.items && Array.isArray(ED.items)) {
+                ED.items.forEach(it => {
+                    delete it.item_id;
+                    delete it.quotation_id;
+                    it.total_price = itemTotal(it);
+                });
             }
             edit();
             toast("Copied as a new draft");
@@ -2098,6 +2142,7 @@
                 else if (field === "price") item.unit_price = +t.value || 0;
 
                 const lineTot = itemTotal(item);
+                item.total_price = lineTot;
                 const elTot = $("#rt" + idx);
                 if (elTot) elTot.textContent = f3(lineTot);
             } else if (t.dataset.t !== undefined) {
@@ -5158,8 +5203,12 @@
             terms: ED.terms || T0,
             items: (ED.items || []).map(it => {
                 const isL = isLump(it.unit);
+                const qty = isL ? 1 : (+it.quantity || 1);
+                const price = +it.unit_price || 0;
                 return Object.assign({}, it, {
-                    quantity: isL ? 1 : (+it.quantity || 1)
+                    quantity: qty,
+                    unit_price: price,
+                    total_price: qty * price
                 });
             })
         };
