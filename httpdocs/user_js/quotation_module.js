@@ -731,7 +731,7 @@
 
                 <div class="search-input-wrapper">
                     <i class="icon-search4" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:#94a3b8;pointer-events:none;z-index:2;"></i>
-                    <input type="search" id="fq" name="quote_search_query_nocred" placeholder="Search number, client or subject…" value="${H(F.q)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly');" onclick="this.removeAttribute('readonly');" data-lpignore="true">
+                    <input type="search" id="fq" name="quote_search_query_nocred" placeholder="Search number, client, subject or user…" value="${H(F.q)}" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                     <button type="button" id="btn_clear_search" title="Clear search" style="display:${F.q ? 'flex' : 'none'};">
                         <i class="icon-cross2" style="font-size:11px;"></i>
                     </button>
@@ -762,16 +762,12 @@
             btnClear.style.display = hasVal ? "flex" : "none";
         };
 
+        let userTypedSearch = !!F.q;
         const purgeAutofill = () => {
-            if (!elFq) return;
+            if (!elFq || userTypedSearch || document.activeElement === elFq) return;
             const val = elFq.value || "";
-            if (!F.q) {
-                if (val.length > 0) {
-                    elFq.value = "";
-                }
-            } else if (val === "CGTHCFM" || val === (currentUserObj.name || "") || val === (currentUserObj.code || "")) {
+            if (!F.q && val.length > 0) {
                 elFq.value = "";
-                F.q = "";
             }
             updateClearButton();
         };
@@ -779,27 +775,43 @@
         if (elFq) {
             purgeAutofill();
 
-            elFq.oninput = e => {
-                F.q = e.target.value;
+            let searchDebounce = null;
+            const applySearch = () => {
+                F.q = elFq.value;
                 updateClearButton();
                 res();
             };
-            elFq.onchange = e => {
+
+            elFq.oninput = e => {
+                userTypedSearch = true;
                 F.q = e.target.value;
                 updateClearButton();
-                res();
+                if (searchDebounce) clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(applySearch, 120);
+            };
+            elFq.onchange = () => {
+                userTypedSearch = true;
+                if (searchDebounce) clearTimeout(searchDebounce);
+                applySearch();
             };
             elFq.onkeydown = e => {
                 if (e.key === "Escape") {
                     elFq.value = "";
                     F.q = "";
+                    userTypedSearch = false;
                     updateClearButton();
+                    if (searchDebounce) clearTimeout(searchDebounce);
                     res();
+                } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    userTypedSearch = true;
+                    if (searchDebounce) clearTimeout(searchDebounce);
+                    applySearch();
                 }
             };
 
             // Watchdog against late browser autofills that inject credentials on refresh
-            [30, 80, 150, 300, 600, 1200].forEach(delay => {
+            [80, 300, 800].forEach(delay => {
                 setTimeout(purgeAutofill, delay);
             });
         }
@@ -865,7 +877,14 @@
             const isAmc = x.is_amc !== undefined ? !!x.is_amc : !!x.amc;
             const user = x.user_code || x.user;
             const qNo = x.quotation_no || x.no || "";
+            const qVn = x.variation_no !== undefined ? x.variation_no : (x.vn || 0);
+            const qRev = x.rev_no !== undefined ? x.rev_no : (x.rev || 0);
+            const fullQNo = qNo ? `${qNo}${qVn > 0 && !qNo.includes('/V') ? '/V' + qVn : ''}${qRev > 0 && !qNo.includes('/R') ? '/R' + qRev : ''}` : "Draft";
             const subj = x.subject || x.subj || "";
+            const clientCode = x.client_code || x.code || "";
+            const userName = x.user_name || (USERS[user] ? (Array.isArray(USERS[user]) ? USERS[user][0] : USERS[user].name) : "") || "";
+            const notes = x.internal_notes || "";
+            const remark = x.remark || "";
 
             if (!F.sup && !["Superseded", "Void"].includes(F.st) && (status === "Superseded" || status === "Void")) return false;
             if (F.st) {
@@ -878,9 +897,9 @@
             if (F.client && client !== F.client) return false;
             if (F.type && (F.type === "AMC") !== isAmc) return false;
             if (F.user && user !== F.user) return false;
-            if (F.q) {
-                const term = F.q.toLowerCase();
-                const hay = (qNo + " " + client + " " + subj).toLowerCase();
+            if (F.q && F.q.trim() !== "") {
+                const term = F.q.trim().toLowerCase();
+                const hay = (fullQNo + " " + qNo + " " + client + " " + clientCode + " " + subj + " " + userName + " " + (user || "") + " " + (status || "") + " " + notes + " " + remark).toLowerCase();
                 if (!hay.includes(term)) return false;
             }
             return true;
@@ -888,6 +907,11 @@
     }
 
     function res() {
+        if (window.jQuery && typeof window.jQuery.fn.DataTable === "function" && window.jQuery.fn.DataTable.isDataTable('#tbl_quotation_log')) {
+            try {
+                window.jQuery('#tbl_quotation_log').DataTable().destroy();
+            } catch (e) {}
+        }
         const L = getFilteredQuotations();
         const expBtn = $("#btn_export_excel");
         if (expBtn) {
