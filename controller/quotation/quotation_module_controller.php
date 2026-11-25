@@ -1549,21 +1549,25 @@ class QuotationModuleController
     public function getStampSignConfig(): array
     {
         $cfg = $this->defaultStampSignConfig;
+        $loadedFromDb = false;
         if ($this->isDbConnected) {
             $res = @mysqli_query($this->db, "SELECT `setting_value` FROM `tbl_quotation_settings_v2` WHERE `setting_key` = 'quotation_stamp_sign_config' LIMIT 1");
             if ($res && ($row = mysqli_fetch_assoc($res))) {
                 $dbCfg = json_decode($row['setting_value'], true);
                 if (is_array($dbCfg)) {
                     $cfg = array_merge($cfg, $dbCfg);
+                    $loadedFromDb = true;
                 }
             }
         }
-        if (file_exists($this->stampSignConfigFile)) {
+        if (!$loadedFromDb && file_exists($this->stampSignConfigFile)) {
             $fJson = json_decode(@file_get_contents($this->stampSignConfigFile), true);
             if (is_array($fJson)) {
                 $cfg = array_merge($cfg, $fJson);
             }
         }
+        if (!is_array($cfg['user_signatures'] ?? null)) $cfg['user_signatures'] = [];
+        if (!is_array($cfg['user_phones'] ?? null)) $cfg['user_phones'] = [];
         return $cfg;
     }
 
@@ -1599,7 +1603,10 @@ class QuotationModuleController
             $curCfg['default_signature_url'] = trim((string)$input['default_signature_url']);
         }
 
-        $jsonStr = json_encode($curCfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $saveCfg = $curCfg;
+        if (empty($saveCfg['user_signatures'])) $saveCfg['user_signatures'] = new \stdClass();
+        if (empty($saveCfg['user_phones'])) $saveCfg['user_phones'] = new \stdClass();
+        $jsonStr = json_encode($saveCfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         if ($this->isDbConnected) {
             $escKey = 'quotation_stamp_sign_config';
@@ -1676,7 +1683,10 @@ class QuotationModuleController
         $curCfg['show_stamp'] = $showStamp;
         $curCfg['show_signature'] = $showSignature;
 
-        $jsonStr = json_encode($curCfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $saveCfg = $curCfg;
+        if (empty($saveCfg['user_signatures'])) $saveCfg['user_signatures'] = new \stdClass();
+        if (empty($saveCfg['user_phones'])) $saveCfg['user_phones'] = new \stdClass();
+        $jsonStr = json_encode($saveCfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         if ($this->isDbConnected) {
             $escKey = 'quotation_stamp_sign_config';

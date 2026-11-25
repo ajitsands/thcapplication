@@ -178,6 +178,17 @@
         };
     };
 
+    const normalizeStampSignConfig = (cfg) => {
+        const merged = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG, cfg || {});
+        if (!merged.user_signatures || Array.isArray(merged.user_signatures) || typeof merged.user_signatures !== "object") {
+            merged.user_signatures = {};
+        }
+        if (!merged.user_phones || Array.isArray(merged.user_phones) || typeof merged.user_phones !== "object") {
+            merged.user_phones = {};
+        }
+        return merged;
+    };
+
     const getConfiguredUserPhone = (uCode) => {
         const uInfo = USERS[uCode];
         return (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode])
@@ -4538,7 +4549,7 @@
         .then(res => {
             if (res && res.status === "success") {
                 if (res.stamp_sign_config) {
-                    STAMP_SIGN_CONFIG = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG, res.stamp_sign_config);
+                    STAMP_SIGN_CONFIG = normalizeStampSignConfig(res.stamp_sign_config);
                 }
                 toast(res.message || "Uploaded successfully.");
                 openStampSignModal();
@@ -4563,8 +4574,8 @@
             show_user_phone: $("#cfg_show_user_phone") && $("#cfg_show_user_phone").checked ? 1 : 0,
             company_stamp_url: STAMP_SIGN_CONFIG.company_stamp_url || "uploads/quotation_signatures/default_thc_stamp.png",
             default_signature_url: STAMP_SIGN_CONFIG.default_signature_url || "uploads/quotation_signatures/default_signature.png",
-            user_signatures: STAMP_SIGN_CONFIG.user_signatures || {},
-            user_phones: STAMP_SIGN_CONFIG.user_phones || {}
+            user_signatures: (!Array.isArray(STAMP_SIGN_CONFIG.user_signatures) && STAMP_SIGN_CONFIG.user_signatures && typeof STAMP_SIGN_CONFIG.user_signatures === "object") ? Object.assign({}, STAMP_SIGN_CONFIG.user_signatures) : {},
+            user_phones: (!Array.isArray(STAMP_SIGN_CONFIG.user_phones) && STAMP_SIGN_CONFIG.user_phones && typeof STAMP_SIGN_CONFIG.user_phones === "object") ? Object.assign({}, STAMP_SIGN_CONFIG.user_phones) : {}
         };
         if ($("#cfg_user_phone")) {
             payload.user_phones[CU] = $("#cfg_user_phone").value.trim();
@@ -4582,7 +4593,7 @@
                 btnSave.innerHTML = '<i class="icon-floppy-disk mr-1"></i> Save & Apply';
             }
             if (res && res.status === "success") {
-                STAMP_SIGN_CONFIG = Object.assign({}, STAMP_SIGN_CONFIG, res.stamp_sign_config || payload);
+                STAMP_SIGN_CONFIG = normalizeStampSignConfig(res.stamp_sign_config || payload);
                 if (USERS[CU] && typeof USERS[CU] === "object" && !Array.isArray(USERS[CU]) && payload.user_phones[CU] !== undefined) {
                     USERS[CU].phone = payload.user_phones[CU];
                 }
@@ -4986,7 +4997,7 @@
                     FOOTER_CONFIG = Object.assign({}, DEFAULT_FOOTER_CONFIG, res.footer_config);
                 }
                 if (res.stamp_sign_config && typeof res.stamp_sign_config === "object") {
-                    STAMP_SIGN_CONFIG = Object.assign({}, DEFAULT_STAMP_SIGN_CONFIG, res.stamp_sign_config);
+                    STAMP_SIGN_CONFIG = normalizeStampSignConfig(res.stamp_sign_config);
                 }
             }
 
