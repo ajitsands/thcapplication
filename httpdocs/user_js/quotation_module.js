@@ -178,6 +178,14 @@
         };
     };
 
+    const getConfiguredUserPhone = (uCode) => {
+        const uInfo = USERS[uCode];
+        return (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode])
+            || (uInfo && (uInfo.phone || uInfo[2]))
+            || (uCode === 'ADM' ? '+973 17 100 190' : (uCode === 'MA' ? '+973 3944 1015' : ''))
+            || '';
+    };
+
     const applyActiveUserToED = (targetED) => {
         if (!targetED) return;
         const active = getActiveUserProfile();
@@ -185,9 +193,10 @@
         targetED.user = active.code;
         targetED.user_name = active.name;
         targetED.user_designation = active.title;
-        targetED.user_phone = active.phone
-            || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[active.code])
-            || (active.code === 'ADM' ? '+973 17 100 190' : (active.code === 'MA' ? '+973 3944 1015' : ''));
+        targetED.user_phone = getConfiguredUserPhone(active.code);
+        if (STAMP_SIGN_CONFIG.show_user_phone !== undefined) {
+            targetED.include_user_phone = (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false) ? 1 : 0;
+        }
     };
 
     // Administrator permission checker (follows the active user selected in Estimator dropdown)
@@ -400,11 +409,7 @@
         if (uName === "Adminstrator") uName = "Administrator";
         const uTitle = q.user_designation || (Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || "THC Facility Management"));
 
-        const uPhone = q.user_phone 
-            || (uInfo ? (uInfo.phone || uInfo[2] || "") : "") 
-            || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) 
-            || (currentUserObj && currentUserObj.phone) 
-            || (uCode === 'ADM' ? '+973 17 100 190' : (uCode === 'MA' ? '+973 3944 1015' : ''));
+        const uPhone = q.user_phone || getConfiguredUserPhone(uCode);
         const showPhone = (q.include_user_phone === undefined || parseInt(q.include_user_phone) === 1 || !q.user_phone) && !!uPhone;
 
         const qNo = q.quotation_no || q.no;
@@ -688,10 +693,7 @@
                 }
             } catch (e) {}
 
-            const curUserPhone = (USERS[CU] && (USERS[CU].phone || USERS[CU][2])) 
-                || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[CU]) 
-                || (currentUserObj && currentUserObj.phone) 
-                || "";
+            const curUserPhone = getConfiguredUserPhone(CU);
             const defaultShowPhone = (STAMP_SIGN_CONFIG.show_user_phone !== 0 && STAMP_SIGN_CONFIG.show_user_phone !== false);
 
             ED = {
@@ -1848,10 +1850,7 @@
         const uName = Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || currentUserObj.name);
         const uTitle = Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || currentUserObj.title);
 
-        const defaultPhone = (uInfo && (uInfo.phone || uInfo[2])) 
-            || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) 
-            || (currentUserObj && currentUserObj.phone) 
-            || (uCode === 'ADM' ? '+973 17 100 190' : (uCode === 'MA' ? '+973 3944 1015' : ''));
+        const defaultPhone = getConfiguredUserPhone(uCode);
         const userPhone = (e.user_phone !== undefined && e.user_phone !== null && e.user_phone !== '') 
             ? e.user_phone 
             : defaultPhone;
@@ -4500,7 +4499,7 @@
         const cur = USERS[uCode];
         const cName = cur ? (Array.isArray(cur) ? cur[0] : cur.name) : currentUserObj.name;
         const cTitle = cur ? (Array.isArray(cur) ? cur[1] : cur.title) : currentUserObj.title;
-        const cPhone = (cur && (cur.phone || cur[2])) || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[uCode]) || currentUserObj.phone || "";
+        const cPhone = getConfiguredUserPhone(uCode);
 
         if ($("#live_prev_user_name")) $("#live_prev_user_name").textContent = cName;
         if ($("#live_prev_user_title")) $("#live_prev_user_title").textContent = cTitle;
@@ -4544,6 +4543,9 @@
                 toast(res.message || "Uploaded successfully.");
                 openStampSignModal();
                 if (ED) renderLivePreview();
+                if (activeViewMode === "view" && activeViewQuoteId) {
+                    vq(activeViewQuoteId);
+                }
             } else {
                 toast((res && res.message) || "Failed to upload image.");
             }
@@ -4581,13 +4583,24 @@
             }
             if (res && res.status === "success") {
                 STAMP_SIGN_CONFIG = Object.assign({}, STAMP_SIGN_CONFIG, res.stamp_sign_config || payload);
+                if (USERS[CU] && typeof USERS[CU] === "object" && !Array.isArray(USERS[CU]) && payload.user_phones[CU] !== undefined) {
+                    USERS[CU].phone = payload.user_phones[CU];
+                }
                 toast(res.message || "Stamp & signature settings saved successfully.");
                 hideModal("#modal_stamp_sign_settings");
 
-                if (ED) renderLivePreview();
-                const curOn = document.querySelector("aside a.on");
-                if (curOn && curOn.dataset.v === "vq" && curOn.dataset.id) {
-                    vq(+curOn.dataset.id);
+                if (ED) {
+                    ED.user_phone = getConfiguredUserPhone(ED.user_code || CU);
+                    ED.include_user_phone = payload.show_user_phone ? 1 : 0;
+                    const inpEdPhone = $("#inp_user_phone");
+                    if (inpEdPhone) inpEdPhone.value = ED.user_phone;
+                    const chkEdPhone = $("#chk_include_user_phone");
+                    if (chkEdPhone) chkEdPhone.checked = !!ED.include_user_phone;
+                    renderLivePreview();
+                    if (typeof markEditorDirty === "function") markEditorDirty();
+                }
+                if (activeViewMode === "view" && activeViewQuoteId) {
+                    vq(activeViewQuoteId);
                 }
             } else {
                 toast((res && res.message) || "Failed to save stamp & signature settings.");
