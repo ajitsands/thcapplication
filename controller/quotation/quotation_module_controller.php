@@ -870,6 +870,34 @@ class QuotationModuleController
         ];
     }
 
+    private function getEffectiveActingUser(): array
+    {
+        $curUser = $this->getCurrentSessionUser();
+        $actCode = trim((string)$this->getInputParam('acting_user_code', ''));
+        $actName = trim((string)$this->getInputParam('acting_user_name', ''));
+        $actTitle = trim((string)$this->getInputParam('acting_user_title', ''));
+
+        if ($actCode !== '') {
+            if (strtolower($actName) === 'adminstrator') {
+                $actName = 'Administrator';
+            }
+            $isAdmin = (strtoupper($actCode) === 'ADM') ||
+                in_array(strtolower($actTitle), ['administrator', 'admin']) ||
+                in_array(strtolower($actName), ['administrator', 'admin', 'adminstrator']);
+            $isManager = $isAdmin || (bool)preg_match('/manager|head|director/i', $actTitle);
+
+            return [
+                "code" => $actCode,
+                "name" => $actName !== '' ? $actName : $curUser['name'],
+                "title" => $actTitle !== '' ? $actTitle : $curUser['title'],
+                "is_admin" => $isAdmin,
+                "is_manager" => $isManager
+            ];
+        }
+
+        return $curUser;
+    }
+
     private function getInitialData()
     {
         $curUser = $this->getCurrentSessionUser();
@@ -2218,10 +2246,12 @@ class QuotationModuleController
                     if (!is_array($activity)) $activity = [];
                 }
             }
+            $actUser = $this->getEffectiveActingUser();
+            $actUserName = $actUser['name'];
             $actNote = $isIssue ? ("Issued quotation " . $quotationNo . ($revNo ? "/R" . $revNo : "")) : ($isAutosave ? "Draft auto-saved" : "Draft saved");
             $lastAct = !empty($activity) ? end($activity) : null;
             if (!($isAutosave && $lastAct && ($lastAct['t'] ?? '') === 'Draft auto-saved')) {
-                $activity[] = ["d" => date('Y-m-d H:i'), "u" => $userName, "t" => $actNote];
+                $activity[] = ["d" => date('Y-m-d H:i'), "u" => $actUserName, "t" => $actNote];
             }
             $actJson = mysqli_real_escape_string($this->db, json_encode($activity));
             $isAutosaveVal = (!$isIssue && $isAutosave) ? 1 : 0;
@@ -2419,7 +2449,7 @@ class QuotationModuleController
             $remark = $reason;
         }
 
-        $curUser = $this->getCurrentSessionUser();
+        $curUser = $this->getEffectiveActingUser();
         $userName = $curUser['name'];
         $userTitle = $curUser['title'];
         $today = date('Y-m-d');
@@ -2454,7 +2484,7 @@ class QuotationModuleController
 
         // Rule 6: Reopen approval (Administrator permission required)
         if ($action === 'reopen' || (in_array($currentStatus, ['Approved', 'Void']) && in_array(strtolower($status), ['draft', 'pending', 'pending approval']))) {
-            if (!$this->isSessionUserAdmin()) {
+            if (empty($curUser['is_admin'])) {
                 echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can reopen an approved or voided quotation."]);
                 return;
             }
@@ -2716,7 +2746,7 @@ class QuotationModuleController
             return;
         }
 
-        $curUser = $this->getCurrentSessionUser();
+        $curUser = $this->getEffectiveActingUser();
         $userName = $curUser['name'];
         $notes = trim((string)$this->getInputParam('completion_notes', ''));
         $compDate = trim((string)$this->getInputParam('completion_date', date('Y-m-d H:i:s')));
@@ -2839,7 +2869,7 @@ class QuotationModuleController
         if ($validityDays <= 0) $validityDays = 30;
         $resetDate = !empty($this->getInputParam('reset_date', 1));
 
-        $curUser = $this->getCurrentSessionUser();
+        $curUser = $this->getEffectiveActingUser();
         $userName = $curUser['name'];
         $today = date('Y-m-d');
         $now = date('Y-m-d H:i:s');
@@ -2922,6 +2952,11 @@ class QuotationModuleController
         $id = (int)$this->getInputParam('id', 0);
         if ($id <= 0) {
             echo json_encode(["status" => "error", "message" => "Invalid draft ID"]);
+            return;
+        }
+        $actUser = $this->getEffectiveActingUser();
+        if (empty($actUser['is_admin'])) {
+            echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can delete draft quotations."]);
             return;
         }
         if ($this->isDbConnected) {

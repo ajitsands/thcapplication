@@ -161,22 +161,43 @@
         return (vn ? "V" + vn : "") + (rev ? (vn ? "/" : "") + "R" + rev : "") || "Original";
     };
 
-    // Administrator permission checker (strictly checks the authenticated session user)
-    const isSessionAdmin = () => {
-        if (!currentUserObj) return false;
-        if (currentUserObj.is_admin || currentUserObj.isAdmin) return true;
-        const t = (currentUserObj.title || "").toLowerCase();
-        const n = (currentUserObj.name || "").toLowerCase();
-        const c = (currentUserObj.code || "").toUpperCase();
-        return t === "administrator" || t === "admin" || n === "administrator" || n === "admin" || n === "adminstrator" || c === "ADM" || (currentUserObj.user || "").toUpperCase() === "CGTHCFM";
+    // Resolve the currently selected active user profile from Estimator switcher (#us)
+    const getActiveUserProfile = () => {
+        const uInfo = USERS[CU];
+        if (uInfo) {
+            const name = Array.isArray(uInfo) ? uInfo[0] : (uInfo.name || currentUserObj.name);
+            const title = Array.isArray(uInfo) ? uInfo[1] : (uInfo.title || currentUserObj.title);
+            const phone = Array.isArray(uInfo) ? (uInfo[2] || "") : (uInfo.phone || "");
+            return { code: CU, name, title, phone };
+        }
+        return {
+            code: CU || (currentUserObj && currentUserObj.code) || "ADM",
+            name: (currentUserObj && currentUserObj.name) || "Authorized User",
+            title: (currentUserObj && currentUserObj.title) || "",
+            phone: (currentUserObj && currentUserObj.phone) || ""
+        };
     };
 
-    // Manager permission checker (strictly checks the authenticated session user)
+    // Administrator permission checker (follows the active user selected in Estimator dropdown)
+    const isSessionAdmin = () => {
+        const active = getActiveUserProfile();
+        const t = (active.title || "").toLowerCase();
+        const n = (active.name || "").toLowerCase();
+        const c = (active.code || "").toUpperCase();
+        if (c === "ADM" || t === "administrator" || t === "admin" || n === "administrator" || n === "admin" || n === "adminstrator") {
+            return true;
+        }
+        if (!USERS[CU] && currentUserObj && (currentUserObj.is_admin || currentUserObj.isAdmin)) {
+            return true;
+        }
+        return false;
+    };
+
+    // Manager permission checker (follows the active user selected in Estimator dropdown)
     const isSessionManager = () => {
         if (isSessionAdmin()) return true;
-        if (!currentUserObj) return false;
-        if (currentUserObj.is_manager || currentUserObj.isManager) return true;
-        const t = (currentUserObj.title || "").toLowerCase();
+        const active = getActiveUserProfile();
+        const t = (active.title || "").toLowerCase();
         return /manager|director|head/i.test(t);
     };
 
@@ -276,6 +297,8 @@
     let Q = [];
     let CU = "MA";
     let ED = null;
+    let activeViewMode = "log";
+    let activeViewQuoteId = null;
     let F = { q: "", client: "", st: "", type: "", user: "", sup: false };
     let TODAY = new Date().toISOString().slice(0, 10);
     let currentUserObj = { code: "MA", name: "Mohammed Ali", title: "Operations Manager" };
@@ -613,6 +636,8 @@
 
     // Main Router
     function go(v) {
+        activeViewMode = v;
+        activeViewQuoteId = null;
         if (window.jQuery && typeof window.jQuery.fn.select2 === "function") {
             ['#cl', '#cl_non_amc', '#fc', '#fu'].forEach(selId => {
                 const $s = window.jQuery(selId);
@@ -1375,6 +1400,8 @@
     // VIEW 2: QUOTATION DETAIL (vq)
     // ==========================================
     function vq(id) {
+        activeViewMode = "view";
+        activeViewQuoteId = id;
         ED = null;
         isEditorDirty = false;
         if (autosaveDebounceTimer) {
@@ -1795,6 +1822,8 @@
     // VIEW 3: QUOTATION EDITOR (edit)
     // ==========================================
     function edit() {
+        activeViewMode = "edit";
+        activeViewQuoteId = ED ? (ED.id || null) : null;
         const e = ED;
         const isAmc = xIsAmc(e);
         const seq = e.seq_no !== undefined ? e.seq_no : e.seq;
@@ -4956,14 +4985,23 @@
 
             us.onchange = e => {
                 CU = e.target.value;
-                const on = document.querySelector("aside a.on");
-                if (on && ["log", "perf"].includes(on.dataset.v)) {
-                    go(on.dataset.v);
+                const active = getActiveUserProfile();
+
+                if (activeViewMode === "view" && activeViewQuoteId) {
+                    vq(activeViewQuoteId);
+                } else if (activeViewMode === "edit" && ED) {
+                    ED.user_code = active.code;
+                    ED.user = active.code;
+                    ED.user_name = active.name;
+                    ED.user_designation = active.title;
+                    ED.user_phone = active.phone
+                        || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[active.code])
+                        || (active.code === 'ADM' ? '+973 17 100 190' : (active.code === 'MA' ? '+973 3944 1015' : ''));
+                    edit();
+                } else if (["log", "perf", "rules"].includes(activeViewMode)) {
+                    go(activeViewMode);
                 }
-                const cur = USERS[CU];
-                const cName = Array.isArray(cur) ? cur[0] : cur.name;
-                const cTitle = Array.isArray(cur) ? cur[1] : cur.title;
-                toast("Signing as " + cName + ", " + cTitle);
+                toast("Signing as " + active.name + ", " + active.title);
             };
         }
 
@@ -5011,11 +5049,15 @@
                 const cNotes = ($("#comp_notes") ? $("#comp_notes").value : "").trim();
                 const fileInput = $("#comp_attachment");
 
+                const active = getActiveUserProfile();
                 const formData = new FormData();
                 formData.append("action", "mark_completed");
                 formData.append("id", quoteId);
                 formData.append("completion_date", cDate);
                 formData.append("completion_notes", cNotes);
+                formData.append("acting_user_code", active.code);
+                formData.append("acting_user_name", active.name);
+                formData.append("acting_user_title", active.title);
                 if (fileInput && fileInput.files && fileInput.files[0]) {
                     formData.append("completion_attachment", fileInput.files[0]);
                 }
@@ -5067,10 +5109,14 @@
                 btnRevive.disabled = true;
                 btnRevive.innerHTML = `<i class="icon-spinner2 spinner mr-1"></i> Reviving...`;
 
+                const active = getActiveUserProfile();
                 apiCall("revive_quotation", {
                     id: quoteId,
                     validity_days: valDays,
-                    reset_date: resetDate
+                    reset_date: resetDate,
+                    acting_user_code: active.code,
+                    acting_user_name: active.name,
+                    acting_user_title: active.title
                 }, "POST")
                 .then(res => {
                     btnRevive.disabled = false;
@@ -5201,6 +5247,7 @@
 
     function buildQuotationPayload(isIssue, isAutoSave = false) {
         syncEditorToED();
+        const active = getActiveUserProfile();
         return {
             id: ED.id || null,
             is_issue: !!isIssue,
@@ -5216,9 +5263,12 @@
             attention: ED.attention || ED.attn || "",
             subject: ED.subject || ED.subj || "Draft Quotation",
             quotation_date: ED.quotation_date || ED.date || TODAY,
-            user_code: (ED.id && ED.user_code) ? ED.user_code : CU,
-            user_name: (ED.id && ED.user_name) ? ED.user_name : (USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name),
-            user_designation: (ED.id && ED.user_designation) ? ED.user_designation : (USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title),
+            user_code: (ED.id && ED.user_code) ? ED.user_code : active.code,
+            user_name: (ED.id && ED.user_name) ? ED.user_name : active.name,
+            user_designation: (ED.id && ED.user_designation) ? ED.user_designation : active.title,
+            acting_user_code: active.code,
+            acting_user_name: active.name,
+            acting_user_title: active.title,
             user_phone: ED.user_phone || "",
             include_user_phone: ED.include_user_phone ? 1 : 0,
             vat_rate: ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10),
@@ -5457,7 +5507,16 @@
         if (laddaInst) laddaInst.start();
         if (btnEl) btnEl.disabled = true;
 
-        const payload = Object.assign({ id, status: newStatus, reason, remark }, extra);
+        const active = getActiveUserProfile();
+        const payload = Object.assign({
+            id,
+            status: newStatus,
+            reason,
+            remark,
+            acting_user_code: active.code,
+            acting_user_name: active.name,
+            acting_user_title: active.title
+        }, extra);
         apiCall("update_status", payload, "POST").then(res => {
             if (res && res.status === "success") {
                 toast(res.message);
@@ -5486,13 +5545,19 @@
     }
 
     function deleteDraft(id) {
-        apiCall("delete_draft", { id }, "POST").then(res => {
+        const active = getActiveUserProfile();
+        apiCall("delete_draft", {
+            id,
+            acting_user_code: active.code,
+            acting_user_name: active.name,
+            acting_user_title: active.title
+        }, "POST").then(res => {
             if (res && res.status === "success") {
                 toast("Draft deleted");
                 Q = Q.filter(x => x.id != id);
                 go("log");
             } else {
-                toast("Failed to delete draft");
+                toast((res && res.message) || "Failed to delete draft");
             }
         });
     }
