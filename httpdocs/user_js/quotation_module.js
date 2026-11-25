@@ -178,6 +178,18 @@
         };
     };
 
+    const applyActiveUserToED = (targetED) => {
+        if (!targetED) return;
+        const active = getActiveUserProfile();
+        targetED.user_code = active.code;
+        targetED.user = active.code;
+        targetED.user_name = active.name;
+        targetED.user_designation = active.title;
+        targetED.user_phone = active.phone
+            || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[active.code])
+            || (active.code === 'ADM' ? '+973 17 100 190' : (active.code === 'MA' ? '+973 3944 1015' : ''));
+    };
+
     // Administrator permission checker (follows the active user selected in Estimator dropdown)
     const isSessionAdmin = () => {
         const active = getActiveUserProfile();
@@ -1633,6 +1645,10 @@
         if ($("#ed")) {
             $("#ed").onclick = () => {
                 ED = JSON.parse(JSON.stringify(q));
+                const active = getActiveUserProfile();
+                if ((ED.user_code || ED.user || "") !== active.code) {
+                    applyActiveUserToED(ED);
+                }
                 edit();
             };
         }
@@ -4990,13 +5006,7 @@
                 if (activeViewMode === "view" && activeViewQuoteId) {
                     vq(activeViewQuoteId);
                 } else if (activeViewMode === "edit" && ED) {
-                    ED.user_code = active.code;
-                    ED.user = active.code;
-                    ED.user_name = active.name;
-                    ED.user_designation = active.title;
-                    ED.user_phone = active.phone
-                        || (STAMP_SIGN_CONFIG.user_phones && STAMP_SIGN_CONFIG.user_phones[active.code])
-                        || (active.code === 'ADM' ? '+973 17 100 190' : (active.code === 'MA' ? '+973 3944 1015' : ''));
+                    applyActiveUserToED(ED);
                     edit();
                 } else if (["log", "perf", "rules"].includes(activeViewMode)) {
                     go(activeViewMode);
@@ -5263,9 +5273,9 @@
             attention: ED.attention || ED.attn || "",
             subject: ED.subject || ED.subj || "Draft Quotation",
             quotation_date: ED.quotation_date || ED.date || TODAY,
-            user_code: (ED.id && ED.user_code) ? ED.user_code : active.code,
-            user_name: (ED.id && ED.user_name) ? ED.user_name : active.name,
-            user_designation: (ED.id && ED.user_designation) ? ED.user_designation : active.title,
+            user_code: active.code,
+            user_name: active.name,
+            user_designation: active.title,
             acting_user_code: active.code,
             acting_user_name: active.name,
             acting_user_title: active.title,
