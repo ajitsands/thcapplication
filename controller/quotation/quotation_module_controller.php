@@ -2516,12 +2516,8 @@ class QuotationModuleController
             return;
         }
 
-        // Rule 4: Mark Approved (Administrator permission required) & Void other open revisions in group
+        // Rule 4: Mark Approved & Void other open revisions in group
         if (strtolower($status) === 'approved') {
-            if (!$this->isSessionUserAdmin()) {
-                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can record quotation approvals."]);
-                return;
-            }
             if (empty($approvedBy)) {
                 echo json_encode(["status" => "error", "message" => "Client approver name is mandatory to confirm approval."]);
                 return;
@@ -2596,12 +2592,8 @@ class QuotationModuleController
             return;
         }
 
-        // Rule 7: Not approved (Administrator permission required)
+        // Rule 7: Not approved
         if (strtolower($status) === 'not approved' || strtolower($status) === 'rejected') {
-            if (!$this->isSessionUserAdmin()) {
-                echo json_encode(["status" => "error", "message" => "Permission denied. Only Administrator can mark quotations as not approved."]);
-                return;
-            }
             if (empty($reason)) {
                 echo json_encode(["status" => "error", "message" => "A reason is required when marking not approved."]);
                 return;

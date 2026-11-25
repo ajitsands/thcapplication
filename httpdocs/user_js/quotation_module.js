@@ -1384,8 +1384,8 @@
             ed: st === "Draft",
             del: st === "Draft" && adminUser,
             rev: (isPending(st) || st === "Not approved") && !apGrp,
-            ap: (isPending(st) || st === "Not approved" || (st === "Superseded" && !apGrp)) && adminUser,
-            no: (isPending(st) || st === "Not approved") && adminUser,
+            ap: isPending(st) || st === "Not approved" || (st === "Superseded" && !apGrp),
+            no: isPending(st) || st === "Not approved",
             vr: st === "Approved",
             ro: (st === "Approved" || st === "Void") && adminUser,
             cm: st === "Approved",
@@ -5481,9 +5481,9 @@
         const Y = '<span class="y">✓</span>', N = '<span class="n">✗</span>';
         const R = [
             ["Draft", '<span class="m">Any user</span>', N, N, N, '<span class="y">✓</span> with remark', N, N, N, Y, "No"],
-            ["Pending approval", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', '<span class="m">Admin only</span>', '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
+            ["Pending approval", N, '<span class="m">Any user</span>', '<span class="m">Any user</span>', '<span class="m">Any user</span>', '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
             ["Approved", N, N, "—", N, '<span class="y">✓</span> with remark', '<span class="y">✓</span> post-work', Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
-            ["Not approved", N, '<span class="m">Any user</span>', '<span class="m">Admin only</span>', "—", '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
+            ["Not approved", N, '<span class="m">Any user</span>', '<span class="m">Any user</span>', "—", '<span class="y">✓</span> with remark', N, N, N, Y, "Sent"],
             ["Superseded", N, N, "Only if no other revision approved", N, '<span class="y">✓</span> with remark', N, N, N, Y, "No"],
             ["Completed", N, N, "—", N, N, "—", Y, '<span class="m">Admin only</span>', Y, "Sent + approved"],
             ["Expired", N, "Via Revive Quote", N, N, '<span class="y">✓</span> with remark', N, N, N, Y, "Pending revival"],
