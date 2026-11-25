@@ -1351,6 +1351,12 @@
     // VIEW 2: QUOTATION DETAIL (vq)
     // ==========================================
     function vq(id) {
+        ED = null;
+        isEditorDirty = false;
+        if (autosaveDebounceTimer) {
+            clearTimeout(autosaveDebounceTimer);
+            autosaveDebounceTimer = null;
+        }
         const q = Q.find(x => x.id == id);
         if (!q) {
             toast("Quotation not found");
@@ -2471,7 +2477,7 @@
         };
 
         $("#cn").onclick = () => {
-            if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED)) {
+            if (isEditorDirty && ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED)) {
                 saveDraftSilently("cancel_button").then(() => {
                     toast("Quotation automatically saved as draft");
                     go("log");
@@ -5186,9 +5192,9 @@
             attention: ED.attention || ED.attn || "",
             subject: ED.subject || ED.subj || "Draft Quotation",
             quotation_date: ED.quotation_date || ED.date || TODAY,
-            user_code: CU,
-            user_name: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name,
-            user_designation: USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title,
+            user_code: (ED.id && ED.user_code) ? ED.user_code : CU,
+            user_name: (ED.id && ED.user_name) ? ED.user_name : (USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][0] : USERS[CU].name) : currentUserObj.name),
+            user_designation: (ED.id && ED.user_designation) ? ED.user_designation : (USERS[CU] ? (Array.isArray(USERS[CU]) ? USERS[CU][1] : USERS[CU].title) : currentUserObj.title),
             user_phone: ED.user_phone || "",
             include_user_phone: ED.include_user_phone ? 1 : 0,
             vat_rate: ED.vat_rate !== undefined ? ED.vat_rate : (ED.vat || 10),
@@ -5246,6 +5252,7 @@
         return apiCall("save_quotation", payload, "POST").then(res => {
             isAutosaving = false;
             if (res && res.status === "success") {
+                if (!ED) return res;
                 if (res.id) {
                     ED.id = res.id;
                     if (res.quotation_no) {
@@ -5339,7 +5346,7 @@
     });
 
     window.addEventListener("pagehide", function () {
-        if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED)) {
+        if (ED && typeof hasQuotationMeaningfulContent === "function" && hasQuotationMeaningfulContent(ED) && isEditorDirty) {
             sendBeaconOrKeepaliveDraft();
         }
     });
@@ -5379,7 +5386,15 @@
         apiCall("save_quotation", payload, "POST").then(res => {
             if (res && res.status === "success") {
                 isEditorDirty = false;
-                if (ED) ED.is_autosaved = 0;
+                if (autosaveDebounceTimer) {
+                    clearTimeout(autosaveDebounceTimer);
+                    autosaveDebounceTimer = null;
+                }
+                if (ED) {
+                    if (res.id) ED.id = res.id;
+                    ED.is_autosaved = 0;
+                }
+                ED = null;
                 try {
                     localStorage.removeItem('thc_quote_autosave_' + CU);
                 } catch (e) {}
