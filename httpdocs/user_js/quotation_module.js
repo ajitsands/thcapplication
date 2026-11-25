@@ -1527,7 +1527,16 @@
 
                             ${(q.approval_by || (q.appr && q.appr.by)) ? `
                                 <span>Approved by</span>
-                                <div>${H(q.approval_by || q.appr.by)} on ${dmy(q.approval_date || (q.appr && q.appr.on))}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}</div>
+                                <div>
+                                    ${H(q.approval_by || q.appr.by)} on ${dmy(q.approval_date || (q.appr && q.appr.on))}${(q.client_po_ref || (q.appr && q.appr.po)) ? ' · ' + H(q.client_po_ref || q.appr.po) : ''}
+                                    ${(q.approval_attachment || (q.appr && q.appr.attachment)) ? `
+                                        <div style="margin-top:6px;">
+                                            <a href="../${H(q.approval_attachment || q.appr.attachment)}" target="_blank" class="btn btn-sm font-weight-semibold" style="background:#0A4174;color:#ffffff;padding:4px 10px;font-size:11.5px;border-radius:6px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;box-shadow:0 1px 3px rgba(10,65,116,0.25);">
+                                                <i class="icon-attachment mr-1"></i> View PO / Confirmation Doc (${H((q.approval_attachment || q.appr.attachment).split('/').pop())})
+                                            </a>
+                                        </div>
+                                    ` : ''}
+                                </div>
                             ` : ''}
 
                             ${(q.completion_date || st === "Completed") ? `
@@ -1600,6 +1609,9 @@
                             <input type="date" id="pd" value="${TODAY}" style="width:100%;margin-bottom:8px;">
                             <label style="display:block;margin-bottom:4px;font-weight:600;">Client PO / LPO Reference (optional)</label>
                             <input id="pp" placeholder="Client PO / LPO reference (optional)" style="width:100%;margin-bottom:8px;">
+                            <label style="display:block;margin-bottom:4px;font-weight:600;">Attach PO / Confirmation Document (optional)</label>
+                            <input type="file" id="pa_file" accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx" style="width:100%;margin-bottom:4px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:6px;">
+                            <small style="display:block;color:var(--mut);margin-bottom:10px;font-size:11.5px;">Allowed: PDF, Images, Word, Excel (not mandatory)</small>
                             <button class="p btn ladda-button" id="ca" data-style="expand-right" data-spinner-color="#ffffff"><span class="ladda-label">Confirm approval</span></button>
                         </div>
                         <div id="nab" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;">
@@ -1688,6 +1700,7 @@
                 ED.approval_by = null;
                 ED.approval_date = null;
                 ED.client_po_ref = null;
+                ED.approval_attachment = null;
                 ED.appr = null;
                 ED.log = [];
                 ED.activity = [];
@@ -1742,6 +1755,7 @@
                 ED.approval_by = null;
                 ED.approval_date = null;
                 ED.client_po_ref = null;
+                ED.approval_attachment = null;
                 ED.appr = null;
                 ED.log = [];
                 ED.activity = [];
@@ -1813,7 +1827,56 @@
                 if (!by) return toast("Enter the client name who approved");
                 const on = $("#pd").value || TODAY;
                 const po = $("#pp").value.trim();
-                updateStatus(q.id, "Approved", "", "", { approved_by: by, approved_on: on, client_po: po }, $("#ca"));
+                const fileInput = $("#pa_file");
+                const file = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+                if (file) {
+                    const btnEl = $("#ca");
+                    let laddaInst = createLadda(btnEl);
+                    if (laddaInst) laddaInst.start();
+                    if (btnEl) btnEl.disabled = true;
+
+                    const active = getActiveUserProfile();
+                    const fd = new FormData();
+                    fd.append("action", "update_status");
+                    fd.append("id", q.id);
+                    fd.append("status", "Approved");
+                    fd.append("approved_by", by);
+                    fd.append("approved_on", on);
+                    fd.append("client_po", po);
+                    fd.append("acting_user_code", active.code);
+                    fd.append("acting_user_name", active.name);
+                    fd.append("acting_user_title", active.title);
+                    fd.append("approval_attachment", file);
+
+                    fetch(API_URL, { method: "POST", body: fd })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res && res.status === "success") {
+                                toast(res.message);
+                                apiCall("get_quotations", {}, "GET").then(qRes => {
+                                    if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                                    if (btnEl) btnEl.disabled = false;
+                                    if (qRes && qRes.status === "success" && qRes.quotations) Q = qRes.quotations;
+                                    vq(q.id);
+                                }).catch(() => {
+                                    if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                                    if (btnEl) btnEl.disabled = false;
+                                    vq(q.id);
+                                });
+                            } else {
+                                if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                                if (btnEl) btnEl.disabled = false;
+                                toast((res && res.message) || "Failed to update status");
+                            }
+                        })
+                        .catch(() => {
+                            if (laddaInst) { try { laddaInst.stop(); } catch (e) {} }
+                            if (btnEl) btnEl.disabled = false;
+                            toast("Error updating quotation status");
+                        });
+                } else {
+                    updateStatus(q.id, "Approved", "", "", { approved_by: by, approved_on: on, client_po: po }, $("#ca"));
+                }
             };
         }
 

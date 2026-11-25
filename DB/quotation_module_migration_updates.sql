@@ -123,3 +123,10 @@ SET @sql_itm_merge = IF(@has_itm_merge = 0,
     'ALTER TABLE `tbl_quotation_items_v2` ADD COLUMN `merge_with_prev` TINYINT(1) NOT NULL DEFAULT 0 AFTER `total_price`', 
     'SELECT 1');
 PREPARE stmt FROM @sql_itm_merge; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 6. Add optional PO / confirmation document attachment column
+SET @has_appr_att = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tbl_quotations_v2' AND COLUMN_NAME = 'approval_attachment');
+SET @sql_appr_att = IF(@has_appr_att = 0,
+    'ALTER TABLE `tbl_quotations_v2` ADD COLUMN `approval_attachment` VARCHAR(500) DEFAULT '''' AFTER `client_po_ref`',
+    'SELECT 1');
+PREPARE stmt FROM @sql_appr_att; EXECUTE stmt; DEALLOCATE PREPARE stmt;

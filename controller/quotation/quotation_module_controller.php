@@ -195,7 +195,13 @@ class QuotationModuleController
                 @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` 
                     ADD COLUMN `approval_by` VARCHAR(255) DEFAULT '' AFTER `status`,
                     ADD COLUMN `approval_date` DATE DEFAULT NULL AFTER `approval_by`,
-                    ADD COLUMN `client_po_ref` VARCHAR(100) DEFAULT '' AFTER `approval_date`");
+                    ADD COLUMN `client_po_ref` VARCHAR(100) DEFAULT '' AFTER `approval_date`,
+                    ADD COLUMN `approval_attachment` VARCHAR(500) DEFAULT '' AFTER `client_po_ref`");
+            } else {
+                $chkApprAtt = @mysqli_query($this->db, "SHOW COLUMNS FROM `tbl_quotations_v2` LIKE 'approval_attachment'");
+                if ($chkApprAtt && mysqli_num_rows($chkApprAtt) == 0) {
+                    @mysqli_query($this->db, "ALTER TABLE `tbl_quotations_v2` ADD COLUMN `approval_attachment` VARCHAR(500) DEFAULT '' AFTER `client_po_ref`");
+                }
             }
 
             // Migration check: Add completion fields if missing
@@ -1228,7 +1234,8 @@ class QuotationModuleController
                         $appr = [
                             "by" => $r['approval_by'],
                             "on" => !empty($r['approval_date']) ? $r['approval_date'] : $r['quotation_date'],
-                            "po" => $r['client_po_ref'] ?? ''
+                            "po" => $r['client_po_ref'] ?? '',
+                            "attachment" => $r['approval_attachment'] ?? ''
                         ];
                     }
                     $activity = json_decode($r['activity_json'] ?? '', true);
@@ -1254,6 +1261,7 @@ class QuotationModuleController
                         "completion_by" => $r['completion_by'] ?? '',
                         "completion_notes" => $r['completion_notes'] ?? '',
                         "completion_attachment" => $r['completion_attachment'] ?? '',
+                        "approval_attachment" => $r['approval_attachment'] ?? '',
                         "revived_at" => $r['revived_at'] ?? null,
                         "revived_by" => $r['revived_by'] ?? '',
                         "user_code" => $r['user_code'],
@@ -2519,6 +2527,7 @@ class QuotationModuleController
                     approval_by = NULL,
                     approval_date = NULL,
                     client_po_ref = '',
+                    approval_attachment = '',
                     remark = '$escRem',
                     activity_json = '$escAct'
                     WHERE id = $id");
@@ -2562,8 +2571,28 @@ class QuotationModuleController
                 echo json_encode(["status" => "error", "message" => "Client approver name is mandatory to confirm approval."]);
                 return;
             }
+            $approvalAttachment = '';
+            if (!empty($_FILES['approval_attachment']['name'])) {
+                $file = $_FILES['approval_attachment'];
+                if ($file['error'] === UPLOAD_ERR_OK) {
+                    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                    $allowed = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'];
+                    if (!in_array($ext, $allowed)) {
+                        echo json_encode(["status" => "error", "message" => "Invalid file format. Allowed: PDF, PNG, JPG, DOC, DOCX, XLS, XLSX"]);
+                        return;
+                    }
+                    $uploadDir = __DIR__ . '/../../uploads/quotation_approvals/';
+                    if (!is_dir($uploadDir)) {
+                        @mkdir($uploadDir, 0777, true);
+                    }
+                    $safeName = 'po_' . $id . '_' . time() . '.' . $ext;
+                    if (move_uploaded_file($file['tmp_name'], $uploadDir . $safeName)) {
+                        $approvalAttachment = 'uploads/quotation_approvals/' . $safeName;
+                    }
+                }
+            }
             $appDate = !empty($approvedOn) ? $approvedOn : $today;
-            $logMsg = "Approved by " . $approvedBy . ($clientPo ? " (" . $clientPo . ")" : "");
+            $logMsg = "Approved by " . $approvedBy . ($clientPo ? " (" . $clientPo . ")" : "") . ($approvalAttachment ? " [Doc: " . basename($approvalAttachment) . "]" : "");
             $activity[] = ["d" => date('Y-m-d H:i:s'), "u" => $userName, "t" => $logMsg];
             $actJson = json_encode($activity);
 
@@ -2571,6 +2600,7 @@ class QuotationModuleController
                 $escBy = mysqli_real_escape_string($this->db, $approvedBy);
                 $escDate = mysqli_real_escape_string($this->db, $appDate);
                 $escPo = mysqli_real_escape_string($this->db, $clientPo);
+                $escAtt = mysqli_real_escape_string($this->db, $approvalAttachment);
                 $escAct = mysqli_real_escape_string($this->db, $actJson);
 
                 mysqli_query($this->db, "UPDATE tbl_quotations_v2 SET 
@@ -2578,6 +2608,7 @@ class QuotationModuleController
                     approval_by = '$escBy',
                     approval_date = '$escDate',
                     client_po_ref = '$escPo',
+                    approval_attachment = '$escAtt',
                     rejection_reason = '',
                     remark = '',
                     activity_json = '$escAct'
@@ -2609,7 +2640,8 @@ class QuotationModuleController
                 foreach ($quotes as &$q) {
                     if ($q['id'] == $id) {
                         $q['status'] = 'Approved';
-                        $q['appr'] = ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo];
+                        $q['approval_attachment'] = $approvalAttachment;
+                        $q['appr'] = ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo, "attachment" => $approvalAttachment];
                         $q['remark'] = '';
                         $q['activity'] = $activity;
                     } elseif (($q['seq_no'] ?? null) == $seqNo && ($q['variation_no'] ?? 0) == $varNo && in_array($q['status'] ?? '', ['Pending', 'Pending approval', 'Draft'])) {
@@ -2627,7 +2659,7 @@ class QuotationModuleController
                 "id" => $id,
                 "new_status" => "Approved",
                 "remark" => "",
-                "appr" => ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo]
+                "appr" => ["by" => $approvedBy, "on" => $appDate, "po" => $clientPo, "attachment" => $approvalAttachment]
             ]);
             return;
         }

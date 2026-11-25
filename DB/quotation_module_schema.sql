@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `tbl_quotations_v2` (
   `approval_by` VARCHAR(255) DEFAULT '' COMMENT 'Client approver contact name',
   `approval_date` DATE DEFAULT NULL COMMENT 'Date client approved quotation',
   `client_po_ref` VARCHAR(100) DEFAULT '' COMMENT 'Client LPO / PO reference number',
+  `approval_attachment` VARCHAR(500) DEFAULT '' COMMENT 'Optional attached PO or confirmation document path',
   `completion_date` DATETIME DEFAULT NULL COMMENT 'Date work order / project completed',
   `completion_by` VARCHAR(255) DEFAULT '' COMMENT 'User who marked quotation completed',
   `completion_notes` TEXT DEFAULT NULL COMMENT 'Completion closing notes / sign-off',
