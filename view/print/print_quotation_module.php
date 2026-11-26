@@ -168,6 +168,40 @@ if (!$q) {
     die("<div style='font-family:sans-serif;padding:30px;color:#c00;'><h3>Quotation not found. Please verify the ID or Reference Number.</h3></div>");
 }
 
+function cleanPdfText($val) {
+    if ($val === null) return '';
+    $str = (string)$val;
+    if ($str === '') return '';
+    if (function_exists('mb_check_encoding') && !mb_check_encoding($str, 'UTF-8')) {
+        $str = mb_convert_encoding($str, 'UTF-8', 'Windows-1252');
+    }
+    $str = strtr($str, [
+        "â€™" => "’", "â€˜" => "‘", "â€œ" => "“", "â€\x9d" => "”",
+        "â€“" => "–", "â€”" => "—", "â€¢" => "•", "â€¦" => "…",
+        "Â°" => "°", "Â²" => "²", "Â³" => "³", "Â£" => "£", "Â·" => "·"
+    ]);
+    if (strpos($str, "â€") !== false) {
+        $str = str_replace("â€", "”", $str);
+    }
+    return $str;
+}
+
+foreach (['client_name', 'client_address', 'attention', 'subject', 'user_name', 'user_designation', 'approval_by', 'client_po_ref'] as $tf) {
+    if (isset($q[$tf])) $q[$tf] = cleanPdfText($q[$tf]);
+}
+foreach ($items as &$itRef) {
+    if (isset($itRef['description'])) $itRef['description'] = cleanPdfText($itRef['description']);
+    if (isset($itRef[0])) $itRef[0] = cleanPdfText($itRef[0]);
+    if (isset($itRef['unit'])) $itRef['unit'] = cleanPdfText($itRef['unit']);
+}
+unset($itRef);
+if (is_array($terms)) {
+    foreach ($terms as &$tRef) {
+        $tRef = cleanPdfText($tRef);
+    }
+    unset($tRef);
+}
+
 function fDate($str) {
     if (!$str) return "—";
     $clean = trim(explode(" ", str_replace("T", " ", $str))[0]);

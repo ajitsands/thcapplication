@@ -9,7 +9,33 @@
     // Helper utilities
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
-    const H = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const fixMojibake = s => {
+        if (s === null || s === undefined) return "";
+        let str = String(s);
+        if (!str) return "";
+        if (str.includes("â€") || str.includes("Ã") || str.includes("Â")) {
+            str = str
+                .replace(/â€™/g, "’")
+                .replace(/â€˜/g, "‘")
+                .replace(/â€œ/g, "“")
+                .replace(/â€\u009d/g, "”")
+                .replace(/â€“/g, "–")
+                .replace(/â€”/g, "—")
+                .replace(/â€¢/g, "•")
+                .replace(/â€¦/g, "…")
+                .replace(/â€/g, "”")
+                .replace(/Â°/g, "°")
+                .replace(/Â²/g, "²")
+                .replace(/Â³/g, "³")
+                .replace(/Â£/g, "£")
+                .replace(/Â©/g, "©")
+                .replace(/Â®/g, "®")
+                .replace(/Â·/g, "·")
+                .replace(/Â\u00a0/g, " ");
+        }
+        return str;
+    };
+    const H = s => fixMojibake(s).replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
     const M = (a, f) => (a || []).map(f).join("");
     const f3 = x => (+x || 0).toLocaleString("en", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
@@ -4123,16 +4149,16 @@
             if (idInp) idInp.value = cust.id || 0;
             if (codeInp) codeInp.value = cust.code || "";
             if (typeSel) typeSel.value = cust.customer_type || (cust.is_amc ? "AMC" : "Non AMC");
-            if (nameInp) nameInp.value = cust.name || "";
-            if (contactInp) contactInp.value = cust.contact || "";
-            if (emailInp) emailInp.value = cust.email || "";
-            if (altContactInp) altContactInp.value = cust.alternate_contact || "";
-            if (personInp) personInp.value = cust.contact_person || "";
-            if (personNoInp) personNoInp.value = cust.contact_person_no || "";
-            if (cprInp) cprInp.value = cust.cpr_cr || "";
-            if (vatInp) vatInp.value = cust.vat_no || "";
-            if (addrInp) addrInp.value = cust.address || "";
-            if (descInp) descInp.value = cust.description || "";
+            if (nameInp) nameInp.value = fixMojibake(cust.name || "");
+            if (contactInp) contactInp.value = fixMojibake(cust.contact || "");
+            if (emailInp) emailInp.value = fixMojibake(cust.email || "");
+            if (altContactInp) altContactInp.value = fixMojibake(cust.alternate_contact || "");
+            if (personInp) personInp.value = fixMojibake(cust.contact_person || "");
+            if (personNoInp) personNoInp.value = fixMojibake(cust.contact_person_no || "");
+            if (cprInp) cprInp.value = fixMojibake(cust.cpr_cr || "");
+            if (vatInp) vatInp.value = fixMojibake(cust.vat_no || "");
+            if (addrInp) addrInp.value = fixMojibake(cust.address || "");
+            if (descInp) descInp.value = fixMojibake(cust.description || "");
         } else {
             // Add new customer
             if (titleEl) titleEl.textContent = "Add New Customer";

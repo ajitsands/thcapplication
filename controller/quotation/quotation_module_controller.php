@@ -993,6 +993,54 @@ class QuotationModuleController
         ]);
     }
 
+    /**
+     * Normalize UTF-8 strings and repair common Windows-1252/Latin-1 double-encoded mojibake
+     * (e.g., Maâ€™ameer -> Ma’ameer, â€“ -> –, Â° -> °).
+     */
+    private function cleanUtf8Text($val): string
+    {
+        if ($val === null) return '';
+        $str = (string)$val;
+        if ($str === '') return '';
+
+        if (function_exists('mb_check_encoding') && !mb_check_encoding($str, 'UTF-8')) {
+            $str = mb_convert_encoding($str, 'UTF-8', 'Windows-1252');
+        }
+
+        // Repair UTF-8 bytes that were previously stored as Latin-1/Windows-1252 and re-read as UTF-8
+        $mojibakeMap = [
+            "â€™" => "’",
+            "â€˜" => "‘",
+            "â€œ" => "“",
+            "â€\x9d" => "”",
+            "â€“" => "–",
+            "â€”" => "—",
+            "â€¢" => "•",
+            "â€¦" => "…",
+            "Ã©" => "é",
+            "Ã¨" => "è",
+            "Ã¡" => "á",
+            "Ã " => "à",
+            "Ã³" => "ó",
+            "Ãº" => "ú",
+            "Ã±" => "ñ",
+            "Â°" => "°",
+            "Â²" => "²",
+            "Â³" => "³",
+            "Â£" => "£",
+            "Â©" => "©",
+            "Â®" => "®",
+            "Â·" => "·",
+            "Â\xc2\xa0" => " ",
+            "\xc3\x82\xc2\xa0" => " "
+        ];
+        $str = strtr($str, $mojibakeMap);
+        if (strpos($str, "â€") !== false) {
+            $str = str_replace("â€", "”", $str);
+        }
+        return $str;
+    }
+
     private function fetchCustomersList(): array
     {
         $amcClients = [];
@@ -1002,21 +1050,22 @@ class QuotationModuleController
             $cRes = @mysqli_query($this->db, "SELECT customer_id, customer_code, customer_name, customer_address, customer_contact_no, customer_contact_person_name, customer_contact_person_no, customer_email_id, customer_cpr_cr_no, customer_vat_no, customer_location, customer_description, is_amc, customer_type FROM tbl_customers WHERE customer_status='Active' ORDER BY customer_name ASC");
             if ($cRes && mysqli_num_rows($cRes) > 0) {
                 while ($c = mysqli_fetch_assoc($cRes)) {
-                    $code = !empty($c['customer_code']) && $c['customer_code'] !== 'NA' ? $c['customer_code'] : 'C' . str_pad($c['customer_id'], 4, '0', STR_PAD_LEFT);
+                    $code = !empty($c['customer_code']) && $c['customer_code'] !== 'NA' ? $this->cleanUtf8Text($c['customer_code']) : 'C' . str_pad($c['customer_id'], 4, '0', STR_PAD_LEFT);
                     $isAmc = ((int)$c['is_amc'] === 0 || $c['customer_type'] === 'Non AMC') ? 0 : 1;
+                    $custName = $this->cleanUtf8Text($c['customer_name']);
                     $cObj = [
                         "id" => (int)$c['customer_id'],
                         "code" => $code,
-                        "name" => $c['customer_name'],
-                        "address" => !empty($c['customer_address']) && $c['customer_address'] !== 'NA' ? $c['customer_address'] : "M/S " . $c['customer_name'] . ", Kingdom of Bahrain",
-                        "contact" => !empty($c['customer_contact_no']) && $c['customer_contact_no'] !== 'NA' ? $c['customer_contact_no'] : "",
-                        "contact_person" => !empty($c['customer_contact_person_name']) && $c['customer_contact_person_name'] !== 'NA' ? $c['customer_contact_person_name'] : "",
-                        "contact_person_no" => !empty($c['customer_contact_person_no']) && $c['customer_contact_person_no'] !== 'NA' ? $c['customer_contact_person_no'] : "",
-                        "email" => !empty($c['customer_email_id']) && $c['customer_email_id'] !== 'NA' ? $c['customer_email_id'] : "",
-                        "alternate_contact" => !empty($c['customer_location']) && $c['customer_location'] !== 'NA' ? $c['customer_location'] : "",
-                        "cpr_cr" => !empty($c['customer_cpr_cr_no']) && $c['customer_cpr_cr_no'] !== 'NA' ? $c['customer_cpr_cr_no'] : "",
-                        "vat_no" => !empty($c['customer_vat_no']) && $c['customer_vat_no'] !== 'NA' ? $c['customer_vat_no'] : "",
-                        "description" => !empty($c['customer_description']) && $c['customer_description'] !== 'NA' ? $c['customer_description'] : "",
+                        "name" => $custName,
+                        "address" => !empty($c['customer_address']) && $c['customer_address'] !== 'NA' ? $this->cleanUtf8Text($c['customer_address']) : "M/S " . $custName . ", Kingdom of Bahrain",
+                        "contact" => !empty($c['customer_contact_no']) && $c['customer_contact_no'] !== 'NA' ? $this->cleanUtf8Text($c['customer_contact_no']) : "",
+                        "contact_person" => !empty($c['customer_contact_person_name']) && $c['customer_contact_person_name'] !== 'NA' ? $this->cleanUtf8Text($c['customer_contact_person_name']) : "",
+                        "contact_person_no" => !empty($c['customer_contact_person_no']) && $c['customer_contact_person_no'] !== 'NA' ? $this->cleanUtf8Text($c['customer_contact_person_no']) : "",
+                        "email" => !empty($c['customer_email_id']) && $c['customer_email_id'] !== 'NA' ? $this->cleanUtf8Text($c['customer_email_id']) : "",
+                        "alternate_contact" => !empty($c['customer_location']) && $c['customer_location'] !== 'NA' ? $this->cleanUtf8Text($c['customer_location']) : "",
+                        "cpr_cr" => !empty($c['customer_cpr_cr_no']) && $c['customer_cpr_cr_no'] !== 'NA' ? $this->cleanUtf8Text($c['customer_cpr_cr_no']) : "",
+                        "vat_no" => !empty($c['customer_vat_no']) && $c['customer_vat_no'] !== 'NA' ? $this->cleanUtf8Text($c['customer_vat_no']) : "",
+                        "description" => !empty($c['customer_description']) && $c['customer_description'] !== 'NA' ? $this->cleanUtf8Text($c['customer_description']) : "",
                         "is_amc" => $isAmc,
                         "customer_type" => $isAmc ? 'AMC' : 'Non AMC'
                     ];
@@ -1059,16 +1108,16 @@ class QuotationModuleController
 
         $input = $this->getInputData();
         $custId = isset($input['customer_id']) ? (int)$input['customer_id'] : 0;
-        $name = trim($input['customer_name'] ?? '');
-        $contact = trim($input['customer_contact_no'] ?? '');
-        $email = trim($input['customer_email_id'] ?? '');
-        $altContact = trim($input['alternate_contact_no'] ?? '');
-        $contactPerson = trim($input['contact_person'] ?? '');
-        $contactPersonNo = trim($input['contact_person_number'] ?? '');
-        $cprCr = trim($input['cpr_cr_number'] ?? '');
-        $vatNo = trim($input['vat_number'] ?? '');
-        $address = trim($input['customer_address'] ?? '');
-        $description = trim($input['customer_description'] ?? '');
+        $name = trim($this->cleanUtf8Text($input['customer_name'] ?? ''));
+        $contact = trim($this->cleanUtf8Text($input['customer_contact_no'] ?? ''));
+        $email = trim($this->cleanUtf8Text($input['customer_email_id'] ?? ''));
+        $altContact = trim($this->cleanUtf8Text($input['alternate_contact_no'] ?? ''));
+        $contactPerson = trim($this->cleanUtf8Text($input['contact_person'] ?? ''));
+        $contactPersonNo = trim($this->cleanUtf8Text($input['contact_person_number'] ?? ''));
+        $cprCr = trim($this->cleanUtf8Text($input['cpr_cr_number'] ?? ''));
+        $vatNo = trim($this->cleanUtf8Text($input['vat_number'] ?? ''));
+        $address = trim($this->cleanUtf8Text($input['customer_address'] ?? ''));
+        $description = trim($this->cleanUtf8Text($input['customer_description'] ?? ''));
         $customerType = (isset($input['customer_type']) && trim($input['customer_type']) === 'Non AMC') ? 'Non AMC' : 'AMC';
         if (isset($input['is_amc'])) {
             $isAmc = ((int)$input['is_amc'] === 0 || $input['is_amc'] === '0') ? 0 : 1;
@@ -1249,12 +1298,12 @@ class QuotationModuleController
                         "vn" => (int)($r['variation_no'] ?? 0),
                         "quotation_no" => $r['quotation_no'],
                         "is_amc" => (int)$r['is_amc'],
-                        "client_code" => $r['client_code'],
-                        "client_name" => $r['client_name'],
-                        "client_address" => $r['client_address'],
-                        "contact_no" => $r['contact_no'],
-                        "attention" => $r['attention'],
-                        "subject" => $r['subject'],
+                        "client_code" => $this->cleanUtf8Text($r['client_code']),
+                        "client_name" => $this->cleanUtf8Text($r['client_name']),
+                        "client_address" => $this->cleanUtf8Text($r['client_address']),
+                        "contact_no" => $this->cleanUtf8Text($r['contact_no']),
+                        "attention" => $this->cleanUtf8Text($r['attention']),
+                        "subject" => $this->cleanUtf8Text($r['subject']),
                         "quotation_date" => $r['quotation_date'],
                         "validity_days" => (int)($r['validity_days'] ?? 30),
                         "completion_date" => $r['completion_date'] ?? null,
@@ -1276,7 +1325,7 @@ class QuotationModuleController
                         "subtotal_excl_vat" => (float)$r['subtotal_excl_vat'],
                         "vat_amount" => (float)$r['vat_amount'],
                         "total_incl_vat" => (float)$r['total_incl_vat'],
-                        "internal_notes" => $r['internal_notes'] ?? '',
+                        "internal_notes" => $this->cleanUtf8Text($r['internal_notes'] ?? ''),
                         "merge_items" => (int)($r['merge_items'] ?? 0),
                         "merge_qty" => (int)($r['merge_qty'] ?? 0),
                         "merged_lump_sum_price" => (float)($r['merged_lump_sum_price'] ?? 0.0),
@@ -2057,12 +2106,12 @@ class QuotationModuleController
         $id = isset($input['id']) ? (int)$input['id'] : 0;
         $isIssue = !empty($input['is_issue']);
         $isAmc = isset($input['is_amc']) ? (int)$input['is_amc'] : 1;
-        $clientName = trim($input['client_name'] ?? '');
-        $clientCode = trim($input['client_code'] ?? '');
-        $clientAddress = trim($input['client_address'] ?? '');
-        $contactNo = trim($input['contact_no'] ?? '');
-        $attention = trim($input['attention'] ?? '');
-        $subject = trim($input['subject'] ?? '');
+        $clientName = trim($this->cleanUtf8Text($input['client_name'] ?? ''));
+        $clientCode = trim($this->cleanUtf8Text($input['client_code'] ?? ''));
+        $clientAddress = trim($this->cleanUtf8Text($input['client_address'] ?? ''));
+        $contactNo = trim($this->cleanUtf8Text($input['contact_no'] ?? ''));
+        $attention = trim($this->cleanUtf8Text($input['attention'] ?? ''));
+        $subject = trim($this->cleanUtf8Text($input['subject'] ?? ''));
         $quotationDate = trim($input['quotation_date'] ?? date('Y-m-d'));
         $userCode = trim($input['user_code'] ?? 'MA');
         $userName = trim($input['user_name'] ?? 'Mohammed Ali');
