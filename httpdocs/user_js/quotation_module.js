@@ -2378,12 +2378,10 @@
             ED.addr = ED.client_address;
             ED.contact_no = found ? found.contact : "";
             ED.contact = ED.contact_no;
-            if (found && found.contact_person && (!ED.attention || ED.attention === "")) {
-                ED.attention = found.contact_person;
-                ED.attn = ED.attention;
-                const attnField = $('[data-k="attention"]');
-                if (attnField) attnField.value = ED.attention;
-            }
+            ED.attention = found ? (found.contact_person || "") : "";
+            ED.attn = ED.attention;
+            const attnField = $('[data-k="attention"]');
+            if (attnField) attnField.value = ED.attention;
             const adField = $("#ad");
             if (adField) adField.value = ED.client_address;
             updateEditCustomerButtonVisibility();
@@ -2400,12 +2398,10 @@
             ED.addr = ED.client_address;
             ED.contact_no = found ? found.contact : "";
             ED.contact = ED.contact_no;
-            if (found && found.contact_person && (!ED.attention || ED.attention === "")) {
-                ED.attention = found.contact_person;
-                ED.attn = ED.attention;
-                const attnField = $('[data-k="attention"]');
-                if (attnField) attnField.value = ED.attention;
-            }
+            ED.attention = found ? (found.contact_person || "") : "";
+            ED.attn = ED.attention;
+            const attnField = $('[data-k="attention"]');
+            if (attnField) attnField.value = ED.attention;
 
             const inpName = $("#inp_client_name");
             if (inpName) inpName.value = ED.client_name;
