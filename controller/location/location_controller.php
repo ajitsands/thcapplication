@@ -81,8 +81,8 @@ class locationController
                 $this->varModelObj->ListFromTable($var[2]);
             break;
             case 'update_location':
-              
                 $this->varModelObj->UpdateTable($var[5]);
+                $this->cascadeLocationUpdate();
             break;
             
             case 'change_location_status':
@@ -114,6 +114,22 @@ class locationController
             
         }
 
+    }
+
+    function cascadeLocationUpdate()
+    {
+        $lid = intval($this->location_id);
+        if ($lid <= 0) return;
+        $lName = $this->location_name;
+        $lCode = $this->varDBConnection->real_escape_string($this->location_code);
+
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_customer_location` SET `location_name` = '$lName', `location_code` = '$lCode' WHERE `location_id` = $lid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_assets` SET `asset_location` = '$lName', `location_code` = '$lCode' WHERE `location_id` = $lid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_asset_schedule` SET `location_name` = '$lName' WHERE `location_id` = $lid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_requision_child` SET `location_name` = '$lName' WHERE `location_id` = $lid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_tickets` SET `location_name` = '$lName', `location_code` = '$lCode' WHERE `location_id` = $lid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_ticket_teams` SET `location_name` = '$lName', `location_code` = '$lCode' WHERE `location_id` = $lid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_visits` SET `location_name` = '$lName', `location_code` = '$lCode' WHERE `location_id` = $lid");
     }
 }//end of class
 

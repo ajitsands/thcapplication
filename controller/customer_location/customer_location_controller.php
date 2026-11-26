@@ -15,34 +15,29 @@ class apartmentController
 	  
         $this->varModelObj = new CommonModel();
         $this->varDBConnection = $this->varModelObj->varDBConnection;
-        $this->actionevents = $_POST['action'];
-        $this->customer_id_customer_location = $_POST['v_customer_id_customer_location'];
-        $this->customer_name_customer_location = $_POST['v_customer_name_customer_location'];
-        $this->location_id_customer_location = $_POST['v_location_id_customer_location'];
-        $this->location_name_customer_location = $_POST['v_location_name_customer_location'];
-        $this->building_name_customer_location = $_POST['v_building_name_customer_location'];
-        $this->building_address_customer_location = $_POST['v_building_address_customer_location'];
-        $this->contact_person_building_code = strtoupper($_POST['v_contact_person_building_code']);
-         $this->location_name_customer_location_code = strtoupper($_POST['v_location_name_customer_location_code']);
-         $this->customer_name_customer_location_code = strtoupper($_POST['v_customer_name_customer_location_code']);
-         $raw_img = isset($_POST['v_building_image']) ? trim($_POST['v_building_image']) : '';
-         if (!empty($raw_img) && $raw_img != 'null' && $raw_img != 'NA') {
-             $clean_img = basename(str_replace('\\', '/', $raw_img));
-             $this->building_image = preg_replace('/[^a-zA-Z0-9._-]/', '_', $clean_img);
-         } else {
-             $this->building_image = 'default.jpg';
-         }
-        
-        
-        
-        $this->contact_person_name_customer_location = $_POST['v_contact_person_name_customer_location'];
-        $this->contact_person_number_customer_location = $_POST['v_contact_person_number_customer_location'];
-        $this->customer_location_status = $_POST['v_customer_location_status'];
-		$this->customer_location_id = $_POST['v_customer_location_id'];
-		$this->building_id = $_POST['v_building_id'];
-		
-		
-		$this->action_status = $_POST['v_action_status'];
+        $this->actionevents = $_POST['action'] ?? '';
+        $this->customer_id_customer_location = intval($_POST['v_customer_id_customer_location'] ?? 0);
+        $this->customer_name_customer_location = $this->varDBConnection->real_escape_string(trim($_POST['v_customer_name_customer_location'] ?? ''));
+        $this->location_id_customer_location = intval($_POST['v_location_id_customer_location'] ?? 0);
+        $this->location_name_customer_location = $this->varDBConnection->real_escape_string(trim($_POST['v_location_name_customer_location'] ?? ''));
+        $this->building_name_customer_location = $this->varDBConnection->real_escape_string(trim($_POST['v_building_name_customer_location'] ?? ''));
+        $this->building_address_customer_location = $this->varDBConnection->real_escape_string(trim($_POST['v_building_address_customer_location'] ?? ''));
+        $this->contact_person_building_code = $this->varDBConnection->real_escape_string(strtoupper(trim($_POST['v_contact_person_building_code'] ?? '')));
+        $this->location_name_customer_location_code = $this->varDBConnection->real_escape_string(strtoupper(trim($_POST['v_location_name_customer_location_code'] ?? '')));
+        $this->customer_name_customer_location_code = $this->varDBConnection->real_escape_string(strtoupper(trim($_POST['v_customer_name_customer_location_code'] ?? '')));
+        $raw_img = isset($_POST['v_building_image']) ? trim($_POST['v_building_image']) : '';
+        if (!empty($raw_img) && $raw_img != 'null' && $raw_img != 'NA') {
+            $clean_img = basename(str_replace('\\', '/', $raw_img));
+            $this->building_image = $this->varDBConnection->real_escape_string(preg_replace('/[^a-zA-Z0-9._-]/', '_', $clean_img));
+        } else {
+            $this->building_image = 'default.jpg';
+        }
+        $this->contact_person_name_customer_location = $this->varDBConnection->real_escape_string(trim($_POST['v_contact_person_name_customer_location'] ?? ''));
+        $this->contact_person_number_customer_location = $this->varDBConnection->real_escape_string(trim($_POST['v_contact_person_number_customer_location'] ?? ''));
+        $this->customer_location_status = $this->varDBConnection->real_escape_string(trim($_POST['v_customer_location_status'] ?? 'Active'));
+        $this->customer_location_id = intval($_POST['v_customer_location_id'] ?? 0);
+        $this->building_id = intval($_POST['v_building_id'] ?? 0);
+        $this->action_status = $_POST['v_action_status'] ?? '';
 		
         
     }
@@ -79,8 +74,16 @@ class apartmentController
         
             
             case 'add_customer_location':
-           echo $var[1];
-                $this->varModelObj->ExecuteProcedure($var[1]);
+                if ($this->customer_id_customer_location <= 0 || $this->location_id_customer_location <= 0 || $this->building_id <= 0) {
+                    echo "Error: Please select valid Customer, Location, and Facility.";
+                    break;
+                }
+                $ok = mysqli_query($this->varDBConnection, $var[1]);
+                if ($ok) {
+                    echo mysqli_insert_id($this->varDBConnection);
+                } else {
+                    echo "Error: " . mysqli_error($this->varDBConnection);
+                }
             break;
             
              case 'customer_location_list_view':

@@ -79,8 +79,8 @@ class buildingController
                 $this->varModelObj->ListFromTable($var[1]);
             break;
              case 'edit_building':
-                //echo $var[2];
                 $this->varModelObj->UpdateTable($var[2]);
+                $this->cascadeBuildingUpdate();
             break;
              case 'change_building_status':
                 if($this->building_action=='Active')
@@ -105,8 +105,8 @@ class buildingController
                 echo json_encode($rows);
             break;
             case 'update_building_code':
-            
                 $this->varModelObj->UpdateTable($var[6]);
+                $this->cascadeBuildingCodeUpdate();
             break;
             case 'update_building_location':
                 $this->varModelObj->UpdateTable($var[8]);
@@ -118,6 +118,36 @@ class buildingController
             
         }
 
+    }
+
+    function cascadeBuildingUpdate()
+    {
+        $bid = intval($this->building_id);
+        if ($bid <= 0) return;
+        $bName = $this->building_name;
+        $bCode = $this->varDBConnection->real_escape_string($this->building_code);
+        $bAddr = $this->building_address;
+
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_customer_location` SET `building_name` = '$bName', `building_code` = '$bCode', `building_address` = '$bAddr' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_assets` SET `asset_building` = '$bName', `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_asset_schedule` SET `building_name` = '$bName' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_requision_child` SET `building_name` = '$bName' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_tickets` SET `building_name` = '$bName', `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_ticket_teams` SET `building_name` = '$bName', `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_visits` SET `building_name` = '$bName', `building_code` = '$bCode' WHERE `building_id` = $bid");
+    }
+
+    function cascadeBuildingCodeUpdate()
+    {
+        $bid = intval($this->building_id);
+        if ($bid <= 0) return;
+        $bCode = $this->varDBConnection->real_escape_string($this->building_code);
+
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_customer_location` SET `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_assets` SET `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_tickets` SET `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_ticket_teams` SET `building_code` = '$bCode' WHERE `building_id` = $bid");
+        @mysqli_query($this->varDBConnection, "UPDATE `tbl_visits` SET `building_code` = '$bCode' WHERE `building_id` = $bid");
     }
 }//end of class
 

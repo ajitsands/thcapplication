@@ -144,10 +144,10 @@ $(document).ready(function(){
                                  }
                                  v_session_image = v_saved_img;
                                      
-                                 if($.trim(v_building_name_customer_location)==""||typeof v_customer_id_customer_location === "undefined"|| typeof v_location_id_customer_location === "undefined")
+                                 if($.trim(v_building_name_customer_location)==""|| !v_customer_id_customer_location || v_customer_id_customer_location === "select" || !v_location_id_customer_location || v_location_id_customer_location === "select" || !v_building_id || v_building_id === "select")
                                  
                                  {
-                                     swal("Warning","Please provide all the details ....", "warning");
+                                     swal("Warning","Please select Customer, Location, and Facility ....", "warning");
                                      v_btn_customer_location_add.ladda( 'stop' );
                                      return false;
                                  }
@@ -161,20 +161,26 @@ $(document).ready(function(){
                                              // console.log(result);
                                             result = $.trim(result);
                                           
-                                            if(result.charAt(0)=='U')
+                                            if(result.charAt(0)=='U' || result.indexOf('Error:') === 0 || result === '' || isNaN(Number(result)))
                                             {
                                                 v_btn_customer_location_add.ladda( 'stop' );
-                                                swal("Error", result, "error");
-                                                clear_text();
+                                                swal("Error", result || "Failed to add customer facility.", "error");
                                             }
                                             else 
                                             {
                                                  v_btn_customer_location_add.ladda( 'stop' );
                                                  swal("Success", "Customer building details added successfully..", "success");
                                                  load_data_to_grid_customer_location_details_list();
+                                                 $.ajax({
+                                                     type: "POST",
+                                                     url: "../view/customer_location/customer_facility_building_combo.php"
+                                                 }).done(function(data){
+                                                     $("#div_select_building").html(data);
+                                                     $("#select_building_for_location").select2();
+                                                 });
                                                  clear_text();
                                                 
-                                                                            }
+                                            }
                                                                             
                                                                              
                                                                         
