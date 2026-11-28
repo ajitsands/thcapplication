@@ -2,6 +2,7 @@ $(document).ready(function(){
  
   $(":input:not(:hidden)").each(function (i) { $(this).attr('tabindex', i + 1); });
  var v_customer_location_id,v_customer_location_status;
+ var isEditingCustomerLocation = false;
                   
                     $('#btn_customer_location_edit').hide();
                     $('#btn_customer_location_new').hide();
@@ -43,17 +44,22 @@ $(document).ready(function(){
                 			$("#select_building_for_location").select2();
         		});
         		   $(document.body).on('change','#select_customer_for_customer_location',function(){  
-        		      
+        		     if (isEditingCustomerLocation) {
+        		         return;
+        		     }
         		     var v_customer_id_customer_location=$("#select_customer_for_customer_location option:selected").val();
+        		     if (!v_customer_id_customer_location || v_customer_id_customer_location === 'select') {
+        		         return;
+        		     }
         		     console.log("inside");
         		     $.post("../controller/customer_location/customer_location_controller.php",{action:'select_contact_person_details',v_customer_id_customer_location:v_customer_id_customer_location}
                             , function(result,status)
                             {
                                 var obj= jQuery.parseJSON(result);
-                                
-                                $("#txt_contact_person_name").val(obj.data[0].customer_contact_person_name);
-                                $("#txt_contact_person_number_build").val(obj.data[0].customer_contact_person_no);
-                                
+                                if (obj && obj.data && obj.data.length > 0) {
+                                    $("#txt_contact_person_name").val(obj.data[0].customer_contact_person_name);
+                                    $("#txt_contact_person_number_build").val(obj.data[0].customer_contact_person_no);
+                                }
                             });
         		     
         		 });
@@ -228,7 +234,19 @@ $(document).ready(function(){
                                  { "data": "customer_location_id","visible":false },
                                  { "data": "customer_id","visible":false },
                                  
-                                 { "data": "customer_name" },
+                                 { "data": "customer_name",
+                                   render: function ( data, type, rows, meta ) {
+                                       var name = $.trim(rows['customer_name'] || '');
+                                       var code = $.trim(rows['customer_code'] || '');
+                                       if (code && name.indexOf(code + '--') === 0) {
+                                           return name;
+                                       }
+                                       if (code && name) {
+                                           return code + '--' + name;
+                                       }
+                                       return name || code;
+                                   }
+                                 },
                                  { "data": "location_id","visible":false },
                                  { "data": "location_name"},
                                 { "data": "building_code","visible":false },
@@ -400,7 +418,9 @@ $(document).ready(function(){
                             {
                                 $("#txt_customer_location_id").val(v_customer_location_id);  
                                 $("#txt_Building_address").val(customer_location_data.building_address);
+                                isEditingCustomerLocation = true;
                                 $("#select_customer_for_customer_location").val(customer_location_data.customer_id).trigger("change");
+                                isEditingCustomerLocation = false;
 								$("#txt_contact_person_name").val(customer_location_data.contact_person_name	);
 								$("#txt_contact_person_number_build").val(customer_location_data.contact_person_no);
                                 $.ajax({
@@ -415,9 +435,19 @@ $(document).ready(function(){
                                     });
                                 
                                     // Set selected building after loading
-                                    $("#select_building_for_location")
-                                        .val(customer_location_data.building_id)
-                                        .trigger("change");
+                                    var targetBuildingId = customer_location_data.building_id;
+                                    $("#select_building_for_location").val(targetBuildingId);
+                                    if (!$("#select_building_for_location").val() && customer_location_data.building_code) {
+                                        var codePrefix = $.trim(customer_location_data.building_code) + '--';
+                                        $("#select_building_for_location option").each(function() {
+                                            if ($(this).text().indexOf(codePrefix) === 0) {
+                                                targetBuildingId = $(this).val();
+                                                return false;
+                                            }
+                                        });
+                                        $("#select_building_for_location").val(targetBuildingId);
+                                    }
+                                    $("#select_building_for_location").trigger("change");
                                 
                                 });
                                 // $("#select_building_for_location").val(customer_location_data.building_id).trigger("change");
@@ -461,13 +491,17 @@ $(document).ready(function(){
                     v_btn_customer_location_edit.click(function(){
                             v_btn_customer_location_edit.ladda( 'start' );
                                 var v_customer_id_customer_location=$("#select_customer_for_customer_location option:selected").val();
-                                var v_customer_name_customer_location=$("#select_customer_for_customer_location option:selected").text();
+                                var v_customer_name_customer_location_code_name=$("#select_customer_for_customer_location option:selected").text();
+                                var v_customer_parts=v_customer_name_customer_location_code_name.split("--");
+                                var v_customer_name_customer_location_code=$.trim(v_customer_parts[0]);
+                                var v_customer_name_customer_location=v_customer_parts.length > 1 ? $.trim(v_customer_parts.slice(1).join("--")) : v_customer_name_customer_location_code;
                                 var v_location_id_customer_location=$("#select_location_for_customer_location option:selected").val();
                                 var v_location_name_customer_location=$("#select_location_for_customer_location option:selected").text();
                                 var v_location_name_customer_location_dis=v_location_name_customer_location.split("--");
                                 //alert(v_location_name_customer_location);
                                 v_location_name_customer_location=v_location_name_customer_location_dis[1];
                                 v_location_name_customer_location_code=v_location_name_customer_location_dis[0];
+                                var v_building_id=$("#select_building_for_location option:selected").val();
                                 var v_building_name_customer_location=$("#txt_contact_person_building_name").val();
                                 var v_building_address_customer_location=$("#txt_Building_address").val();
                                 var v_contact_person_name_customer_location=$("#txt_contact_person_name").val();
@@ -480,7 +514,7 @@ $(document).ready(function(){
                                     v_saved_img = "default.jpg";
                                 }
                                 v_session_image = v_saved_img;
-                                if($.trim(v_customer_location_id)===""|| $.trim(v_customer_name_customer_location)===""|| $.trim(v_location_name_customer_location)===""||$.trim(v_building_name_customer_location)===""||typeof v_customer_id_customer_location === "undefined"||typeof v_location_id_customer_location === "undefined")
+                                if($.trim(v_customer_location_id)===""|| $.trim(v_customer_name_customer_location)===""|| $.trim(v_location_name_customer_location)===""||$.trim(v_building_name_customer_location)===""||typeof v_customer_id_customer_location === "undefined"||typeof v_location_id_customer_location === "undefined"||!v_building_id||v_building_id==="select")
                             
                             {
                                 swal("Warning","Please provide all the details ....", "warning");
@@ -490,7 +524,7 @@ $(document).ready(function(){
                            
                             else
                             {         
-                                 $.post("../controller/customer_location/customer_location_controller.php",{action:'update_customer_location',v_customer_id_customer_location:v_customer_id_customer_location,v_customer_name_customer_location:v_customer_name_customer_location,v_location_id_customer_location:v_location_id_customer_location,v_location_name_customer_location:v_location_name_customer_location,v_building_name_customer_location:v_building_name_customer_location,v_building_address_customer_location:v_building_address_customer_location,v_contact_person_name_customer_location:v_contact_person_name_customer_location,v_contact_person_number_customer_location:v_contact_person_number_customer_location,v_customer_location_id:v_customer_location_id,v_customer_location_status:v_customer_location_status,v_contact_person_building_code:v_contact_person_building_code,v_building_image:v_session_image,v_location_name_customer_location_code:v_location_name_customer_location_code}
+                                 $.post("../controller/customer_location/customer_location_controller.php",{action:'update_customer_location',v_customer_id_customer_location:v_customer_id_customer_location,v_customer_name_customer_location:v_customer_name_customer_location,v_customer_name_customer_location_code:v_customer_name_customer_location_code,v_location_id_customer_location:v_location_id_customer_location,v_location_name_customer_location:v_location_name_customer_location,v_building_id:v_building_id,v_building_name_customer_location:v_building_name_customer_location,v_building_address_customer_location:v_building_address_customer_location,v_contact_person_name_customer_location:v_contact_person_name_customer_location,v_contact_person_number_customer_location:v_contact_person_number_customer_location,v_customer_location_id:v_customer_location_id,v_customer_location_status:v_customer_location_status,v_contact_person_building_code:v_contact_person_building_code,v_building_image:v_session_image,v_location_name_customer_location_code:v_location_name_customer_location_code}
                                         , function(result,status)
                                         {
                                             v_btn_customer_location_edit.ladda( 'stop' );
